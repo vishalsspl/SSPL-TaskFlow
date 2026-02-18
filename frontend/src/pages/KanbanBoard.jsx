@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import api from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +11,7 @@ import {
 } from 'lucide-react';
 
 const KanbanBoard = () => {
+    const location = useLocation();
     const [loading, setLoading] = useState(true);
     const [projects, setProjects] = useState([]);
     const [selectedProjectId, setSelectedProjectId] = useState('');
@@ -45,12 +47,25 @@ const KanbanBoard = () => {
             const projectsList = response.data;
             setProjects(projectsList);
 
-            // Auto-select first active project or first project
-            const activeProject = projectsList.find(p => p.status === 'ACTIVE') || projectsList[0];
-            if (activeProject) {
-                setSelectedProjectId(activeProject.id);
-            } else {
-                setLoading(false);
+            // Check if we have a project ID passed from navigation
+            const stateProjectId = location.state?.projectId;
+
+            if (stateProjectId) {
+                const projectExists = projectsList.find(p => p.id === stateProjectId);
+                if (projectExists) {
+                    setSelectedProjectId(stateProjectId);
+                    return;
+                }
+            }
+
+            // Auto-select first active project or first project if no state ID
+            if (!selectedProjectId) {
+                const activeProject = projectsList.find(p => p.status === 'ACTIVE') || projectsList[0];
+                if (activeProject) {
+                    setSelectedProjectId(activeProject.id);
+                } else {
+                    setLoading(false);
+                }
             }
         } catch (error) {
             console.error('Failed to fetch projects:', error);

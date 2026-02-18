@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '@/lib/api';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import Modal from '@/components/ui/Modal';
+import CreateProjectForm from '@/components/forms/CreateProjectForm';
 import {
   Table,
   TableBody,
@@ -14,14 +16,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, FolderKanban, Eye, Edit2, Trash2, X } from 'lucide-react';
+import { Plus, FolderKanban, Eye, Edit2, Trash2 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
 
 const ProjectsList = () => {
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showEditForm, setShowEditForm] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
   const [users, setUsers] = useState([]);
   const [formData, setFormData] = useState({
@@ -72,7 +75,7 @@ const ProjectsList = () => {
       totalBudget: project.totalBudget || '',
       status: project.status,
     });
-    setShowEditForm(true);
+    setShowEditModal(true);
   };
 
   const handleDelete = async (projectId, projectName) => {
@@ -98,9 +101,9 @@ const ProjectsList = () => {
         managerId: formData.managerId || undefined,
         totalBudget: formData.totalBudget && formData.totalBudget !== '' ? formData.totalBudget : undefined,
       };
-      
+
       await api.put(`/projects/${editingProject.id}`, submitData);
-      setShowEditForm(false);
+      setShowEditModal(false);
       setEditingProject(null);
       setFormData({
         name: '',
@@ -119,19 +122,9 @@ const ProjectsList = () => {
     }
   };
 
-  const handleCancel = () => {
-    setShowEditForm(false);
-    setEditingProject(null);
-    setFormData({
-      name: '',
-      description: '',
-      clientId: '',
-      managerId: '',
-      startDate: '',
-      endDate: '',
-      totalBudget: '',
-      status: 'PLANNING',
-    });
+  const handleCreateSuccess = () => {
+    setShowCreateModal(false);
+    fetchProjects();
   };
 
   const getStatusColor = (status) => {
@@ -164,136 +157,145 @@ const ProjectsList = () => {
               Manage and track all your projects
             </p>
           </div>
-          <Button onClick={() => navigate('/projects/new')}>
+          <Button onClick={() => setShowCreateModal(true)}>
             <Plus className="w-4 h-4 mr-2" />
             New Project
           </Button>
         </div>
 
-        {/* Edit Form */}
-        {showEditForm && (
-          <Card className="mb-6">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Edit Project</CardTitle>
-                <Button variant="ghost" size="sm" onClick={handleCancel}>
-                  <X className="w-4 h-4" />
-                </Button>
+        {/* Create Project Modal */}
+        <Modal
+          isOpen={showCreateModal}
+          onClose={() => setShowCreateModal(false)}
+          title="Create New Project"
+          size="xl"
+        >
+          <CreateProjectForm
+            onSuccess={handleCreateSuccess}
+            onCancel={() => setShowCreateModal(false)}
+          />
+        </Modal>
+
+        {/* Edit Project Modal */}
+        <Modal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          title="Edit Project"
+          size="xl"
+        >
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-2 space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Project Name *</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="description">Description</Label>
+                  <textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    rows={4}
+                  />
+                </div>
               </div>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="name">Project Name *</Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      required
-                    />
-                  </div>
 
-                  <div>
-                    <Label htmlFor="status">Status *</Label>
-                    <select
-                      id="status"
-                      value={formData.status}
-                      onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      required
-                    >
-                      <option value="PLANNING">Planning</option>
-                      <option value="ACTIVE">Active</option>
-                      <option value="ON_HOLD">On Hold</option>
-                      <option value="COMPLETED">Completed</option>
-                      <option value="CANCELLED">Cancelled</option>
-                    </select>
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <Label htmlFor="description">Description</Label>
-                    <textarea
-                      id="description"
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      rows={3}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="clientId">Client</Label>
-                    <select
-                      id="clientId"
-                      value={formData.clientId}
-                      onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    >
-                      <option value="">Select Client</option>
-                      {users.filter(u => u.role === 'CLIENT').map(user => (
-                        <option key={user.id} value={user.id}>{user.name}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="managerId">Manager</Label>
-                    <select
-                      id="managerId"
-                      value={formData.managerId}
-                      onChange={(e) => setFormData({ ...formData, managerId: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    >
-                      <option value="">Select Manager</option>
-                      {users.filter(u => u.role === 'ADMIN' || u.role === 'MANAGER').map(user => (
-                        <option key={user.id} value={user.id}>{user.name}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="startDate">Start Date</Label>
-                    <Input
-                      id="startDate"
-                      type="date"
-                      value={formData.startDate}
-                      onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="endDate">End Date</Label>
-                    <Input
-                      id="endDate"
-                      type="date"
-                      value={formData.endDate}
-                      onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="totalBudget">Budget</Label>
-                    <Input
-                      id="totalBudget"
-                      type="number"
-                      value={formData.totalBudget}
-                      onChange={(e) => setFormData({ ...formData, totalBudget: e.target.value })}
-                      placeholder="0.00"
-                    />
-                  </div>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="clientId">Client</Label>
+                  <select
+                    id="clientId"
+                    value={formData.clientId}
+                    onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  >
+                    <option value="">Select Client</option>
+                    {users.filter(u => u.role === 'CLIENT').map(user => (
+                      <option key={user.id} value={user.id}>{user.name}</option>
+                    ))}
+                  </select>
                 </div>
 
-                <div className="flex justify-end gap-3">
-                  <Button type="button" variant="outline" onClick={handleCancel}>
-                    Cancel
-                  </Button>
-                  <Button type="submit">Update Project</Button>
+                <div className="space-y-2">
+                  <Label htmlFor="managerId">Manager</Label>
+                  <select
+                    id="managerId"
+                    value={formData.managerId}
+                    onChange={(e) => setFormData({ ...formData, managerId: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  >
+                    <option value="">Select Manager</option>
+                    {users.filter(u => u.role === 'ADMIN' || u.role === 'MANAGER').map(user => (
+                      <option key={user.id} value={user.id}>{user.name}</option>
+                    ))}
+                  </select>
                 </div>
-              </form>
-            </CardContent>
-          </Card>
-        )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status *</Label>
+                  <select
+                    id="status"
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    required
+                  >
+                    <option value="PLANNING">Planning</option>
+                    <option value="ACTIVE">Active</option>
+                    <option value="ON_HOLD">On Hold</option>
+                    <option value="COMPLETED">Completed</option>
+                    <option value="CANCELLED">Cancelled</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="startDate">Start Date</Label>
+                <Input
+                  id="startDate"
+                  type="date"
+                  value={formData.startDate}
+                  onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="endDate">End Date</Label>
+                <Input
+                  id="endDate"
+                  type="date"
+                  value={formData.endDate}
+                  onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="totalBudget">Budget</Label>
+                <Input
+                  id="totalBudget"
+                  type="number"
+                  value={formData.totalBudget}
+                  onChange={(e) => setFormData({ ...formData, totalBudget: e.target.value })}
+                  placeholder="0.00"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button type="button" variant="outline" onClick={() => setShowEditModal(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">Update Project</Button>
+            </div>
+          </form>
+        </Modal>
 
         {/* Projects Table */}
         {projects.length === 0 ? (
@@ -304,7 +306,7 @@ const ProjectsList = () => {
               <p className="mt-1 text-sm text-gray-500">
                 Get started by creating your first project
               </p>
-              <Button className="mt-4" onClick={() => navigate('/projects/new')}>
+              <Button className="mt-4" onClick={() => setShowCreateModal(true)}>
                 <Plus className="w-4 h-4 mr-2" />
                 Create Project
               </Button>

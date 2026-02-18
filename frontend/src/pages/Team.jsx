@@ -14,7 +14,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Users, Mail, Shield, Plus, X, Edit2, Trash2, UserCheck, Clock, Layers } from 'lucide-react';
+import { Users, Mail, Shield, Plus, X, Edit2, Trash2, UserCheck, Clock, Layers, Lock, User } from 'lucide-react';
+import Modal from '@/components/ui/Modal';
 
 const Team = () => {
   const { user: currentUser } = useAuthStore();
@@ -210,16 +211,8 @@ const Team = () => {
               Manage your organization's team members and structure
             </p>
           </div>
-          <Button onClick={() => setShowForm(!showForm)}>
-            {showForm ? (
-              <>
-                <X className="w-4 h-4 mr-2" /> Cancel
-              </>
-            ) : (
-              <>
-                <Plus className="w-4 h-4 mr-2" /> Add Member
-              </>
-            )}
+          <Button onClick={() => setShowForm(true)} className="bg-primary hover:bg-primary/90 text-white shadow-md transition-all hover:scale-105">
+            <Plus className="w-4 h-4 mr-2" /> Add Member
           </Button>
         </div>
 
@@ -300,81 +293,108 @@ const Team = () => {
 
         </div>
 
-        {/* Add/Edit Form */}
-        {showForm && (
-          <Card className="mb-6 animate-in fade-in slide-in-from-top-4">
-            <CardHeader>
-              <CardTitle>{editingUser ? 'Edit Member' : 'Add New Member'}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="name">Name *</Label>
+        {/* Add/Edit Form Modal */}
+        <Modal
+          isOpen={showForm}
+          onClose={handleCancel}
+          title={editingUser ? 'Edit Team Member' : 'Add New Member'}
+          size="lg"
+        >
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="bg-blue-50/50 p-4 rounded-lg border border-blue-100 mb-6 flex items-start gap-3">
+              <div className="bg-blue-100 p-2 rounded-full text-blue-600 mt-0.5">
+                <User className="w-4 h-4" />
+              </div>
+              <div className="text-sm text-blue-800">
+                <p className="font-medium mb-1">Member Access Control</p>
+                <p className="opacity-90">
+                  {editingUser
+                    ? "Update the user's role and details. Changing the role will affect their permissions immediately."
+                    : "New members will receive an email invitation to set up their account."}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-gray-700 font-medium">Full Name <span className="text-red-500">*</span></Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="John Doe"
+                    required
+                    className="pl-9 transition-all focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-gray-700 font-medium">Email Address <span className="text-red-500">*</span></Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    placeholder="john@example.com"
+                    required
+                    disabled={!!editingUser}
+                    className="pl-9 transition-all focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="role" className="text-gray-700 font-medium">Role <span className="text-red-500">*</span></Label>
+                <div className="relative">
+                  <Shield className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                  <select
+                    id="role"
+                    value={formData.role}
+                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                    className="flex h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all focus:ring-2 focus:ring-primary/20"
+                    required
+                  >
+                    <option value="ADMIN">Admin</option>
+                    <option value="MANAGER">Manager</option>
+                    <option value="MEMBER">Member</option>
+                    <option value="CLIENT">Client</option>
+                  </select>
+                </div>
+              </div>
+
+              {editingUser && (
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-gray-700 font-medium">New Password</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                     <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="Enter member name"
-                      required
+                      id="password"
+                      type="password"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      placeholder="Leave empty to keep current"
+                      className="pl-9 transition-all focus:ring-2 focus:ring-primary/20"
                     />
                   </div>
-
-                  <div>
-                    <Label htmlFor="email">Email *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder="Enter email address"
-                      required
-                      disabled={!!editingUser}
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="role">Role *</Label>
-                    <select
-                      id="role"
-                      value={formData.role}
-                      onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      required
-                    >
-                      <option value="ADMIN">Admin</option>
-                      <option value="MANAGER">Manager</option>
-                      <option value="MEMBER">Member</option>
-                      <option value="CLIENT">Client</option>
-                    </select>
-                  </div>
-
-                  {editingUser && (
-                    <div>
-                      <Label htmlFor="password">Password (leave empty to keep current)</Label>
-                      <Input
-                        id="password"
-                        type="password"
-                        value={formData.password}
-                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                        placeholder="Enter new password"
-                      />
-                    </div>
-                  )}
                 </div>
+              )}
+            </div>
 
-                <div className="flex justify-end gap-3">
-                  <Button type="button" variant="outline" onClick={handleCancel}>
-                    Cancel
-                  </Button>
-                  <Button type="submit">
-                    {editingUser ? 'Update Member' : 'Add Member'}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        )}
+            <div className="flex justify-end gap-3 pt-6 border-t mt-2">
+              <Button type="button" variant="outline" onClick={handleCancel} className="hover:bg-gray-50">
+                Cancel
+              </Button>
+              <Button type="submit" className="bg-primary hover:bg-primary/90 shadow-md">
+                {editingUser ? 'Update Member' : 'Add Member'}
+              </Button>
+            </div>
+          </form>
+        </Modal>
 
         <div className="flex-1 overflow-hidden flex flex-col">
           {selectedManagerId === 'MANAGERS_LIST' && (

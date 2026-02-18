@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
 import { Loader2 } from 'lucide-react';
 import { priorityColors } from '@/lib/utils';
-import ProjectOverview from '@/components/ProjectOverview';
 import { useAuthStore } from '@/store/authStore';
 
 const KanbanColumn = ({ status, title, tasks, onDrop, onDragOver, onDragStart, color, isReadOnly }) => {
@@ -27,8 +27,8 @@ const KanbanColumn = ({ status, title, tasks, onDrop, onDragOver, onDragStart, c
                         draggable={!isReadOnly}
                         onDragStart={!isReadOnly ? (e) => onDragStart(e, task) : undefined}
                         className={`bg-white p-3 rounded-lg shadow-sm border border-gray-200 transition-shadow ${isReadOnly
-                                ? 'cursor-default'
-                                : 'cursor-grab active:cursor-grabbing hover:shadow-md'
+                            ? 'cursor-default'
+                            : 'cursor-grab active:cursor-grabbing hover:shadow-md'
                             }`}
                     >
                         <div className="flex justify-between items-start mb-2">
@@ -96,6 +96,7 @@ const TaskKanban = () => {
     const [selectedProjectId, setSelectedProjectId] = useState('all');
 
     const isReadOnly = user?.role === 'CLIENT';
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchData();
@@ -196,7 +197,12 @@ const TaskKanban = () => {
         <div className="p-8 h-screen flex flex-col">
             <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Task Board</h1>
+                    <h1 className="text-3xl font-bold text-gray-900">
+                        {selectedProjectId === 'all'
+                            ? 'Task Board'
+                            : projects.find(p => p.id === selectedProjectId)?.name || 'Task Board'
+                        }
+                    </h1>
                     <p className="mt-1 text-sm text-gray-500">
                         {isReadOnly
                             ? 'View task status and project progress'
@@ -223,10 +229,6 @@ const TaskKanban = () => {
                     </select>
                 </div>
             </div>
-
-            {selectedProjectId !== 'all' && (
-                <ProjectOverview projectId={selectedProjectId} />
-            )}
 
             <div className="flex-1 flex gap-6 overflow-x-auto pb-4">
                 <KanbanColumn

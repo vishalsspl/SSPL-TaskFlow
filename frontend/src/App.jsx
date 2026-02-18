@@ -6,7 +6,6 @@ import Signup from './pages/Signup';
 import PendingApproval from './pages/PendingApproval';
 import Dashboard from './pages/Dashboard';
 import ProjectsList from './pages/ProjectsList';
-import CreateProject from './pages/CreateProject';
 import ProjectView from './pages/ProjectView';
 import KanbanBoard from './pages/KanbanBoard';
 import TaskKanban from './pages/TaskKanban';
@@ -14,6 +13,8 @@ import Tasks from './pages/Tasks';
 import Team from './pages/Team';
 import Settings from './pages/Settings';
 import Layout from './components/Layout';
+
+import RoleBasedRedirect from './components/RoleBasedRedirect';
 
 function App() {
   const { token, initialize } = useAuthStore();
@@ -28,11 +29,11 @@ function App() {
         {/* Public routes */}
         <Route
           path="/login"
-          element={!token ? <Login /> : <Navigate to="/dashboard" />}
+          element={!token ? <Login /> : <RoleBasedRedirect />}
         />
         <Route
           path="/signup"
-          element={!token ? <Signup /> : <Navigate to="/dashboard" />}
+          element={!token ? <Signup /> : <RoleBasedRedirect />}
         />
         <Route path="/pending-approval" element={<PendingApproval />} />
 
@@ -41,10 +42,9 @@ function App() {
           path="/"
           element={token ? <Layout /> : <Navigate to="/login" />}
         >
-          <Route index element={<Navigate to="/dashboard" />} />
+          <Route index element={<RoleBasedRedirect />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="projects" element={<ProjectsList />} />
-          <Route path="projects/new" element={<CreateProject />} />
           <Route path="projects/:id" element={<ProjectView />} />
           <Route path="kanban" element={<KanbanBoard />} />
           <Route path="task-board" element={<TaskKanban />} />
