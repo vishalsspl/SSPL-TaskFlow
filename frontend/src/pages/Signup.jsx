@@ -1,17 +1,21 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Presentation, Eye, EyeOff } from 'lucide-react';
 
 const Signup = () => {
   const navigate = useNavigate();
-  const { login } = useAuthStore();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -60,14 +64,14 @@ const Signup = () => {
           <CardDescription className="text-sm">Create your account</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
-              <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+              <div className="p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
                 {error}
               </div>
             )}
 
-            <div className="space-y-1">
+            <div className="space-y-2">
               <Label htmlFor="name">Your Name</Label>
               <Input
                 id="name"
@@ -79,7 +83,7 @@ const Signup = () => {
               />
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
@@ -91,7 +95,7 @@ const Signup = () => {
               />
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <div className="relative">
                 <Input
@@ -106,14 +110,14 @@ const Signup = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm Password</Label>
               <div className="relative">
                 <Input
@@ -128,24 +132,27 @@ const Signup = () => {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
                   {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-2">
               <Label htmlFor="role">Role</Label>
               <Select
-                id="role"
                 value={formData.role}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                required
+                onValueChange={(value) => setFormData({ ...formData, role: value })}
               >
-                <option value="MANAGER">Manager</option>
-                <option value="MEMBER">Member</option>
-                <option value="CLIENT">Client</option>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="MANAGER">Manager</SelectItem>
+                  <SelectItem value="MEMBER">Member</SelectItem>
+                  <SelectItem value="CLIENT">Client</SelectItem>
+                </SelectContent>
               </Select>
             </div>
 
@@ -153,7 +160,7 @@ const Signup = () => {
               {loading ? 'Creating account...' : 'Create Account'}
             </Button>
 
-            <p className="text-center text-sm text-gray-600">
+            <p className="text-center text-sm text-muted-foreground">
               Already have an account?{' '}
               <Link to="/login" className="text-primary hover:underline font-medium">
                 Sign in

@@ -1,11 +1,24 @@
 import { useState, useEffect } from 'react';
 import api from '@/lib/api';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import Modal from '@/components/ui/Modal';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -14,10 +27,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { formatDate, statusColors, priorityColors } from '@/lib/utils';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { formatDate, priorityColors } from '@/lib/utils';
 import {
   Plus,
-  X,
   CheckSquare,
   Layers,
   User,
@@ -26,7 +39,9 @@ import {
   Calendar,
   Tag,
   AlignLeft,
-  Briefcase
+  Briefcase,
+  Search,
+  Filter
 } from 'lucide-react';
 
 const Tasks = () => {
@@ -34,10 +49,12 @@ const Tasks = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [projectFilter, setProjectFilter] = useState('all');
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [projects, setProjects] = useState([]);
   const [users, setUsers] = useState([]);
   const [phases, setPhases] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+
   const [formData, setFormData] = useState({
     projectId: '',
     phaseId: '',
@@ -124,7 +141,7 @@ const Tasks = () => {
 
       await api.post('/tasks', payload);
 
-      setShowCreateModal(false);
+      setShowCreateDialog(false);
       setFormData({
         projectId: '',
         phaseId: '',
@@ -144,14 +161,6 @@ const Tasks = () => {
     }
   };
 
-  const filterOptions = [
-    { value: 'all', label: 'All Tasks' },
-    { value: 'TODO', label: 'To Do' },
-    { value: 'IN_PROGRESS', label: 'In Progress' },
-    { value: 'IN_REVIEW', label: 'In Review' },
-    { value: 'COMPLETED', label: 'Completed' },
-  ];
-
   const handleProgressUpdate = async (taskId, newPercentage) => {
     try {
       await api.patch(`/tasks/${taskId}/progress`, { completionPercentage: newPercentage });
@@ -170,304 +179,346 @@ const Tasks = () => {
     }
   };
 
+  const filteredTasks = tasks.filter(task =>
+    task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (task.description && task.description.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="text-lg text-gray-600">Loading tasks...</div>
+        <div className="text-lg text-muted-foreground">Loading tasks...</div>
       </div>
     );
   }
 
   return (
-    <div className="p-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">All Tasks</h1>
-            <p className="mt-1 text-sm text-gray-500">
-              View and manage tasks across all projects
-            </p>
-          </div>
-          <Button onClick={() => setShowCreateModal(true)} className="bg-primary hover:bg-primary/90 shadow-md">
-            <Plus className="w-4 h-4 mr-2" /> New Task
-          </Button>
+    <div className="flex-1 space-y-4 p-8 pt-6">
+      <div className="flex items-center justify-between space-y-2">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">All Tasks</h2>
+          <p className="text-muted-foreground">
+            View and manage tasks across all projects
+          </p>
         </div>
+        <Button onClick={() => setShowCreateDialog(true)}>
+          <Plus className="w-4 h-4 mr-2" /> New Task
+        </Button>
+      </div>
 
-        {/* Create Task Modal */}
-        <Modal
-          isOpen={showCreateModal}
-          onClose={() => setShowCreateModal(false)}
-          title="Create New Task"
-          size="xl"
-          className="max-w-4xl"
-        >
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="md:col-span-4 space-y-2">
-                <Label htmlFor="title" className="text-gray-700 font-medium">Task Title <span className="text-red-500">*</span></Label>
-                <div className="relative">
-                  <CheckSquare className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="title"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="e.g. Design Homepage"
-                    required
-                    className="pl-9 transition-all focus:ring-2 focus:ring-primary/20"
-                  />
-                </div>
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="sm:max-w-[700px]">
+          <DialogHeader>
+            <DialogTitle>Create New Task</DialogTitle>
+            <DialogDescription>
+              Add a new task to a project.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Task Title *</Label>
+              <div className="relative">
+                <CheckSquare className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="e.g. Design Homepage"
+                  required
+                  className="pl-9"
+                />
               </div>
+            </div>
 
-              {/* Row 2: Drops */}
-              <div className="md:col-span-2 space-y-2">
-                <Label htmlFor="project" className="text-gray-700 font-medium">Project <span className="text-red-500">*</span></Label>
-                <div className="relative">
-                  <Briefcase className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                  <select
-                    id="project"
-                    value={formData.projectId}
-                    onChange={(e) => handleProjectChange(e.target.value)}
-                    className="flex h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all focus:ring-2 focus:ring-primary/20"
-                    required
-                  >
-                    <option value="">Select Project</option>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="project">Project *</Label>
+                <Select
+                  value={formData.projectId}
+                  onValueChange={(value) => handleProjectChange(value)}
+                >
+                  <SelectTrigger className="pl-9 relative">
+                    <Briefcase className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <SelectValue placeholder="Select Project" />
+                  </SelectTrigger>
+                  <SelectContent>
                     {projects.map((p) => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
+                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                     ))}
-                  </select>
-                </div>
+                  </SelectContent>
+                </Select>
               </div>
 
-              <div className="md:col-span-2 space-y-2">
-                <Label htmlFor="phase" className="text-gray-700 font-medium">Phase</Label>
-                <div className="relative">
-                  <Layers className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                  <select
-                    id="phase"
-                    value={formData.phaseId}
-                    onChange={(e) => setFormData({ ...formData, phaseId: e.target.value })}
-                    className="flex h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all focus:ring-2 focus:ring-primary/20"
-                    disabled={!formData.projectId}
-                  >
-                    <option value="">Select Phase (Optional)</option>
+              <div className="space-y-2">
+                <Label htmlFor="phase">Phase</Label>
+                <Select
+                  value={formData.phaseId}
+                  onValueChange={(value) => setFormData({ ...formData, phaseId: value })}
+                  disabled={!formData.projectId}
+                >
+                  <SelectTrigger className="pl-9 relative">
+                    <Layers className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <SelectValue placeholder="Select Phase (Optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
                     {phases.map((p) => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
+                      <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                     ))}
-                  </select>
-                </div>
+                  </SelectContent>
+                </Select>
               </div>
+            </div>
 
-              {/* Row 3 - 4 columns */}
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="assignee" className="text-gray-700 font-medium">Assign To</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                  <select
-                    id="assignee"
-                    value={formData.assignedTo}
-                    onChange={(e) => setFormData({ ...formData, assignedTo: e.target.value })}
-                    className="flex h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all focus:ring-2 focus:ring-primary/20"
-                  >
-                    <option value="">Unassigned</option>
+                <Label htmlFor="assignee">Assign To</Label>
+                <Select
+                  value={formData.assignedTo}
+                  onValueChange={(value) => setFormData({ ...formData, assignedTo: value })}
+                >
+                  <SelectTrigger className="pl-9 relative">
+                    <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <SelectValue placeholder="Unassigned" />
+                  </SelectTrigger>
+                  <SelectContent>
                     {users.map((u) => (
-                      <option key={u.id} value={u.id}>{u.name} ({u.role})</option>
+                      <SelectItem key={u.id} value={u.id}>{u.name} ({u.role})</SelectItem>
                     ))}
-                  </select>
-                </div>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="status" className="text-gray-700 font-medium">Status</Label>
-                <div className="relative">
-                  <Activity className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                  <select
-                    id="status"
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="flex h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all focus:ring-2 focus:ring-primary/20"
-                  >
-                    <option value="TODO">To Do</option>
-                    <option value="IN_PROGRESS">In Progress</option>
-                    <option value="IN_REVIEW">In Review</option>
-                    <option value="COMPLETED">Completed</option>
-                  </select>
-                </div>
+                <Label htmlFor="status">Status</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) => setFormData({ ...formData, status: value })}
+                >
+                  <SelectTrigger className="pl-9 relative">
+                    <Activity className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <SelectValue placeholder="To Do" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="TODO">To Do</SelectItem>
+                    <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                    <SelectItem value="IN_REVIEW">In Review</SelectItem>
+                    <SelectItem value="COMPLETED">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="priority">Priority</Label>
+                <Select
+                  value={formData.priority}
+                  onValueChange={(value) => setFormData({ ...formData, priority: value })}
+                >
+                  <SelectTrigger className="pl-9 relative">
+                    <AlertCircle className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <SelectValue placeholder="Medium" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="LOW">Low</SelectItem>
+                    <SelectItem value="MEDIUM">Medium</SelectItem>
+                    <SelectItem value="HIGH">High</SelectItem>
+                    <SelectItem value="CRITICAL">Critical</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="priority" className="text-gray-700 font-medium">Priority</Label>
+                <Label htmlFor="dueDate">Due Date</Label>
                 <div className="relative">
-                  <AlertCircle className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                  <select
-                    id="priority"
-                    value={formData.priority}
-                    onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                    className="flex h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all focus:ring-2 focus:ring-primary/20"
-                  >
-                    <option value="LOW">Low</option>
-                    <option value="MEDIUM">Medium</option>
-                    <option value="HIGH">High</option>
-                    <option value="CRITICAL">Critical</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="dueDate" className="text-gray-700 font-medium">Due Date</Label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                  <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="dueDate"
                     type="date"
                     value={formData.dueDate}
                     onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                    className="pl-9 transition-all focus:ring-2 focus:ring-primary/20"
-                  />
-                </div>
-              </div>
-
-              <div className="md:col-span-4 space-y-2">
-                <Label htmlFor="tags" className="text-gray-700 font-medium">Tags</Label>
-                <div className="relative">
-                  <Tag className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="tags"
-                    value={formData.tags}
-                    onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                    placeholder="Comma separated tags (e.g. design, urgent)"
-                    className="pl-9 transition-all focus:ring-2 focus:ring-primary/20"
-                  />
-                </div>
-              </div>
-
-              <div className="md:col-span-4 space-y-2">
-                <Label htmlFor="description" className="text-gray-700 font-medium">Description (Optional)</Label>
-                <div className="relative">
-                  <AlignLeft className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <textarea
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all focus:ring-2 focus:ring-primary/20"
-                    placeholder="Task details..."
-                    rows={3}
+                    className="pl-9"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-6 border-t mt-2">
-              <Button type="button" variant="outline" onClick={() => setShowCreateModal(false)} className="hover:bg-gray-50">
+            <div className="space-y-2">
+              <Label htmlFor="tags">Tags</Label>
+              <div className="relative">
+                <Tag className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="tags"
+                  value={formData.tags}
+                  onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                  placeholder="Comma separated tags (e.g. design, urgent)"
+                  className="pl-9"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Description (Optional)</Label>
+              <div className="relative">
+                <textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  placeholder="Task details..."
+                  rows={3}
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4">
+              <Button type="button" variant="outline" onClick={() => setShowCreateDialog(false)}>
                 Cancel
               </Button>
-              <Button type="submit" className="bg-primary hover:bg-primary/90 shadow-md">Create Task</Button>
+              <Button type="submit">Create Task</Button>
             </div>
           </form>
-        </Modal>
+        </DialogContent>
+      </Dialog>
 
-        {/* Tasks Table */}
-        <Card>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Tasks List</CardTitle>
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Search tasks..."
+                  className="w-[200px] pl-8"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <Select value={projectFilter} onValueChange={setProjectFilter}>
+                <SelectTrigger className="w-[180px]">
+                  <Filter className="w-4 h-4 mr-2" />
+                  <SelectValue placeholder="Filter by Project" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Projects</SelectItem>
+                  {projects.map(p => (
+                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={filter} onValueChange={setFilter}>
+                <SelectTrigger className="w-[150px]">
+                  <Activity className="w-4 h-4 mr-2" />
+                  <SelectValue placeholder="Filter Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="TODO">To Do</SelectItem>
+                  <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                  <SelectItem value="IN_REVIEW">In Review</SelectItem>
+                  <SelectItem value="COMPLETED">Completed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[30%]">Task</TableHead>
+                <TableHead>Project</TableHead>
+                <TableHead>Assigned To</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Priority</TableHead>
+                <TableHead>Due Date</TableHead>
+                <TableHead className="w-[15%]">Progress</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredTasks.length === 0 ? (
                 <TableRow>
-                  <TableHead className="w-[30%]">Task</TableHead>
-                  <TableHead>Project</TableHead>
-                  <TableHead>Assigned To</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Priority</TableHead>
-                  <TableHead>Due Date</TableHead>
-                  <TableHead className="w-[15%]">Progress</TableHead>
+                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    No tasks found
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {tasks.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-gray-500">
-                      No tasks found
+              ) : (
+                filteredTasks.map((task) => (
+                  <TableRow key={task.id}>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{task.title}</p>
+                        {task.description && (
+                          <p className="text-xs text-muted-foreground line-clamp-1">
+                            {task.description}
+                          </p>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-sm">{task.project.name}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {task.assignee ? (
+                          <>
+                            <Avatar className="h-6 w-6">
+                              <AvatarImage src={task.assignee.avatar} alt={task.assignee.name} />
+                              <AvatarFallback>{task.assignee.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <span className="text-sm">{task.assignee.name}</span>
+                          </>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">Unassigned</span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Select
+                        value={task.status}
+                        onValueChange={(value) => handleStatusUpdate(task.id, value)}
+                      >
+                        <SelectTrigger className="h-8 w-[130px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="TODO">To Do</SelectItem>
+                          <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                          <SelectItem value="IN_REVIEW">In Review</SelectItem>
+                          <SelectItem value="COMPLETED">Completed</SelectItem>
+                          <SelectItem value="BLOCKED">Blocked</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={priorityColors[task.priority]}>
+                        {task.priority}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm">{formatDate(task.dueDate)}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          step="5"
+                          value={task.completionPercentage}
+                          onChange={(e) => handleProgressUpdate(task.id, Number(e.target.value))}
+                          className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+                        />
+                        <span className="text-xs font-medium w-8 text-right">
+                          {task.completionPercentage}%
+                        </span>
+                      </div>
                     </TableCell>
                   </TableRow>
-                ) : (
-                  tasks.map((task) => (
-                    <TableRow key={task.id}>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{task.title}</p>
-                          {task.description && (
-                            <p className="text-sm text-gray-500 line-clamp-1">
-                              {task.description}
-                            </p>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>{task.project.name}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          {task.assignee ? (
-                            <>
-                              {task.assignee.avatar && (
-                                <img
-                                  src={task.assignee.avatar}
-                                  alt={task.assignee.name}
-                                  className="w-6 h-6 rounded-full mr-2"
-                                />
-                              )}
-                              <span>{task.assignee.name}</span>
-                            </>
-                          ) : (
-                            <span className="text-gray-400">Unassigned</span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <select
-                          value={task.status}
-                          onChange={(e) => handleStatusUpdate(task.id, e.target.value)}
-                          className={`text-xs font-semibold px-2 py-1 rounded-full border-none focus:ring-2 focus:ring-offset-1 cursor-pointer ${task.status === 'TODO' ? 'bg-gray-100 text-gray-800' :
-                            task.status === 'IN_PROGRESS' ? 'bg-blue-100 text-blue-800' :
-                              task.status === 'IN_REVIEW' ? 'bg-purple-100 text-purple-800' :
-                                task.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
-                                  'bg-red-100 text-red-800'
-                            }`}
-                        >
-                          <option value="TODO">TODO</option>
-                          <option value="IN_PROGRESS">IN PROGRESS</option>
-                          <option value="IN_REVIEW">IN REVIEW</option>
-                          <option value="COMPLETED">COMPLETED</option>
-                          <option value="BLOCKED">BLOCKED</option>
-                        </select>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={priorityColors[task.priority]}>
-                          {task.priority}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{formatDate(task.dueDate)}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <input
-                            type="range"
-                            min="0"
-                            max="100"
-                            step="5"
-                            value={task.completionPercentage}
-                            onChange={(e) => handleProgressUpdate(task.id, Number(e.target.value))}
-                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                          />
-                          <span className="text-xs font-medium w-8 text-right">
-                            {task.completionPercentage}%
-                          </span>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 };

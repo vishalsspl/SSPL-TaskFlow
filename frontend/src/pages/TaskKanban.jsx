@@ -1,92 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '@/lib/api';
-import { Badge } from '@/components/ui/badge';
 import { Loader2 } from 'lucide-react';
-import { priorityColors } from '@/lib/utils';
 import { useAuthStore } from '@/store/authStore';
-
-const KanbanColumn = ({ status, title, tasks, onDrop, onDragOver, onDragStart, color, isReadOnly }) => {
-    return (
-        <div
-            className="flex-1 min-w-[280px] bg-gray-50 rounded-lg p-4 flex flex-col h-full"
-            onDragOver={!isReadOnly ? onDragOver : undefined}
-            onDrop={!isReadOnly ? (e) => onDrop(e, status) : undefined}
-        >
-            <div className={`flex items-center justify-between mb-4 pb-2 border-b-2 ${color}`}>
-                <h3 className="font-semibold text-gray-700">{title}</h3>
-                <span className="bg-white text-gray-500 text-xs px-2 py-1 rounded-full font-medium border">
-                    {tasks.length}
-                </span>
-            </div>
-
-            <div className="flex-1 overflow-y-auto pr-2 space-y-2">
-                {tasks.map((task) => (
-                    <div
-                        key={task.id}
-                        draggable={!isReadOnly}
-                        onDragStart={!isReadOnly ? (e) => onDragStart(e, task) : undefined}
-                        className={`bg-white p-3 rounded-lg shadow-sm border border-gray-200 transition-shadow ${isReadOnly
-                            ? 'cursor-default'
-                            : 'cursor-grab active:cursor-grabbing hover:shadow-md'
-                            }`}
-                    >
-                        <div className="flex justify-between items-start mb-2">
-                            <span className="text-sm font-medium text-gray-900 line-clamp-2">{task.title}</span>
-                            {task.priority && (
-                                <Badge className={`text-[10px] px-1 py-0 h-5 ${priorityColors[task.priority]}`}>
-                                    {task.priority}
-                                </Badge>
-                            )}
-                        </div>
-
-                        <div className="flex items-center justify-between mt-2">
-                            <div className="flex items-center -space-x-2">
-                                {task.assignee ? (
-                                    task.assignee.avatar ? (
-                                        <img
-                                            src={task.assignee.avatar}
-                                            alt={task.assignee.name}
-                                            className="w-6 h-6 rounded-full border-2 border-white"
-                                            title={task.assignee.name}
-                                        />
-                                    ) : (
-                                        <div
-                                            className="w-6 h-6 rounded-full bg-blue-500 text-white text-[10px] flex items-center justify-center border-2 border-white"
-                                            title={task.assignee.name}
-                                        >
-                                            {task.assignee.name.charAt(0)}
-                                        </div>
-                                    )
-                                ) : (
-                                    <div className="w-6 h-6 rounded-full bg-gray-200 border-2 border-white" title="Unassigned" />
-                                )}
-                            </div>
-
-                            {task.dueDate && (
-                                <span className="text-[10px] text-gray-500">
-                                    {new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                                </span>
-                            )}
-                        </div>
-
-                        <div className="mt-2 w-full bg-gray-100 rounded-full h-1.5">
-                            <div
-                                className="bg-blue-500 h-1.5 rounded-full"
-                                style={{ width: `${task.completionPercentage}%` }}
-                            />
-                        </div>
-                    </div>
-                ))}
-                {tasks.length === 0 && (
-                    <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-lg text-gray-400 text-sm">
-                        No tasks
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-};
+import KanbanBoard from '@/components/kanban/KanbanBoard';
 
 const TaskKanban = () => {
     const { user } = useAuthStore();
@@ -122,23 +39,7 @@ const TaskKanban = () => {
         }
     };
 
-    const handleDragStart = (e, task) => {
-        if (isReadOnly) return;
-        e.dataTransfer.setData('taskId', task.id);
-        e.dataTransfer.effectAllowed = 'move';
-    };
-
-    const handleDragOver = (e) => {
-        if (isReadOnly) return;
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-    };
-
-    const handleDrop = async (e, newStatus) => {
-        if (isReadOnly) return;
-        e.preventDefault();
-        const taskId = e.dataTransfer.getData('taskId');
-
+    const handleTaskUpdate = async (taskId, newStatus) => {
         const task = tasks.find(t => t.id === taskId);
         if (!task || task.status === newStatus) return;
 
@@ -170,28 +71,6 @@ const TaskKanban = () => {
     const filteredTasks = selectedProjectId === 'all'
         ? tasks
         : tasks.filter(t => t.projectId === selectedProjectId);
-
-    const priorityWeight = {
-        URGENT: 4,
-        HIGH: 3,
-        MEDIUM: 2,
-        LOW: 1,
-    };
-
-    const sortTasks = (tasksToSort) => {
-        return [...tasksToSort].sort((a, b) => {
-            const weightA = priorityWeight[a.priority] || 0;
-            const weightB = priorityWeight[b.priority] || 0;
-            return weightB - weightA;
-        });
-    };
-
-    const columns = {
-        TODO: sortTasks(filteredTasks.filter(t => t.status === 'TODO')),
-        IN_PROGRESS: sortTasks(filteredTasks.filter(t => t.status === 'IN_PROGRESS')),
-        IN_REVIEW: sortTasks(filteredTasks.filter(t => t.status === 'IN_REVIEW')),
-        COMPLETED: sortTasks(filteredTasks.filter(t => t.status === 'COMPLETED')),
-    };
 
     return (
         <div className="p-8 h-screen flex flex-col">
@@ -230,45 +109,10 @@ const TaskKanban = () => {
                 </div>
             </div>
 
-            <div className="flex-1 flex gap-6 overflow-x-auto pb-4">
-                <KanbanColumn
-                    status="TODO"
-                    title="To Do"
-                    tasks={columns.TODO}
-                    onDrop={handleDrop}
-                    onDragOver={handleDragOver}
-                    onDragStart={handleDragStart}
-                    color="border-gray-400"
-                    isReadOnly={isReadOnly}
-                />
-                <KanbanColumn
-                    status="IN_PROGRESS"
-                    title="In Progress"
-                    tasks={columns.IN_PROGRESS}
-                    onDrop={handleDrop}
-                    onDragOver={handleDragOver}
-                    onDragStart={handleDragStart}
-                    color="border-blue-400"
-                    isReadOnly={isReadOnly}
-                />
-                <KanbanColumn
-                    status="IN_REVIEW"
-                    title="In Review"
-                    tasks={columns.IN_REVIEW}
-                    onDrop={handleDrop}
-                    onDragOver={handleDragOver}
-                    onDragStart={handleDragStart}
-                    color="border-purple-400"
-                    isReadOnly={isReadOnly}
-                />
-                <KanbanColumn
-                    status="COMPLETED"
-                    title="Completed"
-                    tasks={columns.COMPLETED}
-                    onDrop={handleDrop}
-                    onDragOver={handleDragOver}
-                    onDragStart={handleDragStart}
-                    color="border-green-400"
+            <div className="flex-1 overflow-hidden">
+                <KanbanBoard
+                    tasks={filteredTasks}
+                    onTaskUpdate={handleTaskUpdate}
                     isReadOnly={isReadOnly}
                 />
             </div>

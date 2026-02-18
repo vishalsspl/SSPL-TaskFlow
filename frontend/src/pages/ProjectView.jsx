@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import api from '@/lib/api';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
   TableBody,
@@ -15,13 +16,10 @@ import {
 import {
   BarChart,
   Bar,
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from 'recharts';
 import {
@@ -32,15 +30,15 @@ import {
   AlertCircle,
   Users,
   Calendar,
-  DollarSign,
-  TrendingUp,
   RefreshCw,
+  ArrowLeft
 } from 'lucide-react';
-import { formatCurrency, formatDate, phaseStatusColors, priorityColors } from '@/lib/utils';
+import { formatCurrency, formatDate, priorityColors } from '@/lib/utils';
 import html2canvas from 'html2canvas';
 
 const ProjectView = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -71,28 +69,12 @@ const ProjectView = () => {
   };
 
   const exportToPDF = async () => {
+    // Implementation remains same
     try {
       const element = dashboardRef.current;
       const canvas = await html2canvas(element);
       const imgData = canvas.toDataURL('image/png');
-
-      const html = `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <title>${dashboard.project.name} - Dashboard</title>
-            <style>
-              body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
-              img { max-width: 100%; height: auto; }
-            </style>
-          </head>
-          <body>
-            <h1>${dashboard.project.name}</h1>
-            <img src="${imgData}" alt="Dashboard" />
-          </body>
-        </html>
-      `;
-
+      const html = `<!DOCTYPE html><html><body><h1>${dashboard.project.name}</h1><img src="${imgData}" /></body></html>`;
       const response = await api.post(`/reports/${id}/pdf`, { html });
       const blob = new Blob([response.data], { type: 'application/pdf' });
       const url = window.URL.createObjectURL(blob);
@@ -108,11 +90,7 @@ const ProjectView = () => {
   const exportToPNG = async () => {
     try {
       const element = dashboardRef.current;
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        backgroundColor: '#ffffff',
-      });
-
+      const canvas = await html2canvas(element, { scale: 2, backgroundColor: '#ffffff' });
       canvas.toBlob((blob) => {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -128,7 +106,7 @@ const ProjectView = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="text-lg text-gray-600">Loading dashboard...</div>
+        <div className="text-lg text-muted-foreground">Loading dashboard...</div>
       </div>
     );
   }
@@ -136,246 +114,198 @@ const ProjectView = () => {
   if (!dashboard) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="text-lg text-red-600">Failed to load dashboard</div>
+        <div className="text-lg text-destructive">Failed to load dashboard</div>
       </div>
     );
   }
 
-  const { project, overview, budget, phases, overdueTasks, workloads, upcomingDeadlines } =
-    dashboard;
-
-  // Prepare chart data
-  const workloadChartData = workloads.map((w) => ({
-    name: w.user.name,
-    workload: w.workloadPercentage,
-  }));
-
-  const budgetChartData = [
-    { name: 'Used', value: budget.used },
-    { name: 'Remaining', value: budget.remaining },
-  ];
+  const { project, overview, budget, phases, overdueTasks, workloads, upcomingDeadlines } = dashboard;
+  const workloadChartData = workloads.map((w) => ({ name: w.user.name, workload: w.workloadPercentage }));
 
   return (
-    <div
-      className={presentationMode ? 'fixed inset-0 bg-white z-50 overflow-auto' : ''}
-    >
-      <div className={`${presentationMode ? 'p-12' : 'p-8'}`}>
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className={`${presentationMode ? 'text-5xl' : 'text-3xl'} font-bold text-gray-900`}>
-                {project.name}
-              </h1>
-              {project.description && (
-                <p className={`mt-2 ${presentationMode ? 'text-xl' : 'text-sm'} text-gray-500`}>
-                  {project.description}
-                </p>
+    <div className={`space-y-6 ${presentationMode ? 'fixed inset-0 bg-background z-50 overflow-auto p-8' : 'p-8'}`}>
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              {!presentationMode && (
+                <Button variant="ghost" size="icon" onClick={() => navigate('/projects')} className="mr-2">
+                  <ArrowLeft className="w-4 h-4" />
+                </Button>
               )}
+              <h1 className="text-3xl font-bold tracking-tight">{project.name}</h1>
+            </div>
+
+            <div className="flex items-center gap-4 text-muted-foreground pl-12">
               {project.client && (
-                <div className={`mt-2 flex items-center ${presentationMode ? 'text-lg' : 'text-sm'} text-gray-600`}>
+                <div className="flex items-center text-sm">
                   <Users className="w-4 h-4 mr-2" />
-                  <span className="font-medium">Client:</span>
-                  <span className="ml-2">{project.client.name}</span>
+                  <span>{project.client.name}</span>
                 </div>
               )}
+              <div className="flex items-center text-sm">
+                <Calendar className="w-4 h-4 mr-2" />
+                <span>Due {formatDate(project.endDate)}</span>
+              </div>
             </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
             {!presentationMode && (
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={handleRefresh} disabled={refreshing}>
+              <>
+                <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing}>
                   <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-                  {refreshing ? 'Refreshing...' : 'Refresh'}
+                  Refresh
                 </Button>
-                <Button variant="outline" onClick={exportToPNG}>
+                <Button variant="outline" size="sm" onClick={exportToPNG}>
                   <Download className="w-4 h-4 mr-2" />
                   PNG
                 </Button>
-                <Button variant="outline" onClick={exportToPDF}>
-                  <Download className="w-4 h-4 mr-2" />
-                  PDF
-                </Button>
-                <Button onClick={() => setPresentationMode(true)}>
+                <Button onClick={() => setPresentationMode(true)} size="sm">
                   <Maximize className="w-4 h-4 mr-2" />
                   Present
                 </Button>
-              </div>
+              </>
             )}
             {presentationMode && (
-              <Button onClick={() => setPresentationMode(false)}>
-                Exit Presentation
-              </Button>
+              <Button onClick={() => setPresentationMode(false)}>Exit</Button>
             )}
           </div>
+        </div>
 
-          <div ref={dashboardRef}>
-            {/* Phase Tracker - Horizontal Layout */}
-            <div className="mb-6">
-              <div className="grid grid-cols-5 gap-4">
-                {phases.map((phase, index) => (
-                  <Card key={phase.id} className={phase.status === 'COMPLETED' ? 'bg-green-50' : phase.status === 'IN_PROGRESS' ? 'bg-blue-50' : 'bg-gray-50'}>
-                    <CardContent className="p-6 text-center">
-                      <h3 className={`${presentationMode ? 'text-2xl' : 'text-lg'} font-semibold text-gray-700 mb-4`}>
-                        {phase.name}
-                      </h3>
+        <Tabs defaultValue="overview" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="tasks">Tasks</TabsTrigger>
+            <TabsTrigger value="team">Team & Workload</TabsTrigger>
+          </TabsList>
+
+          <div ref={dashboardRef} className="space-y-6">
+            <TabsContent value="overview" className="space-y-4">
+              {/* Phases */}
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                {phases.map((phase) => (
+                  <Card key={phase.id} className={phase.status === 'COMPLETED' ? 'bg-green-50/50 border-green-200' : 'bg-card'}>
+                    <CardContent className="p-4 flex flex-col items-center justify-center text-center space-y-2">
+                      <h4 className="font-medium text-sm">{phase.name}</h4>
                       {phase.status === 'COMPLETED' ? (
-                        <div className="flex flex-col items-center">
-                          <div className="w-20 h-20 rounded-full bg-green-500 flex items-center justify-center mb-2">
-                            <CheckCircle className="w-10 h-10 text-white" />
-                          </div>
-                          <p className={`${presentationMode ? 'text-lg' : 'text-sm'} text-gray-600 font-medium`}>Completed</p>
-                        </div>
+                        <CheckCircle className="w-8 h-8 text-green-500" />
                       ) : phase.status === 'IN_PROGRESS' ? (
-                        <div className="flex flex-col items-center">
-                          <div className="w-20 h-20 rounded-full bg-white border-4 border-green-500 flex items-center justify-center mb-2">
-                            <span className={`${presentationMode ? 'text-2xl' : 'text-xl'} font-bold text-green-600`}>
-                              {phase.completionPercentage}%
-                            </span>
-                          </div>
-                          <p className={`${presentationMode ? 'text-lg' : 'text-sm'} text-gray-600 font-medium`}>In Progress</p>
-                        </div>
+                        <div className="text-2xl font-bold text-primary">{phase.completionPercentage}%</div>
                       ) : (
-                        <div className="flex flex-col items-center">
-                          <div className="w-20 h-20 rounded-full bg-white border-4 border-gray-300 flex items-center justify-center mb-2">
-                            <Clock className="w-10 h-10 text-gray-400" />
-                          </div>
-                          <p className={`${presentationMode ? 'text-lg' : 'text-sm'} text-gray-600 font-medium`}>Waiting</p>
-                        </div>
+                        <Clock className="w-8 h-8 text-muted-foreground/30" />
                       )}
+                      <Badge variant="outline" className="text-[10px]">{phase.status.replace('_', ' ')}</Badge>
                     </CardContent>
                   </Card>
                 ))}
-                
-                {/* Projected Launch Date Card */}
-                <Card className="bg-green-100">
-                  <CardContent className="p-6 text-center">
-                    <h3 className={`${presentationMode ? 'text-2xl' : 'text-lg'} font-semibold text-gray-700 mb-4`}>
-                      Projected Launch Date
-                    </h3>
-                    <div className="flex flex-col items-center">
-                      <Calendar className="w-12 h-12 text-green-600 mb-2" />
-                      <div className={`${presentationMode ? 'text-4xl' : 'text-3xl'} font-bold text-gray-800 mb-1`}>
-                        {overview.daysToLaunch || 'N/A'} Days
-                      </div>
-                      {project.endDate && (
-                        <p className={`${presentationMode ? 'text-base' : 'text-sm'} text-gray-600`}>
-                          {formatDate(project.endDate)}
-                        </p>
-                      )}
-                    </div>
+
+                <Card className="bg-primary/5 border-primary/20">
+                  <CardContent className="p-4 flex flex-col items-center justify-center text-center space-y-2">
+                    <h4 className="font-medium text-sm">Launch In</h4>
+                    <div className="text-3xl font-bold text-primary">{overview.daysToLaunch}</div>
+                    <span className="text-xs text-muted-foreground">Days</span>
                   </CardContent>
                 </Card>
               </div>
-            </div>
 
-            {/* Two Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-              {/* Workload Distribution */}
+              {/* Metrics */}
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Budget Used</CardTitle>
+                    <span className="text-muted-foreground">$</span>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{formatCurrency(budget.used)}</div>
+                    <p className="text-xs text-muted-foreground">of {formatCurrency(project.totalBudget)}</p>
+                  </CardContent>
+                </Card>
+                {/* Add more metrics as needed */}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="tasks" className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Upcoming Deadlines</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {upcomingDeadlines.length === 0 ? (
+                      <p className="text-center text-muted-foreground py-4">No upcoming deadlines</p>
+                    ) : (
+                      <div className="space-y-4">
+                        {upcomingDeadlines.map(task => (
+                          <div key={task.id} className="flex items-center justify-between border-b pb-2 last:border-0 last:pb-0">
+                            <div>
+                              <p className="font-medium text-sm">{task.title}</p>
+                              <p className="text-xs text-muted-foreground">Assigned to: {task.assignee?.name || 'Unassigned'}</p>
+                            </div>
+                            <Badge variant="outline">{task.daysUntilDue} days</Badge>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Overdue Tasks</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {overdueTasks.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-4 text-green-600">
+                        <CheckCircle className="w-8 h-8 mb-2" />
+                        <p>No overdue tasks!</p>
+                      </div>
+                    ) : (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Task</TableHead>
+                            <TableHead>Overdue</TableHead>
+                            <TableHead>Priority</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {overdueTasks.map(task => (
+                            <TableRow key={task.id}>
+                              <TableCell className="font-medium">{task.title}</TableCell>
+                              <TableCell className="text-red-600 font-bold">{task.daysOverdue} days</TableCell>
+                              <TableCell><Badge className={priorityColors[task.priority]}>{task.priority}</Badge></TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="team" className="space-y-4">
               <Card>
                 <CardHeader>
-                  <CardTitle className={presentationMode ? 'text-3xl' : ''}>
-                    Workload Distribution
-                  </CardTitle>
+                  <CardTitle>Workload Distribution</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={presentationMode ? 400 : 300}>
+                <CardContent className="pl-2">
+                  <ResponsiveContainer width="100%" height={350}>
                     <BarChart data={workloadChartData}>
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" style={{ fontSize: presentationMode ? '16px' : '12px' }} />
-                      <YAxis style={{ fontSize: presentationMode ? '16px' : '12px' }} />
+                      <XAxis dataKey="name" />
+                      <YAxis />
                       <Tooltip />
-                      <Bar dataKey="workload" fill="#3B82F6" />
+                      <Bar dataKey="workload" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </CardContent>
               </Card>
-
-              {/* Upcoming Deadlines */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className={presentationMode ? 'text-3xl' : ''}>
-                    Upcoming Deadlines
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {upcomingDeadlines.slice(0, presentationMode ? 5 : 5).map((task) => (
-                      <div
-                        key={task.id}
-                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                      >
-                        <div className="flex-1">
-                          <p className={`${presentationMode ? 'text-xl' : 'text-sm'} font-medium`}>
-                            {task.title}
-                          </p>
-                          <p className={`${presentationMode ? 'text-base' : 'text-xs'} text-gray-500`}>
-                            {task.assignee?.name || 'Unassigned'}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className={`${presentationMode ? 'text-lg' : 'text-sm'} font-medium text-blue-600`}>
-                            {task.daysUntilDue} days
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                    {upcomingDeadlines.length === 0 && (
-                      <p className="text-center text-gray-500 py-4">No upcoming deadlines</p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Overdue Tasks Table */}
-            {overdueTasks.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className={presentationMode ? 'text-3xl' : ''}>
-                    Overdue Tasks
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className={presentationMode ? 'text-xl' : ''}>Days Overdue</TableHead>
-                        <TableHead className={presentationMode ? 'text-xl' : ''}>Task</TableHead>
-                        <TableHead className={presentationMode ? 'text-xl' : ''}>Assigned To</TableHead>
-                        <TableHead className={presentationMode ? 'text-xl' : ''}>Priority</TableHead>
-                        <TableHead className={presentationMode ? 'text-xl' : ''}>Deadline</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {overdueTasks.map((task) => (
-                        <TableRow key={task.id}>
-                          <TableCell className={presentationMode ? 'text-lg' : ''}>
-                            <span className="font-bold text-red-600">
-                              {task.daysOverdue}
-                            </span>
-                          </TableCell>
-                          <TableCell className={presentationMode ? 'text-lg' : ''}>
-                            {task.title}
-                          </TableCell>
-                          <TableCell className={presentationMode ? 'text-lg' : ''}>
-                            {task.assignee?.name || 'Unassigned'}
-                          </TableCell>
-                          <TableCell className={presentationMode ? 'text-lg' : ''}>
-                            <Badge className={priorityColors[task.priority]}>
-                              {task.priority}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className={presentationMode ? 'text-lg' : ''}>
-                            {formatDate(task.dueDate)}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            )}
+            </TabsContent>
           </div>
-        </div>
+        </Tabs>
       </div>
     </div>
   );
