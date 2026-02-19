@@ -43,12 +43,15 @@ import {
   Search,
   Filter
 } from 'lucide-react';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 
 const Tasks = () => {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
   const [projectFilter, setProjectFilter] = useState('all');
+  const [managerFilter, setManagerFilter] = useState('');
+  const [priorityFilter, setPriorityFilter] = useState('');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [projects, setProjects] = useState([]);
   const [users, setUsers] = useState([]);
@@ -179,10 +182,39 @@ const Tasks = () => {
     }
   };
 
-  const filteredTasks = tasks.filter(task =>
-    task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (task.description && task.description.toLowerCase().includes(searchTerm.toLowerCase()))
+  // Build a lookup: projectId → manager info (from the projects list we already fetch)
+  const projectManagerMap = new Map(
+    projects.filter(p => p.manager).map(p => [p.id, p.manager])
   );
+
+  // Derive unique managers from projects
+  const managerOptions = [
+    { value: '', label: 'All Managers' },
+    ...Array.from(
+      new Map(
+        projects
+          .filter(p => p.manager)
+          .map(p => [p.manager.id, { value: p.manager.id, label: p.manager.name }])
+      ).values()
+    ),
+  ];
+
+  const priorityOptions = [
+    { value: '', label: 'All Priorities' },
+    { value: 'LOW', label: 'Low' },
+    { value: 'MEDIUM', label: 'Medium' },
+    { value: 'HIGH', label: 'High' },
+    { value: 'CRITICAL', label: 'Critical' },
+  ];
+
+  const filteredTasks = tasks.filter(task => {
+    const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (task.description && task.description.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesPriority = !priorityFilter || task.priority === priorityFilter;
+    const manager = projectManagerMap.get(task.project?.id);
+    const matchesManager = !managerFilter || manager?.id === managerFilter;
+    return matchesSearch && matchesPriority && matchesManager;
+  });
 
   if (loading) {
     return (
@@ -385,7 +417,7 @@ const Tasks = () => {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Tasks List</CardTitle>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -396,18 +428,30 @@ const Tasks = () => {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <Select value={projectFilter} onValueChange={setProjectFilter}>
-                <SelectTrigger className="w-[180px]">
-                  <Filter className="w-4 h-4 mr-2" />
-                  <SelectValue placeholder="Filter by Project" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Projects</SelectItem>
-                  {projects.map(p => (
-                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <SearchableSelect
+                options={[{ value: 'all', label: 'All Projects' }, ...projects.map(p => ({ value: p.id, label: p.name }))]}
+                value={projectFilter}
+                onChange={(val) => setProjectFilter(val || 'all')}
+                placeholder="All Projects"
+                searchPlaceholder="Search project..."
+                className="w-[180px]"
+              />
+              <SearchableSelect
+                options={managerOptions}
+                value={managerFilter}
+                onChange={setManagerFilter}
+                placeholder="All Managers"
+                searchPlaceholder="Search manager..."
+                className="w-[180px]"
+              />
+              <SearchableSelect
+                options={priorityOptions}
+                value={priorityFilter}
+                onChange={setPriorityFilter}
+                placeholder="All Priorities"
+                searchPlaceholder="Search priority..."
+                className="w-[160px]"
+              />
               <Select value={filter} onValueChange={setFilter}>
                 <SelectTrigger className="w-[150px]">
                   <Activity className="w-4 h-4 mr-2" />

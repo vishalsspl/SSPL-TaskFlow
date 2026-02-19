@@ -33,6 +33,7 @@ import {
 import { Plus, FolderKanban, Eye, Edit2, Trash2, Search, Filter } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 
 const ProjectsList = () => {
   const navigate = useNavigate();
@@ -56,6 +57,7 @@ const ProjectsList = () => {
   // Search and Filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [managerFilter, setManagerFilter] = useState('');
 
   useEffect(() => {
     fetchProjects();
@@ -157,11 +159,24 @@ const ProjectsList = () => {
     return colors[status] || 'secondary';
   };
 
+  // Derive unique managers from projects
+  const managerOptions = [
+    { value: '', label: 'All Managers' },
+    ...Array.from(
+      new Map(
+        projects
+          .filter(p => p.manager)
+          .map(p => [p.manager.id, { value: p.manager.id, label: p.manager.name }])
+      ).values()
+    ),
+  ];
+
   const filteredProjects = projects.filter(project => {
     const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (project.description && project.description.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesStatus = statusFilter === 'ALL' || project.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesManager = !managerFilter || project.manager?.id === managerFilter;
+    return matchesSearch && matchesStatus && matchesManager;
   });
 
   if (loading) {
@@ -335,7 +350,7 @@ const ProjectsList = () => {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>All Projects</CardTitle>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -346,6 +361,14 @@ const ProjectsList = () => {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
+              <SearchableSelect
+                options={managerOptions}
+                value={managerFilter}
+                onChange={setManagerFilter}
+                placeholder="All Managers"
+                searchPlaceholder="Search manager..."
+                className="w-[180px]"
+              />
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-[150px]">
                   <div className="flex items-center gap-2">
