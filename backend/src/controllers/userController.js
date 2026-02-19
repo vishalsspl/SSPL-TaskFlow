@@ -3,6 +3,18 @@ import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
+// Helper to get project IDs managed by a user
+const getManagerProjectIds = async (managerId, organizationId) => {
+  const projects = await prisma.project.findMany({
+    where: {
+      managerId,
+      organizationId,
+    },
+    select: { id: true },
+  });
+  return projects.map(p => p.id);
+};
+
 export const getUsers = async (req, res) => {
   const { pending } = req.query;
 
@@ -13,6 +25,42 @@ export const getUsers = async (req, res) => {
   // Filter for pending users if requested
   if (pending === 'true') {
     where.isApproved = false;
+  }
+
+  // If the requester is a MANAGER, restrict visibility
+  if (req.user.role === 'MANAGER' && pending !== 'true') {
+    // Managers should see:
+    // 1. Themselves
+    // 2. Members assigned to their projects
+    // 3. Other MANAGERS (optional, but good for context - let's keep them visible for now or restricting them if needed. 
+    //    User said "not anoter manager member", implying they shouldn't see *members* of other managers.
+    //    Let's strictly show only their own team + themselves + other managers (as colleagues) but NOT other managers' private members.)
+
+    // Actually, simply returning "All Users" for a manager exposes everyone.
+    // We need to valid constraint.
+    // Let's find projects managed by this user.
+    const managerProjectIds = await getManagerProjectIds(req.user.id, req.user.organizationId);
+
+    where.OR = [
+      { id: req.user.id }, // Themselves
+      { role: 'MANAGER' }, // Other managers (visible as colleagues)
+      { role: 'ADMIN' },   // Admins (visible)
+      // Members part of their projects
+      {
+        assignedTasks: {
+          some: {
+            projectId: { in: managerProjectIds }
+          }
+        }
+      },
+      {
+        workloads: {
+          some: {
+            projectId: { in: managerProjectIds }
+          }
+        }
+      }
+    ];
   }
 
   const users = await prisma.user.findMany({
@@ -211,6 +259,11 @@ export const approveUser = async (req, res) => {
 export const getManagedUsers = async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Authorization check: Managers can only view their own team
+    if (req.user.role === 'MANAGER' && req.user.id !== id) {
+      return res.status(403).json({ error: 'Unauthorized: Managers can only view their own team' });
+    }
 
     // Check if user exists and belongs to same organization
     const manager = await prisma.user.findUnique({

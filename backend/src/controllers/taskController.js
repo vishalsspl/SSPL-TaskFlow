@@ -27,6 +27,22 @@ export const getAllTasks = async (req, res) => {
     where.assignedTo = assignedTo;
   }
 
+  // If Manager, restrict visibility
+  if (req.user.role === 'MANAGER') {
+    // If a specific project is requested, we should check if they manage it OR if they have tasks in it?
+    // But `getAllTasks` is often called for the board view.
+    // Constraint: (Project is Managed By User) OR (Task is Assigned To User)
+
+    // We need to combine this with existing filters.
+    // Since `where` fields are ANDed, we need to be careful with OR.
+    // prisma `where` with AND/OR structure:
+
+    where.OR = [
+      { project: { managerId: req.user.id } },
+      { assignedTo: req.user.id }
+    ];
+  }
+
   const tasks = await prisma.task.findMany({
     where,
     include: {

@@ -3,10 +3,17 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export const getAllProjects = async (req, res) => {
+  const where = {
+    organizationId: req.user.organizationId,
+  };
+
+  // If Manager, only show projects they manage
+  if (req.user.role === 'MANAGER') {
+    where.managerId = req.user.id;
+  }
+
   const projects = await prisma.project.findMany({
-    where: {
-      organizationId: req.user.organizationId,
-    },
+    where,
     include: {
       client: {
         select: {

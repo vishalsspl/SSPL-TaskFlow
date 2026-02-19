@@ -53,6 +53,9 @@ const Team = () => {
   });
 
   useEffect(() => {
+    if (currentUser?.role === 'MANAGER') {
+      setSelectedManagerId(currentUser.id);
+    }
     fetchUsers();
     if (currentUser?.role === 'ADMIN') {
       fetchPendingUsers();
@@ -324,34 +327,38 @@ const Team = () => {
 
       {/* Navigation Buttons (Tabs style) */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2">
-        <Button
-          variant={selectedManagerId === 'ALL' ? 'default' : 'outline'}
-          onClick={() => setSelectedManagerId('ALL')}
-          className="gap-2"
-        >
-          <Layers className="w-4 h-4" />
-          All Members
-          <Badge variant="secondary" className="ml-1 bg-primary/20 text-primary-foreground/80 hover:bg-primary/30">{users.length}</Badge>
-        </Button>
-        <Button
-          variant={selectedManagerId === 'MANAGERS_LIST' ? 'default' : 'outline'}
-          onClick={() => setSelectedManagerId('MANAGERS_LIST')}
-          className="gap-2"
-        >
-          <Shield className="w-4 h-4" />
-          Managers
-          <Badge variant="secondary" className="ml-1 bg-primary/20 text-primary-foreground/80 hover:bg-primary/30">{managers.length}</Badge>
-        </Button>
-        {currentUser?.role === 'ADMIN' && pendingUsers.length > 0 && (
-          <Button
-            variant={selectedManagerId === 'PENDING' ? 'destructive' : 'outline'}
-            onClick={() => setSelectedManagerId('PENDING')}
-            className="gap-2 border-orange-200 hover:bg-orange-50 text-orange-700 hover:text-orange-800"
-          >
-            <UserCheck className="w-4 h-4" />
-            Pending
-            <Badge variant="secondary" className="ml-1 bg-white/20 text-inherit">{pendingUsers.length}</Badge>
-          </Button>
+        {currentUser?.role === 'ADMIN' && (
+          <>
+            <Button
+              variant={selectedManagerId === 'ALL' ? 'default' : 'outline'}
+              onClick={() => setSelectedManagerId('ALL')}
+              className="gap-2"
+            >
+              <Layers className="w-4 h-4" />
+              All Members
+              <Badge variant="secondary" className="ml-1 bg-primary/20 text-primary-foreground/80 hover:bg-primary/30">{users.length}</Badge>
+            </Button>
+            <Button
+              variant={selectedManagerId === 'MANAGERS_LIST' ? 'default' : 'outline'}
+              onClick={() => setSelectedManagerId('MANAGERS_LIST')}
+              className="gap-2"
+            >
+              <Shield className="w-4 h-4" />
+              Managers
+              <Badge variant="secondary" className="ml-1 bg-primary/20 text-primary-foreground/80 hover:bg-primary/30">{managers.length}</Badge>
+            </Button>
+            {pendingUsers.length > 0 && (
+              <Button
+                variant={selectedManagerId === 'PENDING' ? 'destructive' : 'outline'}
+                onClick={() => setSelectedManagerId('PENDING')}
+                className="gap-2 border-orange-200 hover:bg-orange-50 text-orange-700 hover:text-orange-800"
+              >
+                <UserCheck className="w-4 h-4" />
+                Pending
+                <Badge variant="secondary" className="ml-1 bg-white/20 text-inherit">{pendingUsers.length}</Badge>
+              </Button>
+            )}
+          </>
         )}
       </div>
 
