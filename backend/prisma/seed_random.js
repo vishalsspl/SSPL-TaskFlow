@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';js';
 
 const prisma = new PrismaClient();
 
@@ -20,7 +20,7 @@ const getRandomElement = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-const generateName = () => `${getRandomElement(FIRST_NAMES)} ${getRandomElement(LAST_NAMES)}`;
+const generateName = () => `${getRandomElement(FIRST_NAMES)} ${getRandomElement(LAST_NAMES)} `;
 
 const generateDate = (startOffsetDays, endOffsetDays) => {
     const date = new Date();
