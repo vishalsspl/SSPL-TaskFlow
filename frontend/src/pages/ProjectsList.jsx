@@ -34,8 +34,11 @@ import { Plus, FolderKanban, Eye, Edit2, Trash2, Search, Filter } from 'lucide-r
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { SearchableSelect } from '@/components/ui/searchable-select';
+import RichTextEditor from '@/components/ui/RichTextEditor';
+import { useAuthStore } from '@/store/authStore';
 
 const ProjectsList = () => {
+  const { user } = useAuthStore();
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -196,26 +199,28 @@ const ProjectsList = () => {
             Manage and track all your projects
           </p>
         </div>
-        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              New Project
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle>Create New Project</DialogTitle>
-              <DialogDescription>
-                Add a new project to your workspace. Click save when you're done.
-              </DialogDescription>
-            </DialogHeader>
-            <CreateProjectForm
-              onSuccess={handleCreateSuccess}
-              onCancel={() => setShowCreateDialog(false)}
-            />
-          </DialogContent>
-        </Dialog>
+        {user?.role !== 'CLIENT' && (
+          <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="w-4 h-4 mr-2" />
+                New Project
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px]">
+              <DialogHeader>
+                <DialogTitle>Create New Project</DialogTitle>
+                <DialogDescription>
+                  Add a new project to your workspace. Click save when you're done.
+                </DialogDescription>
+              </DialogHeader>
+              <CreateProjectForm
+                onSuccess={handleCreateSuccess}
+                onCancel={() => setShowCreateDialog(false)}
+              />
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
@@ -260,12 +265,10 @@ const ProjectsList = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
-                <textarea
-                  id="description"
+                <RichTextEditor
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  rows={3}
+                  onChange={(value) => setFormData({ ...formData, description: value })}
+                  placeholder="Project description..."
                 />
               </div>
 
@@ -464,23 +467,25 @@ const ProjectsList = () => {
                       <span className="text-sm text-muted-foreground">{project._count.tasks}</span>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEdit(project)}
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(project.id, project.name)}
-                          className="text-destructive hover:text-destructive/90"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
+                      {user?.role !== 'CLIENT' && (
+                        <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEdit(project)}
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDelete(project.id, project.name)}
+                            className="text-destructive hover:text-destructive/90"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}

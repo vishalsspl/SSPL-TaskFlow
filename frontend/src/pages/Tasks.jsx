@@ -44,8 +44,11 @@ import {
   Filter
 } from 'lucide-react';
 import { SearchableSelect } from '@/components/ui/searchable-select';
+import RichTextEditor from '@/components/ui/RichTextEditor';
+import { useAuthStore } from '@/store/authStore';
 
 const Tasks = () => {
+  const { user } = useAuthStore();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -233,9 +236,11 @@ const Tasks = () => {
             View and manage tasks across all projects
           </p>
         </div>
-        <Button onClick={() => setShowCreateDialog(true)}>
-          <Plus className="w-4 h-4 mr-2" /> New Task
-        </Button>
+        {user?.role !== 'CLIENT' && (
+          <Button onClick={() => setShowCreateDialog(true)}>
+            <Plus className="w-4 h-4 mr-2" /> New Task
+          </Button>
+        )}
       </div>
 
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
@@ -392,13 +397,10 @@ const Tasks = () => {
             <div className="space-y-2">
               <Label htmlFor="description">Description (Optional)</Label>
               <div className="relative">
-                <textarea
-                  id="description"
+                <RichTextEditor
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  placeholder="Task details..."
-                  rows={3}
+                  onChange={(value) => setFormData({ ...formData, description: value })}
+                  placeholder="Task description..."
                 />
               </div>
             </div>
@@ -521,6 +523,7 @@ const Tasks = () => {
                       <Select
                         value={task.status}
                         onValueChange={(value) => handleStatusUpdate(task.id, value)}
+                        disabled={user?.role === 'CLIENT'}
                       >
                         <SelectTrigger className="h-8 w-[130px]">
                           <SelectValue />
@@ -549,7 +552,8 @@ const Tasks = () => {
                           step="5"
                           value={task.completionPercentage}
                           onChange={(e) => handleProgressUpdate(task.id, Number(e.target.value))}
-                          className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+                          disabled={user?.role === 'CLIENT'}
+                          className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary disabled:opacity-50 disabled:cursor-not-allowed"
                         />
                         <span className="text-xs font-medium w-8 text-right">
                           {task.completionPercentage}%
