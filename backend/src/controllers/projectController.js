@@ -12,6 +12,36 @@ const getProjectTeamMembers = async (projectId) => {
   return workloads.map(w => w.user);
 };
 
+/** Fetch general team members associated with a manager (from other projects) */
+const getManagerGeneralTeam = async (managerId, organizationId) => {
+  if (!managerId) return [];
+
+  // Find IDs of ALL projects managed by this manager
+  const projects = await prisma.project.findMany({
+    where: { managerId, organizationId },
+    select: { id: true }
+  });
+  const projectIds = projects.map(p => p.id);
+
+  if (projectIds.length === 0) return [];
+
+  // Find users who worked on these projects
+  const users = await prisma.user.findMany({
+    where: {
+      organizationId,
+      role: 'MEMBER',
+      OR: [
+        { workloads: { some: { projectId: { in: projectIds } } } },
+        { taskAssignments: { some: { task: { projectId: { in: projectIds } } } } }
+      ]
+    },
+    select: { id: true, name: true, email: true, role: true },
+    distinct: ['id']
+  });
+
+  return users;
+};
+
 
 export const getAllProjects = async (req, res) => {
   const where = {
@@ -236,7 +266,13 @@ export const createProject = async (req, res) => {
 
   // Send rich email notification to manager
   if (project.manager?.email) {
-    const teamMembers = await getProjectTeamMembers(project.id);
+    let teamMembers = await getProjectTeamMembers(project.id);
+
+    // Fallback: If no project team yet (new project), show Manager's general team
+    if (teamMembers.length === 0 && project.managerId) {
+      teamMembers = await getManagerGeneralTeam(project.managerId, req.user.organizationId);
+    }
+
     sendProjectManagerEmail(
       project.manager.email,
       project,
@@ -337,7 +373,12 @@ export const updateProject = async (req, res) => {
 
   // Send rich emails if manager or client changed
   if (isManagerChanged || isClientChanged) {
-    const teamMembers = await getProjectTeamMembers(project.id);
+    let teamMembers = await getProjectTeamMembers(project.id);
+
+    // Fallback: If no project team yet, show Manager's general team
+    if (teamMembers.length === 0 && project.managerId) {
+      teamMembers = await getManagerGeneralTeam(project.managerId, req.user.organizationId);
+    }
 
     if (project.manager?.email) {
       sendProjectManagerEmail(
