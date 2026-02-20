@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import api from '@/lib/api';
 import { Loader2, Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/authStore';
 import { Input } from '@/components/ui/input';
 import {
@@ -185,7 +186,7 @@ const TaskKanban = () => {
                     isReadOnly={isReadOnly}
                 />
             </div>
-        </div>
+        </div >
     );
 };
 
