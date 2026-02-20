@@ -206,13 +206,16 @@ const Team = () => {
     );
   }
 
-  // Derived state for managers
+  // Derived state for managers and clients
   const managers = users.filter(u => u.role === 'MANAGER');
+  const clients = users.filter(u => u.role === 'CLIENT');
 
   // Decide which users to show
   let displayUsers = users.filter(u => u.id !== currentUser?.id);
   if (selectedManagerId === 'MANAGERS_LIST') {
     displayUsers = managers.filter(u => u.id !== currentUser?.id);
+  } else if (selectedManagerId === 'CLIENTS_LIST') {
+    displayUsers = clients.filter(u => u.id !== currentUser?.id);
   } else if (selectedManagerId !== 'ALL' && selectedManagerId !== 'PENDING') {
     displayUsers = managerTeam.filter(u => u.id !== currentUser?.id);
   }
@@ -348,6 +351,15 @@ const Team = () => {
               <Shield className="w-4 h-4" />
               Managers
               <Badge variant="secondary" className="ml-1 bg-primary/20 text-primary-foreground/80 hover:bg-primary/30">{managers.length}</Badge>
+            </Button>
+            <Button
+              variant={selectedManagerId === 'CLIENTS_LIST' ? 'default' : 'outline'}
+              onClick={() => setSelectedManagerId('CLIENTS_LIST')}
+              className="gap-2"
+            >
+              <Users className="w-4 h-4" />
+              Clients
+              <Badge variant="secondary" className="ml-1 bg-primary/20 text-primary-foreground/80 hover:bg-primary/30">{clients.length}</Badge>
             </Button>
             {pendingUsers.length > 0 && (
               <Button
@@ -537,7 +549,9 @@ const Team = () => {
               <CardTitle>
                 {selectedManagerId === 'ALL'
                   ? 'All Members'
-                  : `${managers.find(m => m.id === selectedManagerId)?.name}'s Team`}
+                  : selectedManagerId === 'CLIENTS_LIST'
+                    ? 'All Clients'
+                    : `${managers.find(m => m.id === selectedManagerId)?.name}'s Team`}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
@@ -547,7 +561,7 @@ const Team = () => {
                     <TableHead>Member</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Role</TableHead>
-                    <TableHead>{selectedManagerId !== 'ALL' ? 'Clients' : 'Managers'}</TableHead>
+                    <TableHead>{selectedManagerId !== 'ALL' && selectedManagerId !== 'CLIENTS_LIST' ? 'Clients' : 'Managers'}</TableHead>
                     {currentUser?.role !== 'CLIENT' && currentUser?.role !== 'MEMBER' && <TableHead className="text-right">Actions</TableHead>}
                   </TableRow>
                 </TableHeader>
@@ -575,7 +589,7 @@ const Team = () => {
                           <Badge variant={getRoleBadgeColor(user.role)}>{user.role}</Badge>
                         </TableCell>
                         <TableCell>
-                          {selectedManagerId !== 'ALL' ? (
+                          {selectedManagerId !== 'ALL' && selectedManagerId !== 'CLIENTS_LIST' ? (
                             (user.clients && user.clients.length > 0) ? (
                               <div className="flex flex-wrap gap-1">
                                 {user.clients.map((client, idx) => (

@@ -108,14 +108,13 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
                     <Label htmlFor="client" className="text-gray-700 font-medium">Client</Label>
                     <div className="relative">
                         <Users className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 z-10" />
-                        <div className="pl-9">
-                            <SearchableSelect
-                                options={clients.map(c => ({ label: c.name, value: c.id }))}
-                                value={formData.clientId}
-                                onChange={(value) => setFormData({ ...formData, clientId: value })}
-                                placeholder="Select Client (Opt)"
-                            />
-                        </div>
+                        <SearchableSelect
+                            options={clients.map(c => ({ label: c.name, value: c.id }))}
+                            value={formData.clientId}
+                            onChange={(value) => setFormData({ ...formData, clientId: value })}
+                            placeholder="Select Client (Opt)"
+                            className="pl-9"
+                        />
                     </div>
                 </div>
 
@@ -123,14 +122,13 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
                     <Label htmlFor="manager" className="text-gray-700 font-medium">Project Manager</Label>
                     <div className="relative">
                         <Briefcase className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 z-10" />
-                        <div className="pl-9">
-                            <SearchableSelect
-                                options={managers.map(m => ({ label: m.name, value: m.id }))}
-                                value={formData.managerId}
-                                onChange={(value) => setFormData({ ...formData, managerId: value })}
-                                placeholder="Select Manager (Opt)"
-                            />
-                        </div>
+                        <SearchableSelect
+                            options={managers.map(m => ({ label: m.name, value: m.id }))}
+                            value={formData.managerId}
+                            onChange={(value) => setFormData({ ...formData, managerId: value })}
+                            placeholder="Select Manager (Opt)"
+                            className="pl-9"
+                        />
                     </div>
                 </div>
 
@@ -138,20 +136,19 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
                     <Label htmlFor="status" className="text-gray-700 font-medium">Status</Label>
                     <div className="relative">
                         <Target className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 z-10" />
-                        <div className="pl-9">
-                            <SearchableSelect
-                                options={[
-                                    { label: 'Planning', value: 'PLANNING' },
-                                    { label: 'Active', value: 'ACTIVE' },
-                                    { label: 'On Hold', value: 'ON_HOLD' },
-                                    { label: 'Completed', value: 'COMPLETED' },
-                                    { label: 'Cancelled', value: 'CANCELLED' }
-                                ]}
-                                value={formData.status}
-                                onChange={(value) => setFormData({ ...formData, status: value })}
-                                placeholder="Select Status"
-                            />
-                        </div>
+                        <SearchableSelect
+                            options={[
+                                { label: 'Planning', value: 'PLANNING' },
+                                { label: 'Active', value: 'ACTIVE' },
+                                { label: 'On Hold', value: 'ON_HOLD' },
+                                { label: 'Completed', value: 'COMPLETED' },
+                                { label: 'Cancelled', value: 'CANCELLED' }
+                            ]}
+                            value={formData.status}
+                            onChange={(value) => setFormData({ ...formData, status: value })}
+                            placeholder="Select Status"
+                            className="pl-9"
+                        />
                     </div>
                 </div>
 

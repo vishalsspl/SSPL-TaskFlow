@@ -61,6 +61,7 @@ const ProjectsList = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [managerFilter, setManagerFilter] = useState('');
+  const [clientFilter, setClientFilter] = useState('');
 
   useEffect(() => {
     fetchProjects();
@@ -162,25 +163,23 @@ const ProjectsList = () => {
     return colors[status] || 'secondary';
   };
 
-  // Derive unique managers from projects
-  const managerOptions = [
-    { value: '', label: 'All Managers' },
-    ...Array.from(
-      new Map(
-        projects
-          .filter(p => p.manager)
-          .map(p => [p.manager.id, { value: p.manager.id, label: p.manager.name }])
-      ).values()
-    ),
-  ];
-
   const filteredProjects = projects.filter(project => {
     const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (project.description && project.description.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesStatus = statusFilter === 'ALL' || project.status === statusFilter;
-    const matchesManager = !managerFilter || project.manager?.id === managerFilter;
-    return matchesSearch && matchesStatus && matchesManager;
+    const matchesManager = managerFilter ? project.manager?.id === managerFilter : true;
+    const matchesClient = clientFilter ? project.client?.id === clientFilter : true;
+    const matchesStatus = statusFilter === 'ALL' ? true : project.status === statusFilter;
+
+    return matchesSearch && matchesManager && matchesClient && matchesStatus;
   });
+
+  const managerOptions = users
+    .filter(u => u.role === 'MANAGER' || u.role === 'ADMIN')
+    .map(u => ({ label: u.name, value: u.id }));
+
+  const clientOptions = users
+    .filter(u => u.role === 'CLIENT')
+    .map(u => ({ label: u.name, value: u.id }));
 
   if (loading) {
     return (
@@ -207,7 +206,7 @@ const ProjectsList = () => {
                 New Project
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[600px]">
+            <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Create New Project</DialogTitle>
                 <DialogDescription>
@@ -224,7 +223,7 @@ const ProjectsList = () => {
       </div>
 
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Project</DialogTitle>
             <DialogDescription>
@@ -370,6 +369,14 @@ const ProjectsList = () => {
                 onChange={setManagerFilter}
                 placeholder="All Managers"
                 searchPlaceholder="Search manager..."
+                className="w-[180px]"
+              />
+              <SearchableSelect
+                options={clientOptions}
+                value={clientFilter}
+                onChange={setClientFilter}
+                placeholder="All Clients"
+                searchPlaceholder="Search client..."
                 className="w-[180px]"
               />
               <Select value={statusFilter} onValueChange={setStatusFilter}>

@@ -45,7 +45,7 @@ export function SearchableSelect({
                     className={cn("w-full justify-between font-normal", !value && "text-muted-foreground", className)}
                     disabled={disabled}
                 >
-                    {selectedLabel || placeholder}
+                    <span className="truncate flex-1 text-left">{selectedLabel || placeholder}</span>
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
