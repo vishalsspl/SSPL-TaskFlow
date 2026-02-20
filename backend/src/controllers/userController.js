@@ -161,10 +161,8 @@ export const getUsers = async (req, res) => {
       role: true,
       isApproved: true,
       avatar: true,
-      isApproved: true,
-      avatar: true,
       createdAt: true,
-      managerId: true, // Needed for frontend team check
+      managerId: true,
       // Include assignments to find managers
       taskAssignments: {
         select: {
@@ -410,14 +408,6 @@ export const getManagedUsers = async (req, res) => {
               },
             },
           },
-          {
-            workloads: {
-              some: {
-                projectId: {
-                  in: projectIds,
-                },
-              },
-            },
           {
             workloads: {
               some: {
