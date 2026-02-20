@@ -210,11 +210,11 @@ const Team = () => {
   const managers = users.filter(u => u.role === 'MANAGER');
 
   // Decide which users to show
-  let displayUsers = users;
+  let displayUsers = users.filter(u => u.id !== currentUser?.id);
   if (selectedManagerId === 'MANAGERS_LIST') {
-    displayUsers = managers;
+    displayUsers = managers.filter(u => u.id !== currentUser?.id);
   } else if (selectedManagerId !== 'ALL' && selectedManagerId !== 'PENDING') {
-    displayUsers = managerTeam;
+    displayUsers = managerTeam.filter(u => u.id !== currentUser?.id);
   }
 
   return (
@@ -398,126 +398,223 @@ const Team = () => {
         </div>
       )}
 
-      {selectedManagerId !== 'MANAGERS_LIST' && (selectedManagerId === 'PENDING' ? (
-        <Card className="border-orange-200 bg-orange-50/10">
-          <CardHeader>
-            <CardTitle className="text-orange-900">Pending Approvals</CardTitle>
-            <CardDescription>Review and approve new user signups</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {pendingUsers.map((pendingUser) => (
-                <div key={pendingUser.id} className="flex items-center justify-between p-4 bg-background rounded-lg border shadow-sm">
-                  <div className="flex items-center gap-4">
-                    <Avatar>
-                      <AvatarFallback>{pendingUser.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-medium">{pendingUser.name}</p>
-                      <p className="text-sm text-muted-foreground">{pendingUser.email}</p>
-                    </div>
-                    <Badge variant={getRoleBadgeColor(pendingUser.role)}>{pendingUser.role}</Badge>
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <Clock className="w-4 h-4 mr-1" />
-                      {new Date(pendingUser.createdAt).toLocaleDateString()}
-                    </div>
-                  </div>
-                  <Button
-                    onClick={() => handleApprove(pendingUser.id)}
-                    disabled={approving === pendingUser.id}
-                    size="sm"
-                  >
-                    {approving === pendingUser.id ? 'Approving...' : 'Approve'}
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              {selectedManagerId === 'ALL'
-                ? 'All Members'
-                : `${managers.find(m => m.id === selectedManagerId)?.name}'s Team`}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Member</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>{selectedManagerId !== 'ALL' ? 'Clients' : 'Managers'}</TableHead>
-                  {currentUser?.role !== 'CLIENT' && currentUser?.role !== 'MEMBER' && <TableHead className="text-right">Actions</TableHead>}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {displayUsers.length === 0 ? (
+      {/* Logic for MEMBER role: Split into Managers and Clients tables */}
+      {currentUser?.role === 'MEMBER' ? (
+        <div className="space-y-6">
+          {/* Managers Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle>My Managers</CardTitle>
+              <CardDescription>Managers associated with your projects</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                      No team members found
-                    </TableCell>
+                    <TableHead>Manager</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Role</TableHead>
                   </TableRow>
-                ) : (
-                  displayUsers.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-8 w-8">
-                            <AvatarImage src={user.avatar} />
-                            <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                          <span className="font-medium">{user.name}</span>
-                        </div>
+                </TableHeader>
+                <TableBody>
+                  {displayUsers.filter(u => u.role === 'MANAGER' || u.role === 'ADMIN').length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
+                        No managers found
                       </TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>
-                        <Badge variant={getRoleBadgeColor(user.role)}>{user.role}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        {selectedManagerId !== 'ALL' ? (
-                          (user.clients && user.clients.length > 0) ? (
-                            <div className="flex flex-wrap gap-1">
-                              {user.clients.map((client, idx) => (
-                                <Badge key={idx} variant="secondary" className="text-xs">{client}</Badge>
-                              ))}
-                            </div>
-                          ) : <span className="text-muted-foreground text-xs">-</span>
-                        ) : (
-                          (user.managers && user.managers.length > 0) ? (
-                            <div className="flex flex-wrap gap-1">
-                              {user.managers.map(manager => (
-                                <Badge key={manager.id} variant="secondary" className="text-xs">{manager.name}</Badge>
-                              ))}
-                            </div>
-                          ) : <span className="text-muted-foreground text-xs">-</span>
-                        )}
-                      </TableCell>
-                      {currentUser?.role !== 'CLIENT' && currentUser?.role !== 'MEMBER' && (
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <Button variant="ghost" size="icon" onClick={() => handleEdit(user)}>
-                              <Edit2 className="w-4 h-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDelete(user.id)} className="text-destructive hover:text-destructive/90">
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                    </TableRow>
+                  ) : (
+                    displayUsers.filter(u => u.role === 'MANAGER' || u.role === 'ADMIN').map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={user.avatar} />
+                              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium">{user.name}</span>
                           </div>
                         </TableCell>
-                      )}
+                        <TableCell>{user.email}</TableCell>
+                        <TableCell>
+                          <Badge variant={getRoleBadgeColor(user.role)}>{user.role}</Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          {/* Clients Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle>My Clients</CardTitle>
+              <CardDescription>Clients associated with your projects</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Client</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Role</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {displayUsers.filter(u => u.role === 'CLIENT').length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
+                        No clients found
+                      </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      ))
+                  ) : (
+                    displayUsers.filter(u => u.role === 'CLIENT').map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={user.avatar} />
+                              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium">{user.name}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>{user.email}</TableCell>
+                        <TableCell>
+                          <Badge variant={getRoleBadgeColor(user.role)}>{user.role}</Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        /* Existing Logic for ADMIN/MANAGER */
+        selectedManagerId !== 'MANAGERS_LIST' && (selectedManagerId === 'PENDING' ? (
+          <Card className="border-orange-200 bg-orange-50/10">
+            <CardHeader>
+              <CardTitle className="text-orange-900">Pending Approvals</CardTitle>
+              <CardDescription>Review and approve new user signups</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {pendingUsers.map((pendingUser) => (
+                  <div key={pendingUser.id} className="flex items-center justify-between p-4 bg-background rounded-lg border shadow-sm">
+                    <div className="flex items-center gap-4">
+                      <Avatar>
+                        <AvatarFallback>{pendingUser.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">{pendingUser.name}</p>
+                        <p className="text-sm text-muted-foreground">{pendingUser.email}</p>
+                      </div>
+                      <Badge variant={getRoleBadgeColor(pendingUser.role)}>{pendingUser.role}</Badge>
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <Clock className="w-4 h-4 mr-1" />
+                        {new Date(pendingUser.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => handleApprove(pendingUser.id)}
+                      disabled={approving === pendingUser.id}
+                      size="sm"
+                    >
+                      {approving === pendingUser.id ? 'Approving...' : 'Approve'}
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                {selectedManagerId === 'ALL'
+                  ? 'All Members'
+                  : `${managers.find(m => m.id === selectedManagerId)?.name}'s Team`}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Member</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>{selectedManagerId !== 'ALL' ? 'Clients' : 'Managers'}</TableHead>
+                    {currentUser?.role !== 'CLIENT' && currentUser?.role !== 'MEMBER' && <TableHead className="text-right">Actions</TableHead>}
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {displayUsers.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                        No team members found
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    displayUsers.map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={user.avatar} />
+                              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium">{user.name}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>{user.email}</TableCell>
+                        <TableCell>
+                          <Badge variant={getRoleBadgeColor(user.role)}>{user.role}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          {selectedManagerId !== 'ALL' ? (
+                            (user.clients && user.clients.length > 0) ? (
+                              <div className="flex flex-wrap gap-1">
+                                {user.clients.map((client, idx) => (
+                                  <Badge key={idx} variant="secondary" className="text-xs">{client}</Badge>
+                                ))}
+                              </div>
+                            ) : <span className="text-muted-foreground text-xs">-</span>
+                          ) : (
+                            (user.managers && user.managers.length > 0) ? (
+                              <div className="flex flex-wrap gap-1">
+                                {user.managers.map(manager => (
+                                  <Badge key={manager.id} variant="secondary" className="text-xs">{manager.name}</Badge>
+                                ))}
+                              </div>
+                            ) : <span className="text-muted-foreground text-xs">-</span>
+                          )}
+                        </TableCell>
+                        {currentUser?.role !== 'CLIENT' && currentUser?.role !== 'MEMBER' && (
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <Button variant="ghost" size="icon" onClick={() => handleEdit(user)}>
+                                <Edit2 className="w-4 h-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleDelete(user.id)} className="text-destructive hover:text-destructive/90">
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        )))
       }
-    </div >
+    </div>
   );
 };
 
