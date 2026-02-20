@@ -240,12 +240,11 @@ export const updateUser = async (req, res) => {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
-    // Prepare update data
-    const updateData = {
-      name,
-      role,
-      managerId,
-    };
+    // Build update payload - only include fields that are explicitly provided
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (role !== undefined) updateData.role = role;
+    if (managerId !== undefined) updateData.managerId = managerId;
 
     // Only hash and update password if provided
     if (password && password.trim() !== '') {

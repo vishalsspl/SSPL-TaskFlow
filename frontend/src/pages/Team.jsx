@@ -155,10 +155,12 @@ const Team = () => {
   const handleAddToTeam = async (userId) => {
     try {
       await api.put(`/users/${userId}`, { managerId: currentUser.id });
-      fetchUsers();
+      // Refresh the full user list (updates + button state) AND the manager's team list (updates team count)
+      await fetchUsers();
+      if (currentUser?.id) fetchManagerTeam(currentUser.id);
     } catch (error) {
       console.error('Failed to add user to team:', error);
-      alert('Failed to add user to team');
+      alert('Failed to add user to team: ' + (error.response?.data?.error || error.message));
     }
   };
 
