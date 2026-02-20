@@ -390,15 +390,17 @@ const Team = () => {
                   </Button>
                 )}
               </div>
-              <Button
-                variant={selectedManagerId === 'MANAGERS_LIST' ? 'default' : 'outline'}
-                onClick={() => setSelectedManagerId('MANAGERS_LIST')}
-                className="gap-2"
-              >
-                <Shield className="w-4 h-4" />
-                Managers
-                <Badge variant="secondary" className="ml-1 bg-primary/20 text-primary-foreground/80 hover:bg-primary/30">{managers.length}</Badge>
-              </Button>
+              {currentUser?.role === 'ADMIN' && (
+                <Button
+                  variant={selectedManagerId === 'MANAGERS_LIST' ? 'default' : 'outline'}
+                  onClick={() => setSelectedManagerId('MANAGERS_LIST')}
+                  className="gap-2"
+                >
+                  <Shield className="w-4 h-4" />
+                  Managers
+                  <Badge variant="secondary" className="ml-1 bg-primary/20 text-primary-foreground/80 hover:bg-primary/30">{managers.length}</Badge>
+                </Button>
+              )}
               <Button
                 variant={selectedManagerId === 'CLIENTS_LIST' ? 'default' : 'outline'}
                 onClick={() => setSelectedManagerId('CLIENTS_LIST')}
