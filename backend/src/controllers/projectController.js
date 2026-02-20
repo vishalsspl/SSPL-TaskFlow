@@ -1,6 +1,17 @@
 import { PrismaClient } from '@prisma/client';
+import { sendProjectManagerEmail, sendProjectClientEmail } from '../services/emailService.js';
 
 const prisma = new PrismaClient();
+
+/** Fetch team members (MEMBER/MANAGER roles) assigned to a project via Workload */
+const getProjectTeamMembers = async (projectId) => {
+  const workloads = await prisma.workload.findMany({
+    where: { projectId },
+    include: { user: { select: { id: true, name: true, email: true, role: true } } },
+  });
+  return workloads.map(w => w.user);
+};
+
 
 export const getAllProjects = async (req, res) => {
   const where = {
@@ -223,11 +234,29 @@ export const createProject = async (req, res) => {
     },
   });
 
-  // Send email notification to manager
+  // Send rich email notification to manager
   if (project.manager?.email) {
-    const senderName = req.user.name;
-    sendProjectAssignmentEmail(project.manager.email, project.name, senderName)
-      .catch(err => console.error('Failed to send project assignment email:', err));
+    const teamMembers = await getProjectTeamMembers(project.id);
+    sendProjectManagerEmail(
+      project.manager.email,
+      project,
+      project.manager,
+      project.client || null,
+      teamMembers,
+      req.user.name
+    ).catch(err => console.error('Failed to send manager project email:', err));
+  }
+
+  // Send rich email notification to client
+  if (project.client?.email) {
+    const teamMembers = await getProjectTeamMembers(project.id);
+    sendProjectClientEmail(
+      project.client.email,
+      project,
+      project.manager || null,
+      teamMembers,
+      req.user.name
+    ).catch(err => console.error('Failed to send client project email:', err));
   }
 
   res.status(201).json(project);
@@ -260,6 +289,7 @@ export const updateProject = async (req, res) => {
   }
 
   const isManagerChanged = managerId && managerId !== existingProject.managerId;
+  const isClientChanged = clientId && clientId !== existingProject.clientId;
 
   const project = await prisma.project.update({
     where: { id },
@@ -304,6 +334,32 @@ export const updateProject = async (req, res) => {
       entityId: project.id,
     },
   });
+
+  // Send rich emails if manager or client changed
+  if (isManagerChanged || isClientChanged) {
+    const teamMembers = await getProjectTeamMembers(project.id);
+
+    if (project.manager?.email) {
+      sendProjectManagerEmail(
+        project.manager.email,
+        project,
+        project.manager,
+        project.client || null,
+        teamMembers,
+        req.user.name
+      ).catch(err => console.error('Failed to send manager project email:', err));
+    }
+
+    if (project.client?.email) {
+      sendProjectClientEmail(
+        project.client.email,
+        project,
+        project.manager || null,
+        teamMembers,
+        req.user.name
+      ).catch(err => console.error('Failed to send client project email:', err));
+    }
+  }
 
   res.json(project);
 };
