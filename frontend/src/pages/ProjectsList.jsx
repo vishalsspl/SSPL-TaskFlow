@@ -173,13 +173,19 @@ const ProjectsList = () => {
     return matchesSearch && matchesManager && matchesClient && matchesStatus;
   });
 
-  const managerOptions = users
-    .filter(u => u.role === 'MANAGER' || u.role === 'ADMIN')
-    .map(u => ({ label: u.name, value: u.id }));
+  const managerOptions = [
+    { label: 'All Managers', value: '' },
+    ...users
+      .filter(u => u.role === 'MANAGER' || u.role === 'ADMIN')
+      .map(u => ({ label: u.name, value: u.id }))
+  ];
 
-  const clientOptions = users
-    .filter(u => u.role === 'CLIENT')
-    .map(u => ({ label: u.name, value: u.id }));
+  const clientOptions = [
+    { label: 'All Clients', value: '' },
+    ...users
+      .filter(u => u.role === 'CLIENT')
+      .map(u => ({ label: u.name, value: u.id }))
+  ];
 
   if (loading) {
     return (
