@@ -43,7 +43,6 @@ const Layout = () => {
     { name: 'Kanban Board', href: '/task-board', icon: Kanban },
     { name: 'Tasks', href: '/tasks', icon: CheckSquare },
     { name: 'Team', href: '/team', icon: Users, adminOnly: false }, // Changed based on role check in map
-    { name: 'Settings', href: '/settings', icon: Settings },
   ];
 
   const isActive = (path) => location.pathname.startsWith(path);

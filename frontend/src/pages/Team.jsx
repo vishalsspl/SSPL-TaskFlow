@@ -29,7 +29,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Users, Mail, Shield, Plus, Edit2, Trash2, UserCheck, Clock, Layers, Lock, User } from 'lucide-react';
+import { Users, Mail, Shield, Plus, Edit2, Trash2, UserCheck, Clock, Layers, Lock, User, Search } from 'lucide-react';
 
 const Team = () => {
   const { user: currentUser } = useAuthStore();
@@ -44,6 +44,7 @@ const Team = () => {
   const [selectedManagerId, setSelectedManagerId] = useState('ALL');
   const [managerTeam, setManagerTeam] = useState([]);
   const [loadingTeam, setLoadingTeam] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -209,6 +210,7 @@ const Team = () => {
   // Derived state for managers and clients
   const managers = users.filter(u => u.role === 'MANAGER');
   const clients = users.filter(u => u.role === 'CLIENT');
+  const members = users.filter(u => u.role === 'MEMBER');
 
   // Decide which users to show
   let displayUsers = users.filter(u => u.id !== currentUser?.id);
@@ -216,8 +218,18 @@ const Team = () => {
     displayUsers = managers.filter(u => u.id !== currentUser?.id);
   } else if (selectedManagerId === 'CLIENTS_LIST') {
     displayUsers = clients.filter(u => u.id !== currentUser?.id);
+  } else if (selectedManagerId === 'MEMBERS_LIST') {
+    displayUsers = members.filter(u => u.id !== currentUser?.id);
   } else if (selectedManagerId !== 'ALL' && selectedManagerId !== 'PENDING') {
     displayUsers = managerTeam.filter(u => u.id !== currentUser?.id);
+  }
+
+  // Apply search filter
+  if (searchTerm.trim()) {
+    const q = searchTerm.toLowerCase();
+    displayUsers = displayUsers.filter(
+      u => u.name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q)
+    );
   }
 
   return (
@@ -330,50 +342,70 @@ const Team = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Navigation Buttons (Tabs style) */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2">
-        {currentUser?.role === 'ADMIN' && (
-          <>
-            <Button
-              variant={selectedManagerId === 'ALL' ? 'default' : 'outline'}
-              onClick={() => setSelectedManagerId('ALL')}
-              className="gap-2"
-            >
-              <Layers className="w-4 h-4" />
-              All Members
-              <Badge variant="secondary" className="ml-1 bg-primary/20 text-primary-foreground/80 hover:bg-primary/30">{users.length}</Badge>
-            </Button>
-            <Button
-              variant={selectedManagerId === 'MANAGERS_LIST' ? 'default' : 'outline'}
-              onClick={() => setSelectedManagerId('MANAGERS_LIST')}
-              className="gap-2"
-            >
-              <Shield className="w-4 h-4" />
-              Managers
-              <Badge variant="secondary" className="ml-1 bg-primary/20 text-primary-foreground/80 hover:bg-primary/30">{managers.length}</Badge>
-            </Button>
-            <Button
-              variant={selectedManagerId === 'CLIENTS_LIST' ? 'default' : 'outline'}
-              onClick={() => setSelectedManagerId('CLIENTS_LIST')}
-              className="gap-2"
-            >
-              <Users className="w-4 h-4" />
-              Clients
-              <Badge variant="secondary" className="ml-1 bg-primary/20 text-primary-foreground/80 hover:bg-primary/30">{clients.length}</Badge>
-            </Button>
-            {pendingUsers.length > 0 && (
+      {/* Navigation Buttons + Search */}
+      <div className="flex items-center justify-between gap-4 flex-wrap pb-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {currentUser?.role === 'ADMIN' && (
+            <>
               <Button
-                variant={selectedManagerId === 'PENDING' ? 'destructive' : 'outline'}
-                onClick={() => setSelectedManagerId('PENDING')}
-                className="gap-2 border-orange-200 hover:bg-orange-50 text-orange-700 hover:text-orange-800"
+                variant={selectedManagerId === 'ALL' ? 'default' : 'outline'}
+                onClick={() => setSelectedManagerId('ALL')}
+                className="gap-2"
               >
-                <UserCheck className="w-4 h-4" />
-                Pending
-                <Badge variant="secondary" className="ml-1 bg-white/20 text-inherit">{pendingUsers.length}</Badge>
+                <Layers className="w-4 h-4" />
+                All Members
+                <Badge variant="secondary" className="ml-1 bg-primary/20 text-primary-foreground/80 hover:bg-primary/30">{users.length}</Badge>
               </Button>
-            )}
-          </>
-        )}
+              <Button
+                variant={selectedManagerId === 'MANAGERS_LIST' ? 'default' : 'outline'}
+                onClick={() => setSelectedManagerId('MANAGERS_LIST')}
+                className="gap-2"
+              >
+                <Shield className="w-4 h-4" />
+                Managers
+                <Badge variant="secondary" className="ml-1 bg-primary/20 text-primary-foreground/80 hover:bg-primary/30">{managers.length}</Badge>
+              </Button>
+              <Button
+                variant={selectedManagerId === 'CLIENTS_LIST' ? 'default' : 'outline'}
+                onClick={() => setSelectedManagerId('CLIENTS_LIST')}
+                className="gap-2"
+              >
+                <Users className="w-4 h-4" />
+                Clients
+                <Badge variant="secondary" className="ml-1 bg-primary/20 text-primary-foreground/80 hover:bg-primary/30">{clients.length}</Badge>
+              </Button>
+              <Button
+                variant={selectedManagerId === 'MEMBERS_LIST' ? 'default' : 'outline'}
+                onClick={() => setSelectedManagerId('MEMBERS_LIST')}
+                className="gap-2"
+              >
+                <User className="w-4 h-4" />
+                Members
+                <Badge variant="secondary" className="ml-1 bg-primary/20 text-primary-foreground/80 hover:bg-primary/30">{members.length}</Badge>
+              </Button>
+              {pendingUsers.length > 0 && (
+                <Button
+                  variant={selectedManagerId === 'PENDING' ? 'destructive' : 'outline'}
+                  onClick={() => setSelectedManagerId('PENDING')}
+                  className="gap-2 border-orange-200 hover:bg-orange-50 text-orange-700 hover:text-orange-800"
+                >
+                  <UserCheck className="w-4 h-4" />
+                  Pending
+                  <Badge variant="secondary" className="ml-1 bg-white/20 text-inherit">{pendingUsers.length}</Badge>
+                </Button>
+              )}
+            </>
+          )}
+        </div>
+        <div className="relative">
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search name or email..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="pl-9 w-64"
+          />
+        </div>
       </div>
 
       {selectedManagerId === 'MANAGERS_LIST' && (
@@ -551,7 +583,9 @@ const Team = () => {
                   ? 'All Members'
                   : selectedManagerId === 'CLIENTS_LIST'
                     ? 'All Clients'
-                    : `${managers.find(m => m.id === selectedManagerId)?.name}'s Team`}
+                    : selectedManagerId === 'MEMBERS_LIST'
+                      ? 'Team Members'
+                      : `${managers.find(m => m.id === selectedManagerId)?.name}'s Team`}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
@@ -562,7 +596,7 @@ const Team = () => {
                     <TableHead>Email</TableHead>
                     <TableHead>Role</TableHead>
                     {selectedManagerId !== 'CLIENTS_LIST' && (
-                      <TableHead>{selectedManagerId !== 'ALL' ? 'Clients' : 'Managers'}</TableHead>
+                      <TableHead>{selectedManagerId !== 'ALL' && selectedManagerId !== 'MEMBERS_LIST' ? 'Clients' : 'Managers'}</TableHead>
                     )}
                     {currentUser?.role !== 'CLIENT' && currentUser?.role !== 'MEMBER' && <TableHead className="text-right">Actions</TableHead>}
                   </TableRow>
@@ -592,7 +626,7 @@ const Team = () => {
                         </TableCell>
                         {selectedManagerId !== 'CLIENTS_LIST' && (
                           <TableCell>
-                            {selectedManagerId !== 'ALL' ? (
+                            {selectedManagerId !== 'ALL' && selectedManagerId !== 'MEMBERS_LIST' ? (
                               (user.clients && user.clients.length > 0) ? (
                                 <div className="flex flex-wrap gap-1">
                                   {user.clients.map((client, idx) => (
