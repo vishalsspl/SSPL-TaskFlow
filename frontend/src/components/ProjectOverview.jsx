@@ -74,10 +74,10 @@ const ProjectOverview = ({ projectId }) => {
             {/* Project Header Info */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900">{project.name}</h2>
-                    <p className="text-gray-500">{project.description}</p>
+                    <h2 className="text-2xl font-bold text-foreground">{project.name}</h2>
+                    <p className="text-muted-foreground">{project.description}</p>
                     {project.client && (
-                        <div className="mt-1 flex items-center text-sm text-gray-600">
+                        <div className="mt-1 flex items-center text-sm text-muted-foreground">
                             <Users className="w-4 h-4 mr-2" />
                             <span className="font-medium">Client:</span>
                             <span className="ml-2">{project.client.name}</span>
@@ -85,7 +85,7 @@ const ProjectOverview = ({ projectId }) => {
                     )}
                 </div>
                 {project.endDate && (
-                    <div className="flex items-center text-sm text-gray-600 bg-gray-50 px-3 py-1 rounded-full border">
+                    <div className="flex items-center text-sm text-muted-foreground bg-muted px-3 py-1 rounded-full border">
                         <Calendar className="w-4 h-4 mr-2" />
                         <span>Due: {formatDate(project.endDate)}</span>
                     </div>
@@ -95,9 +95,9 @@ const ProjectOverview = ({ projectId }) => {
             {/* Phase Tracker */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 {phases.map((phase) => (
-                    <Card key={phase.id} className={phase.status === 'COMPLETED' ? 'bg-green-50' : phase.status === 'IN_PROGRESS' ? 'bg-blue-50' : 'bg-gray-50'}>
+                    <Card key={phase.id} className={phase.status === 'COMPLETED' ? 'bg-green-500/10 border-green-400/50' : phase.status === 'IN_PROGRESS' ? 'bg-blue-500/10 border-blue-400/50' : 'bg-muted/50'}>
                         <CardContent className="p-4 text-center">
-                            <h3 className="font-semibold text-gray-700 mb-2">{phase.name}</h3>
+                            <h3 className="font-semibold text-foreground mb-2">{phase.name}</h3>
                             {phase.status === 'COMPLETED' ? (
                                 <div className="flex flex-col items-center">
                                     <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center mb-1">
@@ -107,17 +107,17 @@ const ProjectOverview = ({ projectId }) => {
                                 </div>
                             ) : phase.status === 'IN_PROGRESS' ? (
                                 <div className="flex flex-col items-center">
-                                    <div className="w-12 h-12 rounded-full bg-white border-2 border-green-500 flex items-center justify-center mb-1">
+                                    <div className="w-12 h-12 rounded-full bg-card border-2 border-green-500 flex items-center justify-center mb-1">
                                         <span className="text-sm font-bold text-green-600">{phase.completionPercentage}%</span>
                                     </div>
                                     <p className="text-xs text-blue-700 font-medium">In Progress</p>
                                 </div>
                             ) : (
                                 <div className="flex flex-col items-center">
-                                    <div className="w-12 h-12 rounded-full bg-white border-2 border-gray-300 flex items-center justify-center mb-1">
-                                        <Clock className="w-6 h-6 text-gray-400" />
+                                    <div className="w-12 h-12 rounded-full bg-card border-2 border-border flex items-center justify-center mb-1">
+                                        <Clock className="w-6 h-6 text-muted-foreground" />
                                     </div>
-                                    <p className="text-xs text-gray-500 font-medium">Waiting</p>
+                                    <p className="text-xs text-muted-foreground font-medium">Waiting</p>
                                 </div>
                             )}
                         </CardContent>
@@ -126,12 +126,12 @@ const ProjectOverview = ({ projectId }) => {
                 {/* Projected Launch Date Card */}
                 <Card className="bg-green-50 border-green-200">
                     <CardContent className="p-4 text-center">
-                        <h3 className="font-semibold text-gray-700 mb-2">
+                        <h3 className="font-semibold text-foreground mb-2">
                             Projected Launch
                         </h3>
                         <div className="flex flex-col items-center">
                             <Calendar className="w-8 h-8 text-green-600 mb-1" />
-                            <div className="text-xl font-bold text-gray-800">
+                            <div className="text-xl font-bold text-foreground">
                                 {overview.daysToLaunch || 'N/A'} Days
                             </div>
                         </div>
@@ -166,10 +166,10 @@ const ProjectOverview = ({ projectId }) => {
                     <CardContent>
                         <div className="space-y-2">
                             {upcomingDeadlines.slice(0, 3).map((task) => (
-                                <div key={task.id} className="flex items-center justify-between p-2 bg-gray-50 rounded text-sm">
+                                <div key={task.id} className="flex items-center justify-between p-2 bg-muted rounded text-sm">
                                     <div className="truncate mr-2">
                                         <p className="font-medium truncate">{task.title}</p>
-                                        <p className="text-xs text-gray-500">{task.assignee?.name || 'Unassigned'}</p>
+                                        <p className="text-xs text-muted-foreground">{task.assignee?.name || 'Unassigned'}</p>
                                     </div>
                                     <div className="whitespace-nowrap">
                                         <span className="text-blue-600 font-medium">{task.daysUntilDue} days</span>
@@ -177,7 +177,7 @@ const ProjectOverview = ({ projectId }) => {
                                 </div>
                             ))}
                             {upcomingDeadlines.length === 0 && (
-                                <p className="text-center text-gray-500 py-4 text-sm">No upcoming deadlines</p>
+                                <p className="text-center text-muted-foreground py-4 text-sm">No upcoming deadlines</p>
                             )}
                         </div>
                     </CardContent>

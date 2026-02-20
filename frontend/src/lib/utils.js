@@ -18,16 +18,16 @@ export const formatCurrency = (amount) => {
 };
 
 export const priorityColors = {
-  LOW: 'bg-blue-100 text-blue-700 hover:bg-blue-200',
-  MEDIUM: 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200',
-  HIGH: 'bg-orange-100 text-orange-700 hover:bg-orange-200',
-  CRITICAL: 'bg-red-100 text-red-700 hover:bg-red-200',
+  LOW: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 hover:bg-blue-500/25',
+  MEDIUM: 'bg-yellow-500/15 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-500/25',
+  HIGH: 'bg-orange-500/15 text-orange-600 dark:text-orange-400 hover:bg-orange-500/25',
+  CRITICAL: 'bg-red-500/15 text-red-600 dark:text-red-400 hover:bg-red-500/25',
 };
 
 export const statusColors = {
-  TODO: 'bg-gray-100 text-gray-700 hover:bg-gray-200',
-  IN_PROGRESS: 'bg-blue-100 text-blue-700 hover:bg-blue-200',
-  IN_REVIEW: 'bg-purple-100 text-purple-700 hover:bg-purple-200',
-  COMPLETED: 'bg-green-100 text-green-700 hover:bg-green-200',
-  BLOCKED: 'bg-red-100 text-red-700 hover:bg-red-200',
+  TODO: 'bg-muted text-muted-foreground hover:bg-muted/80',
+  IN_PROGRESS: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 hover:bg-blue-500/25',
+  IN_REVIEW: 'bg-purple-500/15 text-purple-600 dark:text-purple-400 hover:bg-purple-500/25',
+  COMPLETED: 'bg-green-500/15 text-green-600 dark:text-green-400 hover:bg-green-500/25',
+  BLOCKED: 'bg-red-500/15 text-red-600 dark:text-red-400 hover:bg-red-500/25',
 };

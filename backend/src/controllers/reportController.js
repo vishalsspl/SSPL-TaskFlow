@@ -36,7 +36,11 @@ export const exportToPDF = async (req, res) => {
     res.send(pdf);
   } catch (error) {
     console.error('PDF generation error:', error);
-    res.status(500).json({ error: 'Failed to generate PDF' });
+    res.status(500).json({
+      error: 'Failed to generate PDF',
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 };
 
@@ -75,6 +79,10 @@ export const exportToPNG = async (req, res) => {
     res.send(screenshot);
   } catch (error) {
     console.error('PNG generation error:', error);
-    res.status(500).json({ error: 'Failed to generate PNG' });
+    res.status(500).json({
+      error: 'Failed to generate PNG',
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 };

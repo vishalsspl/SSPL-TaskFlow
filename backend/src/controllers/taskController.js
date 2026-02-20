@@ -43,6 +43,14 @@ export const getAllTasks = async (req, res) => {
     ];
   }
 
+  // If Client, only show tasks from their projects
+  if (req.user.role === 'CLIENT') {
+    where.project = {
+      ...where.project,
+      clientId: req.user.id
+    };
+  }
+
   const tasks = await prisma.task.findMany({
     where,
     include: {
@@ -110,6 +118,8 @@ export const getTask = async (req, res) => {
 
   res.json(task);
 };
+
+import { sendTaskAssignmentEmail } from '../services/emailService.js';
 
 export const createTask = async (req, res) => {
   const {
@@ -190,6 +200,15 @@ export const createTask = async (req, res) => {
     },
   });
 
+  // Send email notification if assigned
+  if (task.assignee?.email) {
+    const senderName = req.user.name; // user creating the task
+    // It's good practice not to await email sending to avoid blocking the response
+    // But for critical notifications, sometimes we want to ensure it's sent or logged
+    sendTaskAssignmentEmail(task.assignee.email, task.title, task.project.name, senderName)
+      .catch(err => console.error('Failed to send task assignment email:', err));
+  }
+
   res.status(201).json(task);
 };
 
@@ -215,11 +234,16 @@ export const updateTask = async (req, res) => {
         organizationId: req.user.organizationId,
       },
     },
+    include: {
+      assignee: true // get old assignee to check if changed
+    }
   });
 
   if (!existingTask) {
     return res.status(404).json({ error: 'Task not found' });
   }
+
+  const isReassigned = assignedTo && assignedTo !== existingTask.assignedTo;
 
   const task = await prisma.task.update({
     where: { id },
@@ -269,6 +293,13 @@ export const updateTask = async (req, res) => {
       details: { changes: req.body },
     },
   });
+
+  // Send email notification if reassigned
+  if (isReassigned && task.assignee?.email) {
+    const senderName = req.user.name;
+    sendTaskAssignmentEmail(task.assignee.email, task.title, task.project.name, senderName)
+      .catch(err => console.error('Failed to send task assignment email:', err));
+  }
 
   res.json(task);
 };

@@ -34,7 +34,7 @@ const KanbanCard = ({ task, isReadOnly }) => {
             <div
                 ref={setNodeRef}
                 style={style}
-                className="opacity-50 h-[150px] bg-gray-100 rounded-lg border border-dashed border-gray-300" // Placeholder style
+                className="opacity-50 h-[150px] bg-muted rounded-lg border border-dashed border-border"
             />
         );
     }
@@ -44,10 +44,9 @@ const KanbanCard = ({ task, isReadOnly }) => {
             <Card className="cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow duration-200">
                 <CardHeader className="p-4 pb-2 space-y-0">
                     <div className="flex justify-between items-start">
-                        <Badge variant="outline" className={`text-[10px] px-2 py-0.5 border-0 ${priorityColors[task.priority] || 'bg-gray-100 text-gray-600'}`}>
+                        <Badge variant="outline" className={`text-[10px] px-2 py-0.5 border-0 ${priorityColors[task.priority] || 'bg-muted text-muted-foreground'}`}>
                             {task.priority || 'NORMAL'}
                         </Badge>
-                        {/* You can add a menu or edit button here if needed */}
                     </div>
                 </CardHeader>
                 <CardContent className="p-4 pt-2">
@@ -68,8 +67,8 @@ const KanbanCard = ({ task, isReadOnly }) => {
                                     )}
                                 </div>
                             ) : (
-                                <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center">
-                                    <User className="w-3 h-3 text-gray-400" />
+                                <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center">
+                                    <User className="w-3 h-3 text-muted-foreground" />
                                 </div>
                             )}
                         </div>

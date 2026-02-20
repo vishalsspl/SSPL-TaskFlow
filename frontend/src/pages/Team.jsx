@@ -226,7 +226,7 @@ const Team = () => {
             Manage your organization's team members and structure
           </p>
         </div>
-        {currentUser?.role !== 'CLIENT' && (
+        {currentUser?.role !== 'CLIENT' && currentUser?.role !== 'MEMBER' && (
           <Button onClick={() => setShowDialog(true)}>
             <Plus className="w-4 h-4 mr-2" /> Add Member
           </Button>
@@ -451,7 +451,7 @@ const Team = () => {
                   <TableHead>Email</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>{selectedManagerId !== 'ALL' ? 'Clients' : 'Managers'}</TableHead>
-                  {currentUser?.role !== 'CLIENT' && <TableHead className="text-right">Actions</TableHead>}
+                  {currentUser?.role !== 'CLIENT' && currentUser?.role !== 'MEMBER' && <TableHead className="text-right">Actions</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -496,7 +496,7 @@ const Team = () => {
                           ) : <span className="text-muted-foreground text-xs">-</span>
                         )}
                       </TableCell>
-                      {currentUser?.role !== 'CLIENT' && (
+                      {currentUser?.role !== 'CLIENT' && currentUser?.role !== 'MEMBER' && (
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
                             <Button variant="ghost" size="icon" onClick={() => handleEdit(user)}>

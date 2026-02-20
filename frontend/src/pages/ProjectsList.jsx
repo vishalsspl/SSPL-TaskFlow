@@ -199,7 +199,7 @@ const ProjectsList = () => {
             Manage and track all your projects
           </p>
         </div>
-        {user?.role !== 'CLIENT' && (
+        {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
           <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
             <DialogTrigger asChild>
               <Button>
@@ -467,7 +467,7 @@ const ProjectsList = () => {
                       <span className="text-sm text-muted-foreground">{project._count.tasks}</span>
                     </TableCell>
                     <TableCell className="text-right">
-                      {user?.role !== 'CLIENT' && (
+                      {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
                         <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                           <Button
                             variant="ghost"

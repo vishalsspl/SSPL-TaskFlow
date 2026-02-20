@@ -236,7 +236,7 @@ const Tasks = () => {
             View and manage tasks across all projects
           </p>
         </div>
-        {user?.role !== 'CLIENT' && (
+        {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
           <Button onClick={() => setShowCreateDialog(true)}>
             <Plus className="w-4 h-4 mr-2" /> New Task
           </Button>
@@ -419,58 +419,58 @@ const Tasks = () => {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Tasks List</CardTitle>
-            <div className="flex items-center gap-2 flex-wrap">
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Search tasks..."
-                  className="w-[200px] pl-8"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <SearchableSelect
-                options={[{ value: 'all', label: 'All Projects' }, ...projects.map(p => ({ value: p.id, label: p.name }))]}
-                value={projectFilter}
-                onChange={(val) => setProjectFilter(val || 'all')}
-                placeholder="All Projects"
-                searchPlaceholder="Search project..."
-                className="w-[180px]"
-              />
-              <SearchableSelect
-                options={managerOptions}
-                value={managerFilter}
-                onChange={setManagerFilter}
-                placeholder="All Managers"
-                searchPlaceholder="Search manager..."
-                className="w-[180px]"
-              />
-              <SearchableSelect
-                options={priorityOptions}
-                value={priorityFilter}
-                onChange={setPriorityFilter}
-                placeholder="All Priorities"
-                searchPlaceholder="Search priority..."
-                className="w-[160px]"
-              />
-              <Select value={filter} onValueChange={setFilter}>
-                <SelectTrigger className="w-[150px]">
-                  <Activity className="w-4 h-4 mr-2" />
-                  <SelectValue placeholder="Filter Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="TODO">To Do</SelectItem>
-                  <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                  <SelectItem value="IN_REVIEW">In Review</SelectItem>
-                  <SelectItem value="COMPLETED">Completed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
         </CardHeader>
         <CardContent>
+          <div className="flex flex-wrap items-center gap-3 mb-6">
+            <div className="relative w-full sm:w-auto">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search tasks..."
+                className="pl-8 w-full sm:w-[250px]"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <SearchableSelect
+              options={[{ value: 'all', label: 'All Projects' }, ...projects.map(p => ({ value: p.id, label: p.name }))]}
+              value={projectFilter}
+              onChange={(val) => setProjectFilter(val || 'all')}
+              placeholder="All Projects"
+              searchPlaceholder="Search project..."
+              className="w-full sm:w-[200px]"
+            />
+            <SearchableSelect
+              options={managerOptions}
+              value={managerFilter}
+              onChange={setManagerFilter}
+              placeholder="All Managers"
+              searchPlaceholder="Search manager..."
+              className="w-full sm:w-[200px]"
+            />
+            <SearchableSelect
+              options={priorityOptions}
+              value={priorityFilter}
+              onChange={setPriorityFilter}
+              placeholder="All Priorities"
+              searchPlaceholder="Search priority..."
+              className="w-full sm:w-[160px]"
+            />
+            <Select value={filter} onValueChange={setFilter}>
+              <SelectTrigger className="w-full sm:w-[160px]">
+                <Activity className="w-4 h-4 mr-2" />
+                <SelectValue placeholder="Filter Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="TODO">To Do</SelectItem>
+                <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                <SelectItem value="IN_REVIEW">In Review</SelectItem>
+                <SelectItem value="COMPLETED">Completed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <Table>
             <TableHeader>
               <TableRow>
@@ -523,7 +523,7 @@ const Tasks = () => {
                       <Select
                         value={task.status}
                         onValueChange={(value) => handleStatusUpdate(task.id, value)}
-                        disabled={user?.role === 'CLIENT'}
+                        disabled={user?.role === 'CLIENT' || user?.role === 'MEMBER'}
                       >
                         <SelectTrigger className="h-8 w-[130px]">
                           <SelectValue />
@@ -552,7 +552,7 @@ const Tasks = () => {
                           step="5"
                           value={task.completionPercentage}
                           onChange={(e) => handleProgressUpdate(task.id, Number(e.target.value))}
-                          disabled={user?.role === 'CLIENT'}
+                          disabled={user?.role === 'CLIENT' || user?.role === 'MEMBER'}
                           className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary disabled:opacity-50 disabled:cursor-not-allowed"
                         />
                         <span className="text-xs font-medium w-8 text-right">

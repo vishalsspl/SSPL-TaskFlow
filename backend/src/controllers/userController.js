@@ -1,6 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
+import { sendUserApprovalEmail } from '../services/emailService.js';
+
 const prisma = new PrismaClient();
 
 // Helper to get project IDs managed by a user
@@ -60,6 +62,93 @@ export const getUsers = async (req, res) => {
           }
         }
       }
+    ];
+  }
+
+  // If the requester is a CLIENT, restrict visibility
+  if (req.user.role === 'CLIENT') {
+    // Clients should see:
+    // 1. Themselves
+    // 2. Managers of their projects
+    // 3. Team members assigned to their projects
+
+    // Find projects belonging to this client
+    const clientProjects = await prisma.project.findMany({
+      where: {
+        clientId: req.user.id,
+        organizationId: req.user.organizationId,
+      },
+      select: {
+        id: true,
+        managerId: true,
+      },
+    });
+
+    const projectIds = clientProjects.map(p => p.id);
+    const managerIds = clientProjects.map(p => p.managerId).filter(id => id !== null);
+
+    where.OR = [
+      { id: req.user.id }, // Themselves
+      { id: { in: managerIds } }, // Managers of their projects
+      // Members working on their projects
+      {
+        assignedTasks: {
+          some: {
+            projectId: { in: projectIds }
+          }
+        }
+      },
+      {
+        workloads: {
+          some: {
+            projectId: { in: projectIds }
+          }
+        }
+      }
+    ];
+  }
+
+  // If the requester is a MEMBER, restrict visibility
+  if (req.user.role === 'MEMBER') {
+    // Members should see:
+    // 1. Themselves
+    // 2. Managers of their projects
+    // 3. Clients of their projects
+
+    // Find projects where the member is assigned
+    const memberProjects = await prisma.project.findMany({
+      where: {
+        organizationId: req.user.organizationId,
+        OR: [
+          {
+            tasks: {
+              some: {
+                assignedTo: req.user.id
+              }
+            }
+          },
+          {
+            workloads: {
+              some: {
+                userId: req.user.id
+              }
+            }
+          }
+        ]
+      },
+      select: {
+        managerId: true,
+        clientId: true
+      }
+    });
+
+    const managerIds = memberProjects.map(p => p.managerId).filter(id => id !== null);
+    const clientIds = memberProjects.map(p => p.clientId).filter(id => id !== null);
+
+    where.OR = [
+      { id: req.user.id }, // Themselves
+      { id: { in: managerIds } }, // Managers
+      { id: { in: clientIds } }   // Clients
     ];
   }
 
@@ -248,6 +337,12 @@ export const approveUser = async (req, res) => {
         createdAt: true,
       },
     });
+
+    // Send approval email
+    if (approvedUser.email) {
+      sendUserApprovalEmail(approvedUser.email, approvedUser.name)
+        .catch(err => console.error('Failed to send approval email:', err));
+    }
 
     res.json(approvedUser);
   } catch (error) {

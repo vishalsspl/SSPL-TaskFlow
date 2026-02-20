@@ -4,13 +4,7 @@ import api from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Presentation, Eye, EyeOff } from 'lucide-react';
 
@@ -141,19 +135,16 @@ const Signup = () => {
 
             <div className="space-y-2">
               <Label htmlFor="role">Role</Label>
-              <Select
+              <SearchableSelect
                 value={formData.role}
-                onValueChange={(value) => setFormData({ ...formData, role: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="MANAGER">Manager</SelectItem>
-                  <SelectItem value="MEMBER">Member</SelectItem>
-                  <SelectItem value="CLIENT">Client</SelectItem>
-                </SelectContent>
-              </Select>
+                onChange={(value) => setFormData({ ...formData, role: value })}
+                options={[
+                  { label: 'Manager', value: 'MANAGER' },
+                  { label: 'Member', value: 'MEMBER' },
+                  { label: 'Client', value: 'CLIENT' }
+                ]}
+                placeholder="Select Role"
+              />
             </div>
 
             <Button type="submit" className="w-full" disabled={loading}>

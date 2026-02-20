@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '@/lib/api';
+import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,14 +10,18 @@ import {
     Calendar,
     DollarSign,
     Briefcase,
-    Target,
-    AlignLeft
+
+    Target
 } from 'lucide-react';
+import { SearchableSelect } from '@/components/ui/searchable-select';
+import RichTextEditor from '@/components/ui/RichTextEditor';
+
 
 const CreateProjectForm = ({ onSuccess, onCancel }) => {
     const [users, setUsers] = useState([]);
     const [clients, setClients] = useState([]);
     const [managers, setManagers] = useState([]);
+    const { toast } = useToast();
     const [formData, setFormData] = useState({
         name: '',
         description: '',
@@ -63,113 +68,94 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
             if (onSuccess) {
                 onSuccess(response.data);
             }
+            toast({
+                title: "Project created",
+                description: "New project has been created successfully.",
+            });
         } catch (error) {
             console.error('Failed to create project:', error);
-            alert('Failed to create project: ' + (error.response?.data?.error || error.message));
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: error.response?.data?.error || "Failed to create project",
+            });
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Left Column: Details */}
-                <div className="md:col-span-2 space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="name" className="text-gray-700 font-medium">Project Name <span className="text-red-500">*</span></Label>
-                        <div className="relative">
-                            <FileText className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                            <Input
-                                id="name"
-                                value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                placeholder="Enter project name"
-                                required
-                                className="pl-9 transition-all focus:ring-2 focus:ring-primary/20"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="description" className="text-gray-700 font-medium">Description</Label>
-                        <div className="relative">
-                            <AlignLeft className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                            <textarea
-                                id="description"
-                                value={formData.description}
-                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                placeholder="Enter project description"
-                                className="flex min-h-[120px] w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all focus:ring-2 focus:ring-primary/20"
-                                rows={5}
-                            />
-                        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Project Name - Full Width */}
+                <div className="md:col-span-3 space-y-2">
+                    <Label htmlFor="name" className="text-gray-700 font-medium">Project Name <span className="text-red-500">*</span></Label>
+                    <div className="relative">
+                        <FileText className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                        <Input
+                            id="name"
+                            value={formData.name}
+                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            placeholder="Enter project name"
+                            required
+                            className="pl-9 transition-all focus:ring-2 focus:ring-primary/20"
+                        />
                     </div>
                 </div>
 
-                {/* Right Column: Settings */}
-                <div className="space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="client" className="text-gray-700 font-medium">Client</Label>
-                        <div className="relative">
-                            <Users className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                            <select
-                                id="client"
+                {/* Row 2: Client, Manager, Status */}
+                <div className="space-y-2">
+                    <Label htmlFor="client" className="text-gray-700 font-medium">Client</Label>
+                    <div className="relative">
+                        <Users className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 z-10" />
+                        <div className="pl-9">
+                            <SearchableSelect
+                                options={clients.map(c => ({ label: c.name, value: c.id }))}
                                 value={formData.clientId}
-                                onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
-                                className="flex h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all focus:ring-2 focus:ring-primary/20"
-                            >
-                                <option value="">Select Client (Optional)</option>
-                                {clients.map((client) => (
-                                    <option key={client.id} value={client.id}>
-                                        {client.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="manager" className="text-gray-700 font-medium">Project Manager</Label>
-                        <div className="relative">
-                            <Briefcase className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                            <select
-                                id="manager"
-                                value={formData.managerId}
-                                onChange={(e) => setFormData({ ...formData, managerId: e.target.value })}
-                                className="flex h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all focus:ring-2 focus:ring-primary/20"
-                            >
-                                <option value="">Select Manager (Optional)</option>
-                                {managers.map((manager) => (
-                                    <option key={manager.id} value={manager.id}>
-                                        {manager.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="status" className="text-gray-700 font-medium">Status</Label>
-                        <div className="relative">
-                            <Target className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                            <select
-                                id="status"
-                                value={formData.status}
-                                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                                className="flex h-10 w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all focus:ring-2 focus:ring-primary/20"
-                            >
-                                <option value="PLANNING">Planning</option>
-                                <option value="ACTIVE">Active</option>
-                                <option value="ON_HOLD">On Hold</option>
-                                <option value="COMPLETED">Completed</option>
-                                <option value="CANCELLED">Cancelled</option>
-                            </select>
+                                onChange={(value) => setFormData({ ...formData, clientId: value })}
+                                placeholder="Select Client (Opt)"
+                            />
                         </div>
                     </div>
                 </div>
 
-                {/* Bottom Row: Dates & Budget - Spanning columns if needed or just filling grid */}
+                <div className="space-y-2">
+                    <Label htmlFor="manager" className="text-gray-700 font-medium">Project Manager</Label>
+                    <div className="relative">
+                        <Briefcase className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 z-10" />
+                        <div className="pl-9">
+                            <SearchableSelect
+                                options={managers.map(m => ({ label: m.name, value: m.id }))}
+                                value={formData.managerId}
+                                onChange={(value) => setFormData({ ...formData, managerId: value })}
+                                placeholder="Select Manager (Opt)"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="status" className="text-gray-700 font-medium">Status</Label>
+                    <div className="relative">
+                        <Target className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 z-10" />
+                        <div className="pl-9">
+                            <SearchableSelect
+                                options={[
+                                    { label: 'Planning', value: 'PLANNING' },
+                                    { label: 'Active', value: 'ACTIVE' },
+                                    { label: 'On Hold', value: 'ON_HOLD' },
+                                    { label: 'Completed', value: 'COMPLETED' },
+                                    { label: 'Cancelled', value: 'CANCELLED' }
+                                ]}
+                                value={formData.status}
+                                onChange={(value) => setFormData({ ...formData, status: value })}
+                                placeholder="Select Status"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Row 3: Dates & Budget */}
                 <div className="space-y-2">
                     <Label htmlFor="startDate" className="text-gray-700 font-medium">Start Date</Label>
                     <div className="relative">
@@ -210,6 +196,18 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
                             onChange={(e) => setFormData({ ...formData, totalBudget: e.target.value })}
                             placeholder="0.00"
                             className="pl-9 transition-all focus:ring-2 focus:ring-primary/20"
+                        />
+                    </div>
+                </div>
+
+                {/* Description - Full Width */}
+                <div className="md:col-span-3 space-y-2">
+                    <Label htmlFor="description" className="text-gray-700 font-medium">Description</Label>
+                    <div className="relative">
+                        <RichTextEditor
+                            value={formData.description}
+                            onChange={(value) => setFormData({ ...formData, description: value })}
+                            placeholder="Enter project description"
                         />
                     </div>
                 </div>

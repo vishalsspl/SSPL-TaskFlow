@@ -45,7 +45,7 @@ const Modal = ({ isOpen, onClose, title, children, className = '', size = 'md' }
             />
 
             <Card className={`relative w-full ${maxWidthClass} max-h-[95vh] overflow-y-auto shadow-xl z-20 ${className}`}>
-                <CardHeader className="flex flex-row items-center justify-between pb-2 sticky top-0 bg-white z-10 border-b">
+                <CardHeader className="flex flex-row items-center justify-between pb-2 sticky top-0 bg-card z-10 border-b">
                     <CardTitle className="text-xl font-semibold">{title}</CardTitle>
                     <Button
                         variant="ghost"

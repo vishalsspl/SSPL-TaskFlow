@@ -12,6 +12,42 @@ export const getAllProjects = async (req, res) => {
     where.managerId = req.user.id;
   }
 
+  // If Client, only show projects they are assigned to
+  if (req.user.role === 'CLIENT') {
+    where.clientId = req.user.id;
+  }
+
+  // If Member, only show projects they are assigned to (via tasks or workload)
+  if (req.user.role === 'MEMBER') {
+    where.OR = [
+      {
+        tasks: {
+          some: {
+            assignedTo: req.user.id
+          }
+        }
+      },
+      {
+        workloads: {
+          some: {
+            userId: req.user.id
+          }
+        }
+      },
+      {
+        phases: {
+          some: {
+            tasks: {
+              some: {
+                assignedTo: req.user.id
+              }
+            }
+          }
+        }
+      }
+    ];
+  }
+
   const projects = await prisma.project.findMany({
     where,
     include: {
@@ -151,7 +187,7 @@ export const createProject = async (req, res) => {
         select: {
           id: true,
           name: true,
-          email: true,
+          email: true, // Needed for email notification
           avatar: true,
         },
       },
@@ -188,6 +224,13 @@ export const createProject = async (req, res) => {
     },
   });
 
+  // Send email notification to manager
+  if (project.manager?.email) {
+    const senderName = req.user.name;
+    sendProjectAssignmentEmail(project.manager.email, project.name, senderName)
+      .catch(err => console.error('Failed to send project assignment email:', err));
+  }
+
   res.status(201).json(project);
 };
 
@@ -216,6 +259,8 @@ export const updateProject = async (req, res) => {
   if (!existingProject) {
     return res.status(404).json({ error: 'Project not found' });
   }
+
+  const isManagerChanged = managerId && managerId !== existingProject.managerId;
 
   const project = await prisma.project.update({
     where: { id },
