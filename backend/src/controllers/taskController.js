@@ -205,8 +205,13 @@ export const createTask = async (req, res) => {
     const senderName = req.user.name; // user creating the task
     // It's good practice not to await email sending to avoid blocking the response
     // But for critical notifications, sometimes we want to ensure it's sent or logged
-    sendTaskAssignmentEmail(task.assignee.email, task.title, task.project.name, senderName)
-      .catch(err => console.error('Failed to send task assignment email:', err));
+    sendTaskAssignmentEmail(
+      task.assignee.email,
+      task.title,
+      task.project.name,
+      senderName,
+      { priority: task.priority, dueDate: task.dueDate, status: task.status, description: task.description }
+    ).catch(err => console.error('Failed to send task assignment email:', err));
   }
 
   res.status(201).json(task);
@@ -297,8 +302,13 @@ export const updateTask = async (req, res) => {
   // Send email notification if reassigned
   if (isReassigned && task.assignee?.email) {
     const senderName = req.user.name;
-    sendTaskAssignmentEmail(task.assignee.email, task.title, task.project.name, senderName)
-      .catch(err => console.error('Failed to send task assignment email:', err));
+    sendTaskAssignmentEmail(
+      task.assignee.email,
+      task.title,
+      task.project.name,
+      senderName,
+      { priority: task.priority, dueDate: task.dueDate, status: task.status, description: task.description }
+    ).catch(err => console.error('Failed to send task assignment email:', err));
   }
 
   res.json(task);

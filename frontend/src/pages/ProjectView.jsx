@@ -35,6 +35,15 @@ import {
 } from 'lucide-react';
 import { formatCurrency, formatDate, priorityColors } from '@/lib/utils';
 import html2canvas from 'html2canvas';
+import { useAuthStore } from '@/store/authStore';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import CreateTaskForm from '@/components/CreateTaskForm';
 
 const ProjectView = () => {
   const { id } = useParams();
@@ -43,7 +52,10 @@ const ProjectView = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [presentationMode, setPresentationMode] = useState(false);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [users, setUsers] = useState([]);
   const dashboardRef = useRef(null);
+  const { user } = useAuthStore();
 
   useEffect(() => {
     fetchDashboard();
@@ -56,6 +68,13 @@ const ProjectView = () => {
       }
       const response = await api.get(`/dashboard/${id}`);
       setDashboard(response.data);
+
+      // Also fetch users for task assignment if not already loaded
+      if (users.length === 0) {
+        const usersResponse = await api.get('/users');
+        const teamMembers = usersResponse.data.filter(u => u.role !== 'CLIENT');
+        setUsers(teamMembers);
+      }
     } catch (error) {
       console.error('Failed to fetch dashboard:', error);
     } finally {
@@ -158,6 +177,14 @@ const ProjectView = () => {
                   <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
                   Refresh
                 </Button>
+
+                {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
+                  <Button size="sm" onClick={() => setShowCreateDialog(true)}>
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    New Task
+                  </Button>
+                )}
+
                 <Button variant="outline" size="sm" onClick={exportToPNG}>
                   <Download className="w-4 h-4 mr-2" />
                   PNG
@@ -307,6 +334,27 @@ const ProjectView = () => {
           </div>
         </Tabs>
       </div>
+
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create New Task</DialogTitle>
+            <DialogDescription>
+              Add a new task to <strong>{project.name}</strong>.
+            </DialogDescription>
+          </DialogHeader>
+          <CreateTaskForm
+            projects={[project]}
+            users={users}
+            initialProjectId={project.id}
+            onSuccess={() => {
+              setShowCreateDialog(false);
+              fetchDashboard(true);
+            }}
+            onCancel={() => setShowCreateDialog(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
