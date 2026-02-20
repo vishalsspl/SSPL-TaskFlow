@@ -428,7 +428,9 @@ const ProjectsList = () => {
                       <div>
                         <p className="font-medium text-foreground">{project.name}</p>
                         {project.description && (
-                          <p className="text-xs text-muted-foreground line-clamp-1">{project.description}</p>
+                          <p className="text-xs text-muted-foreground line-clamp-1">
+                            {project.description.replace(/<[^>]*>/g, '')}
+                          </p>
                         )}
                       </div>
                     </TableCell>

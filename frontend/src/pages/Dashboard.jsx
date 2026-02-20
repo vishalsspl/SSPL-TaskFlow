@@ -291,7 +291,7 @@ const Dashboard = () => {
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground line-clamp-1">
-                      {project.description}
+                      {project.description?.replace(/<[^>]*>/g, '')}
                     </p>
                     <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1">
                       <div className="flex items-center gap-1">

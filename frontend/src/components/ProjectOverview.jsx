@@ -75,7 +75,10 @@ const ProjectOverview = ({ projectId }) => {
             <div className="flex items-center justify-between">
                 <div>
                     <h2 className="text-2xl font-bold text-foreground">{project.name}</h2>
-                    <p className="text-muted-foreground">{project.description}</p>
+                    <div
+                        className="text-muted-foreground prose prose-sm max-w-none"
+                        dangerouslySetInnerHTML={{ __html: project.description }}
+                    />
                     {project.client && (
                         <div className="mt-1 flex items-center text-sm text-muted-foreground">
                             <Users className="w-4 h-4 mr-2" />
