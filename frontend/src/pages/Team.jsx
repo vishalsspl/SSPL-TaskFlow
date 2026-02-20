@@ -561,14 +561,16 @@ const Team = () => {
                     <TableHead>Member</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Role</TableHead>
-                    <TableHead>{selectedManagerId !== 'ALL' && selectedManagerId !== 'CLIENTS_LIST' ? 'Clients' : 'Managers'}</TableHead>
+                    {selectedManagerId !== 'CLIENTS_LIST' && (
+                      <TableHead>{selectedManagerId !== 'ALL' ? 'Clients' : 'Managers'}</TableHead>
+                    )}
                     {currentUser?.role !== 'CLIENT' && currentUser?.role !== 'MEMBER' && <TableHead className="text-right">Actions</TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {displayUsers.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={selectedManagerId === 'CLIENTS_LIST' ? 4 : 5} className="text-center py-8 text-muted-foreground">
                         No team members found
                       </TableCell>
                     </TableRow>
@@ -588,25 +590,27 @@ const Team = () => {
                         <TableCell>
                           <Badge variant={getRoleBadgeColor(user.role)}>{user.role}</Badge>
                         </TableCell>
-                        <TableCell>
-                          {selectedManagerId !== 'ALL' && selectedManagerId !== 'CLIENTS_LIST' ? (
-                            (user.clients && user.clients.length > 0) ? (
-                              <div className="flex flex-wrap gap-1">
-                                {user.clients.map((client, idx) => (
-                                  <Badge key={idx} variant="secondary" className="text-xs">{client}</Badge>
-                                ))}
-                              </div>
-                            ) : <span className="text-muted-foreground text-xs">-</span>
-                          ) : (
-                            (user.managers && user.managers.length > 0) ? (
-                              <div className="flex flex-wrap gap-1">
-                                {user.managers.map(manager => (
-                                  <Badge key={manager.id} variant="secondary" className="text-xs">{manager.name}</Badge>
-                                ))}
-                              </div>
-                            ) : <span className="text-muted-foreground text-xs">-</span>
-                          )}
-                        </TableCell>
+                        {selectedManagerId !== 'CLIENTS_LIST' && (
+                          <TableCell>
+                            {selectedManagerId !== 'ALL' ? (
+                              (user.clients && user.clients.length > 0) ? (
+                                <div className="flex flex-wrap gap-1">
+                                  {user.clients.map((client, idx) => (
+                                    <Badge key={idx} variant="secondary" className="text-xs">{client}</Badge>
+                                  ))}
+                                </div>
+                              ) : <span className="text-muted-foreground text-xs">-</span>
+                            ) : (
+                              (user.managers && user.managers.length > 0) ? (
+                                <div className="flex flex-wrap gap-1">
+                                  {user.managers.map(manager => (
+                                    <Badge key={manager.id} variant="secondary" className="text-xs">{manager.name}</Badge>
+                                  ))}
+                                </div>
+                              ) : <span className="text-muted-foreground text-xs">-</span>
+                            )}
+                          </TableCell>
+                        )}
                         {currentUser?.role !== 'CLIENT' && currentUser?.role !== 'MEMBER' && (
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-2">
@@ -628,7 +632,7 @@ const Team = () => {
           </Card>
         )))
       }
-    </div>
+    </div >
   );
 };
 
