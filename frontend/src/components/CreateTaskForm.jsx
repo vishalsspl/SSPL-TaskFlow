@@ -19,6 +19,7 @@ import {
     Tag,
     Briefcase
 } from 'lucide-react';
+import { MultiSearchableSelect } from '@/components/ui/multi-searchable-select';
 import RichTextEditor from '@/components/ui/RichTextEditor';
 import api from '@/lib/api';
 
@@ -28,7 +29,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
         phaseId: '',
         title: '',
         description: '',
-        assignedTo: '',
+        assigneeIds: [],
         status: 'TODO',
         priority: 'MEDIUM',
         completionPercentage: 0,
@@ -70,16 +71,17 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                 ...formData,
                 tags: formData.tags ? formData.tags.split(',').map(t => t.trim()) : [],
                 completionPercentage: Number(formData.completionPercentage),
+                assigneeIds: formData.assigneeIds,
             };
 
             await api.post('/tasks', payload);
 
             setFormData({
-                projectId: initialProjectId, // Reset to initial if provided
+                projectId: initialProjectId,
                 phaseId: '',
                 title: '',
                 description: '',
-                assignedTo: '',
+                assigneeIds: [],
                 status: 'TODO',
                 priority: 'MEDIUM',
                 completionPercentage: 0,
@@ -156,20 +158,13 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="assignee">Assign To</Label>
-                    <Select
-                        value={formData.assignedTo}
-                        onValueChange={(value) => setFormData({ ...formData, assignedTo: value })}
-                    >
-                        <SelectTrigger className="pl-9 relative">
-                            <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <SelectValue placeholder="Unassigned" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {users.map((u) => (
-                                <SelectItem key={u.id} value={u.id}>{u.name} ({u.role})</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <MultiSearchableSelect
+                        options={users.map(u => ({ value: u.id, label: `${u.name} (${u.role})` }))}
+                        value={formData.assigneeIds}
+                        onChange={(ids) => setFormData({ ...formData, assigneeIds: ids })}
+                        placeholder="Select assignees..."
+                        searchPlaceholder="Search team members..."
+                    />
                 </div>
 
                 <div className="space-y-2">

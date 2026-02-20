@@ -268,7 +268,7 @@ const ProjectView = () => {
                           <div key={task.id} className="flex items-center justify-between border-b pb-2 last:border-0 last:pb-0">
                             <div>
                               <p className="font-medium text-sm">{task.title}</p>
-                              <p className="text-xs text-muted-foreground">Assigned to: {task.assignee?.name || 'Unassigned'}</p>
+                              <p className="text-xs text-muted-foreground">Assigned to: {task.assignees?.map(a => a.user?.name).join(', ') || 'Unassigned'}</p>
                             </div>
                             <Badge variant="outline">{task.daysUntilDue} days</Badge>
                           </div>

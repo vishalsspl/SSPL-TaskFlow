@@ -296,17 +296,23 @@ const Tasks = () => {
                     </TableCell>
                     <TableCell className="text-sm">{task.project.name}</TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        {task.assignee ? (
-                          <>
-                            <Avatar className="h-6 w-6">
-                              <AvatarImage src={task.assignee.avatar} alt={task.assignee.name} />
-                              <AvatarFallback>{task.assignee.name.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <span className="text-sm">{task.assignee.name}</span>
-                          </>
+                      <div className="flex items-center gap-1 flex-wrap">
+                        {task.assignees && task.assignees.length > 0 ? (
+                          task.assignees.map(({ user }) => (
+                            <div key={user.id} className="flex items-center gap-1" title={user.name}>
+                              <Avatar className="h-6 w-6">
+                                <AvatarImage src={user.avatar} alt={user.name} />
+                                <AvatarFallback className="text-xs">{user.name.charAt(0)}</AvatarFallback>
+                              </Avatar>
+                            </div>
+                          ))
                         ) : (
                           <span className="text-muted-foreground text-sm">Unassigned</span>
+                        )}
+                        {task.assignees?.length > 0 && (
+                          <span className="text-sm text-muted-foreground ml-1">
+                            {task.assignees.map(a => a.user.name).join(', ')}
+                          </span>
                         )}
                       </div>
                     </TableCell>

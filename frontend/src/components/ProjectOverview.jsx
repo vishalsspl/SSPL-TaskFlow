@@ -169,7 +169,7 @@ const ProjectOverview = ({ projectId }) => {
                                 <div key={task.id} className="flex items-center justify-between p-2 bg-muted rounded text-sm">
                                     <div className="truncate mr-2">
                                         <p className="font-medium truncate">{task.title}</p>
-                                        <p className="text-xs text-muted-foreground">{task.assignee?.name || 'Unassigned'}</p>
+                                        <p className="text-xs text-muted-foreground">{task.assignees?.map(a => a.user?.name).join(', ') || 'Unassigned'}</p>
                                     </div>
                                     <div className="whitespace-nowrap">
                                         <span className="text-blue-600 font-medium">{task.daysUntilDue} days</span>
@@ -204,7 +204,7 @@ const ProjectOverview = ({ projectId }) => {
                                 {overdueTasks.slice(0, 5).map((task) => (
                                     <TableRow key={task.id}>
                                         <TableCell className="font-medium">{task.title}</TableCell>
-                                        <TableCell>{task.assignee?.name || 'Unassigned'}</TableCell>
+                                        <TableCell>{task.assignees?.map(a => a.user?.name).join(', ') || 'Unassigned'}</TableCell>
                                         <TableCell>
                                             <Badge className={priorityColors[task.priority]}>
                                                 {task.priority}

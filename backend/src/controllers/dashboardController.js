@@ -36,12 +36,11 @@ export const getDashboard = async (req, res) => {
   const tasks = await prisma.task.findMany({
     where: { projectId },
     include: {
-      assignee: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          avatar: true,
+      assignees: {
+        include: {
+          user: {
+            select: { id: true, name: true, email: true, avatar: true },
+          },
         },
       },
     },
@@ -66,18 +65,13 @@ export const getDashboard = async (req, res) => {
   // Get active members (users with tasks in this project)
   const activeMembers = await prisma.user.findMany({
     where: {
-      assignedTasks: {
+      taskAssignments: {
         some: {
-          projectId,
+          task: { projectId },
         },
       },
     },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      avatar: true,
-    },
+    select: { id: true, name: true, email: true, avatar: true },
     distinct: ['id'],
   });
 

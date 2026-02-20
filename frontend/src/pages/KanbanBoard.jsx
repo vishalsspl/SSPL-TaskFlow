@@ -149,7 +149,7 @@ const KanbanBoard = () => {
                         daysOverdue,
                         task: task.title,
                         deadline: dueDate.toISOString().split('T')[0],
-                        employee: task.assignee?.name || 'Unassigned',
+                        employee: task.assignees?.map(a => a.user.name).join(', ') || 'Unassigned',
                     };
                 })
                 .sort((a, b) => b.daysOverdue - a.daysOverdue)
@@ -165,13 +165,13 @@ const KanbanBoard = () => {
                     return dueDate >= today && dueDate <= new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000); // Next 14 days
                 })
                 .map(task => {
-                    const assignedUser = task.assignee;
-                    // Calculate workload as percentage (mock calculation based on task count)
-                    const userTasks = projectTasks.filter(t => t.assignee?.id === assignedUser?.id && t.status !== 'COMPLETED');
+                    const assigneeIds = task.assignees?.map(a => a.user.id) || [];
+                    const userTasks = projectTasks.filter(t => t.assignees?.some(a => assigneeIds.includes(a.user.id)) && t.status !== 'COMPLETED');
+                    const firstAssignee = task.assignees?.[0]?.user;
                     const workload = Math.min(100, userTasks.length * 15); // Rough estimate
 
                     return {
-                        employee: assignedUser?.name || 'Unassigned',
+                        employee: firstAssignee?.name || 'Unassigned',
                         task: task.title,
                         deadline: new Date(task.dueDate).toISOString().split('T')[0],
                         workload,
@@ -185,7 +185,7 @@ const KanbanBoard = () => {
             const workload = users
                 .filter(u => u.role !== 'CLIENT' && u.isApproved)
                 .map(user => {
-                    const userTasks = projectTasks.filter(t => t.assignee?.id === user.id && t.status !== 'COMPLETED');
+                    const userTasks = projectTasks.filter(t => t.assignees?.some(a => a.user.id === user.id) && t.status !== 'COMPLETED');
                     const workloadPercentage = Math.min(100, userTasks.length * 15); // Rough estimate
                     return {
                         employee: user.name,

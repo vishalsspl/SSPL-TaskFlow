@@ -23,7 +23,7 @@ export const getAllProjects = async (req, res) => {
       {
         tasks: {
           some: {
-            assignedTo: req.user.id
+            assignees: { some: { userId: req.user.id } }
           }
         }
       },
@@ -39,7 +39,7 @@ export const getAllProjects = async (req, res) => {
           some: {
             tasks: {
               some: {
-                assignedTo: req.user.id
+                assignees: { some: { userId: req.user.id } }
               }
             }
           }
@@ -114,12 +114,11 @@ export const getProject = async (req, res) => {
       },
       tasks: {
         include: {
-          assignee: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              avatar: true,
+          assignees: {
+            include: {
+              user: {
+                select: { id: true, name: true, email: true, avatar: true },
+              },
             },
           },
         },

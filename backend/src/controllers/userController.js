@@ -123,7 +123,7 @@ export const getUsers = async (req, res) => {
           {
             tasks: {
               some: {
-                assignedTo: req.user.id
+                assignees: { some: { userId: req.user.id } }
               }
             }
           },

@@ -56,14 +56,19 @@ const KanbanCard = ({ task, isReadOnly }) => {
 
                     <div className="flex items-center justify-between text-xs text-muted-foreground mt-3">
                         <div className="flex items-center gap-2">
-                            {task.assignee ? (
-                                <div className="flex items-center gap-1" title={task.assignee.name}>
-                                    {task.assignee.avatar ? (
-                                        <img src={task.assignee.avatar} alt={task.assignee.name} className="w-5 h-5 rounded-full" />
-                                    ) : (
-                                        <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
-                                            {task.assignee.name.charAt(0)}
-                                        </div>
+                            {task.assignees && task.assignees.length > 0 ? (
+                                <div className="flex -space-x-1" title={task.assignees.map(a => a.user.name).join(', ')}>
+                                    {task.assignees.slice(0, 3).map(({ user }) => (
+                                        user.avatar ? (
+                                            <img key={user.id} src={user.avatar} alt={user.name} className="w-5 h-5 rounded-full border border-background" />
+                                        ) : (
+                                            <div key={user.id} className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary border border-background">
+                                                {user.name.charAt(0)}
+                                            </div>
+                                        )
+                                    ))}
+                                    {task.assignees.length > 3 && (
+                                        <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center text-[10px] text-muted-foreground border border-background">+{task.assignees.length - 3}</div>
                                     )}
                                 </div>
                             ) : (

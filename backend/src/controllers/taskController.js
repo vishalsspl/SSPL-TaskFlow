@@ -11,73 +11,40 @@ export const getAllTasks = async (req, res) => {
     },
   };
 
-  if (projectId) {
-    where.projectId = projectId;
-  }
-
-  if (status) {
-    where.status = status;
-  }
-
-  if (priority) {
-    where.priority = priority;
-  }
-
+  if (projectId) where.projectId = projectId;
+  if (status) where.status = status;
+  if (priority) where.priority = priority;
   if (assignedTo) {
-    where.assignedTo = assignedTo;
+    where.assignees = { some: { userId: assignedTo } };
   }
 
   // If Manager, restrict visibility
   if (req.user.role === 'MANAGER') {
-    // If a specific project is requested, we should check if they manage it OR if they have tasks in it?
-    // But `getAllTasks` is often called for the board view.
-    // Constraint: (Project is Managed By User) OR (Task is Assigned To User)
-
-    // We need to combine this with existing filters.
-    // Since `where` fields are ANDed, we need to be careful with OR.
-    // prisma `where` with AND/OR structure:
-
     where.OR = [
       { project: { managerId: req.user.id } },
-      { assignedTo: req.user.id }
+      { assignees: { some: { userId: req.user.id } } },
     ];
   }
 
   // If Client, only show tasks from their projects
   if (req.user.role === 'CLIENT') {
-    where.project = {
-      ...where.project,
-      clientId: req.user.id
-    };
+    where.project = { ...where.project, clientId: req.user.id };
   }
 
   const tasks = await prisma.task.findMany({
     where,
     include: {
-      assignee: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          avatar: true,
+      assignees: {
+        include: {
+          user: {
+            select: { id: true, name: true, email: true, avatar: true },
+          },
         },
       },
-      project: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
-      phase: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
+      project: { select: { id: true, name: true } },
+      phase: { select: { id: true, name: true } },
     },
-    orderBy: {
-      createdAt: 'desc',
-    },
+    orderBy: { createdAt: 'desc' },
   });
 
   res.json(tasks);
@@ -87,34 +54,21 @@ export const getTask = async (req, res) => {
   const { id } = req.params;
 
   const task = await prisma.task.findFirst({
-    where: {
-      id,
-      project: {
-        organizationId: req.user.organizationId,
-      },
-    },
+    where: { id, project: { organizationId: req.user.organizationId } },
     include: {
-      assignee: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          avatar: true,
+      assignees: {
+        include: {
+          user: {
+            select: { id: true, name: true, email: true, avatar: true },
+          },
         },
       },
-      project: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
+      project: { select: { id: true, name: true } },
       phase: true,
     },
   });
 
-  if (!task) {
-    return res.status(404).json({ error: 'Task not found' });
-  }
+  if (!task) return res.status(404).json({ error: 'Task not found' });
 
   res.json(task);
 };
@@ -127,7 +81,7 @@ export const createTask = async (req, res) => {
     phaseId,
     title,
     description,
-    assignedTo,
+    assigneeIds,   // array of user IDs
     status,
     priority,
     completionPercentage,
@@ -139,56 +93,37 @@ export const createTask = async (req, res) => {
     return res.status(400).json({ error: 'Project ID and title are required' });
   }
 
-  // Verify project belongs to user's organization
   const project = await prisma.project.findFirst({
-    where: {
-      id: projectId,
-      organizationId: req.user.organizationId,
-    },
+    where: { id: projectId, organizationId: req.user.organizationId },
   });
-
-  if (!project) {
-    return res.status(404).json({ error: 'Project not found' });
-  }
+  if (!project) return res.status(404).json({ error: 'Project not found' });
 
   const task = await prisma.task.create({
     data: {
       projectId,
-      phaseId,
+      phaseId: phaseId || null,
       title,
       description,
-      assignedTo,
       status: status || 'TODO',
       priority: priority || 'MEDIUM',
       completionPercentage: completionPercentage || 0,
       dueDate: dueDate ? new Date(dueDate) : null,
       tags: tags || [],
+      assignees: {
+        create: (assigneeIds || []).map((userId) => ({ userId })),
+      },
     },
     include: {
-      assignee: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          avatar: true,
+      assignees: {
+        include: {
+          user: { select: { id: true, name: true, email: true, avatar: true } },
         },
       },
-      project: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
-      phase: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
+      project: { select: { id: true, name: true } },
+      phase: { select: { id: true, name: true } },
     },
   });
 
-  // Log activity
   await prisma.activityLog.create({
     data: {
       userId: req.user.id,
@@ -200,18 +135,18 @@ export const createTask = async (req, res) => {
     },
   });
 
-  // Send email notification if assigned
-  if (task.assignee?.email) {
-    const senderName = req.user.name; // user creating the task
-    // It's good practice not to await email sending to avoid blocking the response
-    // But for critical notifications, sometimes we want to ensure it's sent or logged
-    sendTaskAssignmentEmail(
-      task.assignee.email,
-      task.title,
-      task.project.name,
-      senderName,
-      { priority: task.priority, dueDate: task.dueDate, status: task.status, description: task.description }
-    ).catch(err => console.error('Failed to send task assignment email:', err));
+  // Send email to all assignees
+  const senderName = req.user.name;
+  for (const { user } of task.assignees) {
+    if (user?.email) {
+      sendTaskAssignmentEmail(
+        user.email,
+        task.title,
+        task.project.name,
+        senderName,
+        { priority: task.priority, dueDate: task.dueDate, status: task.status, description: task.description }
+      ).catch(err => console.error('Failed to send task assignment email:', err));
+    }
   }
 
   res.status(201).json(task);
@@ -222,7 +157,7 @@ export const updateTask = async (req, res) => {
   const {
     title,
     description,
-    assignedTo,
+    assigneeIds,   // array of user IDs or undefined
     status,
     priority,
     completionPercentage,
@@ -231,63 +166,45 @@ export const updateTask = async (req, res) => {
     phaseId,
   } = req.body;
 
-  // Verify task belongs to user's organization
   const existingTask = await prisma.task.findFirst({
-    where: {
-      id,
-      project: {
-        organizationId: req.user.organizationId,
-      },
-    },
-    include: {
-      assignee: true // get old assignee to check if changed
-    }
+    where: { id, project: { organizationId: req.user.organizationId } },
+    include: { assignees: { include: { user: true } } },
   });
+  if (!existingTask) return res.status(404).json({ error: 'Task not found' });
 
-  if (!existingTask) {
-    return res.status(404).json({ error: 'Task not found' });
-  }
-
-  const isReassigned = assignedTo && assignedTo !== existingTask.assignedTo;
+  const existingAssigneeIds = existingTask.assignees.map((a) => a.userId);
+  const newAssigneeIds = assigneeIds !== undefined ? assigneeIds : existingAssigneeIds;
+  const addedIds = newAssigneeIds.filter((uid) => !existingAssigneeIds.includes(uid));
 
   const task = await prisma.task.update({
     where: { id },
     data: {
       title,
       description,
-      assignedTo,
       status,
       priority,
       completionPercentage,
-      dueDate: dueDate ? new Date(dueDate) : undefined,
+      dueDate: dueDate !== undefined ? (dueDate ? new Date(dueDate) : null) : undefined,
       tags,
       phaseId,
+      ...(assigneeIds !== undefined && {
+        assignees: {
+          deleteMany: {},
+          create: newAssigneeIds.map((userId) => ({ userId })),
+        },
+      }),
     },
     include: {
-      assignee: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          avatar: true,
+      assignees: {
+        include: {
+          user: { select: { id: true, name: true, email: true, avatar: true } },
         },
       },
-      project: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
-      phase: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
+      project: { select: { id: true, name: true } },
+      phase: { select: { id: true, name: true } },
     },
   });
 
-  // Log activity
   await prisma.activityLog.create({
     data: {
       userId: req.user.id,
@@ -299,16 +216,20 @@ export const updateTask = async (req, res) => {
     },
   });
 
-  // Send email notification if reassigned
-  if (isReassigned && task.assignee?.email) {
+  // Email newly added assignees
+  if (addedIds.length > 0) {
     const senderName = req.user.name;
-    sendTaskAssignmentEmail(
-      task.assignee.email,
-      task.title,
-      task.project.name,
-      senderName,
-      { priority: task.priority, dueDate: task.dueDate, status: task.status, description: task.description }
-    ).catch(err => console.error('Failed to send task assignment email:', err));
+    for (const { user } of task.assignees.filter((a) => addedIds.includes(a.userId))) {
+      if (user?.email) {
+        sendTaskAssignmentEmail(
+          user.email,
+          task.title,
+          task.project.name,
+          senderName,
+          { priority: task.priority, dueDate: task.dueDate, status: task.status, description: task.description }
+        ).catch(err => console.error('Failed to send task assignment email:', err));
+      }
+    }
   }
 
   res.json(task);
@@ -351,7 +272,7 @@ export const getMyTasks = async (req, res) => {
 
     // If not admin, only show tasks assigned to the user
     if (!isAdmin) {
-      where.assignedTo = req.user.id;
+      where.assignees = { some: { userId: req.user.id } };
     }
 
     const tasks = await prisma.task.findMany({
@@ -363,12 +284,9 @@ export const getMyTasks = async (req, res) => {
             name: true,
           },
         },
-        assignee: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            avatar: true,
+        assignees: {
+          include: {
+            user: { select: { id: true, name: true, email: true, avatar: true } },
           },
         },
       },
