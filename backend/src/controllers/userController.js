@@ -49,9 +49,9 @@ export const getUsers = async (req, res) => {
       { role: 'ADMIN' },   // Admins (visible)
       // Members part of their projects
       {
-        assignedTasks: {
+        taskAssignments: {
           some: {
-            projectId: { in: managerProjectIds }
+            task: { projectId: { in: managerProjectIds } }
           }
         }
       },
@@ -92,9 +92,9 @@ export const getUsers = async (req, res) => {
       { id: { in: managerIds } }, // Managers of their projects
       // Members working on their projects
       {
-        assignedTasks: {
+        taskAssignments: {
           some: {
-            projectId: { in: projectIds }
+            task: { projectId: { in: projectIds } }
           }
         }
       },
@@ -163,12 +163,14 @@ export const getUsers = async (req, res) => {
       avatar: true,
       createdAt: true,
       // Include assignments to find managers
-      assignedTasks: {
+      taskAssignments: {
         select: {
-          project: {
+          task: {
             select: {
-              manager: {
-                select: { id: true, name: true }
+              project: {
+                select: {
+                  manager: { select: { id: true, name: true } }
+                }
               }
             }
           }
@@ -195,9 +197,9 @@ export const getUsers = async (req, res) => {
   const usersWithManagers = users.map(user => {
     const managersMap = new Map();
 
-    user.assignedTasks?.forEach(task => {
-      if (task.project?.manager) {
-        managersMap.set(task.project.manager.id, task.project.manager.name);
+    user.taskAssignments?.forEach(ta => {
+      if (ta.task?.project?.manager) {
+        managersMap.set(ta.task.project.manager.id, ta.task.project.manager.name);
       }
     });
 
@@ -208,7 +210,7 @@ export const getUsers = async (req, res) => {
     });
 
     // Remove the heavy relation data and just keep the managers list
-    const { assignedTasks, workloads, ...userData } = user;
+    const { taskAssignments, workloads, ...userData } = user;
 
     return {
       ...userData,
@@ -398,11 +400,9 @@ export const getManagedUsers = async (req, res) => {
         organizationId: req.user.organizationId,
         OR: [
           {
-            assignedTasks: {
+            taskAssignments: {
               some: {
-                projectId: {
-                  in: projectIds,
-                },
+                task: { projectId: { in: projectIds } }
               },
             },
           },
@@ -424,15 +424,17 @@ export const getManagedUsers = async (req, res) => {
         role: true,
         avatar: true,
         // Include tasks/workloads to find clients for THIS manager's projects
-        assignedTasks: {
+        taskAssignments: {
           where: {
-            projectId: { in: projectIds }
+            task: { projectId: { in: projectIds } }
           },
           select: {
-            project: {
+            task: {
               select: {
-                client: {
-                  select: { name: true }
+                project: {
+                  select: {
+                    client: { select: { name: true } }
+                  }
                 }
               }
             }
@@ -460,9 +462,9 @@ export const getManagedUsers = async (req, res) => {
     const membersWithClients = teamMembers.map(member => {
       const clientsSet = new Set();
 
-      member.assignedTasks?.forEach(task => {
-        if (task.project?.client?.name) {
-          clientsSet.add(task.project.client.name);
+      member.taskAssignments?.forEach(ta => {
+        if (ta.task?.project?.client?.name) {
+          clientsSet.add(ta.task.project.client.name);
         }
       });
 
@@ -473,7 +475,7 @@ export const getManagedUsers = async (req, res) => {
       });
 
       // Remove relation data
-      const { assignedTasks, workloads, ...memberData } = member;
+      const { taskAssignments, workloads, ...memberData } = member;
 
       return {
         ...memberData,
