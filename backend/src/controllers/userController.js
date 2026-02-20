@@ -161,7 +161,10 @@ export const getUsers = async (req, res) => {
       role: true,
       isApproved: true,
       avatar: true,
+      isApproved: true,
+      avatar: true,
       createdAt: true,
+      managerId: true, // Needed for frontend team check
       // Include assignments to find managers
       taskAssignments: {
         select: {
@@ -224,7 +227,7 @@ export const getUsers = async (req, res) => {
 export const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, email, role, password } = req.body;
+    const { name, email, role, password, managerId } = req.body;
 
     // Check if user exists and belongs to same organization
     const existingUser = await prisma.user.findUnique({
@@ -243,6 +246,7 @@ export const updateUser = async (req, res) => {
     const updateData = {
       name,
       role,
+      managerId,
     };
 
     // Only hash and update password if provided
@@ -414,7 +418,16 @@ export const getManagedUsers = async (req, res) => {
                 },
               },
             },
-          }
+          {
+            workloads: {
+              some: {
+                projectId: {
+                  in: projectIds,
+                },
+              },
+            },
+          },
+          { managerId: id } // Directly managed users
         ],
       },
       select: {

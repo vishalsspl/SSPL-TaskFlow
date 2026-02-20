@@ -49,6 +49,9 @@ model User {
   activityLogs  ActivityLog[]
   managedProjects Project[]
   clientProjects  Project[] @relation("ClientProjects")
+  managerId       String?   @map("manager_id")
+  manager         User?     @relation("ManagerSubordinates", fields: [managerId], references: [id])
+  subordinates    User[]    @relation("ManagerSubordinates")
 
   @@map("users")
 }
