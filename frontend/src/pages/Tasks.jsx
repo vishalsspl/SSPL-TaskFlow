@@ -289,7 +289,7 @@ const Tasks = () => {
                         <p className="font-medium">{task.title}</p>
                         {task.description && (
                           <p className="text-xs text-muted-foreground line-clamp-1">
-                            {task.description}
+                            {task.description.replace(/<[^>]*>/g, '')}
                           </p>
                         )}
                       </div>
