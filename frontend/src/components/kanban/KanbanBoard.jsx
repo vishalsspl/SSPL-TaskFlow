@@ -13,7 +13,7 @@ import KanbanColumn from './KanbanColumn';
 import KanbanCard from './KanbanCard';
 import { createPortal } from 'react-dom';
 
-const KanbanBoard = ({ tasks, onTaskUpdate, isReadOnly }) => {
+const KanbanBoard = ({ tasks, onTaskUpdate, isReadOnly, onEdit }) => {
     const [activeId, setActiveId] = useState(null);
     const activeTask = activeId ? tasks.find(t => t.id === activeId) : null;
 
@@ -81,10 +81,10 @@ const KanbanBoard = ({ tasks, onTaskUpdate, isReadOnly }) => {
             onDragEnd={handleDragEnd}
         >
             <div className="flex h-full w-full gap-4">
-                <KanbanColumn id="TODO" title="To Do" tasks={columns.TODO} isReadOnly={isReadOnly} />
-                <KanbanColumn id="IN_PROGRESS" title="In Progress" tasks={columns.IN_PROGRESS} isReadOnly={isReadOnly} />
-                <KanbanColumn id="IN_REVIEW" title="In Review" tasks={columns.IN_REVIEW} isReadOnly={isReadOnly} />
-                <KanbanColumn id="COMPLETED" title="Completed" tasks={columns.COMPLETED} isReadOnly={isReadOnly} />
+                <KanbanColumn id="TODO" title="To Do" tasks={columns.TODO} isReadOnly={isReadOnly} onEdit={onEdit} />
+                <KanbanColumn id="IN_PROGRESS" title="In Progress" tasks={columns.IN_PROGRESS} isReadOnly={isReadOnly} onEdit={onEdit} />
+                <KanbanColumn id="IN_REVIEW" title="In Review" tasks={columns.IN_REVIEW} isReadOnly={isReadOnly} onEdit={onEdit} />
+                <KanbanColumn id="COMPLETED" title="Completed" tasks={columns.COMPLETED} isReadOnly={isReadOnly} onEdit={onEdit} />
             </div>
 
             {createPortal(

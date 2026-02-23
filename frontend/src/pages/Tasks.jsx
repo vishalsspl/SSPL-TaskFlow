@@ -60,6 +60,8 @@ const Tasks = () => {
   const [users, setUsers] = useState([]);
   const [phases, setPhases] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   useEffect(() => {
     fetchTasks();
@@ -110,6 +112,17 @@ const Tasks = () => {
 
   const handleTaskCreated = () => {
     setShowCreateDialog(false);
+    fetchTasks();
+  };
+
+  const handleTaskClick = (task) => {
+    setSelectedTask(task);
+    setShowEditDialog(true);
+  };
+
+  const handleTaskUpdated = () => {
+    setShowEditDialog(false);
+    setSelectedTask(null);
     fetchTasks();
   };
 
@@ -206,6 +219,27 @@ const Tasks = () => {
         </DialogContent>
       </Dialog>
 
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Task</DialogTitle>
+            <DialogDescription>
+              Update task details, assignments, or story points.
+            </DialogDescription>
+          </DialogHeader>
+          <CreateTaskForm
+            projects={projects}
+            users={users}
+            task={selectedTask}
+            onSuccess={handleTaskUpdated}
+            onCancel={() => {
+              setShowEditDialog(false);
+              setSelectedTask(null);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -270,6 +304,7 @@ const Tasks = () => {
                 <TableHead>Assigned To</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Priority</TableHead>
+                <TableHead>Points</TableHead>
                 <TableHead>Due Date</TableHead>
                 <TableHead className="w-[15%]">Progress</TableHead>
               </TableRow>
@@ -283,7 +318,11 @@ const Tasks = () => {
                 </TableRow>
               ) : (
                 filteredTasks.map((task) => (
-                  <TableRow key={task.id}>
+                  <TableRow
+                    key={task.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleTaskClick(task)}
+                  >
                     <TableCell>
                       <div>
                         <p className="font-medium">{task.title}</p>
@@ -320,6 +359,7 @@ const Tasks = () => {
                       <Select
                         value={task.status}
                         onValueChange={(value) => handleStatusUpdate(task.id, value)}
+                        onClick={(e) => e.stopPropagation()} // Prevent row click
                         disabled={user?.role === 'CLIENT' || user?.role === 'MEMBER'}
                       >
                         <SelectTrigger className="h-8 w-[130px]">
@@ -339,6 +379,9 @@ const Tasks = () => {
                         {task.priority}
                       </Badge>
                     </TableCell>
+                    <TableCell className="text-sm font-medium">
+                      {task.storyPoints || 0}
+                    </TableCell>
                     <TableCell className="text-sm">{formatDate(task.dueDate)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-3">
@@ -349,6 +392,7 @@ const Tasks = () => {
                           step="5"
                           value={task.completionPercentage}
                           onChange={(e) => handleProgressUpdate(task.id, Number(e.target.value))}
+                          onClick={(e) => e.stopPropagation()} // Prevent row click
                           disabled={user?.role === 'CLIENT' || user?.role === 'MEMBER'}
                           className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary disabled:opacity-50 disabled:cursor-not-allowed"
                         />

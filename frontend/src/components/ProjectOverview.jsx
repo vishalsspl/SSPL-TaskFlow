@@ -95,6 +95,24 @@ const ProjectOverview = ({ projectId }) => {
                 )}
             </div>
 
+            {/* Overall Progress Bar */}
+            <div className="space-y-2">
+                <div className="flex justify-between items-center text-sm">
+                    <span className="font-semibold text-foreground">Overall Project Progress (Effort-Based)</span>
+                    <span className="font-bold text-primary">{overview.progressPercentage}%</span>
+                </div>
+                <div className="w-full bg-secondary rounded-full h-4 overflow-hidden border">
+                    <div
+                        className="bg-primary h-full transition-all duration-500 ease-out"
+                        style={{ width: `${overview.progressPercentage}%` }}
+                    />
+                </div>
+                <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>{overview.completedStoryPoints} / {overview.totalStoryPoints} Story Points</span>
+                    <span>{overview.completedTasks} / {overview.totalTasks} Tasks Completed</span>
+                </div>
+            </div>
+
             {/* Phase Tracker */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 {phases.map((phase) => (

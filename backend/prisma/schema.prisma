@@ -140,6 +140,7 @@ model Task {
   completionPercentage Int          @default(0) @map("completion_percentage")
   dueDate              DateTime?    @map("due_date")
   tags                 String[]     @default([])
+  storyPoints          Int?         @default(0) @map("story_points")
   createdAt            DateTime     @default(now()) @map("created_at")
   updatedAt            DateTime     @updatedAt @map("updated_at")
 

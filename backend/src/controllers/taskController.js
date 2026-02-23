@@ -87,6 +87,7 @@ export const createTask = async (req, res) => {
     completionPercentage,
     dueDate,
     tags,
+    storyPoints,
   } = req.body;
 
   if (!projectId || !title) {
@@ -109,6 +110,7 @@ export const createTask = async (req, res) => {
       completionPercentage: completionPercentage || 0,
       dueDate: dueDate ? new Date(dueDate) : null,
       tags: tags || [],
+      storyPoints: storyPoints ? parseInt(storyPoints) : 0,
       assignees: {
         create: (assigneeIds || []).map((userId) => ({ userId })),
       },
@@ -164,6 +166,7 @@ export const updateTask = async (req, res) => {
     dueDate,
     tags,
     phaseId,
+    storyPoints,
   } = req.body;
 
   const existingTask = await prisma.task.findFirst({
@@ -187,6 +190,7 @@ export const updateTask = async (req, res) => {
       dueDate: dueDate !== undefined ? (dueDate ? new Date(dueDate) : null) : undefined,
       tags,
       phaseId,
+      storyPoints: storyPoints !== undefined ? (storyPoints ? parseInt(storyPoints) : 0) : undefined,
       ...(assigneeIds !== undefined && {
         assignees: {
           deleteMany: {},

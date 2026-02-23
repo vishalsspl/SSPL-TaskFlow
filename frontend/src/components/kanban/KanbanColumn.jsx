@@ -4,7 +4,7 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import KanbanCard from './KanbanCard';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-const KanbanColumn = ({ id, title, tasks, isReadOnly }) => {
+const KanbanColumn = ({ id, title, tasks, isReadOnly, onEdit }) => {
     const { setNodeRef } = useDroppable({
         id: id,
         data: {
@@ -36,7 +36,7 @@ const KanbanColumn = ({ id, title, tasks, isReadOnly }) => {
                 <div ref={setNodeRef} className="flex flex-col gap-3 min-h-[150px] pb-4">
                     <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
                         {tasks.map((task) => (
-                            <KanbanCard key={task.id} task={task} isReadOnly={isReadOnly} />
+                            <KanbanCard key={task.id} task={task} isReadOnly={isReadOnly} onEdit={onEdit} />
                         ))}
                     </SortableContext>
                     {tasks.length === 0 && (

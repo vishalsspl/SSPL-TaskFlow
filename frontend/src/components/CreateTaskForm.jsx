@@ -23,18 +23,20 @@ import { MultiSearchableSelect } from '@/components/ui/multi-searchable-select';
 import RichTextEditor from '@/components/ui/RichTextEditor';
 import api from '@/lib/api';
 
-const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initialProjectId = '' }) => {
+const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initialProjectId = '', task = null }) => {
+    const isEdit = !!task;
     const [formData, setFormData] = useState({
-        projectId: initialProjectId,
-        phaseId: '',
-        title: '',
-        description: '',
-        assigneeIds: [],
-        status: 'TODO',
-        priority: 'MEDIUM',
-        completionPercentage: 0,
-        dueDate: '',
-        tags: '',
+        projectId: task?.projectId || initialProjectId,
+        phaseId: task?.phaseId || '',
+        title: task?.title || '',
+        description: task?.description || '',
+        assigneeIds: task?.assignees?.map(a => a.userId) || [],
+        status: task?.status || 'TODO',
+        priority: task?.priority || 'MEDIUM',
+        completionPercentage: task?.completionPercentage || 0,
+        dueDate: task?.dueDate ? new Date(task.dueDate).toISOString().split('T')[0] : '',
+        tags: task?.tags?.join(', ') || '',
+        storyPoints: task?.storyPoints || 0,
     });
 
     const [phases, setPhases] = useState([]);
@@ -69,30 +71,38 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
         try {
             const payload = {
                 ...formData,
-                tags: formData.tags ? formData.tags.split(',').map(t => t.trim()) : [],
+                tags: formData.tags ? (typeof formData.tags === 'string' ? formData.tags.split(',').map(t => t.trim()) : formData.tags) : [],
                 completionPercentage: Number(formData.completionPercentage),
                 assigneeIds: formData.assigneeIds,
+                storyPoints: Number(formData.storyPoints),
             };
 
-            await api.post('/tasks', payload);
+            if (isEdit) {
+                await api.put(`/tasks/${task.id}`, payload);
+            } else {
+                await api.post('/tasks', payload);
+            }
 
-            setFormData({
-                projectId: initialProjectId,
-                phaseId: '',
-                title: '',
-                description: '',
-                assigneeIds: [],
-                status: 'TODO',
-                priority: 'MEDIUM',
-                completionPercentage: 0,
-                dueDate: '',
-                tags: '',
-            });
+            if (!isEdit) {
+                setFormData({
+                    projectId: initialProjectId,
+                    phaseId: '',
+                    title: '',
+                    description: '',
+                    assigneeIds: [],
+                    status: 'TODO',
+                    priority: 'MEDIUM',
+                    completionPercentage: 0,
+                    dueDate: '',
+                    tags: '',
+                    storyPoints: 0,
+                });
+            }
 
             if (onSuccess) onSuccess();
         } catch (error) {
-            console.error('Failed to create task:', error);
-            alert('Failed to create task: ' + (error.response?.data?.error || error.message));
+            console.error(isEdit ? 'Failed to update task:' : 'Failed to create task:', error);
+            alert(isEdit ? 'Failed to update task: ' : 'Failed to create task: ' + (error.response?.data?.error || error.message));
         } finally {
             setLoading(false);
         }
@@ -121,7 +131,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                     <Select
                         value={formData.projectId}
                         onValueChange={(value) => handleProjectChange(value)}
-                        disabled={!!initialProjectId} // Disable if pre-selected via props
+                        disabled={!!initialProjectId || isEdit} // Disable if pre-selected or editing
                     >
                         <SelectTrigger className="pl-9 relative">
                             <Briefcase className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -182,6 +192,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                             <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
                             <SelectItem value="IN_REVIEW">In Review</SelectItem>
                             <SelectItem value="COMPLETED">Completed</SelectItem>
+                            <SelectItem value="BLOCKED">Blocked</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -208,6 +219,24 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                 </div>
 
                 <div className="space-y-2">
+                    <Label htmlFor="storyPoints">Story Points</Label>
+                    <div className="relative">
+                        <CheckSquare className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            id="storyPoints"
+                            type="number"
+                            min="0"
+                            value={formData.storyPoints}
+                            onChange={(e) => setFormData({ ...formData, storyPoints: e.target.value })}
+                            placeholder="e.g. 5"
+                            className="pl-9"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
                     <Label htmlFor="dueDate">Due Date</Label>
                     <div className="relative">
                         <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -220,19 +249,19 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                         />
                     </div>
                 </div>
-            </div>
 
-            <div className="space-y-2">
-                <Label htmlFor="tags">Tags</Label>
-                <div className="relative">
-                    <Tag className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        id="tags"
-                        value={formData.tags}
-                        onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                        placeholder="Comma separated tags (e.g. design, urgent)"
-                        className="pl-9"
-                    />
+                <div className="space-y-2">
+                    <Label htmlFor="tags">Tags</Label>
+                    <div className="relative">
+                        <Tag className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            id="tags"
+                            value={formData.tags}
+                            onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                            placeholder="Comma separated"
+                            className="pl-9"
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -252,7 +281,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                     Cancel
                 </Button>
                 <Button type="submit" disabled={loading}>
-                    {loading ? 'Creating...' : 'Create Task'}
+                    {loading ? (isEdit ? 'Updating...' : 'Creating...') : (isEdit ? 'Update Task' : 'Create Task')}
                 </Button>
             </div>
         </form>

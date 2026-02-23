@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, User, AlignLeft, Paperclip } from 'lucide-react';
 import { priorityColors } from '@/lib/utils'; // Make sure this utility exists or redefine it locally
 
-const KanbanCard = ({ task, isReadOnly }) => {
+const KanbanCard = ({ task, isReadOnly, onEdit }) => {
     const {
         attributes,
         listeners,
@@ -41,7 +41,10 @@ const KanbanCard = ({ task, isReadOnly }) => {
 
     return (
         <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="mb-3 touch-none">
-            <Card className="cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow duration-200">
+            <Card
+                className="cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow duration-200"
+                onClick={() => onEdit && onEdit(task)}
+            >
                 <CardHeader className="p-4 pb-2 space-y-0">
                     <div className="flex justify-between items-start">
                         <Badge variant="outline" className={`text-[10px] px-2 py-0.5 border-0 ${priorityColors[task.priority] || 'bg-muted text-muted-foreground'}`}>

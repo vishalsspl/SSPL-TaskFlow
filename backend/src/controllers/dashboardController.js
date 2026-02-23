@@ -49,7 +49,17 @@ export const getDashboard = async (req, res) => {
   // Calculate metrics
   const now = new Date();
   const totalTasks = tasks.length;
-  const completedTasks = tasks.filter((t) => t.status === 'COMPLETED').length;
+  const completedTasksCount = tasks.filter((t) => t.status === 'COMPLETED').length;
+
+  const totalStoryPoints = tasks.reduce((sum, t) => sum + (t.storyPoints || 0), 0);
+  const completedStoryPoints = tasks
+    .filter((t) => t.status === 'COMPLETED')
+    .reduce((sum, t) => sum + (t.storyPoints || 0), 0);
+
+  const progressPercentage = totalStoryPoints > 0
+    ? Math.round((completedStoryPoints / totalStoryPoints) * 100)
+    : (totalTasks > 0 ? Math.round((completedTasksCount / totalTasks) * 100) : 0);
+
   const overdueTasks = tasks.filter(
     (t) => t.dueDate && new Date(t.dueDate) < now && t.status !== 'COMPLETED'
   );
@@ -142,7 +152,10 @@ export const getDashboard = async (req, res) => {
     project,
     overview: {
       totalTasks,
-      completedTasks,
+      completedTasks: completedTasksCount,
+      totalStoryPoints,
+      completedStoryPoints,
+      progressPercentage,
       overdueTasksCount: overdueTasks.length,
       inProgressTasks,
       activeMembers: activeMembers.length,

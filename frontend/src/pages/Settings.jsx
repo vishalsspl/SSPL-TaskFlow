@@ -1,18 +1,65 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useTheme } from '@/components/ThemeProvider';
-import { Monitor, Moon, Sun } from 'lucide-react';
+import { Monitor, Moon, Sun, Upload, User, Check } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter
+} from '@/components/ui/dialog';
+import api from '@/lib/api';
+
+const demoAvatars = [
+  'https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff',
+  'https://ui-avatars.com/api/?name=Manager&background=6366F1&color=fff',
+  'https://ui-avatars.com/api/?name=Member&background=10B981&color=fff',
+  'https://ui-avatars.com/api/?name=User&background=F59E0B&color=fff',
+  'https://ui-avatars.com/api/?name=Dev&background=8B5CF6&color=fff',
+  'https://ui-avatars.com/api/?name=Design&background=EC4899&color=fff',
+];
 
 const Settings = () => {
-  const { user } = useAuthStore();
+  const { user, updateUser } = useAuthStore();
   const [activeTab, setActiveTab] = useState('profile');
   const { setTheme, theme } = useTheme();
+  const [showAvatarDialog, setShowAvatarDialog] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const handleAvatarSelect = async (avatarUrl) => {
+    setLoading(true);
+    try {
+      const response = await api.patch('/users/profile', { avatar: avatarUrl });
+      updateUser(response.data);
+      setShowAvatarDialog(false);
+    } catch (error) {
+      console.error('Failed to update avatar:', error);
+      alert('Failed to update avatar');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        handleAvatarSelect(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
@@ -59,11 +106,15 @@ const Settings = () => {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center gap-4">
-                      <Avatar className="h-16 w-16">
+                      <Avatar className="h-20 w-20 border-2 border-muted">
                         <AvatarImage src={user?.avatar} />
-                        <AvatarFallback className="text-lg">{user?.name?.charAt(0)}</AvatarFallback>
+                        <AvatarFallback className="text-2xl font-bold">
+                          {user?.name?.split(' ').map(n => n[0]).join('')}
+                        </AvatarFallback>
                       </Avatar>
-                      <Button variant="outline">Change Avatar</Button>
+                      <Button variant="outline" onClick={() => setShowAvatarDialog(true)}>
+                        Change Avatar
+                      </Button>
                     </div>
                     <Separator />
                     <div className="space-y-1">
@@ -76,7 +127,11 @@ const Settings = () => {
                     </div>
                     <div className="space-y-1">
                       <Label>Role</Label>
-                      <Input value={user?.role} readOnly className="bg-muted text-muted-foreground" />
+                      <div className="flex items-center">
+                        <Badge variant="outline" className="text-xs uppercase px-2 py-0.5 font-semibold tracking-wider">
+                          {user?.role}
+                        </Badge>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -201,6 +256,98 @@ const Settings = () => {
           </div>
         </div>
       </div>
+
+      <Dialog open={showAvatarDialog} onOpenChange={setShowAvatarDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Change Avatar</DialogTitle>
+            <DialogDescription>
+              Upload a new photo or select a demo avatar.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 py-4">
+            <div className="flex flex-col items-center justify-center space-y-4 pt-2">
+              <Avatar className="h-24 w-24 border-2 border-primary">
+                <AvatarImage src={user?.avatar} />
+                <AvatarFallback className="text-3xl">
+                  {user?.name?.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col items-center text-center">
+                <p className="text-sm font-medium">Profile Picture</p>
+                <p className="text-xs text-muted-foreground">Click below to upload or select a preset</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-semibold">Demo Avatars</h4>
+              </div>
+              <div className="grid grid-cols-6 gap-3">
+                {demoAvatars.map((url, idx) => (
+                  <div
+                    key={idx}
+                    className={`relative cursor-pointer rounded-full border-2 transition-all p-0.5 ${user?.avatar === url ? 'border-primary ring-2 ring-primary/20' : 'border-transparent hover:border-muted-foreground/30'}`}
+                    onClick={() => handleAvatarSelect(url)}
+                  >
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src={url} />
+                      <AvatarFallback>U</AvatarFallback>
+                    </Avatar>
+                    {user?.avatar === url && (
+                      <div className="absolute -right-1 -top-1 bg-primary rounded-full p-0.5 text-primary-foreground shadow-sm">
+                        <Check className="h-2.5 w-2.5" />
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">Or</span>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept="image/*"
+                onChange={handleFileUpload}
+              />
+              <Button
+                variant="outline"
+                className="w-full border-dashed"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={loading}
+              >
+                {loading ? 'Uploading...' : (
+                  <>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Upload Image
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+          <DialogFooter className="sm:justify-start">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setShowAvatarDialog(false)}
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

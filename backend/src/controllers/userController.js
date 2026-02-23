@@ -491,3 +491,39 @@ export const getManagedUsers = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch managed users' });
   }
 };
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { name, avatar } = req.body;
+    const userId = req.user.id;
+
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+    if (avatar !== undefined) updateData.avatar = avatar;
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        avatar: true,
+        organizationId: true,
+        organization: {
+          select: {
+            id: true,
+            name: true,
+            themeColor: true,
+          }
+        }
+      },
+    });
+
+    res.json(updatedUser);
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    res.status(500).json({ error: 'Failed to update profile' });
+  }
+};

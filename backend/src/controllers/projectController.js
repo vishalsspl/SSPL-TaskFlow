@@ -114,13 +114,38 @@ export const getAllProjects = async (req, res) => {
           phases: true,
         },
       },
+      tasks: {
+        select: {
+          status: true,
+          storyPoints: true,
+        }
+      }
     },
     orderBy: {
       createdAt: 'desc',
     },
   });
 
-  res.json(projects);
+  const projectsWithProgress = projects.map(project => {
+    const totalStoryPoints = project.tasks.reduce((sum, t) => sum + (t.storyPoints || 0), 0);
+    const completedStoryPoints = project.tasks
+      .filter((t) => t.status === 'COMPLETED')
+      .reduce((sum, t) => sum + (t.storyPoints || 0), 0);
+
+    let progress = 0;
+    if (totalStoryPoints > 0) {
+      progress = Math.round((completedStoryPoints / totalStoryPoints) * 100);
+    } else if (project._count.tasks > 0) {
+      const completedTasks = project.tasks.filter(t => t.status === 'COMPLETED').length;
+      progress = Math.round((completedTasks / project._count.tasks) * 100);
+    }
+
+    // Remove tasks from response to keep it light
+    const { tasks, ...projectWithoutTasks } = project;
+    return { ...projectWithoutTasks, progress };
+  });
+
+  res.json(projectsWithProgress);
 };
 
 export const getProject = async (req, res) => {
@@ -183,7 +208,21 @@ export const getProject = async (req, res) => {
     return res.status(404).json({ error: 'Project not found' });
   }
 
-  res.json(project);
+  // Calculate progress
+  const totalStoryPoints = project.tasks.reduce((sum, t) => sum + (t.storyPoints || 0), 0);
+  const completedStoryPoints = project.tasks
+    .filter((t) => t.status === 'COMPLETED')
+    .reduce((sum, t) => sum + (t.storyPoints || 0), 0);
+
+  let progress = 0;
+  if (totalStoryPoints > 0) {
+    progress = Math.round((completedStoryPoints / totalStoryPoints) * 100);
+  } else if (project.tasks.length > 0) {
+    const completedTasks = project.tasks.filter(t => t.status === 'COMPLETED').length;
+    progress = Math.round((completedTasks / project.tasks.length) * 100);
+  }
+
+  res.json({ ...project, progress });
 };
 
 export const createProject = async (req, res) => {

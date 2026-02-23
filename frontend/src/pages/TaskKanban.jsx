@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import api from '@/lib/api';
-import { Loader2, Search } from 'lucide-react';
+import { Loader2, Search, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/authStore';
 import { Input } from '@/components/ui/input';
@@ -15,6 +15,14 @@ import {
 } from '@/components/ui/select';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import KanbanBoard from '@/components/kanban/KanbanBoard';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import CreateTaskForm from '@/components/CreateTaskForm';
 
 const TaskKanban = () => {
     const { user } = useAuthStore();
@@ -25,6 +33,10 @@ const TaskKanban = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [managerFilter, setManagerFilter] = useState('');
     const [priorityFilter, setPriorityFilter] = useState('');
+    const [users, setUsers] = useState([]);
+    const [selectedTask, setSelectedTask] = useState(null);
+    const [showEditDialog, setShowEditDialog] = useState(false);
+    const [showCreateDialog, setShowCreateDialog] = useState(false);
 
     const isReadOnly = user?.role === 'CLIENT' || user?.role === 'MEMBER';
     const navigate = useNavigate();
@@ -35,12 +47,14 @@ const TaskKanban = () => {
 
     const fetchData = async () => {
         try {
-            const [projectsRes, tasksRes] = await Promise.all([
+            const [projectsRes, tasksRes, usersRes] = await Promise.all([
                 api.get('/projects'),
-                api.get('/tasks')
+                api.get('/tasks'),
+                api.get('/users')
             ]);
             setProjects(projectsRes.data);
             setTasks(tasksRes.data);
+            setUsers(usersRes.data.filter(u => u.role !== 'CLIENT'));
 
             // Auto-select project if only one exists
             if (projectsRes.data.length === 1) {
@@ -53,25 +67,15 @@ const TaskKanban = () => {
         }
     };
 
-    const handleTaskUpdate = async (taskId, newStatus) => {
-        const task = tasks.find(t => t.id === taskId);
-        if (!task || task.status === newStatus) return;
+    const handleTaskClick = (task) => {
+        setSelectedTask(task);
+        setShowEditDialog(true);
+    };
 
-        // Optimistic Update
-        const oldStatus = task.status;
-        setTasks(prev => prev.map(t =>
-            t.id === taskId ? { ...t, status: newStatus } : t
-        ));
-
-        try {
-            await api.patch(`/tasks/${taskId}/status`, { status: newStatus });
-        } catch (error) {
-            console.error('Failed to update status:', error);
-            // Revert
-            setTasks(prev => prev.map(t =>
-                t.id === taskId ? { ...t, status: oldStatus } : t
-            ));
-        }
+    const handleTaskUpdated = () => {
+        setShowEditDialog(false);
+        setSelectedTask(null);
+        fetchData();
     };
 
     if (loading) {
@@ -122,7 +126,7 @@ const TaskKanban = () => {
         const matchesManager = !managerFilter || manager?.id === managerFilter;
 
         return matchesSearch && matchesProject && matchesPriority && matchesManager;
-    });
+    }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     return (
         <div className="p-8 h-screen flex flex-col">
@@ -141,51 +145,110 @@ const TaskKanban = () => {
                     </p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
-                    <div className="relative w-full sm:w-auto">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            type="search"
-                            placeholder="Search tasks..."
-                            className="pl-8 w-full sm:w-[200px]"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex flex-wrap items-center gap-3">
+                        <div className="relative w-full sm:w-auto">
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                type="search"
+                                placeholder="Search tasks..."
+                                className="pl-8 w-full sm:w-[200px]"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                        <SearchableSelect
+                            options={[{ value: 'all', label: 'All Projects' }, ...projects.map(p => ({ value: p.id, label: p.name }))]}
+                            value={selectedProjectId}
+                            onChange={(val) => setSelectedProjectId(val || 'all')}
+                            placeholder="All Projects"
+                            searchPlaceholder="Search project..."
+                            className="w-full sm:w-[200px]"
+                        />
+                        <SearchableSelect
+                            options={managerOptions}
+                            value={managerFilter}
+                            onChange={setManagerFilter}
+                            placeholder="All Managers"
+                            searchPlaceholder="Search manager..."
+                            className="w-full sm:w-[200px]"
+                        />
+                        <SearchableSelect
+                            options={priorityOptions}
+                            value={priorityFilter}
+                            onChange={setPriorityFilter}
+                            placeholder="All Priorities"
+                            searchPlaceholder="Search priority..."
+                            className="w-full sm:w-[160px]"
                         />
                     </div>
-                    <SearchableSelect
-                        options={[{ value: 'all', label: 'All Projects' }, ...projects.map(p => ({ value: p.id, label: p.name }))]}
-                        value={selectedProjectId}
-                        onChange={(val) => setSelectedProjectId(val || 'all')}
-                        placeholder="All Projects"
-                        searchPlaceholder="Search project..."
-                        className="w-full sm:w-[200px]"
-                    />
-                    <SearchableSelect
-                        options={managerOptions}
-                        value={managerFilter}
-                        onChange={setManagerFilter}
-                        placeholder="All Managers"
-                        searchPlaceholder="Search manager..."
-                        className="w-full sm:w-[200px]"
-                    />
-                    <SearchableSelect
-                        options={priorityOptions}
-                        value={priorityFilter}
-                        onChange={setPriorityFilter}
-                        placeholder="All Priorities"
-                        searchPlaceholder="Search priority..."
-                        className="w-full sm:w-[160px]"
-                    />
+
+                    {!isReadOnly && (
+                        <Button onClick={() => setShowCreateDialog(true)}>
+                            <Plus className="w-4 h-4 mr-2" />
+                            New Task
+                        </Button>
+                    )}
                 </div>
             </div>
 
             <div className="flex-1 overflow-hidden">
                 <KanbanBoard
                     tasks={filteredTasks}
-                    onTaskUpdate={handleTaskUpdate}
+                    onTaskUpdate={async (taskId, newStatus) => {
+                        try {
+                            await api.patch(`/tasks/${taskId}/status`, { status: newStatus });
+                            fetchData();
+                        } catch (error) {
+                            console.error('Failed to update status:', error);
+                        }
+                    }}
                     isReadOnly={isReadOnly}
+                    onEdit={handleTaskClick}
                 />
             </div>
+
+            <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+                <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Edit Task</DialogTitle>
+                        <DialogDescription>
+                            Update task details, assignments, or story points.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <CreateTaskForm
+                        projects={projects}
+                        users={users}
+                        task={selectedTask}
+                        onSuccess={handleTaskUpdated}
+                        onCancel={() => {
+                            setShowEditDialog(false);
+                            setSelectedTask(null);
+                        }}
+                    />
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+                <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle>Create New Task</DialogTitle>
+                        <DialogDescription>
+                            Add a new task to your workspace.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <CreateTaskForm
+                        projects={projects}
+                        users={users}
+                        initialProjectId={selectedProjectId !== 'all' ? selectedProjectId : ''}
+                        onSuccess={() => {
+                            setShowCreateDialog(false);
+                            fetchData();
+                        }}
+                        onCancel={() => setShowCreateDialog(false)}
+                    />
+                </DialogContent>
+            </Dialog>
         </div >
     );
 };

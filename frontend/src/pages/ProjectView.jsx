@@ -53,6 +53,8 @@ const ProjectView = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [presentationMode, setPresentationMode] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [users, setUsers] = useState([]);
   const dashboardRef = useRef(null);
   const { user } = useAuthStore();
@@ -84,6 +86,17 @@ const ProjectView = () => {
   };
 
   const handleRefresh = () => {
+    fetchDashboard(true);
+  };
+
+  const handleTaskClick = (task) => {
+    setSelectedTask(task);
+    setShowEditDialog(true);
+  };
+
+  const handleTaskUpdated = () => {
+    setShowEditDialog(false);
+    setSelectedTask(null);
     fetchDashboard(true);
   };
 
@@ -265,7 +278,11 @@ const ProjectView = () => {
                     ) : (
                       <div className="space-y-4">
                         {upcomingDeadlines.map(task => (
-                          <div key={task.id} className="flex items-center justify-between border-b pb-2 last:border-0 last:pb-0">
+                          <div
+                            key={task.id}
+                            className="flex items-center justify-between border-b pb-2 last:border-0 last:pb-0 cursor-pointer hover:bg-muted/50 p-1 rounded"
+                            onClick={() => handleTaskClick(task)}
+                          >
                             <div>
                               <p className="font-medium text-sm">{task.title}</p>
                               <p className="text-xs text-muted-foreground">Assigned to: {task.assignees?.map(a => a.user?.name).join(', ') || 'Unassigned'}</p>
@@ -299,7 +316,11 @@ const ProjectView = () => {
                         </TableHeader>
                         <TableBody>
                           {overdueTasks.map(task => (
-                            <TableRow key={task.id}>
+                            <TableRow
+                              key={task.id}
+                              className="cursor-pointer hover:bg-muted/50"
+                              onClick={() => handleTaskClick(task)}
+                            >
                               <TableCell className="font-medium">{task.title}</TableCell>
                               <TableCell className="text-red-600 font-bold">{task.daysOverdue} days</TableCell>
                               <TableCell><Badge className={priorityColors[task.priority]}>{task.priority}</Badge></TableCell>
@@ -352,6 +373,27 @@ const ProjectView = () => {
               fetchDashboard(true);
             }}
             onCancel={() => setShowCreateDialog(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Task</DialogTitle>
+            <DialogDescription>
+              Update task details, assignments, or story points for <strong>{project.name}</strong>.
+            </DialogDescription>
+          </DialogHeader>
+          <CreateTaskForm
+            projects={[project]}
+            users={users}
+            task={selectedTask}
+            onSuccess={handleTaskUpdated}
+            onCancel={() => {
+              setShowEditDialog(false);
+              setSelectedTask(null);
+            }}
           />
         </DialogContent>
       </Dialog>
