@@ -172,6 +172,7 @@ export const getDashboard = async (req, res) => {
     upcomingDeadlines,
     recentActivity,
     phases: project.phases,
+    tasks,
   };
 
   res.json(dashboard);

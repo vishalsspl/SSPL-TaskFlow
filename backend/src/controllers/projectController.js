@@ -235,6 +235,7 @@ export const createProject = async (req, res) => {
     totalBudget,
     managerId,
     status,
+    category,
   } = req.body;
 
   if (!name) {
@@ -252,6 +253,7 @@ export const createProject = async (req, res) => {
       totalBudget,
       managerId,
       status: status || 'PLANNING',
+      category: category || 'INTERNAL',
     },
     include: {
       client: {
@@ -349,6 +351,7 @@ export const updateProject = async (req, res) => {
     usedBudget,
     managerId,
     status,
+    category,
   } = req.body;
 
   // Verify project belongs to user's organization
@@ -378,6 +381,7 @@ export const updateProject = async (req, res) => {
       usedBudget: usedBudget && usedBudget !== '' ? usedBudget : undefined,
       managerId,
       status,
+      category,
     },
     include: {
       client: {

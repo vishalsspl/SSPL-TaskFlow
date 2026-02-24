@@ -11,7 +11,8 @@ import {
     DollarSign,
     Briefcase,
 
-    Target
+    Target,
+    Layers
 } from 'lucide-react';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import RichTextEditor from '@/components/ui/RichTextEditor';
@@ -31,6 +32,7 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
         endDate: '',
         totalBudget: '',
         status: 'PLANNING',
+        category: 'INTERNAL',
     });
     const [loading, setLoading] = useState(false);
 
@@ -103,30 +105,18 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
                     </div>
                 </div>
 
-                {/* Row 2: Client, Manager, Status */}
                 <div className="space-y-2">
-                    <Label htmlFor="client" className="text-gray-700 font-medium">Client</Label>
+                    <Label htmlFor="category" className="text-gray-700 font-medium">Project Type</Label>
                     <div className="relative">
-                        <Users className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 z-10" />
+                        <Layers className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 z-10" />
                         <SearchableSelect
-                            options={clients.map(c => ({ label: c.name, value: c.id }))}
-                            value={formData.clientId}
-                            onChange={(value) => setFormData({ ...formData, clientId: value })}
-                            placeholder="Select Client (Opt)"
-                            className="pl-9"
-                        />
-                    </div>
-                </div>
-
-                <div className="space-y-2">
-                    <Label htmlFor="manager" className="text-gray-700 font-medium">Project Manager</Label>
-                    <div className="relative">
-                        <Briefcase className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 z-10" />
-                        <SearchableSelect
-                            options={managers.map(m => ({ label: m.name, value: m.id }))}
-                            value={formData.managerId}
-                            onChange={(value) => setFormData({ ...formData, managerId: value })}
-                            placeholder="Select Manager (Opt)"
+                            options={[
+                                { label: 'Internal Project', value: 'INTERNAL' },
+                                { label: 'Client Project', value: 'CLIENT' }
+                            ]}
+                            value={formData.category}
+                            onChange={(value) => setFormData({ ...formData, category: value, clientId: value === 'INTERNAL' ? '' : formData.clientId })}
+                            placeholder="Select Type"
                             className="pl-9"
                         />
                     </div>
@@ -151,6 +141,38 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
                         />
                     </div>
                 </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="manager" className="text-gray-700 font-medium">Project Manager</Label>
+                    <div className="relative">
+                        <Briefcase className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 z-10" />
+                        <SearchableSelect
+                            options={managers.map(m => ({ label: m.name, value: m.id }))}
+                            value={formData.managerId}
+                            onChange={(value) => setFormData({ ...formData, managerId: value })}
+                            placeholder="Select Manager (Opt)"
+                            className="pl-9"
+                        />
+                    </div>
+                </div>
+
+                {/* Conditionally show Client field */}
+                {formData.category === 'CLIENT' && (
+                    <div className="space-y-2 transition-all duration-200">
+                        <Label htmlFor="client" className="text-gray-700 font-medium">Client <span className="text-red-500">*</span></Label>
+                        <div className="relative">
+                            <Users className="absolute left-3 top-2.5 h-4 w-4 text-gray-400 z-10" />
+                            <SearchableSelect
+                                options={clients.map(c => ({ label: c.name, value: c.id }))}
+                                value={formData.clientId}
+                                onChange={(value) => setFormData({ ...formData, clientId: value })}
+                                placeholder="Select Client"
+                                className="pl-9"
+                                required={formData.category === 'CLIENT'}
+                            />
+                        </div>
+                    </div>
+                )}
 
                 {/* Row 3: Dates & Budget */}
                 <div className="space-y-2">

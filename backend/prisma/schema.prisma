@@ -64,20 +64,26 @@ enum ProjectStatus {
   CANCELLED
 }
 
+enum ProjectCategory {
+  INTERNAL
+  CLIENT
+}
+
 model Project {
-  id            String        @id @default(uuid())
-  organizationId String        @map("organization_id")
+  id            String          @id @default(uuid())
+  organizationId String          @map("organization_id")
   name          String
   description   String?
-  clientId      String?       @map("client_id")
-  startDate     DateTime?     @map("start_date")
-  endDate       DateTime?     @map("end_date")
-  totalBudget   Decimal?      @map("total_budget") @db.Decimal(12, 2)
-  usedBudget    Decimal       @default(0) @map("used_budget") @db.Decimal(12, 2)
-  status        ProjectStatus @default(PLANNING)
-  managerId     String?       @map("manager_id")
-  createdAt     DateTime      @default(now()) @map("created_at")
-  updatedAt     DateTime      @updatedAt @map("updated_at")
+  category      ProjectCategory @default(INTERNAL)
+  clientId      String?         @map("client_id")
+  startDate     DateTime?       @map("start_date")
+  endDate       DateTime?       @map("end_date")
+  totalBudget   Decimal?        @map("total_budget") @db.Decimal(12, 2)
+  usedBudget    Decimal         @default(0) @map("used_budget") @db.Decimal(12, 2)
+  status        ProjectStatus   @default(PLANNING)
+  managerId     String?         @map("manager_id")
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
 
   organization  Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   client        User?        @relation("ClientProjects", fields: [clientId], references: [id], onDelete: SetNull)

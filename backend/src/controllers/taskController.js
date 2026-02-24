@@ -73,7 +73,7 @@ export const getTask = async (req, res) => {
   res.json(task);
 };
 
-import { sendTaskAssignmentEmail } from '../services/emailService.js';
+import { sendTaskAssignmentEmail, sendTaskStatusUpdateEmail } from '../services/emailService.js';
 
 export const createTask = async (req, res) => {
   const {
@@ -236,6 +236,22 @@ export const updateTask = async (req, res) => {
     }
   }
 
+  // Email assignees if status changed by Manager or Admin
+  if (status && status !== existingTask.status && (req.user.role === 'ADMIN' || req.user.role === 'MANAGER')) {
+    const updatedBy = req.user.name;
+    for (const { user } of task.assignees) {
+      if (user?.email) {
+        sendTaskStatusUpdateEmail(
+          user.email,
+          task.title,
+          task.project.name,
+          task.status,
+          updatedBy
+        ).catch(err => console.error('Failed to send task status update email:', err));
+      }
+    }
+  }
+
   res.json(task);
 };
 
@@ -379,10 +395,34 @@ export const updateTaskStatus = async (req, res) => {
         status,
         ...(completionPercentage !== undefined && { completionPercentage })
       },
+      include: {
+        assignees: {
+          include: {
+            user: { select: { id: true, name: true, email: true } },
+          },
+        },
+        project: { select: { name: true } },
+      },
     });
 
     if (task.phaseId) {
       await recalculatePhaseProgress(task.phaseId);
+    }
+
+    // Email assignees if status changed by Manager or Admin
+    if (req.user.role === 'ADMIN' || req.user.role === 'MANAGER') {
+      const updatedBy = req.user.name;
+      for (const { user } of task.assignees) {
+        if (user?.email) {
+          sendTaskStatusUpdateEmail(
+            user.email,
+            task.title,
+            task.project.name,
+            task.status,
+            updatedBy
+          ).catch(err => console.error('Failed to send task status update email:', err));
+        }
+      }
     }
 
     res.json(task);

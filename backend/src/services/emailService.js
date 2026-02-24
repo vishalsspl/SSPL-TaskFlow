@@ -80,6 +80,75 @@ export const sendTaskAssignmentEmail = async (to, taskTitle, projectName, assign
 };
 
 /**
+ * Send an email notification when a task status is updated.
+ * @param {string} to - Recipient's email
+ * @param {string} taskTitle - Title of the task
+ * @param {string} projectName - Name of the project
+ * @param {string} newStatus - The new status of the task
+ * @param {string} updatedBy - Name of the person who updated the status
+ */
+export const sendTaskStatusUpdateEmail = async (to, taskTitle, projectName, newStatus, updatedBy) => {
+  try {
+    if (!to) return;
+
+    const statusColors = {
+      TODO: '#6B7280',
+      IN_PROGRESS: '#2563EB',
+      COMPLETED: '#16A34A',
+      REJECTED: '#DC2626',
+      ON_HOLD: '#D97706'
+    };
+    const statusColor = statusColors[newStatus] || '#6B7280';
+    const statusStr = newStatus.replace('_', ' ');
+
+    const info = await transporter.sendMail({
+      from: '"TasFlow" <noreply@tasflow.com>',
+      to,
+      subject: `Task Status Updated: ${taskTitle}`,
+      text: `Hello,\n\nThe status of task "${taskTitle}" in project "${projectName}" has been updated to "${statusStr}" by ${updatedBy}.\n\nPlease log in to TasFlow to view the details.\n\nBest regards,\nTasFlow Team`,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #2563eb; margin-bottom: 4px;">Task Status Updated</h2>
+          <p style="color: #6B7280; margin-top: 0;">An update has been made to a task assigned to you.</p>
+          <hr style="border: 1px solid #eee; margin: 16px 0;">
+          <p>Hello,</p>
+          <p>The status of task <strong>${taskTitle}</strong> has been updated by <strong>${updatedBy}</strong>.</p>
+
+          <div style="background: #F9FAFB; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #2563eb;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 6px 0; color: #6B7280; width: 120px;">Project</td>
+                <td style="padding: 6px 0; font-weight: 600;">${projectName}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #6B7280;">Task</td>
+                <td style="padding: 6px 0; font-weight: 600;">${taskTitle}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; color: #6B7280;">New Status</td>
+                <td style="padding: 6px 0;"><span style="background: ${statusColor}; color: white; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">${statusStr}</span></td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="margin: 30px 0;">
+            <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/tasks" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">View Tasks</a>
+          </div>
+          <hr style="border: 1px solid #eee; margin: 20px 0;">
+          <p style="color: #666; font-size: 12px;">This is an automated message from TasFlow.</p>
+        </div>
+      `,
+    });
+
+    console.log('Status Update Email sent: %s', info.messageId);
+    return info;
+  } catch (error) {
+    console.error('Error sending status update email:', error);
+    return null;
+  }
+};
+
+/**
  * Send a rich project assignment email to the Manager.
  * @param {string} to - Manager's email
  * @param {object} project - Project object { name, description, status, startDate, endDate, totalBudget }

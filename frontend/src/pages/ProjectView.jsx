@@ -31,7 +31,8 @@ import {
   Users,
   Calendar,
   RefreshCw,
-  ArrowLeft
+  ArrowLeft,
+  FileText
 } from 'lucide-react';
 import { formatCurrency, formatDate, priorityColors } from '@/lib/utils';
 import html2canvas from 'html2canvas';
@@ -90,6 +91,7 @@ const ProjectView = () => {
   };
 
   const handleTaskClick = (task) => {
+    if (user?.role === 'CLIENT') return;
     setSelectedTask(task);
     setShowEditDialog(true);
   };
@@ -132,6 +134,167 @@ const ProjectView = () => {
       });
     } catch (error) {
       console.error('Failed to export PNG:', error);
+    }
+  };
+
+  const exportProfessionalReport = async () => {
+    try {
+      const { project, overview, budget, phases, tasks } = dashboard;
+      const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+            body { font-family: 'Inter', sans-serif; color: #1e293b; line-height: 1.6; padding: 40px; }
+            .cover { text-align: center; margin-bottom: 60px; padding-top: 100px; border-bottom: 4px solid #0f172a; padding-bottom: 40px; }
+            .title { font-size: 36px; font-weight: 700; color: #020617; margin-bottom: 10px; }
+            .client { font-size: 20px; color: #64748b; margin-bottom: 40px; }
+            .date { font-size: 16px; color: #94a3b8; }
+            
+            .section { margin-bottom: 40px; page-break-inside: avoid; }
+            h2 { border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; font-size: 22px; color: #0f172a; margin-top: 0; }
+            .grid { display: grid; grid-template-cols: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+            .info-item { margin-bottom: 10px; }
+            .label { font-weight: 600; color: #475569; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; }
+            .value { font-size: 16px; color: #0f172a; }
+            
+            table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+            th, td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; font-size: 14px; }
+            th { background-color: #f8fafc; font-weight: 600; color: #475569; }
+            
+            .badge { padding: 4px 10px; border-radius: 9999px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+            .badge-active { background-color: #dcfce7; color: #166534; }
+            .badge-planning { background-color: #e0f2fe; color: #075985; }
+            .badge-completed { background-color: #f1f5f9; color: #475569; }
+            
+            .summary-box { background-color: #f8fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #0f172a; }
+            .footer { text-align: center; font-size: 12px; color: #94a3b8; margin-top: 60px; border-top: 1px solid #e2e8f0; padding-top: 20px; }
+          </style>
+        </head>
+        <body>
+          <div class="cover">
+            <div class="title">${project.name}</div>
+            <div class="client">Project Status Report | ${project.client?.name || 'Internal'}</div>
+            <div class="date">${today}</div>
+          </div>
+
+          <div class="section">
+            <h2>1. Executive Summary</h2>
+            <div class="summary-box">
+              The "${project.name}" project is currently in its <strong>${project.status.toLowerCase().replace('_', ' ')}</strong> phase. 
+              The project is tracking a progress of <strong>${overview.progressPercentage}%</strong> based on effort-based story points. 
+              Current milestones are aligned with the target completion date of ${formatDate(project.endDate)}.
+            </div>
+          </div>
+
+          <div class="section">
+            <h2>2. Project Overview</h2>
+            <div class="grid">
+              <div class="info-item">
+                <div class="label">Project Manager</div>
+                <div class="value">${project.manager?.name || 'Unassigned'}</div>
+              </div>
+              <div class="info-item">
+                <div class="label">Organization</div>
+                <div class="value">Sveltoz</div>
+              </div>
+              <div class="info-item">
+                <div class="label">Timeline</div>
+                <div class="value">${formatDate(project.startDate)} - ${formatDate(project.endDate)}</div>
+              </div>
+              <div class="info-item">
+                <div class="label">Current Status</div>
+                <div class="value">${project.status.replace('_', ' ')}</div>
+              </div>
+            </div>
+            ${project.description ? `
+              <div style="margin-top: 20px;">
+                <div class="label">Scope & Description</div>
+                <div class="value" style="font-size: 14px;">${project.description}</div>
+              </div>
+            ` : ''}
+          </div>
+
+          <div class="section">
+            <h2>3. Timeline & Milestones</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Phase</th>
+                  <th>Status</th>
+                  <th>Completion</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${phases.map(p => `
+                  <tr>
+                    <td>${p.name}</td>
+                    <td>${p.status.replace('_', ' ')}</td>
+                    <td>${p.completionPercentage}%</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="section">
+            <h2>4. Task Summary</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Task Title</th>
+                  <th>Priority</th>
+                  <th>Status</th>
+                  <th>Points</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${(project.tasks || []).map(t => `
+                  <tr>
+                    <td>${t.title}</td>
+                    <td>${t.priority}</td>
+                    <td>${t.status.replace('_', ' ')}</td>
+                    <td>${t.storyPoints || 0}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="section">
+            <h2>5. Budget Summary</h2>
+            <div class="grid">
+              <div class="info-item">
+                <div class="label">Total Budget</div>
+                <div class="value">$${project.totalBudget || '0.00'}</div>
+              </div>
+              <div class="info-item">
+                <div class="label">Status</div>
+                <div class="value">On Track</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="footer">
+            Report generated by SSPL-TasFlow | &copy; 2026 Sveltoz
+          </div>
+        </body>
+        </html>
+      `;
+
+      const response = await api.post(`/reports/${id}/pdf`, { html }, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${project.name}-Report.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error('Failed to export professional report:', error);
     }
   };
 
@@ -201,6 +364,10 @@ const ProjectView = () => {
                 <Button variant="outline" size="sm" onClick={exportToPNG}>
                   <Download className="w-4 h-4 mr-2" />
                   PNG
+                </Button>
+                <Button variant="outline" size="sm" onClick={exportProfessionalReport}>
+                  <FileText className="w-4 h-4 mr-2" />
+                  Report
                 </Button>
                 <Button onClick={() => setPresentationMode(true)} size="sm">
                   <Maximize className="w-4 h-4 mr-2" />

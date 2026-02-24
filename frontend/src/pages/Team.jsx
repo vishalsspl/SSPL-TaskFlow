@@ -378,19 +378,6 @@ const Team = () => {
                   All Members
                   <Badge variant="secondary" className="ml-1 bg-primary/20 text-primary-foreground/80 hover:bg-primary/30">{users.length}</Badge>
                 </Button>
-                {currentUser?.role === 'MANAGER' && (
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => {
-                      setFormData(prev => ({ ...prev, role: 'MEMBER' }));
-                      setShowDialog(true);
-                    }}
-                    title="Add New Member"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                )}
               </div>
               {currentUser?.role === 'ADMIN' && (
                 <Button
@@ -403,15 +390,17 @@ const Team = () => {
                   <Badge variant="secondary" className="ml-1 bg-primary/20 text-primary-foreground/80 hover:bg-primary/30">{managers.length}</Badge>
                 </Button>
               )}
-              <Button
-                variant={selectedManagerId === 'CLIENTS_LIST' ? 'default' : 'outline'}
-                onClick={() => setSelectedManagerId('CLIENTS_LIST')}
-                className="gap-2"
-              >
-                <Users className="w-4 h-4" />
-                Clients
-                <Badge variant="secondary" className="ml-1 bg-primary/20 text-primary-foreground/80 hover:bg-primary/30">{clients.length}</Badge>
-              </Button>
+              {currentUser?.role === 'ADMIN' && (
+                <Button
+                  variant={selectedManagerId === 'CLIENTS_LIST' ? 'default' : 'outline'}
+                  onClick={() => setSelectedManagerId('CLIENTS_LIST')}
+                  className="gap-2"
+                >
+                  <Users className="w-4 h-4" />
+                  Clients
+                  <Badge variant="secondary" className="ml-1 bg-primary/20 text-primary-foreground/80 hover:bg-primary/30">{clients.length}</Badge>
+                </Button>
+              )}
               <Button
                 variant={selectedManagerId === 'MEMBERS_LIST' ? 'default' : 'outline'}
                 onClick={() => setSelectedManagerId('MEMBERS_LIST')}

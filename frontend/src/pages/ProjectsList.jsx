@@ -30,7 +30,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, FolderKanban, Eye, Edit2, Trash2, Search, Filter } from 'lucide-react';
+import { Plus, FolderKanban, Eye, Edit2, Trash2, Search, Filter, Layers } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { SearchableSelect } from '@/components/ui/searchable-select';
@@ -55,6 +55,7 @@ const ProjectsList = () => {
     endDate: '',
     totalBudget: '',
     status: 'PLANNING',
+    category: 'INTERNAL',
   });
 
   // Search and Filter states
@@ -62,6 +63,7 @@ const ProjectsList = () => {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [managerFilter, setManagerFilter] = useState('');
   const [clientFilter, setClientFilter] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('ALL');
 
   useEffect(() => {
     fetchProjects();
@@ -99,6 +101,7 @@ const ProjectsList = () => {
       endDate: project.endDate ? new Date(project.endDate).toISOString().split('T')[0] : '',
       totalBudget: project.totalBudget || '',
       status: project.status,
+      category: project.category || 'INTERNAL',
     });
     setShowEditDialog(true);
   };
@@ -139,6 +142,7 @@ const ProjectsList = () => {
         endDate: '',
         totalBudget: '',
         status: 'PLANNING',
+        category: 'INTERNAL',
       });
       fetchProjects();
     } catch (error) {
@@ -169,8 +173,9 @@ const ProjectsList = () => {
     const matchesManager = managerFilter ? project.manager?.id === managerFilter : true;
     const matchesClient = clientFilter ? project.client?.id === clientFilter : true;
     const matchesStatus = statusFilter === 'ALL' ? true : project.status === statusFilter;
+    const matchesCategory = categoryFilter === 'ALL' ? true : project.category === categoryFilter;
 
-    return matchesSearch && matchesManager && matchesClient && matchesStatus;
+    return matchesSearch && matchesManager && matchesClient && matchesStatus && matchesCategory;
   });
 
   const managerOptions = [
@@ -279,37 +284,55 @@ const ProjectsList = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="clientId">Client</Label>
+                  <Label htmlFor="category">Project Type *</Label>
                   <Select
-                    value={formData.clientId}
-                    onValueChange={(value) => setFormData({ ...formData, clientId: value })}
+                    value={formData.category}
+                    onValueChange={(value) => setFormData({ ...formData, category: value, clientId: value === 'INTERNAL' ? '' : formData.clientId })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select Client" />
+                      <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {users.filter(u => u.role === 'CLIENT').map(user => (
-                        <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
-                      ))}
+                      <SelectItem value="INTERNAL">Internal Project</SelectItem>
+                      <SelectItem value="CLIENT">Client Project</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="managerId">Manager</Label>
-                  <Select
-                    value={formData.managerId}
-                    onValueChange={(value) => setFormData({ ...formData, managerId: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Manager" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {users.filter(u => u.role === 'ADMIN' || u.role === 'MANAGER').map(user => (
-                        <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {formData.category === 'CLIENT' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="clientId">Client *</Label>
+                    <Select
+                      value={formData.clientId}
+                      onValueChange={(value) => setFormData({ ...formData, clientId: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Client" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {users.filter(u => u.role === 'CLIENT').map(user => (
+                          <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="managerId">Manager</Label>
+                <Select
+                  value={formData.managerId}
+                  onValueChange={(value) => setFormData({ ...formData, managerId: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Manager" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {users.filter(u => u.role === 'ADMIN' || u.role === 'MANAGER').map(user => (
+                      <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="grid grid-cols-3 gap-4">
@@ -402,6 +425,20 @@ const ProjectsList = () => {
                 <SelectItem value="CANCELLED">Cancelled</SelectItem>
               </SelectContent>
             </Select>
+
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="w-full sm:w-[160px]">
+                <div className="flex items-center gap-2">
+                  <Layers className="w-4 h-4" />
+                  <SelectValue placeholder="Project Type" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Types</SelectItem>
+                <SelectItem value="INTERNAL">Internal</SelectItem>
+                <SelectItem value="CLIENT">Client</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           {filteredProjects.length === 0 ? (
             <div className="text-center py-12">
@@ -436,6 +473,11 @@ const ProjectsList = () => {
                             {project.description.replace(/<[^>]*>/g, '')}
                           </p>
                         )}
+                        <div className="flex gap-1 mt-1">
+                          <Badge variant="outline" className="text-[10px] h-4 py-0">
+                            {project.category === 'CLIENT' ? 'Client' : 'Internal'}
+                          </Badge>
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell>

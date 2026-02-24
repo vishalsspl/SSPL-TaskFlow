@@ -68,6 +68,7 @@ const TaskKanban = () => {
     };
 
     const handleTaskClick = (task) => {
+        if (user?.role === 'CLIENT') return;
         setSelectedTask(task);
         setShowEditDialog(true);
     };
