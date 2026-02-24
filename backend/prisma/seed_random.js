@@ -204,7 +204,9 @@ async function main() {
                     phaseId: phase.id,
                     title: `${getRandomElement(TASK_VERBS)} ${getRandomElement(TASK_NOUNS)}`,
                     description: "This task needs to be completed according to the requirements doc.",
-                    assignedTo: assignee?.id,
+                    assignees: {
+                        create: assignee ? [{ userId: assignee.id }] : []
+                    },
                     status: taskStatus,
                     priority: priority,
                     completionPercentage: taskStatus === 'COMPLETED' ? 100 : (taskStatus === 'TODO' ? 0 : getRandomInt(10, 90)),
@@ -217,13 +219,14 @@ async function main() {
         // 7. Calculate and Create Workloads
         const projectTasks = await prisma.task.findMany({
             where: { projectId: project.id },
+            include: { assignees: true },
         });
 
         if (projectTasks.length > 0) {
             const userTaskCounts = {};
             for (const task of projectTasks) {
-                if (task.assignedTo) {
-                    userTaskCounts[task.assignedTo] = (userTaskCounts[task.assignedTo] || 0) + 1;
+                for (const assignee of task.assignees) {
+                    userTaskCounts[assignee.userId] = (userTaskCounts[assignee.userId] || 0) + 1;
                 }
             }
 

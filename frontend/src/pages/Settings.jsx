@@ -34,6 +34,8 @@ const Settings = () => {
   const { setTheme, theme } = useTheme();
   const [showAvatarDialog, setShowAvatarDialog] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [orgName, setOrgName] = useState(user?.organization?.name || '');
+  const [updatingOrg, setUpdatingOrg] = useState(false);
   const fileInputRef = useRef(null);
 
   const handleAvatarSelect = async (avatarUrl) => {
@@ -58,6 +60,27 @@ const Settings = () => {
         handleAvatarSelect(reader.result);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleOrgUpdate = async () => {
+    if (!orgName.trim()) return;
+    setUpdatingOrg(true);
+    try {
+      const response = await api.patch('/organizations', { name: orgName });
+      updateUser({
+        ...user,
+        organization: {
+          ...user.organization,
+          name: response.data.name
+        }
+      });
+      alert('Organization updated successfully');
+    } catch (error) {
+      console.error('Failed to update organization:', error);
+      alert('Failed to update organization');
+    } finally {
+      setUpdatingOrg(false);
     }
   };
 
@@ -136,7 +159,7 @@ const Settings = () => {
                   </CardContent>
                 </Card>
 
-                {user?.organization && (
+                {user?.role === 'ADMIN' && (
                   <Card>
                     <CardHeader>
                       <CardTitle>Organization</CardTitle>
@@ -147,17 +170,18 @@ const Settings = () => {
                     <CardContent className="space-y-4">
                       <div className="space-y-1">
                         <Label>Organization Name</Label>
-                        <Input value={user?.organization?.name} readOnly />
+                        <Input
+                          value={orgName}
+                          onChange={(e) => setOrgName(e.target.value)}
+                        />
                       </div>
-                      <div className="space-y-1">
-                        <Label>Theme Color</Label>
-                        <div className="flex items-center gap-2 mt-2">
-                          <div
-                            className="w-10 h-10 rounded-md border shadow-sm"
-                            style={{ backgroundColor: user?.organization?.themeColor }}
-                          />
-                          <Input value={user?.organization?.themeColor} readOnly className="w-[150px]" />
-                        </div>
+                      <div className="pt-2">
+                        <Button
+                          onClick={handleOrgUpdate}
+                          disabled={updatingOrg || orgName === user?.organization?.name}
+                        >
+                          {updatingOrg ? 'Saving...' : 'Save Changes'}
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>

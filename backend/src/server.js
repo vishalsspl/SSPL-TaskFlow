@@ -8,6 +8,8 @@ import taskRoutes from './routes/tasks.js';
 import dashboardRoutes from './routes/dashboard.js';
 import reportRoutes from './routes/reports.js';
 import userRoutes from './routes/users.js';
+import ticketRoutes from './routes/ticket.js';
+import organizationRoutes from './routes/organizations.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 dotenv.config();
@@ -27,6 +29,8 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/tickets', ticketRoutes);
+app.use('/api/organizations', organizationRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

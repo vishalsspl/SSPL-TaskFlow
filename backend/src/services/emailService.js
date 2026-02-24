@@ -398,3 +398,142 @@ export const sendUserApprovalEmail = async (to, userName) => {
     return null;
   }
 };
+
+/**
+ * Send an email notification for a new support ticket.
+ */
+export const sendNewTicketNotification = async (to, ticketTitle, description, priority, clientName, ticketId) => {
+  try {
+    if (!to) return;
+
+    const info = await transporter.sendMail({
+      from: '"TasFlow Support" <support@tasflow.com>',
+      to,
+      subject: `New Support Ticket: ${ticketTitle}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #2563eb;">New Support Ticket</h2>
+          <p>A new support ticket has been submitted by <strong>${clientName}</strong>.</p>
+          <div style="background: #F9FAFB; padding: 20px; border-radius: 8px; border-left: 4px solid #2563eb; margin: 20px 0;">
+            <h3 style="margin-top: 0;">${ticketTitle}</h3>
+            <p>${description}</p>
+            <p style="margin-bottom: 0;"><strong>Priority:</strong> ${priority}</p>
+          </div>
+          <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/tickets/${ticketId}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">View Ticket</a>
+        </div>
+      `,
+    });
+    return info;
+  } catch (error) {
+    console.error('Error sending new ticket email:', error);
+    return null;
+  }
+};
+
+/**
+ * Send an email notification for ticket status update.
+ */
+export const sendTicketStatusUpdateNotification = async (to, ticketTitle, newStatus, updatedBy) => {
+  try {
+    if (!to) return;
+
+    const info = await transporter.sendMail({
+      from: '"TasFlow Support" <support@tasflow.com>',
+      to,
+      subject: `Ticket Status Updated: ${ticketTitle}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #2563eb;">Ticket Status Updated</h2>
+          <p>Your ticket "<strong>${ticketTitle}</strong>" has been updated to <strong>${newStatus}</strong> by ${updatedBy}.</p>
+          <hr style="border: 1px solid #eee; margin: 20px 0;">
+          <p style="color: #666; font-size: 12px;">Log in to TasFlow to view more details.</p>
+        </div>
+      `,
+    });
+    return info;
+  } catch (error) {
+    console.error('Error sending ticket status update email:', error);
+    return null;
+  }
+};
+
+/**
+ * Send an email notification for a new ticket comment.
+ */
+export const sendTicketCommentNotification = async (to, ticketTitle, commentAuthor, message, ticketId) => {
+  try {
+    if (!to) return;
+
+    const info = await transporter.sendMail({
+      from: '"TasFlow Support" <support@tasflow.com>',
+      to,
+      subject: `New Comment on Ticket: ${ticketTitle}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #2563eb;">New Comment</h2>
+          <p><strong>${commentAuthor}</strong> added a comment to the ticket "<strong>${ticketTitle}</strong>":</p>
+          <div style="background: #F9FAFB; padding: 15px; border-radius: 8px; margin: 20px 0; font-style: italic;">
+            "${message}"
+          </div>
+          <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/tickets/${ticketId}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Reply on Ticket</a>
+        </div>
+      `,
+    });
+    return info;
+  } catch (error) {
+    console.error('Error sending ticket comment email:', error);
+    return null;
+  }
+};
+export const sendMemberInvitationEmail = async (to, userName, password, role) => {
+  try {
+    if (!to) return;
+
+    const loginUrl = `${process.env.CLIENT_URL || 'http://localhost:5173'}/login`;
+
+    const info = await transporter.sendMail({
+      from: '"TasFlow Notification" <noreply@tasflow.com>',
+      to,
+      subject: 'Welcome to TasFlow - Your Account Credentials',
+      text: `Hello ${userName},\n\nYou have been added to TasFlow as a ${role}.\n\nYour login credentials are:\nEmail: ${to}\nPassword: ${password}\n\nLogin here: ${loginUrl}\n\nPlease note that your account is currently pending administrator approval. You will be able to log in once an admin approves your account.\n\nBest regards,\nTasFlow Team`,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px;">
+          <h2 style="color: #2563eb; text-align: center;">Welcome to TasFlow!</h2>
+          <p>Hello <strong>${userName}</strong>,</p>
+          <p>You have been added to the TasFlow platform with the role of <strong>${role}</strong>.</p>
+          
+          <div style="background: #F9FAFB; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin-top: 0; font-weight: bold; color: #374151;">Your Login Credentials:</p>
+            <table style="width: 100%;">
+              <tr>
+                <td style="padding: 5px 0; color: #6B7280; width: 100px;">Email:</td>
+                <td style="padding: 5px 0; font-family: monospace;">${to}</td>
+              </tr>
+              <tr>
+                <td style="padding: 5px 0; color: #6B7280;">Password:</td>
+                <td style="padding: 5px 0; font-family: monospace;">${password}</td>
+              </tr>
+            </table>
+          </div>
+
+          <p style="color: #D97706; background: #FFFBEB; padding: 12px; border-radius: 6px; font-size: 14px; border: 1px solid #FEF3C7;">
+            <strong>Note:</strong> Your account is currently <strong>pending administrator approval</strong>. You will be able to log in as soon as an admin approves your access.
+          </p>
+
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${loginUrl}" style="background-color: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Go to Login Page</a>
+          </div>
+
+          <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+          <p style="color: #6B7280; font-size: 12px; text-align: center;">This is an automated message from TasFlow. If you did not expect this, please ignore this email.</p>
+        </div>
+      `,
+    });
+
+    console.log('Invitation Email sent: %s', info.messageId);
+    return info;
+  } catch (error) {
+    console.error('Error sending invitation email:', error);
+    return null;
+  }
+};

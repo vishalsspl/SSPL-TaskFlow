@@ -1,4 +1,4 @@
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -22,7 +22,8 @@ import {
   FolderKanban,
   Kanban,
   Menu,
-  User
+  User,
+  LifeBuoy
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -31,6 +32,10 @@ const Layout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  if (user?.mustChangePassword && user?.role !== 'ADMIN') {
+    return <Navigate to="/change-password" replace />;
+  }
 
   const handleLogout = () => {
     logout();
@@ -42,7 +47,18 @@ const Layout = () => {
     { name: 'Projects', href: '/projects', icon: FolderKanban },
     { name: 'Kanban Board', href: '/task-board', icon: Kanban },
     { name: 'Tasks', href: '/tasks', icon: CheckSquare },
-    { name: 'Team', href: '/team', icon: Users, adminOnly: false }, // Changed based on role check in map
+    {
+      name: 'Tickets',
+      href: '/tickets',
+      icon: LifeBuoy,
+      allowedRoles: ['ADMIN', 'CLIENT']
+    },
+    {
+      name: 'Team',
+      href: '/team',
+      icon: Users,
+      allowedRoles: ['ADMIN', 'MANAGER']
+    },
   ];
 
   const isActive = (path) => location.pathname.startsWith(path);
@@ -74,10 +90,17 @@ const Layout = () => {
 
       <Separator className="mb-4" />
 
-      {/* Navigation */}
       <nav className="flex-1 px-4 space-y-1">
         {navigation
-          .filter(item => !item.adminOnly || user?.role === 'ADMIN')
+          .filter(item => {
+            if (item.allowedRoles) {
+              return item.allowedRoles.includes(user?.role);
+            }
+            if (item.adminOnly) {
+              return user?.role === 'ADMIN';
+            }
+            return true;
+          })
           .map((item) => (
             <Link
               key={item.name}

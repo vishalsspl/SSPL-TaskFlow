@@ -44,12 +44,27 @@ async function main() {
   });
 
   console.log('✅ Created admin user');
+
+  // Create client user
+  const client = await prisma.user.create({
+    data: {
+      organizationId: org.id,
+      name: 'Test Client',
+      email: 'client@example.com',
+      passwordHash, // using same password for simplicity in dev
+      role: 'CLIENT',
+      isApproved: true,
+      avatar: null,
+    },
+  });
+
+  console.log('✅ Created client user');
   console.log('');
   console.log('🎉 Database seeded successfully!');
   console.log('');
   console.log('Login credentials:');
-  console.log('Email: admin@example.com');
-  console.log('Password: admin123');
+  console.log('Admin: admin@example.com / admin123');
+  console.log('Client: client@example.com / admin123');
   console.log('');
   console.log('You can now create projects, add team members, and manage tasks.');
 }

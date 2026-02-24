@@ -134,6 +134,7 @@ const Team = () => {
           name: formData.name,
           email: formData.email,
           role: formData.role,
+          password: formData.password,
         });
       }
 
@@ -272,7 +273,7 @@ const Team = () => {
             <DialogDescription>
               {editingUser
                 ? "Update the user's role and details. Changing the role will affect their permissions immediately."
-                : "New members will receive an email invitation to set up their account."}
+                : "Enter the member's details and set a password. They will receive an email with their credentials."}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4 py-4">
@@ -334,22 +335,21 @@ const Team = () => {
               </div>
             </div>
 
-            {editingUser && (
-              <div className="space-y-2">
-                <Label htmlFor="password">New Password</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    type="password"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    placeholder="Leave empty to keep current"
-                    className="pl-9"
-                  />
-                </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">{editingUser ? 'New Password' : 'Set Demo Password *'}</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  placeholder={editingUser ? 'Leave empty to keep current' : '••••••••'}
+                  required={!editingUser}
+                  className="pl-9"
+                />
               </div>
-            )}
+            </div>
 
             <div className="flex justify-end gap-3 pt-4">
               <Button type="button" variant="outline" onClick={handleCancel}>

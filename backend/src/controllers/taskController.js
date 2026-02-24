@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { sendTaskAssignmentEmail, sendTaskStatusUpdateEmail } from '../services/emailService.js';
 
 const prisma = new PrismaClient();
 
@@ -73,7 +74,6 @@ export const getTask = async (req, res) => {
   res.json(task);
 };
 
-import { sendTaskAssignmentEmail, sendTaskStatusUpdateEmail } from '../services/emailService.js';
 
 export const createTask = async (req, res) => {
   const {

@@ -68,7 +68,7 @@ const TaskKanban = () => {
     };
 
     const handleTaskClick = (task) => {
-        if (user?.role === 'CLIENT') return;
+        if (user?.role === 'CLIENT' || user?.role === 'MEMBER') return;
         setSelectedTask(task);
         setShowEditDialog(true);
     };
@@ -125,6 +125,11 @@ const TaskKanban = () => {
         const projectId = task.projectId || task.project?.id;
         const manager = projectManagerMap.get(projectId);
         const matchesManager = !managerFilter || manager?.id === managerFilter;
+
+        // Filter for Members: only show assigned tasks
+        const isMember = user?.role === 'MEMBER';
+        const isAssignedToMe = task.assignees?.some(a => a.userId === user?.id);
+        if (isMember && !isAssignedToMe) return false;
 
         return matchesSearch && matchesProject && matchesPriority && matchesManager;
     }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));

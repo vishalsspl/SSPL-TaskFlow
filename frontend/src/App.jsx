@@ -12,6 +12,10 @@ import TaskKanban from './pages/TaskKanban';
 import Tasks from './pages/Tasks';
 import Team from './pages/Team';
 import Settings from './pages/Settings';
+import ChangePassword from './pages/ChangePassword';
+import TicketList from './pages/tickets/TicketList';
+import SubmitTicket from './pages/tickets/SubmitTicket';
+import TicketDetail from './pages/tickets/TicketDetail';
 import Layout from './components/Layout';
 import { Toaster } from './components/ui/toaster';
 import { ThemeProvider } from './components/ThemeProvider';
@@ -39,6 +43,7 @@ function App() {
             element={!token ? <Signup /> : <RoleBasedRedirect />}
           />
           <Route path="/pending-approval" element={<PendingApproval />} />
+          <Route path="/change-password" element={token ? <ChangePassword /> : <Navigate to="/login" />} />
 
           {/* Protected routes */}
           <Route
@@ -54,6 +59,9 @@ function App() {
             <Route path="tasks" element={<Tasks />} />
             <Route path="team" element={<Team />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="tickets" element={<TicketList />} />
+            <Route path="tickets/new" element={<SubmitTicket />} />
+            <Route path="tickets/:id" element={<TicketDetail />} />
           </Route>
 
           {/* Catch all */}

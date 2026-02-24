@@ -8,6 +8,10 @@ const RoleBasedRedirect = () => {
     return <Navigate to="/login" replace />;
   }
 
+  if (user.mustChangePassword && user.role !== 'ADMIN') {
+    return <Navigate to="/change-password" replace />;
+  }
+
   if (user.role === 'CLIENT') {
     return <Navigate to="/task-board" replace />;
   }

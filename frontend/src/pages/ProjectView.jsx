@@ -91,7 +91,7 @@ const ProjectView = () => {
   };
 
   const handleTaskClick = (task) => {
-    if (user?.role === 'CLIENT') return;
+    if (user?.role === 'CLIENT' || user?.role === 'MEMBER') return;
     setSelectedTask(task);
     setShowEditDialog(true);
   };

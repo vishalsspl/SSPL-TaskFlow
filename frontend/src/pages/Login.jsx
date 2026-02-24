@@ -33,7 +33,9 @@ const Login = () => {
       const user = response.data.user;
       login(response.data.token, user);
 
-      if (user.role === 'CLIENT') {
+      if (user.mustChangePassword && user.role !== 'ADMIN') {
+        navigate('/change-password');
+      } else if (user.role === 'CLIENT') {
         navigate('/task-board');
       } else {
         navigate('/dashboard');
