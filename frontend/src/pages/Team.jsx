@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Users, Mail, Shield, Plus, Edit2, Trash2, UserCheck, Clock, Layers, Lock, User, Search } from 'lucide-react';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 const Team = () => {
   const { toast } = useToast();
@@ -40,7 +41,9 @@ const Team = () => {
   const [loading, setLoading] = useState(true);
   const [approving, setApproving] = useState(null);
   const [showDialog, setShowDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [userToDelete, setUserToDelete] = useState(null);
 
   // Selection State: 'ALL' or managerId
   const [selectedManagerId, setSelectedManagerId] = useState('ALL');
@@ -203,16 +206,19 @@ const Team = () => {
     setShowDialog(true);
   };
 
-  const handleDelete = async (userId) => {
-    if (!confirm('Are you sure you want to delete this user?')) {
-      return;
-    }
+  const handleDelete = (user) => {
+    setUserToDelete(user);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!userToDelete) return;
 
     try {
-      await api.delete(`/users/${userId}`);
+      await api.delete(`/users/${userToDelete.id}`);
       toast({
         title: "User Deleted",
-        description: "Team member has been removed successfully.",
+        description: `${userToDelete.name} has been removed successfully.`,
       });
       fetchUsers();
     } catch (error) {
@@ -222,6 +228,9 @@ const Team = () => {
         description: error.response?.data?.error || "Failed to delete user.",
         variant: "destructive",
       });
+    } finally {
+      setShowDeleteDialog(false);
+      setUserToDelete(null);
     }
   };
 
@@ -723,7 +732,7 @@ const Team = () => {
                               <Button variant="ghost" size="icon" onClick={() => handleEdit(user)}>
                                 <Edit2 className="w-4 h-4" />
                               </Button>
-                              <Button variant="ghost" size="icon" onClick={() => handleDelete(user.id)} className="text-destructive hover:text-destructive/90">
+                              <Button variant="ghost" size="icon" onClick={() => handleDelete(user)} className="text-destructive hover:text-destructive/90">
                                 <Trash2 className="w-4 h-4" />
                               </Button>
                             </div>
@@ -738,6 +747,14 @@ const Team = () => {
           </Card>
         )))
       }
+      <ConfirmDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        onConfirm={confirmDelete}
+        title="Delete Member?"
+        description={`Are you sure you want to remove "${userToDelete?.name}" from the organization?`}
+        confirmText="Yes, Remove"
+      />
     </div >
   );
 };

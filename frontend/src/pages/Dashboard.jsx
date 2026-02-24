@@ -33,6 +33,7 @@ const Dashboard = () => {
 
   const [projects, setProjects] = useState([]);
   const [selectedProjectId, setSelectedProjectId] = useState('');
+  const [typeFilter, setTypeFilter] = useState('ALL');
   const [pendingUsersCount, setPendingUsersCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -197,141 +198,216 @@ const Dashboard = () => {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        {/* Total Projects — Purple gradient */}
+        <Card className="relative overflow-hidden border-0 shadow-lg" style={{ background: 'linear-gradient(135deg, #4F34C7 0%, #7C3AED 100%)' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Projects</CardTitle>
-            <FolderKanban className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-purple-100">Total Projects</CardTitle>
+            <div className="p-2 bg-white/20 rounded-lg">
+              <FolderKanban className="h-4 w-4 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalProjects}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold text-white">{stats.totalProjects}</div>
+            <p className="text-xs text-purple-200 mt-1">
               {stats.activeProjects} Active
             </p>
           </CardContent>
+          <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-white/10" />
+          <div className="absolute -bottom-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
         </Card>
-        <Card>
+
+        {/* Total Tasks — Sky Blue gradient */}
+        <Card className="relative overflow-hidden border-0 shadow-lg" style={{ background: 'linear-gradient(135deg, #0284C7 0%, #38BDF8 100%)' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Tasks</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-sky-100">Total Tasks</CardTitle>
+            <div className="p-2 bg-white/20 rounded-lg">
+              <CheckCircle className="h-4 w-4 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalTasks}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold text-white">{stats.totalTasks}</div>
+            <p className="text-xs text-sky-200 mt-1">
               Across all projects
             </p>
           </CardContent>
+          <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-white/10" />
+          <div className="absolute -bottom-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
         </Card>
-        <Card>
+
+        {/* Active Projects — Neon Green gradient */}
+        <Card className="relative overflow-hidden border-0 shadow-lg" style={{ background: 'linear-gradient(135deg, #15803D 0%, #48A111 100%)' }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Projects</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-green-100">Active Projects</CardTitle>
+            <div className="p-2 bg-white/20 rounded-lg">
+              <TrendingUp className="h-4 w-4 text-white" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.activeProjects}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-3xl font-bold text-white">{stats.activeProjects}</div>
+            <p className="text-xs text-green-200 mt-1">
               In progress
             </p>
           </CardContent>
+          <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-white/10" />
+          <div className="absolute -bottom-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
         </Card>
+
+        {/* Total Budget — Amber gradient */}
         {user?.role !== 'MEMBER' && (
-          <Card>
+          <Card className="relative overflow-hidden border-0 shadow-lg" style={{ background: 'linear-gradient(135deg, #B45309 0%, #F59E0B 100%)' }}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Budget</CardTitle>
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-amber-100">Total Budget</CardTitle>
+              <div className="p-2 bg-white/20 rounded-lg">
+                <BarChart3 className="h-4 w-4 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(stats.totalBudget)}</div>
-              <p className="text-xs text-muted-foreground">
+              <div className="text-2xl font-bold text-white">{formatCurrency(stats.totalBudget)}</div>
+              <p className="text-xs text-amber-200 mt-1">
                 All projects
               </p>
             </CardContent>
+            <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-white/10" />
+            <div className="absolute -bottom-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
           </Card>
         )}
 
+        {/* Pending Users — Orange gradient */}
         {user?.role === 'ADMIN' && (
           <Card
-            className="cursor-pointer hover:bg-muted/50 transition-colors border-orange-200 bg-orange-50/50"
+            className="relative overflow-hidden border-0 shadow-lg cursor-pointer"
+            style={{ background: 'linear-gradient(135deg, #C2410C 0%, #F97316 100%)' }}
             onClick={() => navigate('/team')}
           >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-orange-900">Pending Users</CardTitle>
-              <UserCheck className="h-4 w-4 text-orange-700" />
+              <CardTitle className="text-sm font-medium text-orange-100">Pending Users</CardTitle>
+              <div className="p-2 bg-white/20 rounded-lg">
+                <UserCheck className="h-4 w-4 text-white" />
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-orange-900">{pendingUsersCount}</div>
-              <p className="text-xs text-orange-700">
+              <div className="text-3xl font-bold text-white">{pendingUsersCount}</div>
+              <p className="text-xs text-orange-200 mt-1">
                 {pendingUsersCount > 0 ? 'Awaiting approval' : 'All approved'}
               </p>
             </CardContent>
+            <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-white/10" />
+            <div className="absolute -bottom-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
           </Card>
         )}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <Card className="col-span-4">
-          <CardHeader>
-            <CardTitle>Active Projects</CardTitle>
-            <CardDescription>
-              Recently updated projects and their status.
-            </CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Active Projects</CardTitle>
+              <CardDescription>
+                Recently updated projects and their status.
+              </CardDescription>
+            </div>
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="Project Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Types</SelectItem>
+                <SelectItem value="INTERNAL">Internal</SelectItem>
+                <SelectItem value="CLIENT">Client</SelectItem>
+              </SelectContent>
+            </Select>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {projects.filter(p => p.status === 'ACTIVE').slice(0, 5).map((project) => (
-                <div
-                  key={project.id}
-                  className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0 hover:bg-muted/50 p-2 rounded-lg cursor-pointer transition-colors"
-                  onClick={() => navigate(`/projects/${project.id}`)}
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium leading-none">{project.name}</p>
-                      <Badge variant="outline" className="capitalize text-xs">
-                        {project.status.toLowerCase()}
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground line-clamp-1">
-                      {project.description?.replace(/<[^>]*>/g, '')}
-                    </p>
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1">
-                      <div className="flex items-center gap-1">
-                        <CheckCircle className="w-3 h-3" />
-                        <span>{project._count?.tasks || 0} tasks</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Users className="w-3 h-3" />
-                        <span>{project.manager?.name || 'No manager'}</span>
-                      </div>
-                      {project.endDate && (
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          <span>Due {formatDate(project.endDate)}</span>
+              {/* Color palette cycling through project rows */}
+              {(() => {
+                const PROJECT_COLORS = [
+                  { border: '#7C3AED', badge: 'rgba(124,58,237,0.15)', text: '#C4B5FD' },
+                  { border: '#0EA5E9', badge: 'rgba(14,165,233,0.15)', text: '#7DD3FC' },
+                  { border: '#48A111', badge: 'rgba(72,161,17,0.15)', text: '#86EFAC' },
+                  { border: '#F59E0B', badge: 'rgba(245,158,11,0.15)', text: '#FCD34D' },
+                  { border: '#F43F5E', badge: 'rgba(244,63,94,0.15)', text: '#FDA4AF' },
+                ];
+                const filteredList = projects.filter(p => {
+                  const isActive = p.status === 'ACTIVE';
+                  const matchesType = typeFilter === 'ALL' ? true : p.category === typeFilter;
+                  return isActive && matchesType;
+                });
+                return filteredList.slice(0, 5).map((project, idx) => {
+                  const col = PROJECT_COLORS[idx % PROJECT_COLORS.length];
+                  return (
+                    <div
+                      key={project.id}
+                      className="flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all hover:scale-[1.01] mb-2"
+                      style={{ borderLeft: `4px solid ${col.border}`, background: col.badge }}
+                      onClick={() => navigate(`/projects/${project.id}`)}
+                    >
+                      <div className="space-y-1 flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-semibold leading-none text-white">{project.name}</p>
+                          <span
+                            className="text-[10px] font-bold px-2 py-0.5 rounded-full capitalize"
+                            style={{ background: col.badge, color: col.border, border: `1px solid ${col.border}` }}
+                          >
+                            {project.status.toLowerCase()}
+                          </span>
                         </div>
-                      )}
+                        <p className="text-xs text-muted-foreground line-clamp-1">
+                          {project.description?.replace(/<[^>]*>/g, '')}
+                        </p>
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1">
+                          <div className="flex items-center gap-1">
+                            <CheckCircle className="w-3 h-3" style={{ color: col.border }} />
+                            <span>{project._count?.tasks || 0}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Users className="w-3 h-3" style={{ color: col.border }} />
+                            <span>{project.manager?.name || 'No manager'}</span>
+                          </div>
+                          {project.endDate && (
+                            <div className="flex items-center gap-1">
+                              <Calendar className="w-3 h-3" style={{ color: col.border }} />
+                              <span>Due {formatDate(project.endDate)}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right ml-4 shrink-0">
+                        {project.totalBudget && (
+                          <p className="text-sm font-semibold" style={{ color: col.text }}>{formatCurrency(Number(project.totalBudget))}</p>
+                        )}
+                        <span
+                          className="text-[11px] font-bold px-2 py-0.5 rounded-full mt-1 inline-block"
+                          style={{ background: col.badge, color: col.border }}
+                        >{project.progress}%</span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    {project.totalBudget && (
-                      <p className="text-sm font-medium">{formatCurrency(Number(project.totalBudget))}</p>
-                    )}
-                    <Badge variant="secondary" className="mt-1">{project.progress}%</Badge>
-                  </div>
-                </div>
-              ))}
+                  );
+                });
+              })()}
 
-              {projects.filter(p => p.status === 'ACTIVE').length === 0 && (
-                <div className="text-center py-8">
-                  <FolderKanban className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-                  <p className="text-muted-foreground mb-4">No active projects</p>
-                  <Button onClick={() => navigate('/projects/new')}>Create Project</Button>
-                </div>
-              )}
+
+              {projects.filter(p => {
+                const isActive = p.status === 'ACTIVE';
+                const matchesType = typeFilter === 'ALL' ? true : p.category === typeFilter;
+                return isActive && matchesType;
+              }).length === 0 && (
+                  <div className="text-center py-8">
+                    <FolderKanban className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                    <p className="text-muted-foreground mb-4">No active {typeFilter !== 'ALL' ? typeFilter.toLowerCase() : ''} projects</p>
+                    <Button onClick={() => navigate('/projects/new')}>Create Project</Button>
+                  </div>
+                )}
             </div>
-            {projects.filter(p => p.status === 'ACTIVE').length > 5 && (
-              <Button variant="outline" className="w-full mt-4" onClick={() => navigate('/projects')}>
-                View All Projects <ArrowUpRight className="ml-2 h-4 w-4" />
-              </Button>
-            )}
+            {projects.filter(p => {
+              const isActive = p.status === 'ACTIVE';
+              const matchesType = typeFilter === 'ALL' ? true : p.category === typeFilter;
+              return isActive && matchesType;
+            }).length > 5 && (
+                <Button variant="outline" className="w-full mt-4" onClick={() => navigate('/projects')}>
+                  View All Projects <ArrowUpRight className="ml-2 h-4 w-4" />
+                </Button>
+              )}
           </CardContent>
         </Card>
 
@@ -345,7 +421,7 @@ const Dashboard = () => {
               <LineChart
                 data={taskCompletionData}
                 title="Task Completion"
-                series={[{ dataKey: 'completed', name: 'Completed', color: '#8884d8' }]}
+                series={[{ dataKey: 'completed', name: 'Completed', color: '#48A111' }]}
               />
             </CardContent>
           </Card>
@@ -358,15 +434,15 @@ const Dashboard = () => {
                 data={financialData}
                 title="Budget vs Spent"
                 series={[
-                  { dataKey: 'budget', name: 'Budget', color: '#82ca9d' },
-                  { dataKey: 'spent', name: 'Spent', color: '#8884d8' }
+                  { dataKey: 'budget', name: 'Budget', color: '#38BDF8' },
+                  { dataKey: 'spent', name: 'Spent', color: '#F472B6' }
                 ]}
               />
             </CardContent>
           </Card>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

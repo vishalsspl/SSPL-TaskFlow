@@ -4,60 +4,60 @@
 
 @layer base {
   :root {
-    --background: 150 35% 96%;
-    --foreground: 150 35% 9%;
-    --card: 0 0% 100%;
-    --card-foreground: 150 35% 9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 150 35% 9%;
-    --primary: 123 46% 34%;
-    --primary-foreground: 150 35% 96%;
-    --secondary: 150 20% 90%;
-    --secondary-foreground: 150 35% 9%;
-    --muted: 150 20% 90%;
-    --muted-foreground: 150 15% 40%;
-    --accent: 123 46% 92%;
-    --accent-foreground: 123 46% 34%;
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 4%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 4%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 97 82% 35%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 0 0% 15%;
+    --accent-foreground: 97 82% 35%;
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 150 20% 88%;
-    --input: 150 20% 88%;
-    --ring: 123 46% 34%;
-    --radius: 0.5rem;
-    --chart-1: 123 46% 34%;
-    --chart-2: 122 39% 49%;
-    --chart-3: 150 35% 9%;
-    --chart-4: 0 0% 78%;
-    --chart-5: 150 20% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 12%;
+    --input: 0 0% 12%;
+    --ring: 97 82% 35%;
+    --radius: 0.75rem;
+    --chart-1: 97 82% 35%;
+    --chart-2: 200 100% 50%;
+    --chart-3: 280 100% 60%;
+    --chart-4: 340 100% 50%;
+    --chart-5: 45 100% 50%;
     --ck-z-default: 100;
     --ck-z-modal: 100;
   }
 
   .dark {
-    --background: 150 35% 9%;
-    --foreground: 0 0% 78%;
-    --card: 150 30% 11%;
-    --card-foreground: 0 0% 78%;
-    --popover: 150 35% 10%;
-    --popover-foreground: 0 0% 78%;
-    --primary: 123 46% 34%;
-    --primary-foreground: 0 0% 95%;
-    --secondary: 150 20% 15%;
-    --secondary-foreground: 0 0% 78%;
-    --muted: 150 20% 15%;
-    --muted-foreground: 150 5% 60%;
-    --accent: 123 46% 20%;
-    --accent-foreground: 0 0% 95%;
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 4%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 4%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 97 82% 35%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 0 0% 15%;
+    --accent-foreground: 97 82% 35%;
     --destructive: 0 62% 30%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 150 20% 16%;
-    --input: 150 20% 16%;
-    --ring: 123 46% 34%;
-    --chart-1: 123 46% 34%;
-    --chart-2: 122 39% 49%;
-    --chart-3: 0 0% 78%;
-    --chart-4: 150 35% 15%;
-    --chart-5: 123 46% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 16%;
+    --input: 0 0% 16%;
+    --ring: 97 82% 35%;
+    --chart-1: 97 82% 35%;
+    --chart-2: 200 100% 50%;
+    --chart-3: 280 100% 60%;
+    --chart-4: 340 100% 50%;
+    --chart-5: 45 100% 50%;
   }
 }
 
@@ -68,5 +68,36 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  /* Global scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #222;
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #333;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }

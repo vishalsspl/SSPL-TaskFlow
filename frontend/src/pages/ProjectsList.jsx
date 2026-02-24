@@ -37,6 +37,7 @@ import { SearchableSelect } from '@/components/ui/searchable-select';
 import RichTextEditor from '@/components/ui/RichTextEditor';
 import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/hooks/use-toast';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 const ProjectsList = () => {
   const { toast } = useToast();
@@ -46,7 +47,9 @@ const ProjectsList = () => {
   const [loading, setLoading] = useState(true);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
+  const [projectToDelete, setProjectToDelete] = useState(null);
   const [users, setUsers] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
@@ -108,16 +111,19 @@ const ProjectsList = () => {
     setShowEditDialog(true);
   };
 
-  const handleDelete = async (projectId, projectName) => {
-    if (!confirm(`Are you sure you want to delete project "${projectName}"? This will also delete all related tasks and phases.`)) {
-      return;
-    }
+  const handleDelete = (projectId, projectName) => {
+    setProjectToDelete({ id: projectId, name: projectName });
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!projectToDelete) return;
 
     try {
-      await api.delete(`/projects/${projectId}`);
+      await api.delete(`/projects/${projectToDelete.id}`);
       toast({
         title: "Project Deleted",
-        description: `Project "${projectName}" has been removed.`,
+        description: `Project "${projectToDelete.name}" has been removed.`,
       });
       fetchProjects();
     } catch (error) {
@@ -127,6 +133,9 @@ const ProjectsList = () => {
         description: error.response?.data?.error || "Failed to delete project.",
         variant: "destructive",
       });
+    } finally {
+      setShowDeleteDialog(false);
+      setProjectToDelete(null);
     }
   };
 
@@ -140,7 +149,7 @@ const ProjectsList = () => {
         totalBudget: formData.totalBudget && formData.totalBudget !== '' ? formData.totalBudget : undefined,
       };
 
-      await api.put(`/projects/${editingProject.id}`, submitData);
+      await api.put(`/ projects / ${editingProject.id} `, submitData);
       setShowEditDialog(false);
       setEditingProject(null);
       setFormData({
@@ -174,16 +183,23 @@ const ProjectsList = () => {
     fetchProjects();
   };
 
-  const getStatusColor = (status) => {
-    const colors = {
-      PLANNING: 'secondary',
-      ACTIVE: 'default', // primary
-      ON_HOLD: 'destructive', // or warning if available
-      COMPLETED: 'outline', // success usually needs custom class
-      CANCELLED: 'destructive',
-    };
-    return colors[status] || 'secondary';
+  const STATUS_STYLES = {
+    PLANNING: { bg: 'rgba(245,158,11,0.15)', text: '#F59E0B', border: '#F59E0B' },
+    ACTIVE: { bg: 'rgba(72,161,17,0.15)', text: '#48A111', border: '#48A111' },
+    ON_HOLD: { bg: 'rgba(56,189,248,0.15)', text: '#38BDF8', border: '#38BDF8' },
+    COMPLETED: { bg: 'rgba(124,58,237,0.15)', text: '#7C3AED', border: '#7C3AED' },
+    CANCELLED: { bg: 'rgba(244,63,94,0.15)', text: '#F43F5E', border: '#F43F5E' },
   };
+
+  const PROJECT_COLORS = [
+    '#7C3AED', // Purple
+    '#0EA5E9', // Sky Blue
+    '#48A111', // Neon Green
+    '#F59E0B', // Amber
+    '#F43F5E', // Rose
+    '#F97316', // Orange
+    '#EC4899', // Pink
+  ];
 
   const filteredProjects = projects.filter(project => {
     const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -467,106 +483,137 @@ const ProjectsList = () => {
               </p>
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Project Name</TableHead>
-                  <TableHead>Client</TableHead>
-                  <TableHead>Manager</TableHead>
-                  <TableHead>Timeline</TableHead>
-                  <TableHead>Budget</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Tasks</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredProjects.map((project) => (
-                  <TableRow key={project.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/projects/${project.id}`)}>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium text-foreground">{project.name}</p>
-                        {project.description && (
-                          <p className="text-xs text-muted-foreground line-clamp-1">
-                            {project.description.replace(/<[^>]*>/g, '')}
-                          </p>
-                        )}
-                        <div className="flex gap-1 mt-1">
-                          <Badge variant="outline" className="text-[10px] h-4 py-0">
-                            {project.category === 'CLIENT' ? 'Client' : 'Internal'}
-                          </Badge>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {project.client ? (
-                        <div className="text-sm">
-                          <p className="font-medium">{project.client.name}</p>
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground text-xs">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {project.manager ? (
-                        <div className="text-sm">
-                          <p className="font-medium">{project.manager.name}</p>
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground text-xs">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-xs text-muted-foreground">
-                        <p>{formatDate(project.startDate)}</p>
-                        {project.endDate && <p>to {formatDate(project.endDate)}</p>}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {project.totalBudget ? (
-                        <span className="text-sm font-medium">
-                          {formatCurrency(Number(project.totalBudget))}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground text-xs">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusColor(project.status)}>
-                        {project.status.replace('_', ' ')}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <span className="text-sm text-muted-foreground">{project._count.tasks}</span>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
-                        <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleEdit(project)}
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDelete(project.id, project.name)}
-                            className="text-destructive hover:text-destructive/90"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      )}
-                    </TableCell>
+            <div className="overflow-x-auto no-scrollbar">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Project Name</TableHead>
+                    <TableHead>Client</TableHead>
+                    <TableHead>Manager</TableHead>
+                    <TableHead>Timeline</TableHead>
+                    <TableHead>Budget</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Tasks</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredProjects.map((project, idx) => {
+                    const rowColor = PROJECT_COLORS[idx % PROJECT_COLORS.length];
+                    const statusStyle = STATUS_STYLES[project.status] || STATUS_STYLES.PLANNING;
+                    return (
+                      <TableRow
+                        key={project.id}
+                        className="cursor-pointer transition-all hover:scale-[1.002]"
+                        style={{ borderLeft: `4px solid ${rowColor} `, background: `${rowColor} 0d` }}
+                        onClick={() => navigate(`/ projects / ${project.id} `)}
+                      >
+                        <TableCell>
+                          <div>
+                            <p className="font-semibold text-white">{project.name}</p>
+                            {project.description && (
+                              <p className="text-xs text-muted-foreground line-clamp-1">
+                                {project.description.replace(/<[^>]*>/g, '')}
+                              </p>
+                            )}
+                            <div className="flex gap-1 mt-1">
+                              <span
+                                className="text-[10px] px-2 py-0.5 rounded-full font-bold"
+                                style={{ background: `${rowColor} 25`, color: rowColor, border: `1px solid ${rowColor} ` }}
+                              >
+                                {project.category === 'CLIENT' ? 'Client' : 'Internal'}
+                              </span>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {project.client ? (
+                            <div className="text-sm">
+                              <p className="font-medium" style={{ color: rowColor }}>{project.client.name}</p>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {project.manager ? (
+                            <div className="text-sm">
+                              <p className="font-medium">{project.manager.name}</p>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-xs text-muted-foreground">
+                            <p>{formatDate(project.startDate)}</p>
+                            {project.endDate && <p>to {formatDate(project.endDate)}</p>}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {project.totalBudget ? (
+                            <span className="text-sm font-bold" style={{ color: rowColor }}>
+                              {formatCurrency(Number(project.totalBudget))}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">-</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className="text-xs font-bold px-2 py-1 rounded-full"
+                            style={{ background: statusStyle.bg, color: statusStyle.text, border: `1px solid ${statusStyle.border} ` }}
+                          >
+                            {project.status.replace('_', ' ')}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className="text-xs font-bold px-2 py-0.5 rounded-full"
+                            style={{ background: `${rowColor} 25`, color: rowColor }}
+                          >
+                            {project._count.tasks}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
+                            <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleEdit(project)}
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDelete(project.id, project.name)}
+                                className="text-destructive hover:text-destructive/90"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        onConfirm={confirmDelete}
+        title="Delete Project?"
+        description={`Are you sure you want to delete "${projectToDelete?.name}"? This will also remove all related tasks and data.`}
+        confirmText="Yes, Delete"
+      />
     </div>
   );
 };

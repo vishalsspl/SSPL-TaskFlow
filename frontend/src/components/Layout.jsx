@@ -74,7 +74,7 @@ const Layout = () => {
             {user?.organization?.name?.charAt(0) || 'T'}
           </div>
         )}
-        <span className="text-xl font-bold bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] bg-clip-text text-transparent truncate">
+        <span className="text-xl font-extrabold bg-gradient-to-r from-[#48A111] via-[#A3E635] to-[#48A111] bg-clip-text text-transparent truncate tracking-tight">
           {user?.organization?.name || 'TaskFlow'}
         </span>
       </div>
@@ -177,7 +177,7 @@ const Layout = () => {
                 {user?.organization?.name?.charAt(0) || 'T'}
               </div>
             )}
-            <span className="text-lg font-bold bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] bg-clip-text text-transparent truncate max-w-[120px]">
+            <span className="text-lg font-extrabold bg-gradient-to-r from-[#48A111] via-[#A3E635] to-[#48A111] bg-clip-text text-transparent truncate max-w-[120px] tracking-tight">
               {user?.organization?.name || 'TaskFlow'}
             </span>
           </div>
