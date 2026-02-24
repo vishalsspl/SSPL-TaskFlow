@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
+import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import { Clock, AlertCircle, User, RefreshCw, Plus, MoreVertical, X } from 'luci
 import { formatDate } from '@/lib/utils';
 
 const Kanban = () => {
+  const { toast } = useToast();
   const { user } = useAuthStore();
   const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -64,7 +66,11 @@ const Kanban = () => {
 
   const handleCreateTask = async (status) => {
     if (!formData.title || !formData.projectId) {
-      alert('Please fill in title and select a project');
+      toast({
+        title: "Validation Error",
+        description: "Please fill in title and select a project.",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -86,9 +92,17 @@ const Kanban = () => {
       });
       setShowCreateForm(null);
       fetchMyTasks();
+      toast({
+        title: "Task Created",
+        description: "Your new task has been added successfully.",
+      });
     } catch (error) {
       console.error('Failed to create task:', error);
-      alert('Failed to create task');
+      toast({
+        title: "Error",
+        description: "Failed to create task. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -127,7 +141,11 @@ const Kanban = () => {
       ));
     } catch (error) {
       console.error('Failed to update task status:', error);
-      alert('Failed to update task status');
+      toast({
+        title: "Update Failed",
+        description: "Failed to update task status.",
+        variant: "destructive",
+      });
     } finally {
       setDraggedTask(null);
     }

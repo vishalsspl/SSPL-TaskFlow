@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,19 @@ const Signup = () => {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [orgInfo, setOrgInfo] = useState(null);
+
+  useEffect(() => {
+    const fetchOrgInfo = async () => {
+      try {
+        const response = await api.get('/organizations/public');
+        setOrgInfo(response.data);
+      } catch (err) {
+        console.error('Failed to fetch org info:', err);
+      }
+    };
+    fetchOrgInfo();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -46,13 +59,22 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-secondary/20 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center pb-4">
-          <div className="flex justify-center mb-2">
-            <div className="p-2 bg-primary rounded-lg">
-              <Presentation className="w-8 h-8 text-white" />
-            </div>
+          <div className="flex flex-col items-center justify-center mb-4 space-y-3">
+            {orgInfo?.logoUrl ? (
+              <img src={orgInfo.logoUrl} alt="Logo" className="h-32 w-auto object-contain" />
+            ) : (
+              <div className="w-24 h-24 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-5xl">
+                {orgInfo?.name?.charAt(0) || 'T'}
+              </div>
+            )}
+            {!orgInfo?.logoUrl && (
+              <span className="text-4xl font-extrabold bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] bg-clip-text text-transparent tracking-tight">
+                {orgInfo?.name || 'TaskFlow'}
+              </span>
+            )}
           </div>
           <CardTitle className="text-2xl">Get Started</CardTitle>
           <CardDescription className="text-sm">Create your account</CardDescription>

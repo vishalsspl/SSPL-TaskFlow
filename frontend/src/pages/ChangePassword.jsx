@@ -75,22 +75,22 @@ const ChangePassword = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#0F172A] flex flex-col items-center justify-center p-4">
+        <div className="min-h-screen bg-gradient-to-br from-background to-secondary/20 flex flex-col items-center justify-center p-4">
             <div className="w-full max-w-md space-y-8">
                 <div className="text-center">
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
                         <ShieldCheck className="w-8 h-8 text-primary" />
                     </div>
                     <h1 className="text-3xl font-bold text-white tracking-tight">Security Update</h1>
-                    <p className="mt-2 text-slate-400">
+                    <p className="mt-2 text-muted-foreground">
                         For your security, you must set a new password before continuing.
                     </p>
                 </div>
 
-                <Card className="border-slate-800 bg-[#1E293B] shadow-xl">
+                <Card className="border-border bg-card/50 backdrop-blur-sm shadow-xl">
                     <CardHeader>
                         <CardTitle>Change Password</CardTitle>
-                        <CardDescription className="text-slate-400">
+                        <CardDescription className="text-muted-foreground">
                             Please enter your current demo password and choose a new secure one.
                         </CardDescription>
                     </CardHeader>
@@ -99,14 +99,14 @@ const ChangePassword = () => {
                             <div className="space-y-2">
                                 <Label htmlFor="currentPassword">Current Password</Label>
                                 <div className="relative">
-                                    <KeyRound className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
+                                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         id="currentPassword"
                                         type="password"
                                         required
                                         value={formData.currentPassword}
                                         onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
-                                        className="pl-10 bg-[#0F172A] border-slate-700 text-white"
+                                        className="pl-10 bg-background/50 border-input text-foreground"
                                     />
                                 </div>
                             </div>
@@ -114,7 +114,7 @@ const ChangePassword = () => {
                             <div className="space-y-2">
                                 <Label htmlFor="newPassword">New Password</Label>
                                 <div className="relative">
-                                    <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
+                                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         id="newPassword"
                                         type="password"
@@ -129,14 +129,14 @@ const ChangePassword = () => {
                             <div className="space-y-2">
                                 <Label htmlFor="confirmPassword">Confirm New Password</Label>
                                 <div className="relative">
-                                    <Lock className="absolute left-3 top-3 h-4 w-4 text-slate-500" />
+                                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         id="confirmPassword"
                                         type="password"
                                         required
                                         value={formData.confirmPassword}
                                         onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                                        className="pl-10 bg-[#0F172A] border-slate-700 text-white"
+                                        className="pl-10 bg-background/50 border-input text-foreground"
                                     />
                                 </div>
                             </div>
@@ -156,8 +156,8 @@ const ChangePassword = () => {
                     </CardContent>
                 </Card>
 
-                <p className="text-center text-sm text-slate-500">
-                    Logged in as <span className="text-slate-300 font-medium">{user?.email}</span>
+                <p className="text-center text-sm text-muted-foreground">
+                    Logged in as <span className="text-foreground font-medium">{user?.email}</span>
                 </p>
             </div>
         </div>

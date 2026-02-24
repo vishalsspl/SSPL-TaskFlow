@@ -66,29 +66,21 @@ const Layout = () => {
   const NavContent = () => (
     <div className="flex flex-col h-full py-4">
       {/* Logo */}
-      <div className="flex items-center px-6 mb-6">
-        <div className="p-2 bg-primary rounded-lg mr-3">
-          <Presentation className="w-5 h-5 text-primary-foreground" />
-        </div>
-        <span className="text-xl font-bold tracking-tight">TaskFlow</span>
-      </div>
-
-      <Separator className="mb-4" />
-
-      {/* Organization */}
-      <div className="px-6 mb-4">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">Organization</p>
-        <div className="flex items-center gap-2 p-2 rounded-md bg-muted/50">
-          <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-            {user?.organization?.name?.charAt(0) || 'O'}
+      <div className="flex items-center gap-3 px-6 mb-6">
+        {user?.organization?.logoUrl ? (
+          <img src={user.organization.logoUrl} alt="Logo" className="h-16 w-16 object-contain" />
+        ) : (
+          <div className="w-16 h-16 rounded bg-primary/10 flex items-center justify-center text-primary font-bold text-xl">
+            {user?.organization?.name?.charAt(0) || 'T'}
           </div>
-          <span className="text-sm font-medium truncate">
-            {user?.organization?.name || 'My Organization'}
-          </span>
-        </div>
+        )}
+        <span className="text-xl font-bold bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] bg-clip-text text-transparent truncate">
+          {user?.organization?.name || 'TaskFlow'}
+        </span>
       </div>
 
       <Separator className="mb-4" />
+
 
       <nav className="flex-1 px-4 space-y-1">
         {navigation
@@ -177,7 +169,18 @@ const Layout = () => {
               <NavContent />
             </SheetContent>
           </Sheet>
-          <span className="font-bold text-lg">TaskFlow</span>
+          <div className="flex items-center gap-2">
+            {user?.organization?.logoUrl ? (
+              <img src={user.organization.logoUrl} alt="Logo" className="h-10 w-10 object-contain" />
+            ) : (
+              <div className="w-10 h-10 rounded bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                {user?.organization?.name?.charAt(0) || 'T'}
+              </div>
+            )}
+            <span className="text-lg font-bold bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] bg-clip-text text-transparent truncate max-w-[120px]">
+              {user?.organization?.name || 'TaskFlow'}
+            </span>
+          </div>
         </div>
         <Avatar className="w-8 h-8">
           <AvatarImage src={user?.avatar} />

@@ -30,7 +30,7 @@ function App() {
   }, [initialize]);
 
   return (
-    <ThemeProvider defaultTheme="system" storageKey="taskflow-theme">
+    <ThemeProvider defaultTheme="dark" storageKey="taskflow-theme">
       <Router>
         <Routes>
           {/* Public routes */}

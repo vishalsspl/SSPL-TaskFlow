@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
+import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Users, Mail, Shield, Plus, Edit2, Trash2, UserCheck, Clock, Layers, Lock, User, Search } from 'lucide-react';
 
 const Team = () => {
+  const { toast } = useToast();
   const { user: currentUser } = useAuthStore();
   const [users, setUsers] = useState([]);
   const [pendingUsers, setPendingUsers] = useState([]);
@@ -109,10 +111,18 @@ const Team = () => {
     try {
       await api.put(`/users/${userId}/approve`);
       setPendingUsers(pendingUsers.filter(u => u.id !== userId));
+      toast({
+        title: "User Approved",
+        description: "The team member has been approved successfully.",
+      });
       fetchUsers(); // Refresh approved users list
     } catch (error) {
       console.error('Error approving user:', error);
-      alert('Failed to approve user');
+      toast({
+        title: "Approval Failed",
+        description: "Failed to approve user. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setApproving(null);
     }
@@ -147,9 +157,17 @@ const Team = () => {
         password: '',
       });
       fetchUsers();
+      toast({
+        title: "User Saved",
+        description: editingUser ? "Member details updated successfully." : "New member invited successfully.",
+      });
     } catch (error) {
       console.error('Failed to save user:', error);
-      alert('Failed to save user: ' + (error.response?.data?.error || error.message));
+      toast({
+        title: "Save Failed",
+        description: error.response?.data?.error || "Failed to save user details.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -159,9 +177,17 @@ const Team = () => {
       // Refresh the full user list (updates + button state) AND the manager's team list (updates team count)
       await fetchUsers();
       if (currentUser?.id) fetchManagerTeam(currentUser.id);
+      toast({
+        title: "Team Updated",
+        description: "Member has been added to your team.",
+      });
     } catch (error) {
       console.error('Failed to add user to team:', error);
-      alert('Failed to add user to team: ' + (error.response?.data?.error || error.message));
+      toast({
+        title: "Update Failed",
+        description: error.response?.data?.error || "Failed to add user to team.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -184,10 +210,18 @@ const Team = () => {
 
     try {
       await api.delete(`/users/${userId}`);
+      toast({
+        title: "User Deleted",
+        description: "Team member has been removed successfully.",
+      });
       fetchUsers();
     } catch (error) {
       console.error('Failed to delete user:', error);
-      alert('Failed to delete user: ' + (error.response?.data?.error || error.message));
+      toast({
+        title: "Delete Failed",
+        description: error.response?.data?.error || "Failed to delete user.",
+        variant: "destructive",
+      });
     }
   };
 

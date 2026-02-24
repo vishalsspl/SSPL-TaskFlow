@@ -18,6 +18,7 @@ import {
   DialogFooter
 } from '@/components/ui/dialog';
 import api from '@/lib/api';
+import { useToast } from '@/hooks/use-toast';
 
 const demoAvatars = [
   'https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff',
@@ -29,6 +30,7 @@ const demoAvatars = [
 ];
 
 const Settings = () => {
+  const { toast } = useToast();
   const { user, updateUser } = useAuthStore();
   const [activeTab, setActiveTab] = useState('profile');
   const { setTheme, theme } = useTheme();
@@ -37,6 +39,7 @@ const Settings = () => {
   const [orgName, setOrgName] = useState(user?.organization?.name || '');
   const [updatingOrg, setUpdatingOrg] = useState(false);
   const fileInputRef = useRef(null);
+  const logoInputRef = useRef(null);
 
   const handleAvatarSelect = async (avatarUrl) => {
     setLoading(true);
@@ -44,9 +47,17 @@ const Settings = () => {
       const response = await api.patch('/users/profile', { avatar: avatarUrl });
       updateUser(response.data);
       setShowAvatarDialog(false);
+      toast({
+        title: "Avatar Updated",
+        description: "Your profile picture has been updated successfully.",
+      });
     } catch (error) {
       console.error('Failed to update avatar:', error);
-      alert('Failed to update avatar');
+      toast({
+        title: "Update Failed",
+        description: "Failed to update avatar. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -58,6 +69,40 @@ const Settings = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         handleAvatarSelect(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleLogoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        try {
+          setUpdatingOrg(true);
+          const response = await api.patch('/organizations', { logoUrl: reader.result });
+          updateUser({
+            ...user,
+            organization: {
+              ...user.organization,
+              logoUrl: response.data.logoUrl
+            }
+          });
+          toast({
+            title: "Logo Updated",
+            description: "Your organization logo has been updated successfully.",
+          });
+        } catch (error) {
+          console.error('Failed to update logo:', error);
+          toast({
+            title: "Update Failed",
+            description: "Failed to update organization logo.",
+            variant: "destructive",
+          });
+        } finally {
+          setUpdatingOrg(false);
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -75,10 +120,17 @@ const Settings = () => {
           name: response.data.name
         }
       });
-      alert('Organization updated successfully');
+      toast({
+        title: "Organization Updated",
+        description: "Your organization details have been saved.",
+      });
     } catch (error) {
       console.error('Failed to update organization:', error);
-      alert('Failed to update organization');
+      toast({
+        title: "Update Failed",
+        description: "Failed to update organization details.",
+        variant: "destructive",
+      });
     } finally {
       setUpdatingOrg(false);
     }
@@ -168,6 +220,39 @@ const Settings = () => {
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
+                      <div className="flex items-center gap-6 py-2">
+                        <div className="w-32 h-32 rounded-md border-2 border-muted flex items-center justify-center bg-card overflow-hidden">
+                          {user?.organization?.logoUrl ? (
+                            <img src={user.organization.logoUrl} alt="Org Logo" className="w-full h-full object-contain" />
+                          ) : (
+                            <div className="text-primary font-bold text-4xl">
+                              {user?.organization?.name?.charAt(0) || 'O'}
+                            </div>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          <input
+                            type="file"
+                            ref={logoInputRef}
+                            className="hidden"
+                            accept="image/*"
+                            onChange={handleLogoUpload}
+                          />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => logoInputRef.current?.click()}
+                            disabled={updatingOrg}
+                          >
+                            <Upload className="mr-2 h-4 w-4" />
+                            {user?.organization?.logoUrl ? 'Change Logo' : 'Upload Logo'}
+                          </Button>
+                          <p className="text-[10px] text-muted-foreground">
+                            Recommended: Square image, max 2MB
+                          </p>
+                        </div>
+                      </div>
+                      <Separator />
                       <div className="space-y-1">
                         <Label>Organization Name</Label>
                         <Input

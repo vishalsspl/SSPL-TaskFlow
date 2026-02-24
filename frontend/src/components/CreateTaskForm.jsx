@@ -22,8 +22,10 @@ import {
 import { MultiSearchableSelect } from '@/components/ui/multi-searchable-select';
 import RichTextEditor from '@/components/ui/RichTextEditor';
 import api from '@/lib/api';
+import { useToast } from '@/hooks/use-toast';
 
 const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initialProjectId = '', task = null }) => {
+    const { toast } = useToast();
     const isEdit = !!task;
     const [formData, setFormData] = useState({
         projectId: task?.projectId || initialProjectId,
@@ -99,10 +101,20 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                 });
             }
 
-            if (onSuccess) onSuccess();
+            if (onSuccess) {
+                toast({
+                    title: isEdit ? "Task Updated" : "Task Created",
+                    description: isEdit ? "Task details have been updated." : "New task has been created successfully.",
+                });
+                onSuccess();
+            }
         } catch (error) {
             console.error(isEdit ? 'Failed to update task:' : 'Failed to create task:', error);
-            alert(isEdit ? 'Failed to update task: ' : 'Failed to create task: ' + (error.response?.data?.error || error.message));
+            toast({
+                title: isEdit ? "Update Failed" : "Create Failed",
+                description: error.response?.data?.error || (isEdit ? "Failed to update task." : "Failed to create task."),
+                variant: "destructive",
+            });
         } finally {
             setLoading(false);
         }

@@ -36,8 +36,10 @@ import { Separator } from '@/components/ui/separator';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import RichTextEditor from '@/components/ui/RichTextEditor';
 import { useAuthStore } from '@/store/authStore';
+import { useToast } from '@/hooks/use-toast';
 
 const ProjectsList = () => {
+  const { toast } = useToast();
   const { user } = useAuthStore();
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
@@ -113,10 +115,18 @@ const ProjectsList = () => {
 
     try {
       await api.delete(`/projects/${projectId}`);
+      toast({
+        title: "Project Deleted",
+        description: `Project "${projectName}" has been removed.`,
+      });
       fetchProjects();
     } catch (error) {
       console.error('Failed to delete project:', error);
-      alert('Failed to delete project: ' + (error.response?.data?.error || error.message));
+      toast({
+        title: "Delete Failed",
+        description: error.response?.data?.error || "Failed to delete project.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -144,10 +154,18 @@ const ProjectsList = () => {
         status: 'PLANNING',
         category: 'INTERNAL',
       });
+      toast({
+        title: "Project Updated",
+        description: `Project "${editingProject.name}" has been updated successfully.`,
+      });
       fetchProjects();
     } catch (error) {
       console.error('Failed to update project:', error);
-      alert('Failed to update project: ' + (error.response?.data?.error || error.message));
+      toast({
+        title: "Update Failed",
+        description: error.response?.data?.error || "Failed to update project.",
+        variant: "destructive",
+      });
     }
   };
 

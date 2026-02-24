@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useNavigate } from 'react-router-dom';
 import api from '@/lib/api';
+import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { UserCheck, Clock } from 'lucide-react';
 
 const PendingUsers = () => {
+    const { toast } = useToast();
     const { user } = useAuthStore();
     const navigate = useNavigate();
     const [pendingUsers, setPendingUsers] = useState([]);
@@ -41,9 +43,17 @@ const PendingUsers = () => {
             await api.put(`/users/${userId}/approve`);
             // Remove approved user from list
             setPendingUsers(pendingUsers.filter(u => u.id !== userId));
+            toast({
+                title: "User Approved",
+                description: "The team member has been approved successfully.",
+            });
         } catch (error) {
             console.error('Error approving user:', error);
-            alert('Failed to approve user');
+            toast({
+                title: "Approval Failed",
+                description: "Failed to approve user.",
+                variant: "destructive",
+            });
         } finally {
             setApproving(null);
         }

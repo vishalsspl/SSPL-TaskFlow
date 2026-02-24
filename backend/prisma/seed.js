@@ -20,7 +20,7 @@ async function main() {
   // Create default organization
   const org = await prisma.organization.create({
     data: {
-      name: 'My Organization',
+      name: 'TaskFlow',
       logoUrl: null,
       themeColor: '#3B82F6',
     },

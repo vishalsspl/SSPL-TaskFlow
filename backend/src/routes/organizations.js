@@ -1,11 +1,10 @@
 import express from 'express';
-import { updateOrganization } from '../controllers/organizationController.js';
+import { updateOrganization, getPublicOrganization } from '../controllers/organizationController.js';
 import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
 
-router.use(authenticate);
-
-router.patch('/', updateOrganization);
+router.get('/public', getPublicOrganization);
+router.patch('/', authenticate, updateOrganization);
 
 export default router;
