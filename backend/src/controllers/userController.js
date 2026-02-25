@@ -29,6 +29,11 @@ export const getUsers = async (req, res) => {
     where.isApproved = false;
   }
 
+  // If Admin requests team members (for task assignment), show Managers and Members
+  if (req.user.role === 'ADMIN' && pending !== 'true' && teamOnly === 'true') {
+    where.role = { in: ['MANAGER', 'MEMBER'] };
+  }
+
   // If the requester is a MANAGER, restrict visibility
   if (req.user.role === 'MANAGER' && pending !== 'true') {
     const managerProjectIds = await getManagerProjectIds(req.user.id, req.user.organizationId);
