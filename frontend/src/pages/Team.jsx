@@ -49,6 +49,8 @@ const Team = () => {
   const [selectedManagerId, setSelectedManagerId] = useState('ALL');
   const [managerTeam, setManagerTeam] = useState([]);
   const [loadingTeam, setLoadingTeam] = useState(false);
+  const [showAddToTeamDialog, setShowAddToTeamDialog] = useState(false);
+  const [addToTeamMemberId, setAddToTeamMemberId] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
   const [formData, setFormData] = useState({
@@ -189,6 +191,27 @@ const Team = () => {
       toast({
         title: "Update Failed",
         description: error.response?.data?.error || "Failed to add user to team.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAdminAddToTeam = async () => {
+    if (!addToTeamMemberId || !selectedManagerId) return;
+    try {
+      await api.put(`/users/${addToTeamMemberId}`, { managerId: selectedManagerId });
+      setShowAddToTeamDialog(false);
+      setAddToTeamMemberId('');
+      await fetchUsers();
+      fetchManagerTeam(selectedManagerId);
+      toast({
+        title: "Team Updated",
+        description: "Member has been added to this manager's team.",
+      });
+    } catch (error) {
+      toast({
+        title: "Update Failed",
+        description: error.response?.data?.error || "Failed to add member to team.",
         variant: "destructive",
       });
     }
@@ -520,32 +543,46 @@ const Team = () => {
 
       {selectedManagerId === 'MANAGERS_LIST' && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {managers.map(manager => (
-            <Card
-              key={manager.id}
-              className="cursor-pointer hover:shadow-md transition-shadow"
-              onClick={() => setSelectedManagerId(manager.id)}
-            >
-              <CardHeader className="flex flex-row items-center gap-4 space-y-0">
-                <Avatar className="h-12 w-12 border-2 border-[#0A0A0A] ring-1 ring-white/10 shadow-lg">
-                  <AvatarImage src={manager.avatar} alt={manager.name} />
-                  <AvatarFallback style={{ backgroundColor: ROLE_CONFIG.MANAGER.bg, color: ROLE_CONFIG.MANAGER.color }}>
-                    {manager.name.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <CardTitle className="text-base">{manager.name}</CardTitle>
-                  <CardDescription>{manager.email}</CardDescription>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-xs text-muted-foreground flex items-center gap-1">
-                  <Shield className="w-3 h-3" />
-                  Manager Role
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          {managers.map(manager => {
+            // Count team members assigned to this manager
+            const teamCount = members.filter(m => m.managerId === manager.id).length;
+            return (
+              <Card
+                key={manager.id}
+                className="cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => setSelectedManagerId(manager.id)}
+              >
+                <CardHeader className="flex flex-row items-center gap-4 space-y-0">
+                  <Avatar className="h-12 w-12 border-2 border-[#0A0A0A] ring-1 ring-white/10 shadow-lg">
+                    <AvatarImage src={manager.avatar} alt={manager.name} />
+                    <AvatarFallback style={{ backgroundColor: ROLE_CONFIG.MANAGER.bg, color: ROLE_CONFIG.MANAGER.color }}>
+                      {manager.name.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <CardTitle className="text-base">{manager.name}</CardTitle>
+                    <CardDescription>{manager.email}</CardDescription>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Shield className="w-3 h-3" />
+                      Manager Role
+                    </div>
+                    <Badge
+                      variant="none"
+                      className="text-[10px] px-2 py-0.5 font-black"
+                      style={{ background: 'rgba(16,185,129,0.1)', color: '#6EE7B7', border: '1px solid rgba(16,185,129,0.2)' }}
+                    >
+                      <Users className="w-3 h-3 mr-1" />
+                      {teamCount} {teamCount === 1 ? 'Member' : 'Members'}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
           {managers.length === 0 && (
             <div className="col-span-full py-12 text-center text-muted-foreground">
               <p>No managers found</p>
@@ -711,15 +748,41 @@ const Team = () => {
         ) : (
           <Card>
             <CardHeader>
-              <CardTitle>
-                {selectedManagerId === 'ALL'
-                  ? 'All Members'
-                  : selectedManagerId === 'CLIENTS_LIST'
-                    ? 'All Clients'
-                    : selectedManagerId === 'MEMBERS_LIST'
-                      ? 'Team Members'
-                      : `${managers.find(m => m.id === selectedManagerId)?.name}'s Team`}
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {currentUser?.role === 'ADMIN' && !['ALL', 'CLIENTS_LIST', 'MEMBERS_LIST', 'PENDING'].includes(selectedManagerId) && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedManagerId('MANAGERS_LIST')}
+                      className="text-muted-foreground hover:text-white"
+                    >
+                      ← Back
+                    </Button>
+                  )}
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      {selectedManagerId === 'ALL'
+                        ? 'All Members'
+                        : selectedManagerId === 'CLIENTS_LIST'
+                          ? 'All Clients'
+                          : selectedManagerId === 'MEMBERS_LIST'
+                            ? 'Team Members'
+                            : `${managers.find(m => m.id === selectedManagerId)?.name}'s Team`}
+                      {!['ALL', 'CLIENTS_LIST', 'MEMBERS_LIST'].includes(selectedManagerId) && managerTeam.length > 0 && (
+                        <Badge variant="none" className="ml-2 text-[10px] px-2" style={{ background: 'rgba(16,185,129,0.1)', color: '#6EE7B7', border: '1px solid rgba(16,185,129,0.2)' }}>
+                          {managerTeam.length} {managerTeam.length === 1 ? 'Member' : 'Members'}
+                        </Badge>
+                      )}
+                    </CardTitle>
+                  </div>
+                </div>
+                {currentUser?.role === 'ADMIN' && !['ALL', 'CLIENTS_LIST', 'MEMBERS_LIST', 'PENDING'].includes(selectedManagerId) && (
+                  <Button size="sm" onClick={() => setShowAddToTeamDialog(true)}>
+                    <Plus className="w-4 h-4 mr-2" /> Add to Team
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent className="p-0">
               <Table>
@@ -825,6 +888,56 @@ const Team = () => {
         description={`Are you sure you want to remove "${userToDelete?.name}" from the organization?`}
         confirmText="Yes, Remove"
       />
+
+      {/* Add to Manager Team Dialog */}
+      <Dialog open={showAddToTeamDialog} onOpenChange={(open) => { setShowAddToTeamDialog(open); if (!open) setAddToTeamMemberId(''); }}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle>Add Member to {managers.find(m => m.id === selectedManagerId)?.name}'s Team</DialogTitle>
+            <DialogDescription>
+              Select a member to assign to this manager. They will appear in the manager's team view.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Select Member</Label>
+              <Select value={addToTeamMemberId} onValueChange={setAddToTeamMemberId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a team member..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {members
+                    .filter(m => m.managerId !== selectedManagerId)
+                    .map(m => (
+                      <SelectItem key={m.id} value={m.id}>
+                        <div className="flex items-center gap-2">
+                          <span>{m.name}</span>
+                          {m.managerId && (
+                            <span className="text-xs text-muted-foreground">
+                              (currently on {managers.find(mgr => mgr.id === m.managerId)?.name}'s team)
+                            </span>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))
+                  }
+                </SelectContent>
+              </Select>
+              {members.filter(m => m.managerId !== selectedManagerId).length === 0 && (
+                <p className="text-xs text-muted-foreground pt-1">All members are already on this manager's team.</p>
+              )}
+            </div>
+            <div className="flex justify-end gap-3 pt-2">
+              <Button variant="outline" onClick={() => { setShowAddToTeamDialog(false); setAddToTeamMemberId(''); }}>
+                Cancel
+              </Button>
+              <Button onClick={handleAdminAddToTeam} disabled={!addToTeamMemberId}>
+                Add to Team
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div >
   );
 };
