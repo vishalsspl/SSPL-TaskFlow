@@ -22,6 +22,7 @@ import {
   ArrowUpRight,
   Calendar,
   UserCheck,
+  Activity,
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { LineChart, PieChart, BarChart } from '@/components/ui/charts'; // Make sure this path is correct or update charts
@@ -187,146 +188,139 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="flex-1 space-y-4 p-8 pt-6">
+    <div className="flex-1 space-y-6 p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-          <p className="text-muted-foreground">
+          <h2 className="text-3xl font-black tracking-tight Montserrat text-white">Dashboard</h2>
+          <p className="text-muted-foreground Montserrat text-sm">
             Overview of all projects and team performance
           </p>
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {/* Total Projects — Purple gradient */}
-        <Card className="relative overflow-hidden border-0 shadow-lg" style={{ background: 'linear-gradient(135deg, #4F34C7 0%, #7C3AED 100%)' }}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-purple-100">Total Projects</CardTitle>
-            <div className="p-2 bg-white/20 rounded-lg">
-              <FolderKanban className="h-4 w-4 text-white" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+        {/* Total Projects */}
+        <Card className="border-0 bg-gradient-to-br from-[#8B5CF6] to-[#6D28D9] shadow-[0_10px_40px_-10px_rgba(139,92,246,0.3)] relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-10 transform scale-150 group-hover:scale-[2] transition-transform duration-700">
+            <FolderKanban size={120} />
+          </div>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-black text-white/80 uppercase tracking-widest Montserrat">Total Projects</CardTitle>
+            <div className="p-2 bg-white/10 backdrop-blur-md rounded-xl ring-1 ring-white/20">
+              <FolderKanban className="h-5 w-5 text-white" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-white">{stats.totalProjects}</div>
-            <p className="text-xs text-purple-200 mt-1">
-              {stats.activeProjects} Active
+            <div className="text-4xl font-black text-white Montserrat">{stats.totalProjects}</div>
+            <p className="text-xs text-white/60 mt-1 flex items-center gap-1 Montserrat">
+              <TrendingUp className="w-3 h-3" /> All time scale
             </p>
           </CardContent>
-          <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-white/10" />
-          <div className="absolute -bottom-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
         </Card>
 
-        {/* Total Tasks — Sky Blue gradient */}
-        <Card className="relative overflow-hidden border-0 shadow-lg" style={{ background: 'linear-gradient(135deg, #0284C7 0%, #38BDF8 100%)' }}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-sky-100">Total Tasks</CardTitle>
-            <div className="p-2 bg-white/20 rounded-lg">
-              <CheckCircle className="h-4 w-4 text-white" />
+        {/* Active Projects */}
+        <Card className="border-0 bg-gradient-to-br from-[#0EA5E9] to-[#0369A1] shadow-[0_10px_40px_-10px_rgba(14,165,233,0.3)] relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-10 transform scale-150 group-hover:scale-[2] transition-transform duration-700">
+            <Activity size={120} />
+          </div>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-black text-white/80 uppercase tracking-widest Montserrat">Active Work</CardTitle>
+            <div className="p-2 bg-white/10 backdrop-blur-md rounded-xl ring-1 ring-white/20">
+              <Activity className="h-5 w-5 text-white" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-white">{stats.totalTasks}</div>
-            <p className="text-xs text-sky-200 mt-1">
-              Across all projects
-            </p>
+            <div className="text-4xl font-black text-white Montserrat">{stats.activeProjects}</div>
+            <div className="flex items-center gap-2 mt-1">
+              <Badge className="bg-[#48A111] text-white border-0 text-[10px] px-2 Montserrat">LIVE</Badge>
+              <span className="text-xs text-white/60 Montserrat">Running now</span>
+            </div>
           </CardContent>
-          <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-white/10" />
-          <div className="absolute -bottom-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
         </Card>
 
-        {/* Active Projects — Neon Green gradient */}
-        <Card className="relative overflow-hidden border-0 shadow-lg" style={{ background: 'linear-gradient(135deg, #15803D 0%, #48A111 100%)' }}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-green-100">Active Projects</CardTitle>
-            <div className="p-2 bg-white/20 rounded-lg">
-              <TrendingUp className="h-4 w-4 text-white" />
+        {/* Total Tasks */}
+        <Card className="border-0 bg-gradient-to-br from-[#10B981] to-[#047857] shadow-[0_10px_40px_-10px_rgba(16,185,129,0.3)] relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-10 transform scale-150 group-hover:scale-[2] transition-transform duration-700">
+            <CheckCircle size={120} />
+          </div>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-black text-white/80 uppercase tracking-widest Montserrat">Task Velocity</CardTitle>
+            <div className="p-2 bg-white/10 backdrop-blur-md rounded-xl ring-1 ring-white/20">
+              <CheckCircle className="h-5 w-5 text-white" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-white">{stats.activeProjects}</div>
-            <p className="text-xs text-green-200 mt-1">
-              In progress
-            </p>
+            <div className="text-4xl font-black text-white Montserrat">{stats.totalTasks}</div>
+            <p className="text-xs text-white/60 mt-1 Montserrat">Assigned units</p>
           </CardContent>
-          <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-white/10" />
-          <div className="absolute -bottom-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
         </Card>
 
-        {/* Total Budget — Amber gradient */}
-        {user?.role !== 'MEMBER' && (
-          <Card className="relative overflow-hidden border-0 shadow-lg" style={{ background: 'linear-gradient(135deg, #B45309 0%, #F59E0B 100%)' }}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-amber-100">Total Budget</CardTitle>
-              <div className="p-2 bg-white/20 rounded-lg">
-                <BarChart3 className="h-4 w-4 text-white" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">{formatCurrency(stats.totalBudget)}</div>
-              <p className="text-xs text-amber-200 mt-1">
-                All projects
-              </p>
-            </CardContent>
-            <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-white/10" />
-            <div className="absolute -bottom-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
-          </Card>
-        )}
+        {/* Total Budget */}
+        <Card className="border-0 bg-gradient-to-br from-[#F59E0B] to-[#B45309] shadow-[0_10px_40px_-10px_rgba(245,158,11,0.3)] relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-10 transform scale-150 group-hover:scale-[2] transition-transform duration-700">
+            <BarChart3 size={120} />
+          </div>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-black text-white/80 uppercase tracking-widest Montserrat">Net Budget</CardTitle>
+            <div className="p-2 bg-white/10 backdrop-blur-md rounded-xl ring-1 ring-white/20">
+              <BarChart3 className="h-5 w-5 text-white" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-black text-white Montserrat">{formatCurrency(stats.totalBudget)}</div>
+            <p className="text-xs text-white/60 mt-1 Montserrat">Project allocation</p>
+          </CardContent>
+        </Card>
 
-        {/* Pending Users — Orange gradient */}
+        {/* Pending Approvals (Admin Only) */}
         {user?.role === 'ADMIN' && (
-          <Card
-            className="relative overflow-hidden border-0 shadow-lg cursor-pointer"
-            style={{ background: 'linear-gradient(135deg, #C2410C 0%, #F97316 100%)' }}
-            onClick={() => navigate('/team')}
-          >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-orange-100">Pending Users</CardTitle>
-              <div className="p-2 bg-white/20 rounded-lg">
-                <UserCheck className="h-4 w-4 text-white" />
+          <Card className="border-0 bg-gradient-to-br from-[#F43F5E] to-[#BE123C] shadow-[0_10px_40px_-10px_rgba(244,63,94,0.3)] relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-10 transform scale-150 group-hover:scale-[2] transition-transform duration-700">
+              <UserCheck size={120} />
+            </div>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-black text-white/80 uppercase tracking-widest Montserrat">Pending</CardTitle>
+              <div className="p-2 bg-white/10 backdrop-blur-md rounded-xl ring-1 ring-white/20">
+                <UserCheck className="h-5 w-5 text-white" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-white">{pendingUsersCount}</div>
-              <p className="text-xs text-orange-200 mt-1">
-                {pendingUsersCount > 0 ? 'Awaiting approval' : 'All approved'}
-              </p>
+              <div className="text-4xl font-black text-white Montserrat">{pendingUsersCount}</div>
+              <p className="text-xs text-white/60 mt-1 Montserrat">New requests</p>
             </CardContent>
-            <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-white/10" />
-            <div className="absolute -bottom-8 -right-8 w-28 h-28 rounded-full bg-white/5" />
           </Card>
         )}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
-          <CardHeader className="flex flex-row items-center justify-between">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+        <Card className="col-span-4 bg-[#0A0A0A] border-white/5 ring-1 ring-white/5 shadow-2xl">
+          <CardHeader className="flex flex-row items-center justify-between border-b border-white/5 pb-4">
             <div>
-              <CardTitle>Active Projects</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-white Montserrat">Active Projects</CardTitle>
+              <CardDescription className="text-gray-400 Montserrat">
                 Recently updated projects and their status.
               </CardDescription>
             </div>
             <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-[150px]">
+              <SelectTrigger className="w-[150px] bg-white/5 border-white/10 text-white Montserrat">
                 <SelectValue placeholder="Project Type" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-[#0A0A0A] border-white/10 text-white">
                 <SelectItem value="ALL">All Types</SelectItem>
                 <SelectItem value="INTERNAL">Internal</SelectItem>
                 <SelectItem value="CLIENT">Client</SelectItem>
               </SelectContent>
             </Select>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <div className="space-y-4">
-              {/* Color palette cycling through project rows */}
               {(() => {
                 const PROJECT_COLORS = [
-                  { border: '#7C3AED', badge: 'rgba(124,58,237,0.15)', text: '#C4B5FD' },
-                  { border: '#0EA5E9', badge: 'rgba(14,165,233,0.15)', text: '#7DD3FC' },
-                  { border: '#48A111', badge: 'rgba(72,161,17,0.15)', text: '#86EFAC' },
-                  { border: '#F59E0B', badge: 'rgba(245,158,11,0.15)', text: '#FCD34D' },
-                  { border: '#F43F5E', badge: 'rgba(244,63,94,0.15)', text: '#FDA4AF' },
+                  { border: '#8B5CF6', badge: 'rgba(139,92,246,0.1)', text: '#A78BFA' },
+                  { border: '#0EA5E9', badge: 'rgba(14,165,233,0.1)', text: '#7DD3FC' },
+                  { border: '#10B981', badge: 'rgba(16,185,129,0.1)', text: '#6EE7B7' },
+                  { border: '#F59E0B', badge: 'rgba(245,158,11,0.1)', text: '#FCD34D' },
+                  { border: '#F43F5E', badge: 'rgba(244,63,94,0.1)', text: '#FDA4AF' },
                 ];
                 const filteredList = projects.filter(p => {
                   const isActive = p.status === 'ACTIVE';
@@ -338,64 +332,65 @@ const Dashboard = () => {
                   return (
                     <div
                       key={project.id}
-                      className="flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all hover:scale-[1.01] mb-2"
-                      style={{ borderLeft: `4px solid ${col.border}`, background: col.badge }}
+                      className="flex items-center justify-between p-4 rounded-2xl cursor-pointer transition-all hover:bg-white/5 group border border-transparent hover:border-white/10 mb-2"
                       onClick={() => navigate(`/projects/${project.id}`)}
                     >
-                      <div className="space-y-1 flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-semibold leading-none text-white">{project.name}</p>
-                          <span
-                            className="text-[10px] font-bold px-2 py-0.5 rounded-full capitalize"
-                            style={{ background: col.badge, color: col.border, border: `1px solid ${col.border}` }}
+                      <div className="space-y-1.5 flex-1 min-w-0">
+                        <div className="flex items-center gap-3">
+                          <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: col.border, boxShadow: `0 0 8px ${col.border}` }} />
+                          <p className="text-sm font-bold leading-none text-white Montserrat truncate">{project.name}</p>
+                          <Badge
+                            variant="none"
+                            className="text-[9px] font-black tracking-widest uppercase px-2 py-0.5 rounded-md"
+                            style={{ backgroundColor: col.badge, color: col.border, border: `1px solid ${col.border}30` }}
                           >
-                            {project.status.toLowerCase()}
-                          </span>
+                            {project.category}
+                          </Badge>
                         </div>
-                        <p className="text-xs text-muted-foreground line-clamp-1">
+                        <p className="text-xs text-gray-500 line-clamp-1 Montserrat leading-relaxed">
                           {project.description?.replace(/<[^>]*>/g, '')}
                         </p>
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground pt-1">
-                          <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-4 text-[10px] text-gray-500 font-bold uppercase tracking-wider pt-1">
+                          <div className="flex items-center gap-1.5">
                             <CheckCircle className="w-3 h-3" style={{ color: col.border }} />
-                            <span>{project._count?.tasks || 0}</span>
+                            <span>{project._count?.tasks || 0} Tasks</span>
                           </div>
-                          <div className="flex items-center gap-1">
+                          <div className="flex items-center gap-1.5">
                             <Users className="w-3 h-3" style={{ color: col.border }} />
-                            <span>{project.manager?.name || 'No manager'}</span>
+                            <span className="truncate">{project.manager?.name || 'No manager'}</span>
                           </div>
-                          {project.endDate && (
-                            <div className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3" style={{ color: col.border }} />
-                              <span>Due {formatDate(project.endDate)}</span>
-                            </div>
-                          )}
                         </div>
                       </div>
-                      <div className="text-right ml-4 shrink-0">
+                      <div className="text-right ml-4 shrink-0 space-y-1">
                         {project.totalBudget && (
-                          <p className="text-sm font-semibold" style={{ color: col.text }}>{formatCurrency(Number(project.totalBudget))}</p>
+                          <p className="text-sm font-black Montserrat" style={{ color: col.text }}>{formatCurrency(Number(project.totalBudget))}</p>
                         )}
-                        <span
-                          className="text-[11px] font-bold px-2 py-0.5 rounded-full mt-1 inline-block"
-                          style={{ background: col.badge, color: col.border }}
-                        >{project.progress}%</span>
+                        <div className="flex items-center gap-2 justify-end">
+                          <div className="w-16 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                            <div className="h-full rounded-full" style={{ width: `${project.progress}%`, backgroundColor: col.border }} />
+                          </div>
+                          <span className="text-[10px] font-black text-gray-400 Montserrat">{project.progress}%</span>
+                        </div>
                       </div>
                     </div>
                   );
                 });
               })()}
 
-
               {projects.filter(p => {
                 const isActive = p.status === 'ACTIVE';
                 const matchesType = typeFilter === 'ALL' ? true : p.category === typeFilter;
                 return isActive && matchesType;
               }).length === 0 && (
-                  <div className="text-center py-8">
-                    <FolderKanban className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-                    <p className="text-muted-foreground mb-4">No active {typeFilter !== 'ALL' ? typeFilter.toLowerCase() : ''} projects</p>
-                    <Button onClick={() => navigate('/projects/new')}>Create Project</Button>
+                  <div className="text-center py-12">
+                    <FolderKanban className="w-12 h-12 text-white/10 mx-auto mb-4" />
+                    <p className="text-gray-500 Montserrat text-sm mb-6">No active {typeFilter !== 'ALL' ? typeFilter.toLowerCase() : ''} projects found</p>
+                    <Button
+                      onClick={() => navigate('/projects/new')}
+                      className="bg-primary hover:bg-primary/90 text-white Montserrat font-bold rounded-xl"
+                    >
+                      Create Project
+                    </Button>
                   </div>
                 )}
             </div>
@@ -404,20 +399,24 @@ const Dashboard = () => {
               const matchesType = typeFilter === 'ALL' ? true : p.category === typeFilter;
               return isActive && matchesType;
             }).length > 5 && (
-                <Button variant="outline" className="w-full mt-4" onClick={() => navigate('/projects')}>
+                <Button
+                  variant="none"
+                  className="w-full mt-6 text-xs font-black uppercase tracking-widest text-gray-500 hover:text-white transition-colors Montserrat border border-white/5 hover:bg-white/5 py-6"
+                  onClick={() => navigate('/projects')}
+                >
                   View All Projects <ArrowUpRight className="ml-2 h-4 w-4" />
                 </Button>
               )}
           </CardContent>
         </Card>
 
-        {/* Charts Section - Keeping placeholders clean */}
-        <div className="col-span-3 space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Team Performance</CardTitle>
+        {/* Charts Section */}
+        <div className="col-span-3 space-y-6">
+          <Card className="bg-[#0A0A0A] border-white/5 ring-1 ring-white/5 shadow-2xl overflow-hidden">
+            <CardHeader className="border-b border-white/5">
+              <CardTitle className="text-white Montserrat">Team Performance</CardTitle>
             </CardHeader>
-            <CardContent className="pl-2">
+            <CardContent className="p-6">
               <LineChart
                 data={taskCompletionData}
                 title="Task Completion"
@@ -425,24 +424,25 @@ const Dashboard = () => {
               />
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Budget Overview</CardTitle>
+
+          <Card className="bg-[#0A0A0A] border-white/5 ring-1 ring-white/5 shadow-2xl overflow-hidden">
+            <CardHeader className="border-b border-white/5">
+              <CardTitle className="text-white Montserrat">Budget Distribution</CardTitle>
             </CardHeader>
-            <CardContent className="pl-2">
+            <CardContent className="p-6">
               <BarChart
                 data={financialData}
                 title="Budget vs Spent"
                 series={[
-                  { dataKey: 'budget', name: 'Budget', color: '#38BDF8' },
-                  { dataKey: 'spent', name: 'Spent', color: '#F472B6' }
+                  { dataKey: 'budget', name: 'Budget', color: '#0EA5E9' },
+                  { dataKey: 'spent', name: 'Spent', color: '#F43F5E' }
                 ]}
               />
             </CardContent>
           </Card>
         </div>
       </div>
-    </div >
+    </div>
   );
 };
 

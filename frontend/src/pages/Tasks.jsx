@@ -28,7 +28,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { formatDate, priorityColors } from '@/lib/utils';
+import { formatDate, priorityColors, statusColors } from '@/lib/utils';
 import {
   Plus,
   CheckSquare,
@@ -327,83 +327,79 @@ const Tasks = () => {
                 filteredTasks.map((task) => (
                   <TableRow
                     key={task.id}
-                    className="cursor-pointer hover:bg-muted/50"
+                    className="cursor-pointer hover:bg-white/5 transition-colors group border-b border-white/5"
                     onClick={() => handleTaskClick(task)}
                   >
                     <TableCell>
-                      <div>
-                        <p className="font-medium">{task.title}</p>
-                        {task.description && (
-                          <p className="text-xs text-muted-foreground line-clamp-1">
-                            {task.description.replace(/<[^>]*>/g, '')}
-                          </p>
-                        )}
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-1.5 h-1.5 rounded-full shadow-[0_0_8px]"
+                          style={{
+                            backgroundColor: task.status === 'TODO' ? '#F59E0B' :
+                              task.status === 'IN_PROGRESS' ? '#00A3FF' :
+                                task.status === 'IN_REVIEW' ? '#D946EF' :
+                                  task.status === 'COMPLETED' ? '#48A111' : '#EF4444'
+                          }}
+                        />
+                        <div>
+                          <p className="font-bold Montserrat leading-tight text-white group-hover:text-primary transition-colors">{task.title}</p>
+                          {task.description && (
+                            <p className="text-xs text-gray-500 line-clamp-1 mt-0.5 Montserrat">
+                              {task.description.replace(/<[^>]*>/g, '')}
+                            </p>
+                          )}
+                        </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-sm">{task.project.name}</TableCell>
+                    <TableCell className="text-xs font-medium Montserrat text-gray-400">{task.project.name}</TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1 flex-wrap">
+                      <div className="flex items-center gap-2">
                         {task.assignees && task.assignees.length > 0 ? (
-                          task.assignees.map(({ user }) => (
-                            <div key={user.id} className="flex items-center gap-1" title={user.name}>
-                              <Avatar className="h-6 w-6">
-                                <AvatarImage src={user.avatar} alt={user.name} />
-                                <AvatarFallback className="text-xs">{user.name.charAt(0)}</AvatarFallback>
+                          <div className="flex -space-x-2">
+                            {task.assignees.slice(0, 3).map(({ user }) => (
+                              <Avatar key={user.id} className="h-7 w-7 border-2 border-[#0A0A0A] ring-1 ring-white/10">
+                                <AvatarImage src={user.avatar} />
+                                <AvatarFallback className="text-[10px] bg-white/5 text-gray-400">{user.name.charAt(0)}</AvatarFallback>
                               </Avatar>
-                            </div>
-                          ))
+                            ))}
+                            {task.assignees.length > 3 && (
+                              <div className="h-7 w-7 rounded-full bg-white/5 border-2 border-[#0A0A0A] flex items-center justify-center text-[10px] text-gray-400 Montserrat font-bold">
+                                +{task.assignees.length - 3}
+                              </div>
+                            )}
+                          </div>
                         ) : (
-                          <span className="text-muted-foreground text-sm">Unassigned</span>
-                        )}
-                        {task.assignees?.length > 0 && (
-                          <span className="text-sm text-muted-foreground ml-1">
-                            {task.assignees.map(a => a.user.name).join(', ')}
-                          </span>
+                          <span className="text-gray-600 text-[10px] font-bold uppercase tracking-widest Montserrat">Unassigned</span>
                         )}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Select
-                        value={task.status}
-                        onValueChange={(value) => handleStatusUpdate(task.id, value)}
-                        onClick={(e) => e.stopPropagation()} // Prevent row click
-                        disabled={user?.role === 'CLIENT' || user?.role === 'MEMBER'}
-                      >
-                        <SelectTrigger className="h-8 w-[130px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="TODO">To Do</SelectItem>
-                          <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
-                          <SelectItem value="IN_REVIEW">In Review</SelectItem>
-                          <SelectItem value="COMPLETED">Completed</SelectItem>
-                          <SelectItem value="BLOCKED">Blocked</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black tracking-widest uppercase transition-all ${statusColors[task.status] || ''}`}>
+                        {task.status.replace('_', ' ')}
+                      </div>
                     </TableCell>
                     <TableCell>
-                      <Badge className={priorityColors[task.priority]}>
+                      <Badge className={`${priorityColors[task.priority]} border-0 px-2 py-0.5 text-[9px] font-black tracking-widest uppercase`}>
                         {task.priority}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-sm font-medium">
+                    <TableCell className="text-xs font-black Montserrat text-white">
                       {task.storyPoints || 0}
                     </TableCell>
-                    <TableCell className="text-sm">{formatDate(task.dueDate)}</TableCell>
+                    <TableCell className="text-[11px] font-bold Montserrat text-gray-500">{formatDate(task.dueDate)}</TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="range"
-                          min="0"
-                          max="100"
-                          step="5"
-                          value={task.completionPercentage}
-                          onChange={(e) => handleProgressUpdate(task.id, Number(e.target.value))}
-                          onClick={(e) => e.stopPropagation()} // Prevent row click
-                          disabled={user?.role === 'CLIENT' || user?.role === 'MEMBER'}
-                          className="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                        />
-                        <span className="text-xs font-medium w-8 text-right">
+                      <div className="space-y-1.5">
+                        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-500"
+                            style={{
+                              width: `${task.completionPercentage}%`,
+                              backgroundColor: task.status === 'COMPLETED' ? '#48A111' : '#00A3FF',
+                              boxShadow: `0 0 8px ${task.status === 'COMPLETED' ? '#48A11160' : '#00A3FF60'}`
+                            }}
+                          />
+                        </div>
+                        <span className="text-[10px] font-black Montserrat text-gray-500 block text-right">
                           {task.completionPercentage}%
                         </span>
                       </div>

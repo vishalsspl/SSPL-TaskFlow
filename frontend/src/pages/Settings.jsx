@@ -20,6 +20,33 @@ import {
 import api from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 
+const ROLE_CONFIG = {
+  ADMIN: {
+    color: '#8B5CF6',
+    bg: 'rgba(139,92,246,0.1)',
+    border: 'rgba(139,92,246,0.2)',
+    text: '#A78BFA',
+  },
+  MANAGER: {
+    color: '#0EA5E9',
+    bg: 'rgba(14,165,233,0.1)',
+    border: 'rgba(14,165,233,0.2)',
+    text: '#7DD3FC',
+  },
+  MEMBER: {
+    color: '#10B981',
+    bg: 'rgba(16,185,129,0.1)',
+    border: 'rgba(16,185,129,0.2)',
+    text: '#6EE7B7',
+  },
+  CLIENT: {
+    color: '#F43F5E',
+    bg: 'rgba(244,63,94,0.1)',
+    border: 'rgba(244,63,94,0.2)',
+    text: '#FDA4AF',
+  }
+};
+
 const demoAvatars = [
   'https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff',
   'https://ui-avatars.com/api/?name=Manager&background=6366F1&color=fff',
@@ -150,21 +177,35 @@ const Settings = () => {
         <aside className="-mx-4 lg:w-1/5">
           <nav className="flex space-x-2 lg:flex-col lg:space-x-0 lg:space-y-1">
             <Button
-              variant={activeTab === 'profile' ? 'secondary' : 'ghost'}
-              className="justify-start"
+              variant="none"
+              className={`justify-start Montserrat font-bold h-10 px-4 rounded-xl transition-all duration-300 ${activeTab === 'profile'
+                ? 'ring-1 shadow-lg'
+                : 'text-gray-500 hover:bg-white/5 hover:text-white'}`}
+              style={activeTab === 'profile' ? {
+                backgroundColor: ROLE_CONFIG[user?.role]?.bg || 'rgba(14,165,233,0.15)',
+                color: ROLE_CONFIG[user?.role]?.color || '#0EA5E9',
+                boxShadow: `0 0 20px ${ROLE_CONFIG[user?.role]?.bg || 'rgba(14,165,233,0.1)'}`,
+                border: `1px solid ${ROLE_CONFIG[user?.role]?.border || 'rgba(14,165,233,0.3)'}`
+              } : {}}
               onClick={() => setActiveTab('profile')}
             >
               Profile
             </Button>
-            <Button variant="ghost" className="justify-start" disabled>Account</Button>
             <Button
-              variant={activeTab === 'appearance' ? 'secondary' : 'ghost'}
-              className="justify-start"
+              variant="none"
+              className={`justify-start Montserrat font-bold h-10 px-4 rounded-xl transition-all duration-300 ${activeTab === 'appearance'
+                ? 'ring-1 shadow-lg'
+                : 'text-gray-500 hover:bg-white/5 hover:text-white'}`}
+              style={activeTab === 'appearance' ? {
+                backgroundColor: theme === 'light' ? 'rgba(72,161,17,0.15)' : theme === 'dark' ? 'rgba(139,92,246,0.15)' : 'rgba(14,165,233,0.15)',
+                color: theme === 'light' ? '#48a111' : theme === 'dark' ? '#8B5CF6' : '#0EA5E9',
+                boxShadow: `0 0 20px ${theme === 'light' ? 'rgba(72,161,17,0.1)' : theme === 'dark' ? 'rgba(139,92,246,0.1)' : 'rgba(14,165,233,0.1)'}`,
+                border: `1px solid ${theme === 'light' ? 'rgba(72,161,17,0.3)' : theme === 'dark' ? 'rgba(139,92,246,0.3)' : 'rgba(14,165,233,0.3)'}`
+              } : {}}
               onClick={() => setActiveTab('appearance')}
             >
               Appearance
             </Button>
-            <Button variant="ghost" className="justify-start" disabled>Notifications</Button>
           </nav>
         </aside>
 
@@ -180,16 +221,34 @@ const Settings = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="flex items-center gap-4">
-                      <Avatar className="h-20 w-20 border-2 border-muted">
+                    <div className="flex items-center gap-6">
+                      <Avatar
+                        className="h-24 w-24 border-4 border-[#0A0A0A] ring-2 shadow-2xl transition-all duration-500 hover:scale-105"
+                        style={{ ringColor: ROLE_CONFIG[user?.role]?.color || '#10B981' }}
+                      >
                         <AvatarImage src={user?.avatar} />
-                        <AvatarFallback className="text-2xl font-bold">
+                        <AvatarFallback
+                          style={{
+                            backgroundColor: ROLE_CONFIG[user?.role]?.bg || 'rgba(16,185,129,0.1)',
+                            color: ROLE_CONFIG[user?.role]?.color || '#10B981'
+                          }}
+                          className="text-3xl font-black Montserrat"
+                        >
                           {user?.name?.split(' ').map(n => n[0]).join('')}
                         </AvatarFallback>
                       </Avatar>
-                      <Button variant="outline" onClick={() => setShowAvatarDialog(true)}>
-                        Change Avatar
-                      </Button>
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          variant="none"
+                          className="bg-white/5 hover:bg-white/10 text-white border border-white/10 h-10 px-6 rounded-xl font-bold Montserrat transition-all"
+                          onClick={() => setShowAvatarDialog(true)}
+                        >
+                          Change Avatar
+                        </Button>
+                        <p className="text-[10px] text-muted-foreground ml-1">
+                          Personalize your identity
+                        </p>
+                      </div>
                     </div>
                     <Separator />
                     <div className="space-y-1">
@@ -203,7 +262,14 @@ const Settings = () => {
                     <div className="space-y-1">
                       <Label>Role</Label>
                       <div className="flex items-center">
-                        <Badge variant="outline" className="text-xs uppercase px-2 py-0.5 font-semibold tracking-wider">
+                        <Badge
+                          className="text-[10px] font-black tracking-widest uppercase rounded-sm px-2.5 py-1"
+                          style={{
+                            backgroundColor: ROLE_CONFIG[user?.role]?.bg || 'rgba(16,185,129,0.1)',
+                            color: ROLE_CONFIG[user?.role]?.color || '#10B981',
+                            border: `1px solid ${ROLE_CONFIG[user?.role]?.border || 'rgba(16,185,129,0.2)'}`
+                          }}
+                        >
                           {user?.role}
                         </Badge>
                       </div>
@@ -219,18 +285,21 @@ const Settings = () => {
                         Manage your organization details.
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="flex items-center gap-6 py-2">
-                        <div className="w-32 h-32 rounded-md border-2 border-muted flex items-center justify-center bg-card overflow-hidden">
-                          {user?.organization?.logoUrl ? (
-                            <img src={user.organization.logoUrl} alt="Org Logo" className="w-full h-full object-contain" />
-                          ) : (
-                            <div className="text-primary font-bold text-4xl">
-                              {user?.organization?.name?.charAt(0) || 'O'}
-                            </div>
-                          )}
+                    <CardContent className="space-y-6">
+                      <div className="flex items-center gap-8 py-2">
+                        <div className="relative group">
+                          <div className="absolute -inset-1 bg-gradient-to-r from-primary to-blue-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+                          <div className="relative w-32 h-32 rounded-xl border border-white/10 flex items-center justify-center bg-[#0A0A0A] overflow-hidden shadow-2xl">
+                            {user?.organization?.logoUrl ? (
+                              <img src={user.organization.logoUrl} alt="Org Logo" className="w-full h-full object-contain p-2" />
+                            ) : (
+                              <div className="text-primary font-black text-5xl Montserrat">
+                                {user?.organization?.name?.charAt(0) || 'O'}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                           <input
                             type="file"
                             ref={logoInputRef}
@@ -239,33 +308,38 @@ const Settings = () => {
                             onChange={handleLogoUpload}
                           />
                           <Button
-                            variant="outline"
-                            size="sm"
+                            variant="none"
+                            className="bg-white/5 hover:bg-white/10 text-white border border-white/10 h-10 px-6 rounded-xl font-bold Montserrat transition-all"
                             onClick={() => logoInputRef.current?.click()}
                             disabled={updatingOrg}
                           >
                             <Upload className="mr-2 h-4 w-4" />
-                            {user?.organization?.logoUrl ? 'Change Logo' : 'Upload Logo'}
+                            {user?.organization?.logoUrl ? 'Update Brand Logo' : 'Upload Brand Logo'}
                           </Button>
-                          <p className="text-[10px] text-muted-foreground">
-                            Recommended: Square image, max 2MB
+                          <p className="text-[10px] text-muted-foreground ml-1">
+                            JPG, PNG or SVG. Max size of 2MB.
                           </p>
                         </div>
                       </div>
-                      <Separator />
-                      <div className="space-y-1">
-                        <Label>Organization Name</Label>
+                      <Separator className="bg-white/5" />
+                      <div className="space-y-2">
+                        <Label className="text-sm font-bold Montserrat ml-1">Company Name</Label>
                         <Input
                           value={orgName}
                           onChange={(e) => setOrgName(e.target.value)}
+                          className="bg-[#0D0D0D] border-white/10 focus:border-primary/50 focus:ring-primary/20 h-12 rounded-xl Montserrat font-medium"
                         />
                       </div>
                       <div className="pt-2">
                         <Button
+                          variant="none"
+                          className={`w-full h-12 rounded-xl font-black Montserrat transition-all duration-300 ${updatingOrg || orgName === user?.organization?.name
+                            ? 'bg-white/5 text-gray-700 cursor-not-allowed'
+                            : 'bg-primary text-primary-foreground hover:shadow-[0_0_30px_rgba(72,161,17,0.3)] hover:scale-[1.02]'}`}
                           onClick={handleOrgUpdate}
                           disabled={updatingOrg || orgName === user?.organization?.name}
                         >
-                          {updatingOrg ? 'Saving...' : 'Save Changes'}
+                          {updatingOrg ? 'SAVING CHANGES...' : 'SAVE ORGANIZATION DETAILS'}
                         </Button>
                       </div>
                     </CardContent>
@@ -288,73 +362,61 @@ const Settings = () => {
                     <p className="text-sm text-muted-foreground">
                       Select the theme for the dashboard.
                     </p>
-                    <div className="grid max-w-md grid-cols-3 gap-8 pt-4">
-                      <div onClick={() => setTheme('light')} className="cursor-pointer">
-                        <div className={`items-center rounded-md border-2 p-1 hover:border-accent ${theme === 'light' ? 'border-primary' : 'border-muted'}`}>
-                          <div className="space-y-2 rounded-sm bg-[#ecedef] p-2">
-                            <div className="space-y-2 rounded-md bg-white p-2 shadow-sm">
+                    <div className="grid max-w-2xl grid-cols-3 gap-12 pt-6">
+                      <div onClick={() => setTheme('light')} className="group flex flex-col items-center gap-3">
+                        <div className={`cursor-pointer overflow-hidden items-center rounded-2xl border-2 p-1 transition-all duration-300 group-hover:scale-105 ${theme === 'light' ? 'border-primary shadow-[0_0_25px_rgba(72,161,17,0.2)]' : 'border-white/5 hover:border-white/20'}`}>
+                          <div className="space-y-2 rounded-xl bg-[#ecedef] p-2">
+                            <div className="space-y-2 rounded-lg bg-white p-2 shadow-sm">
                               <div className="h-2 w-[80px] rounded-lg bg-[#ecedef]" />
                               <div className="h-2 w-[100px] rounded-lg bg-[#ecedef]" />
                             </div>
-                            <div className="flex items-center space-x-2 rounded-md bg-white p-2 shadow-sm">
-                              <div className="h-4 w-4 rounded-full bg-[#ecedef]" />
-                              <div className="h-2 w-[100px] rounded-lg bg-[#ecedef]" />
-                            </div>
-                            <div className="flex items-center space-x-2 rounded-md bg-white p-2 shadow-sm">
+                            <div className="flex items-center space-x-2 rounded-lg bg-white p-2 shadow-sm">
                               <div className="h-4 w-4 rounded-full bg-[#ecedef]" />
                               <div className="h-2 w-[100px] rounded-lg bg-[#ecedef]" />
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 p-2">
-                          <Sun className="h-4 w-4" />
-                          <span className="block w-full text-center font-normal text-sm">Light</span>
+                        <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold Montserrat transition-colors ${theme === 'light' ? 'bg-primary/20 text-primary' : 'text-gray-500 hover:text-white'}`}>
+                          <Sun className="h-3.5 w-3.5" />
+                          Light
                         </div>
                       </div>
 
-                      <div onClick={() => setTheme('dark')} className="cursor-pointer">
-                        <div className={`items-center rounded-md border-2 p-1 hover:border-accent ${theme === 'dark' ? 'border-primary' : 'border-muted'}`}>
-                          <div className="space-y-2 rounded-sm bg-slate-950 p-2">
-                            <div className="space-y-2 rounded-md bg-slate-800 p-2 shadow-sm">
+                      <div onClick={() => setTheme('dark')} className="group flex flex-col items-center gap-3">
+                        <div className={`cursor-pointer overflow-hidden items-center rounded-2xl border-2 p-1 transition-all duration-300 group-hover:scale-105 ${theme === 'dark' ? 'border-[#8B5CF6] shadow-[0_0_25px_rgba(139,92,246,0.2)]' : 'border-white/5 hover:border-white/20'}`}>
+                          <div className="space-y-2 rounded-xl bg-slate-950 p-2">
+                            <div className="space-y-2 rounded-lg bg-slate-800 p-2 shadow-sm">
                               <div className="h-2 w-[80px] rounded-lg bg-slate-400" />
                               <div className="h-2 w-[100px] rounded-lg bg-slate-400" />
                             </div>
-                            <div className="flex items-center space-x-2 rounded-md bg-slate-800 p-2 shadow-sm">
-                              <div className="h-4 w-4 rounded-full bg-slate-400" />
-                              <div className="h-2 w-[100px] rounded-lg bg-slate-400" />
-                            </div>
-                            <div className="flex items-center space-x-2 rounded-md bg-slate-800 p-2 shadow-sm">
+                            <div className="flex items-center space-x-2 rounded-lg bg-slate-800 p-2 shadow-sm">
                               <div className="h-4 w-4 rounded-full bg-slate-400" />
                               <div className="h-2 w-[100px] rounded-lg bg-slate-400" />
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 p-2">
-                          <Moon className="h-4 w-4" />
-                          <span className="block w-full text-center font-normal text-sm">Dark</span>
+                        <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold Montserrat transition-colors ${theme === 'dark' ? 'bg-[#8B5CF6]/20 text-[#8B5CF6]' : 'text-gray-500 hover:text-white'}`}>
+                          <Moon className="h-3.5 w-3.5" />
+                          Dark
                         </div>
                       </div>
 
-                      <div onClick={() => setTheme('system')} className="cursor-pointer">
-                        <div className={`items-center rounded-md border-2 p-1 hover:border-accent ${theme === 'system' ? 'border-primary' : 'border-muted'}`}>
-                          <div className="space-y-2 rounded-sm bg-slate-950 p-2">
-                            <div className="space-y-2 rounded-md bg-slate-800 p-2 shadow-sm">
+                      <div onClick={() => setTheme('system')} className="group flex flex-col items-center gap-3">
+                        <div className={`cursor-pointer overflow-hidden items-center rounded-2xl border-2 p-1 transition-all duration-300 group-hover:scale-105 ${theme === 'system' ? 'border-[#0EA5E9] shadow-[0_0_25px_rgba(14,165,233,0.2)]' : 'border-white/5 hover:border-white/20'}`}>
+                          <div className="space-y-2 rounded-xl bg-slate-950 p-2">
+                            <div className="space-y-2 rounded-lg bg-slate-800 p-2 shadow-sm">
                               <div className="h-2 w-[80px] rounded-lg bg-slate-400" />
                               <div className="h-2 w-[100px] rounded-lg bg-slate-400" />
                             </div>
-                            <div className="flex items-center space-x-2 rounded-md bg-slate-800 p-2 shadow-sm">
-                              <div className="h-4 w-4 rounded-full bg-slate-400" />
-                              <div className="h-2 w-[100px] rounded-lg bg-slate-400" />
-                            </div>
-                            <div className="flex items-center space-x-2 rounded-md bg-slate-800 p-2 shadow-sm">
+                            <div className="flex items-center space-x-2 rounded-lg bg-slate-800 p-2 shadow-sm">
                               <div className="h-4 w-4 rounded-full bg-slate-400" />
                               <div className="h-2 w-[100px] rounded-lg bg-slate-400" />
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 p-2">
-                          <Monitor className="h-4 w-4" />
-                          <span className="block w-full text-center font-normal text-sm">System</span>
+                        <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold Montserrat transition-colors ${theme === 'system' ? 'bg-[#0EA5E9]/20 text-[#0EA5E9]' : 'text-gray-500 hover:text-white'}`}>
+                          <Monitor className="h-3.5 w-3.5" />
+                          System
                         </div>
                       </div>
                     </div>
@@ -377,9 +439,18 @@ const Settings = () => {
 
           <div className="space-y-6 py-4">
             <div className="flex flex-col items-center justify-center space-y-4 pt-2">
-              <Avatar className="h-24 w-24 border-2 border-primary">
+              <Avatar
+                className="h-28 w-28 border-4 border-[#0A0A0A] ring-2 shadow-2xl transition-all duration-700"
+                style={{ ringColor: ROLE_CONFIG[user?.role]?.color || '#10B981' }}
+              >
                 <AvatarImage src={user?.avatar} />
-                <AvatarFallback className="text-3xl">
+                <AvatarFallback
+                  style={{
+                    backgroundColor: ROLE_CONFIG[user?.role]?.bg || 'rgba(16,185,129,0.1)',
+                    color: ROLE_CONFIG[user?.role]?.color || '#10B981'
+                  }}
+                  className="text-4xl font-black Montserrat"
+                >
                   {user?.name?.charAt(0)}
                 </AvatarFallback>
               </Avatar>
@@ -400,13 +471,13 @@ const Settings = () => {
                     className={`relative cursor-pointer rounded-full border-2 transition-all p-0.5 ${user?.avatar === url ? 'border-primary ring-2 ring-primary/20' : 'border-transparent hover:border-muted-foreground/30'}`}
                     onClick={() => handleAvatarSelect(url)}
                   >
-                    <Avatar className="h-10 w-10">
+                    <Avatar className="h-10 w-10 border border-white/10">
                       <AvatarImage src={url} />
-                      <AvatarFallback>U</AvatarFallback>
+                      <AvatarFallback className="bg-white/5 text-[10px] font-bold">PRESET</AvatarFallback>
                     </Avatar>
                     {user?.avatar === url && (
-                      <div className="absolute -right-1 -top-1 bg-primary rounded-full p-0.5 text-primary-foreground shadow-sm">
-                        <Check className="h-2.5 w-2.5" />
+                      <div className="absolute -right-1 -top-1 bg-primary rounded-full p-1 text-primary-foreground shadow-lg border border-[#0A0A0A]">
+                        <Check className="h-2.5 w-2.5 stroke-[4]" />
                       </div>
                     )}
                   </div>

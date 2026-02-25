@@ -245,14 +245,44 @@ const Team = () => {
     });
   };
 
-  const getRoleBadgeColor = (role) => {
-    const colors = {
-      ADMIN: 'default', // primary
-      MANAGER: 'secondary', // secondary
-      MEMBER: 'outline', // outline
-      CLIENT: 'secondary',
+  const ROLE_CONFIG = {
+    ADMIN: {
+      color: '#8B5CF6',
+      bg: 'rgba(139,92,246,0.1)',
+      border: 'rgba(139,92,246,0.2)',
+      text: '#A78BFA',
+      label: 'Admin'
+    },
+    MANAGER: {
+      color: '#0EA5E9',
+      bg: 'rgba(14,165,233,0.1)',
+      border: 'rgba(14,165,233,0.2)',
+      text: '#7DD3FC',
+      label: 'Manager'
+    },
+    MEMBER: {
+      color: '#10B981',
+      bg: 'rgba(16,185,129,0.1)',
+      border: 'rgba(16,185,129,0.2)',
+      text: '#6EE7B7',
+      label: 'Member'
+    },
+    CLIENT: {
+      color: '#F43F5E',
+      bg: 'rgba(244,63,94,0.1)',
+      border: 'rgba(244,63,94,0.2)',
+      text: '#FDA4AF',
+      label: 'Client'
+    }
+  };
+
+  const getRoleBadgeStyle = (role) => {
+    const config = ROLE_CONFIG[role] || ROLE_CONFIG.MEMBER;
+    return {
+      backgroundColor: config.bg,
+      color: config.color,
+      border: `1px solid ${config.border}`,
     };
-    return colors[role] || 'outline';
   };
 
   if (loading) {
@@ -413,55 +443,65 @@ const Team = () => {
             <>
               <div className="flex items-center gap-1">
                 <Button
-                  variant={selectedManagerId === 'ALL' ? 'default' : 'outline'}
+                  variant="none"
                   onClick={() => setSelectedManagerId('ALL')}
-                  className="gap-2"
+                  className={`gap-2 h-10 px-4 rounded-xl Montserrat font-bold transition-all duration-300 ${selectedManagerId === 'ALL'
+                    ? 'bg-primary/20 text-primary ring-1 ring-primary/50 shadow-[0_0_20px_rgba(72,161,17,0.15)]'
+                    : 'bg-white/5 text-gray-500 hover:bg-white/10 hover:text-white'}`}
                 >
                   <Layers className="w-4 h-4" />
                   All Members
-                  <Badge variant="secondary" className="ml-1 bg-primary/20 text-primary-foreground/80 hover:bg-primary/30">{users.length}</Badge>
+                  <Badge variant="none" className="ml-1 bg-white/10 text-inherit text-[10px] px-1.5">{users.length}</Badge>
                 </Button>
               </div>
               {currentUser?.role === 'ADMIN' && (
                 <Button
-                  variant={selectedManagerId === 'MANAGERS_LIST' ? 'default' : 'outline'}
+                  variant="none"
                   onClick={() => setSelectedManagerId('MANAGERS_LIST')}
-                  className="gap-2"
+                  className={`gap-2 h-10 px-4 rounded-xl Montserrat font-bold transition-all duration-300 ${selectedManagerId === 'MANAGERS_LIST'
+                    ? 'bg-[#0EA5E9]/20 text-[#0EA5E9] ring-1 ring-[#0EA5E9]/50 shadow-[0_0_20px_rgba(14,165,233,0.15)]'
+                    : 'bg-white/5 text-gray-500 hover:bg-white/10 hover:text-white'}`}
                 >
                   <Shield className="w-4 h-4" />
                   Managers
-                  <Badge variant="secondary" className="ml-1 bg-primary/20 text-primary-foreground/80 hover:bg-primary/30">{managers.length}</Badge>
+                  <Badge variant="none" className="ml-1 bg-white/10 text-inherit text-[10px] px-1.5">{managers.length}</Badge>
                 </Button>
               )}
               {currentUser?.role === 'ADMIN' && (
                 <Button
-                  variant={selectedManagerId === 'CLIENTS_LIST' ? 'default' : 'outline'}
+                  variant="none"
                   onClick={() => setSelectedManagerId('CLIENTS_LIST')}
-                  className="gap-2"
+                  className={`gap-2 h-10 px-4 rounded-xl Montserrat font-bold transition-all duration-300 ${selectedManagerId === 'CLIENTS_LIST'
+                    ? 'bg-[#F43F5E]/20 text-[#F43F5E] ring-1 ring-[#F43F5E]/50 shadow-[0_0_20px_rgba(244,63,94,0.15)]'
+                    : 'bg-white/5 text-gray-500 hover:bg-white/10 hover:text-white'}`}
                 >
                   <Users className="w-4 h-4" />
                   Clients
-                  <Badge variant="secondary" className="ml-1 bg-primary/20 text-primary-foreground/80 hover:bg-primary/30">{clients.length}</Badge>
+                  <Badge variant="none" className="ml-1 bg-white/10 text-inherit text-[10px] px-1.5">{clients.length}</Badge>
                 </Button>
               )}
               <Button
-                variant={selectedManagerId === 'MEMBERS_LIST' ? 'default' : 'outline'}
+                variant="none"
                 onClick={() => setSelectedManagerId('MEMBERS_LIST')}
-                className="gap-2"
+                className={`gap-2 h-10 px-4 rounded-xl Montserrat font-bold transition-all duration-300 ${selectedManagerId === 'MEMBERS_LIST'
+                  ? 'bg-[#10B981]/20 text-[#10B981] ring-1 ring-[#10B981]/50 shadow-[0_0_20px_rgba(16,185,129,0.15)]'
+                  : 'bg-white/5 text-gray-500 hover:bg-white/10 hover:text-white'}`}
               >
                 <User className="w-4 h-4" />
                 Members
-                <Badge variant="secondary" className="ml-1 bg-primary/20 text-primary-foreground/80 hover:bg-primary/30">{members.length}</Badge>
+                <Badge variant="none" className="ml-1 bg-white/10 text-inherit text-[10px] px-1.5">{members.length}</Badge>
               </Button>
               {pendingUsers.length > 0 && (
                 <Button
-                  variant={selectedManagerId === 'PENDING' ? 'destructive' : 'outline'}
+                  variant="none"
                   onClick={() => setSelectedManagerId('PENDING')}
-                  className="gap-2 border-orange-200 hover:bg-orange-50 text-orange-700 hover:text-orange-800"
+                  className={`gap-2 h-10 px-4 rounded-xl Montserrat font-bold transition-all duration-300 ${selectedManagerId === 'PENDING'
+                    ? 'bg-orange-500/20 text-orange-500 ring-1 ring-orange-500/50 shadow-[0_0_20px_rgba(249,115,22,0.15)]'
+                    : 'bg-white/5 text-orange-500/60 hover:bg-white/10 hover:text-orange-500'}`}
                 >
                   <UserCheck className="w-4 h-4" />
                   Pending
-                  <Badge variant="secondary" className="ml-1 bg-white/20 text-inherit">{pendingUsers.length}</Badge>
+                  <Badge variant="none" className="ml-1 bg-white/10 text-inherit text-[10px] px-1.5">{pendingUsers.length}</Badge>
                 </Button>
               )}
             </>
@@ -487,9 +527,11 @@ const Team = () => {
               onClick={() => setSelectedManagerId(manager.id)}
             >
               <CardHeader className="flex flex-row items-center gap-4 space-y-0">
-                <Avatar className="h-12 w-12">
+                <Avatar className="h-12 w-12 border-2 border-[#0A0A0A] ring-1 ring-white/10 shadow-lg">
                   <AvatarImage src={manager.avatar} alt={manager.name} />
-                  <AvatarFallback>{manager.name.charAt(0)}</AvatarFallback>
+                  <AvatarFallback style={{ backgroundColor: ROLE_CONFIG.MANAGER.bg, color: ROLE_CONFIG.MANAGER.color }}>
+                    {manager.name.charAt(0)}
+                  </AvatarFallback>
                 </Avatar>
                 <div>
                   <CardTitle className="text-base">{manager.name}</CardTitle>
@@ -542,16 +584,23 @@ const Team = () => {
                       <TableRow key={user.id}>
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8">
+                            <Avatar className="h-8 w-8 border border-[#0A0A0A] ring-1 ring-white/10">
                               <AvatarImage src={user.avatar} />
-                              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                              <AvatarFallback style={{ backgroundColor: getRoleBadgeStyle(user.role).backgroundColor, color: getRoleBadgeStyle(user.role).color }}>
+                                {user.name.charAt(0)}
+                              </AvatarFallback>
                             </Avatar>
                             <span className="font-medium">{user.name}</span>
                           </div>
                         </TableCell>
                         <TableCell>{user.email}</TableCell>
                         <TableCell>
-                          <Badge variant={getRoleBadgeColor(user.role)}>{user.role}</Badge>
+                          <Badge
+                            className="text-[9px] font-black tracking-widest uppercase rounded-sm"
+                            style={getRoleBadgeStyle(user.role)}
+                          >
+                            {user.role}
+                          </Badge>
                         </TableCell>
                       </TableRow>
                     ))
@@ -588,16 +637,23 @@ const Team = () => {
                       <TableRow key={user.id}>
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8">
+                            <Avatar className="h-8 w-8 border border-[#0A0A0A] ring-1 ring-white/10">
                               <AvatarImage src={user.avatar} />
-                              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                              <AvatarFallback style={{ backgroundColor: getRoleBadgeStyle(user.role).backgroundColor, color: getRoleBadgeStyle(user.role).color }}>
+                                {user.name.charAt(0)}
+                              </AvatarFallback>
                             </Avatar>
                             <span className="font-medium">{user.name}</span>
                           </div>
                         </TableCell>
                         <TableCell>{user.email}</TableCell>
                         <TableCell>
-                          <Badge variant={getRoleBadgeColor(user.role)}>{user.role}</Badge>
+                          <Badge
+                            className="text-[9px] font-black tracking-widest uppercase rounded-sm"
+                            style={getRoleBadgeStyle(user.role)}
+                          >
+                            {user.role}
+                          </Badge>
                         </TableCell>
                       </TableRow>
                     ))
@@ -620,14 +676,21 @@ const Team = () => {
                 {pendingUsers.map((pendingUser) => (
                   <div key={pendingUser.id} className="flex items-center justify-between p-4 bg-background rounded-lg border shadow-sm">
                     <div className="flex items-center gap-4">
-                      <Avatar>
-                        <AvatarFallback>{pendingUser.name.charAt(0)}</AvatarFallback>
+                      <Avatar className="border border-[#0A0A0A] ring-1 ring-white/10">
+                        <AvatarFallback style={{ backgroundColor: getRoleBadgeStyle(pendingUser.role).backgroundColor, color: getRoleBadgeStyle(pendingUser.role).color }}>
+                          {pendingUser.name.charAt(0)}
+                        </AvatarFallback>
                       </Avatar>
                       <div>
                         <p className="font-medium">{pendingUser.name}</p>
                         <p className="text-sm text-muted-foreground">{pendingUser.email}</p>
                       </div>
-                      <Badge variant={getRoleBadgeColor(pendingUser.role)}>{pendingUser.role}</Badge>
+                      <Badge
+                        className="text-[9px] font-black tracking-widest uppercase rounded-sm"
+                        style={getRoleBadgeStyle(pendingUser.role)}
+                      >
+                        {pendingUser.role}
+                      </Badge>
                       <div className="flex items-center text-sm text-muted-foreground">
                         <Clock className="w-4 h-4 mr-1" />
                         {new Date(pendingUser.createdAt).toLocaleDateString()}
@@ -694,16 +757,23 @@ const Team = () => {
                                 <Plus className="h-4 w-4" />
                               </Button>
                             )}
-                            <Avatar className="h-8 w-8">
+                            <Avatar className="h-8 w-8 border border-[#0A0A0A] ring-1 ring-white/10">
                               <AvatarImage src={user.avatar} />
-                              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                              <AvatarFallback style={{ backgroundColor: getRoleBadgeStyle(user.role).backgroundColor, color: getRoleBadgeStyle(user.role).color }}>
+                                {user.name.charAt(0)}
+                              </AvatarFallback>
                             </Avatar>
                             <span className="font-medium">{user.name}</span>
                           </div>
                         </TableCell>
                         <TableCell>{user.email}</TableCell>
                         <TableCell>
-                          <Badge variant={getRoleBadgeColor(user.role)}>{user.role}</Badge>
+                          <Badge
+                            className="text-[9px] font-black tracking-widest uppercase rounded-sm"
+                            style={getRoleBadgeStyle(user.role)}
+                          >
+                            {user.role}
+                          </Badge>
                         </TableCell>
                         {selectedManagerId !== 'CLIENTS_LIST' && (
                           <TableCell>

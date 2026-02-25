@@ -184,21 +184,21 @@ const ProjectsList = () => {
   };
 
   const STATUS_STYLES = {
-    PLANNING: { bg: 'rgba(245,158,11,0.15)', text: '#F59E0B', border: '#F59E0B' },
-    ACTIVE: { bg: 'rgba(72,161,17,0.15)', text: '#48A111', border: '#48A111' },
-    ON_HOLD: { bg: 'rgba(56,189,248,0.15)', text: '#38BDF8', border: '#38BDF8' },
-    COMPLETED: { bg: 'rgba(124,58,237,0.15)', text: '#7C3AED', border: '#7C3AED' },
-    CANCELLED: { bg: 'rgba(244,63,94,0.15)', text: '#F43F5E', border: '#F43F5E' },
+    PLANNING: { bg: 'rgba(245,158,11,0.1)', text: '#F59E0B', border: '#F59E0B60' },
+    ACTIVE: { bg: 'rgba(72,161,17,0.1)', text: '#48A111', border: '#48A11160' },
+    ON_HOLD: { bg: 'rgba(0,163,255,0.1)', text: '#00A3FF', border: '#00A3FF60' },
+    COMPLETED: { bg: 'rgba(139,92,246,0.1)', text: '#8B5CF6', border: '#8B5CF660' },
+    CANCELLED: { bg: 'rgba(244,63,94,0.1)', text: '#F43F5E', border: '#F43F5E60' },
   };
 
   const PROJECT_COLORS = [
-    '#7C3AED', // Purple
-    '#0EA5E9', // Sky Blue
-    '#48A111', // Neon Green
+    '#8B5CF6', // Vibrant Purple
+    '#0EA5E9', // Electric Blue
+    '#10B981', // Neon Green
     '#F59E0B', // Amber
     '#F43F5E', // Rose
     '#F97316', // Orange
-    '#EC4899', // Pink
+    '#D946EF', // Magenta/Pink
   ];
 
   const filteredProjects = projects.filter(project => {

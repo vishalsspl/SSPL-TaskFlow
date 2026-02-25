@@ -189,7 +189,7 @@ const Layout = () => {
       </div>
 
       {/* Main content */}
-      <main className="flex-1 md:ml-64 p-6 pt-20 md:pt-6 animate-in fade-in duration-500">
+      <main className={`flex-1 md:ml-64 ${location.pathname === '/task-board' ? 'p-0' : 'p-6'} pt-20 md:pt-6 animate-in fade-in duration-500`}>
         <Outlet />
       </main>
     </div>

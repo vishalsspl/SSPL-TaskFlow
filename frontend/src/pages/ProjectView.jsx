@@ -325,111 +325,133 @@ const ProjectView = () => {
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               {!presentationMode && (
-                <Button variant="ghost" size="icon" onClick={() => navigate('/projects')} className="mr-2">
-                  <ArrowLeft className="w-4 h-4" />
+                <Button variant="ghost" size="icon" onClick={() => navigate('/projects')} className="mr-2 text-gray-400 hover:text-white">
+                  <ArrowLeft className="w-5 h-5" />
                 </Button>
               )}
-              <h1 className="text-3xl font-bold tracking-tight">{project.name}</h1>
+              <h1 className="text-3xl font-black Montserrat text-white">{project.name}</h1>
             </div>
 
-            <div className="flex items-center gap-4 text-muted-foreground pl-12">
+            <div className="flex items-center gap-4 text-gray-500 pl-14 Montserrat font-bold uppercase tracking-wider">
               {project.client && (
-                <div className="flex items-center text-sm">
-                  <Users className="w-4 h-4 mr-2" />
+                <div className="flex items-center text-[11px]">
+                  <Users className="w-4 h-4 mr-2 text-[#00A3FF]" />
                   <span>{project.client.name}</span>
                 </div>
               )}
-              <div className="flex items-center text-sm">
-                <Calendar className="w-4 h-4 mr-2" />
+              <div className="flex items-center text-[11px]">
+                <Calendar className="w-4 h-4 mr-2 text-[#8B5CF6]" />
                 <span>Due {formatDate(project.endDate)}</span>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3">
             {!presentationMode && (
               <>
-                <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing}>
+                <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing} className="bg-white/5 border-white/10 text-white Montserrat font-bold rounded-xl px-4">
                   <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
                   Refresh
                 </Button>
 
                 {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
-                  <Button size="sm" onClick={() => setShowCreateDialog(true)}>
-                    <CheckCircle className="w-4 h-4 mr-2" />
+                  <Button size="sm" onClick={() => setShowCreateDialog(true)} className="bg-primary hover:bg-primary/90 text-white Montserrat font-bold rounded-xl px-4">
+                    <Plus className="w-4 h-4 mr-2" />
                     New Task
                   </Button>
                 )}
 
-                <Button variant="outline" size="sm" onClick={exportToPNG}>
+                <Button variant="outline" size="sm" onClick={exportProfessionalReport} className="bg-white/5 border-white/10 text-white Montserrat font-bold rounded-xl px-4">
                   <Download className="w-4 h-4 mr-2" />
-                  PNG
-                </Button>
-                <Button variant="outline" size="sm" onClick={exportProfessionalReport}>
-                  <FileText className="w-4 h-4 mr-2" />
                   Report
                 </Button>
-                <Button onClick={() => setPresentationMode(true)} size="sm">
+                <Button onClick={() => setPresentationMode(true)} size="sm" className="bg-[#48A111] hover:bg-[#48A111]/90 text-white Montserrat font-bold rounded-xl px-4">
                   <Maximize className="w-4 h-4 mr-2" />
                   Present
                 </Button>
               </>
             )}
             {presentationMode && (
-              <Button onClick={() => setPresentationMode(false)}>Exit</Button>
+              <Button onClick={() => setPresentationMode(false)} className="bg-red-500 hover:bg-red-600 text-white Montserrat font-bold rounded-xl">Exit Mode</Button>
             )}
           </div>
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="tasks">Tasks</TabsTrigger>
-            <TabsTrigger value="team">Team & Workload</TabsTrigger>
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="bg-white/5 border-white/10 p-1 rounded-2xl h-12">
+            <TabsTrigger value="overview" className="rounded-xl px-6 Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-white">Overview</TabsTrigger>
+            <TabsTrigger value="tasks" className="rounded-xl px-6 Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-white">Tasks</TabsTrigger>
+            <TabsTrigger value="team" className="rounded-xl px-6 Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-white">Team Distribution</TabsTrigger>
           </TabsList>
 
           <div ref={dashboardRef} className="space-y-6">
-            <TabsContent value="overview" className="space-y-4">
+            <TabsContent value="overview" className="space-y-6">
               {/* Phases */}
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                {phases.map((phase) => (
-                  <Card key={phase.id} className={phase.status === 'COMPLETED' ? 'bg-green-50/50 border-green-200' : 'bg-card'}>
-                    <CardContent className="p-4 flex flex-col items-center justify-center text-center space-y-2">
-                      <h4 className="font-medium text-sm">{phase.name}</h4>
-                      {phase.status === 'COMPLETED' ? (
-                        <CheckCircle className="w-8 h-8 text-green-500" />
-                      ) : phase.status === 'IN_PROGRESS' ? (
-                        <div className="text-2xl font-bold text-primary">{phase.completionPercentage}%</div>
-                      ) : (
-                        <Clock className="w-8 h-8 text-muted-foreground/30" />
-                      )}
-                      <Badge variant="outline" className="text-[10px]">{phase.status.replace('_', ' ')}</Badge>
-                    </CardContent>
-                  </Card>
-                ))}
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                {phases.map((phase) => {
+                  const isComp = phase.status === 'COMPLETED';
+                  const isProd = phase.status === 'IN_PROGRESS';
+                  return (
+                    <Card key={phase.id} className={`border-0 relative overflow-hidden group transition-all duration-500 ${isComp ? 'bg-gradient-to-br from-[#10B981] to-[#047857]' : isProd ? 'bg-gradient-to-br from-[#0EA5E9] to-[#0369A1]' : 'bg-[#0A0A0A] ring-1 ring-white/10'}`}>
+                      <CardContent className="p-6 flex flex-col items-center justify-center text-center space-y-3 relative z-10">
+                        <h4 className={`font-black text-[10px] uppercase tracking-widest Montserrat ${isComp || isProd ? 'text-white/80' : 'text-gray-500'}`}>{phase.name}</h4>
+                        {isComp ? (
+                          <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-md shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+                            <CheckCircle className="w-8 h-8 text-white" />
+                          </div>
+                        ) : isProd ? (
+                          <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-md shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+                            <div className="text-2xl font-black text-white Montserrat">{phase.completionPercentage}%</div>
+                          </div>
+                        ) : (
+                          <div className="p-3 bg-white/5 rounded-2xl">
+                            <Clock className="w-8 h-8 text-gray-700" />
+                          </div>
+                        )}
+                        <Badge variant="none" className={`text-[9px] font-black tracking-widest uppercase px-2 py-0.5 rounded-md ${isComp || isProd ? 'bg-white/20 text-white' : 'bg-white/5 text-gray-500 border border-white/10'}`}>
+                          {phase.status.replace('_', ' ')}
+                        </Badge>
+                      </CardContent>
+                      <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
+                    </Card>
+                  );
+                })}
 
-                <Card className="bg-primary/5 border-primary/20">
-                  <CardContent className="p-4 flex flex-col items-center justify-center text-center space-y-2">
-                    <h4 className="font-medium text-sm">Launch In</h4>
-                    <div className="text-3xl font-bold text-primary">{overview.daysToLaunch}</div>
-                    <span className="text-xs text-muted-foreground">Days</span>
+                <Card className="border-0 bg-gradient-to-br from-[#F59E0B] to-[#B45309] shadow-[0_10px_40px_-10px_rgba(245,158,11,0.3)] relative overflow-hidden group">
+                  <CardContent className="p-6 flex flex-col items-center justify-center text-center space-y-1">
+                    <h4 className="font-black text-[10px] text-white/80 uppercase tracking-widest Montserrat">Target Launch</h4>
+                    <div className="text-4xl font-black text-white Montserrat">{overview.daysToLaunch}</div>
+                    <span className="text-[10px] font-black text-white/60 uppercase tracking-widest Montserrat">Days Remaining</span>
+                    <div className="absolute bottom-0 left-0 w-full h-1 bg-white/20">
+                      <div className="h-full bg-white shadow-[0_0_10px_white]" style={{ width: '60%' }} />
+                    </div>
                   </CardContent>
                 </Card>
               </div>
 
               {/* Metrics */}
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Budget Used</CardTitle>
-                    <span className="text-muted-foreground">$</span>
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <Card className="bg-[#0A0A0A] border-white/5 ring-1 ring-white/10 shadow-2xl relative overflow-hidden group">
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-[10px] font-black text-gray-500 uppercase tracking-widest Montserrat">Capital Utilization</CardTitle>
+                    <div className="p-1.5 bg-white/5 rounded-lg">
+                      <FileText className="h-3.5 w-3.5 text-primary" />
+                    </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{formatCurrency(budget.used)}</div>
-                    <p className="text-xs text-muted-foreground">of {formatCurrency(project.totalBudget)}</p>
+                    <div className="text-2xl font-black text-white Montserrat">{formatCurrency(budget.used)}</div>
+                    <p className="text-[10px] text-gray-500 mt-1 Montserrat font-bold italic">
+                      Committed of {formatCurrency(project.totalBudget)}
+                    </p>
+                    <div className="mt-4 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-primary shadow-[0_0_8px_var(--primary-glow)]"
+                        style={{ width: `${(budget.used / project.totalBudget) * 100}%` }}
+                      />
+                    </div>
                   </CardContent>
                 </Card>
-                {/* Add more metrics as needed */}
+                {/* Simplified metrics section - could add more here if needed */}
               </div>
             </TabsContent>
 

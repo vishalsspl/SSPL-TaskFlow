@@ -18,16 +18,16 @@ export const formatCurrency = (amount) => {
 };
 
 export const priorityColors = {
-  LOW: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 hover:bg-blue-500/25',
-  MEDIUM: 'bg-yellow-500/15 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-500/25',
-  HIGH: 'bg-orange-500/15 text-orange-600 dark:text-orange-400 hover:bg-orange-500/25',
-  CRITICAL: 'bg-red-500/15 text-red-600 dark:text-red-400 hover:bg-red-500/25',
+  LOW: 'bg-sky-500/10 text-sky-400 border border-sky-500/20 Montserrat font-bold',
+  MEDIUM: 'bg-amber-500/10 text-amber-400 border border-amber-500/20 Montserrat font-bold',
+  HIGH: 'bg-orange-500/10 text-orange-400 border border-orange-500/20 Montserrat font-bold',
+  URGENT: 'bg-red-500/10 text-red-400 border border-red-500/20 Montserrat font-bold',
 };
 
 export const statusColors = {
-  TODO: 'bg-muted text-muted-foreground hover:bg-muted/80',
-  IN_PROGRESS: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 hover:bg-blue-500/25',
-  IN_REVIEW: 'bg-purple-500/15 text-purple-600 dark:text-purple-400 hover:bg-purple-500/25',
-  COMPLETED: 'bg-green-500/15 text-green-600 dark:text-green-400 hover:bg-green-500/25',
-  BLOCKED: 'bg-red-500/15 text-red-600 dark:text-red-400 hover:bg-red-500/25',
+  TODO: 'bg-amber-500/10 text-amber-500 border border-amber-500/20 Montserrat font-bold',
+  IN_PROGRESS: 'bg-[#00A3FF]/10 text-[#00A3FF] border border-[#00A3FF]/20 Montserrat font-bold',
+  IN_REVIEW: 'bg-purple-500/10 text-purple-400 border border-purple-500/20 Montserrat font-bold',
+  COMPLETED: 'bg-[#48A111]/10 text-[#48A111] border border-[#48A111]/20 Montserrat font-bold',
+  BLOCKED: 'bg-red-600/10 text-red-500 border border-red-600/20 Montserrat font-bold',
 };

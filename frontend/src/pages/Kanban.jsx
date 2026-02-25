@@ -16,45 +16,50 @@ import { RefreshCw, Plus, X, MoreVertical, Clock, AlertCircle, User, ClipboardLi
 
 // ─── Status config ──────────────────────────────────────────────
 const STATUS_CONFIG = {
-  BACKLOG: {
-    label: 'Pending',
-    color: '#F43F5E', // Vibrant Rose
-    dot: '#F43F5E',
-    badgeBg: 'rgba(244, 63, 94, 0.1)',
-    badgeText: '#FB7185',
-    progress: 10,
+  TODO: {
+    label: 'To Do',
+    color: '#F59E0B', // Vibrant Amber
+    dot: '#F59E0B',
+    badgeBg: 'rgba(245, 158, 11, 0.1)',
+    badgeText: '#FBBF24',
+    progress: 0,
+    bgTint: 'rgba(245, 158, 11, 0.03)',
   },
   IN_PROGRESS: {
     label: 'In Progress',
-    color: '#38BDF8', // Neon Sky Blue
-    dot: '#38BDF8',
-    badgeBg: 'rgba(56, 189, 248, 0.1)',
+    color: '#00A3FF', // Electric Blue
+    dot: '#00A3FF',
+    badgeBg: 'rgba(0, 163, 255, 0.1)',
     badgeText: '#7DD3FC',
     progress: 50,
+    bgTint: 'rgba(0, 163, 255, 0.03)',
   },
-  REVIEW: {
-    label: 'Under Reviews',
-    color: '#F97316', // Vibrant Orange
-    dot: '#F97316',
-    badgeBg: 'rgba(249, 115, 22, 0.1)',
-    badgeText: '#FB923C',
+  IN_REVIEW: {
+    label: 'In Review',
+    color: '#D946EF', // Neon Purple/Magenta
+    dot: '#D946EF',
+    badgeBg: 'rgba(217, 70, 239, 0.1)',
+    badgeText: '#F5D0FE',
     progress: 75,
+    bgTint: 'rgba(217, 70, 239, 0.03)',
   },
-  DONE: {
+  COMPLETED: {
     label: 'Completed',
     color: '#48A111', // Neon Green
     dot: '#48A111',
     badgeBg: 'rgba(72, 161, 17, 0.1)',
     badgeText: '#86EFAC',
     progress: 100,
+    bgTint: 'rgba(72, 161, 17, 0.03)',
   },
   BLOCKED: {
     label: 'Blocked',
-    color: '#94A3B8', // Muted Slate
-    dot: '#94A3B8',
-    badgeBg: 'rgba(148, 163, 184, 0.1)',
-    badgeText: '#CBD5E1',
+    color: '#EF4444', // Vivid Red
+    dot: '#EF4444',
+    badgeBg: 'rgba(239, 68, 68, 0.1)',
+    badgeText: '#FCA5A5',
     progress: 0,
+    bgTint: 'rgba(239, 68, 68, 0.03)',
   },
 };
 
@@ -235,34 +240,31 @@ const Kanban = () => {
             return (
               <div
                 key={status}
-                className={`rounded-2xl transition-all duration-200 ${isOver ? 'scale-[1.015] shadow-lg' : ''}`}
-                style={{ backgroundColor: isOver ? `${cfg.color}08` : 'transparent' }}
                 onDragOver={(e) => handleDragOver(e, status)}
-                onDrop={(e) => handleDrop(e, status)}
+                onDragLeave={handleDragLeave}
+                onDrop={e => handleDrop(e, status)}
+                className={`flex flex-col min-w-[280px] w-full rounded-2xl transition-all duration-300 border border-transparent ${isOver ? 'ring-2 ring-primary/40 glass' : ''}`}
+                style={{ backgroundColor: cfg.bgTint, borderColor: isOver ? cfg.color : 'transparent' }}
               >
                 {/* ── Column Header ── */}
-                <div className="flex items-center justify-between px-2 py-2 mb-4">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full flex-shrink-0 shadow-sm" style={{ backgroundColor: cfg.dot }} />
-                    <span className="font-bold text-sm text-gray-800 tracking-tight">{cfg.label}</span>
-                    <span
-                      className="text-[11px] font-extrabold rounded-full w-5 h-5 flex items-center justify-center text-white shadow-sm"
-                      style={{ backgroundColor: cfg.color }}
-                    >
+                <div className="flex items-center justify-between p-4 mb-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-2.5 h-2.5 rounded-full shadow-[0_0_8px] animate-pulse" style={{ backgroundColor: cfg.color, boxShadow: `0 0 12px ${cfg.color}` }} />
+                    <h2 className="font-black text-xs uppercase tracking-widest text-white Montserrat">
+                      {cfg.label}
+                    </h2>
+                    <Badge variant="secondary" className="bg-white/5 text-gray-400 text-[10px] h-5 rounded-md border-0 Montserrat">
                       {colTasks.length}
-                    </span>
+                    </Badge>
                   </div>
                   <div className="flex items-center gap-1">
                     <button
-                      onClick={() => setShowCreateForm(showCreateForm === status ? null : status)}
-                      className="p-1.5 rounded-lg hover:bg-white hover:shadow-sm transition-all text-gray-400 hover:text-gray-600"
-                      title="Add task"
+                      onClick={() => setShowCreateForm(status)}
+                      className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all text-gray-400 hover:text-white"
                     >
-                      {showCreateForm === status
-                        ? <X className="w-4 h-4" />
-                        : <Plus className="w-4 h-4" />}
+                      {showCreateForm === status ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                     </button>
-                    <button className="p-1.5 rounded-lg hover:bg-white hover:shadow-sm transition-all text-gray-400 hover:text-gray-600">
+                    <button className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all">
                       <MoreVertical className="w-4 h-4" />
                     </button>
                   </div>
@@ -354,15 +356,20 @@ const Kanban = () => {
                         draggable
                         onDragStart={e => handleDragStart(e, task)}
                         onDragEnd={handleDragEnd}
-                        className="bg-white rounded-2xl border border-gray-50 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] p-5 cursor-grab active:cursor-grabbing hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-0.5 transition-all duration-300 group select-none relative overflow-hidden"
+                        className="bg-black/40 backdrop-blur-sm rounded-2xl border border-white/5 p-5 cursor-grab active:cursor-grabbing hover:border-white/20 hover:shadow-[0_8px_30px_rgb(0,0,0,0.3)] hover:-translate-y-1 transition-all duration-300 group select-none relative overflow-hidden ring-1 ring-white/5"
+                        style={{ borderLeft: `4px solid ${cardCfg.color}` }}
                       >
                         {/* ── Row 1: Icon Box + Status Label ── */}
                         <div className="flex items-start justify-between mb-4">
                           <div
-                            className="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-md flex-shrink-0 transition-transform group-hover:scale-110 duration-300"
-                            style={{ backgroundColor: cardCfg.color }}
+                            className="w-11 h-11 rounded-xl flex items-center justify-center text-white shadow-lg flex-shrink-0 transition-transform group-hover:scale-110 duration-300"
+                            style={{
+                              backgroundColor: `${cardCfg.color}20`,
+                              color: cardCfg.color,
+                              border: `1px solid ${cardCfg.color}40`
+                            }}
                           >
-                            <ClipboardList className="w-6 h-6" />
+                            <ClipboardList className="w-5 h-5" />
                           </div>
 
                           <div className="flex flex-col items-end gap-2">
@@ -370,11 +377,12 @@ const Kanban = () => {
                               <MoreVertical className="w-4 h-4" />
                             </button>
                             <span
-                              className="text-[10px] font-bold px-3 py-1 rounded-full border shadow-sm tracking-wide uppercase"
+                              className="text-[9px] font-black px-2.5 py-1 rounded-md border shadow-sm tracking-widest uppercase Montserrat"
                               style={{
-                                backgroundColor: cardCfg.badgeBg,
-                                color: cardCfg.badgeText,
-                                borderColor: `${cardCfg.dot}20`,
+                                backgroundColor: `${cardCfg.color}15`,
+                                color: cardCfg.color,
+                                borderColor: `${cardCfg.color}30`,
+                                textShadow: `0 0 10px ${cardCfg.color}50`
                               }}
                             >
                               {cardCfg.label}
@@ -382,9 +390,8 @@ const Kanban = () => {
                           </div>
                         </div>
 
-                        {/* ── Task Title & Project ── */}
                         <div className="mb-4">
-                          <h3 className="text-[15px] font-bold text-gray-900 mb-1 line-clamp-2 leading-snug tracking-tight">
+                          <h3 className="text-sm font-bold text-white mb-1 line-clamp-2 leading-snug tracking-tight Montserrat">
                             {task.title}
                           </h3>
                           <div className="flex items-center gap-1.5 overflow-hidden">
@@ -419,10 +426,14 @@ const Kanban = () => {
                             <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">Progress</span>
                             <span className="text-[12px] font-black" style={{ color: cardCfg.color }}>{progress}%</span>
                           </div>
-                          <div className="h-2 bg-gray-100 rounded-full overflow-hidden shadow-inner">
+                          <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
                             <div
-                              className="h-full rounded-full transition-all duration-700 ease-out"
-                              style={{ width: `${progress}%`, backgroundColor: cardCfg.color }}
+                              className="h-full rounded-full transition-all duration-700 ease-out shadow-[0_0_8px]"
+                              style={{
+                                width: `${progress}%`,
+                                backgroundColor: cardCfg.color,
+                                boxShadow: `0 0 10px ${cardCfg.color}40`
+                              }}
                             />
                           </div>
                         </div>
