@@ -451,25 +451,82 @@ const ProjectView = () => {
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <Card className="bg-[#0A0A0A] border-white/5 ring-1 ring-white/10 shadow-2xl relative overflow-hidden group">
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-[10px] font-black text-gray-500 uppercase tracking-widest Montserrat">Capital Utilization</CardTitle>
+                    <CardTitle className="text-[10px] font-black text-gray-500 uppercase tracking-widest Montserrat">Total Commitment</CardTitle>
                     <div className="p-1.5 bg-white/5 rounded-lg">
-                      <FileText className="h-3.5 w-3.5 text-primary" />
+                      <DollarSign className="h-3.5 w-3.5 text-[#F59E0B]" />
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-black text-white Montserrat">{formatCurrency(budget.used)}</div>
+                  <CardContent className="min-w-0">
+                    <div className="text-xl font-black text-white Montserrat truncate">{formatCurrency(project.totalBudget)}</div>
+                    <p className="text-[10px] text-gray-500 mt-1 Montserrat font-bold italic">Planned Investment</p>
+                    <div className="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                      <div className="h-full bg-[#F59E0B] w-full opacity-30" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-[#0A0A0A] border-white/5 ring-1 ring-white/10 shadow-2xl relative overflow-hidden group">
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-[10px] font-black text-gray-500 uppercase tracking-widest Montserrat">Current Utilization</CardTitle>
+                    <div className="p-1.5 bg-white/5 rounded-lg">
+                      <Clock className="h-3.5 w-3.5 text-[#00A3FF]" />
+                    </div>
+                  </CardHeader>
+                  <CardContent className="min-w-0">
+                    <div className="text-xl font-black text-white Montserrat truncate">{formatCurrency(budget.used)}</div>
                     <p className="text-[10px] text-gray-500 mt-1 Montserrat font-bold italic">
-                      Committed of {formatCurrency(project.totalBudget)}
+                      {budget.usedPercentage.toFixed(1)}% of total consumed
                     </p>
                     <div className="mt-4 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-primary shadow-[0_0_8px_var(--primary-glow)]"
-                        style={{ width: `${(budget.used / project.totalBudget) * 100}%` }}
+                        className="h-full bg-[#00A3FF] shadow-[0_0_8px_rgba(0,163,255,0.5)] transition-all duration-1000"
+                        style={{ width: `${budget.usedPercentage}%` }}
                       />
                     </div>
                   </CardContent>
                 </Card>
-                {/* Simplified metrics section - could add more here if needed */}
+
+                <Card className="bg-[#0A0A0A] border-white/5 ring-1 ring-white/10 shadow-2xl relative overflow-hidden group">
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-[10px] font-black text-gray-500 uppercase tracking-widest Montserrat">NET Balance (Remaining)</CardTitle>
+                    <div className="p-1.5 bg-white/5 rounded-lg">
+                      <div className="w-3.5 h-3.5 rounded-full bg-[#48A111]/20 flex items-center justify-center">
+                        <CheckCircle className="h-3 w-3 text-[#48A111]" />
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="min-w-0">
+                    <div className="text-xl font-black text-[#48A111] Montserrat truncate">{formatCurrency(budget.remaining)}</div>
+                    <p className="text-[10px] text-gray-500 mt-1 Montserrat font-bold italic">Available for allocation</p>
+                    <div className="mt-4 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-[#48A111] shadow-[0_0_8px_rgba(72,161,17,0.5)] transition-all duration-1000"
+                        style={{ width: `${Math.max(0, 100 - budget.usedPercentage)}%` }}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-[#0A0A0A] border-white/5 ring-1 ring-white/10 shadow-2xl relative overflow-hidden group">
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-[10px] font-black text-gray-500 uppercase tracking-widest Montserrat">Effort Completion</CardTitle>
+                    <div className="p-1.5 bg-white/5 rounded-lg">
+                      <Layers className="h-3.5 w-3.5 text-[#8B5CF6]" />
+                    </div>
+                  </CardHeader>
+                  <CardContent className="min-w-0">
+                    <div className="text-xl font-black text-white Montserrat truncate">{overview.progressPercentage}%</div>
+                    <p className="text-[10px] text-gray-500 mt-1 Montserrat font-bold italic">
+                      {overview.completedStoryPoints} of {overview.totalStoryPoints} pts done
+                    </p>
+                    <div className="mt-4 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-[#8B5CF6] shadow-[0_0_8px_rgba(139,92,246,0.5)] transition-all duration-1000"
+                        style={{ width: `${overview.progressPercentage}%` }}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </TabsContent>
 

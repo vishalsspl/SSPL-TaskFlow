@@ -151,6 +151,10 @@ export const createTask = async (req, res) => {
     }
   }
 
+  if (task.phaseId) {
+    await recalculatePhaseProgress(task.phaseId);
+  }
+
   res.status(201).json(task);
 };
 
@@ -252,6 +256,12 @@ export const updateTask = async (req, res) => {
     }
   }
 
+  // Sync phase progress if phase changed or status/points changed
+  if (phaseId !== undefined || status !== existingTask.status || storyPoints !== existingTask.storyPoints) {
+    if (existingTask.phaseId) await recalculatePhaseProgress(existingTask.phaseId);
+    if (task.phaseId && task.phaseId !== existingTask.phaseId) await recalculatePhaseProgress(task.phaseId);
+  }
+
   res.json(task);
 };
 
@@ -275,6 +285,10 @@ export const deleteTask = async (req, res) => {
   await prisma.task.delete({
     where: { id },
   });
+
+  if (existingTask.phaseId) {
+    await recalculatePhaseProgress(existingTask.phaseId);
+  }
 
   res.json({ message: 'Task deleted successfully' });
 };
@@ -322,36 +336,51 @@ export const getMyTasks = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch tasks' });
   }
 };
-// Helper to recalculate phase progress
 const recalculatePhaseProgress = async (phaseId) => {
   if (!phaseId) return;
 
   const tasks = await prisma.task.findMany({
     where: { phaseId },
-    select: { completionPercentage: true },
+    select: { status: true, storyPoints: true, completionPercentage: true },
   });
 
-  if (tasks.length === 0) return;
+  if (tasks.length === 0) {
+    await prisma.phase.update({
+      where: { id: phaseId },
+      data: { completionPercentage: 0, status: 'WAITING' },
+    });
+    return;
+  }
 
-  const totalProgress = tasks.reduce((sum, task) => sum + task.completionPercentage, 0);
-  const averageProgress = Math.round(totalProgress / tasks.length);
+  // Calculate story point progress: (Completed Pts / Total Pts) * 100
+  const totalStoryPoints = tasks.reduce((sum, task) => sum + (task.storyPoints || 0), 0);
+  const completedStoryPoints = tasks
+    .filter((task) => task.status === 'COMPLETED')
+    .reduce((sum, task) => sum + (task.storyPoints || 0), 0);
 
-  await prisma.phase.update({
-    where: { id: phaseId },
-    data: { completionPercentage: averageProgress },
-  });
+  let progress = 0;
+  if (totalStoryPoints > 0) {
+    progress = Math.round((completedStoryPoints / totalStoryPoints) * 100);
+  } else {
+    // Fallback to task count if no story points are defined
+    const completedCount = tasks.filter(t => t.status === 'COMPLETED').length;
+    progress = Math.round((completedCount / tasks.length) * 100);
+  }
 
-  // Check if all tasks are completed to update phase status
-  const allCompleted = tasks.every(t => t.completionPercentage === 100);
-  const anyInProgress = tasks.some(t => t.completionPercentage > 0 && t.completionPercentage < 100);
+  // Determine phase status
+  const allCompleted = tasks.every(t => t.status === 'COMPLETED');
+  const anyStarted = tasks.some(t => t.status !== 'TODO');
 
   let phaseStatus = 'WAITING';
   if (allCompleted) phaseStatus = 'COMPLETED';
-  else if (anyInProgress || tasks.some(t => t.completionPercentage > 0)) phaseStatus = 'IN_PROGRESS';
+  else if (anyStarted) phaseStatus = 'IN_PROGRESS';
 
   await prisma.phase.update({
     where: { id: phaseId },
-    data: { status: phaseStatus },
+    data: {
+      completionPercentage: progress,
+      status: phaseStatus
+    },
   });
 };
 
