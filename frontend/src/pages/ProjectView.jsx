@@ -32,7 +32,10 @@ import {
   Calendar,
   RefreshCw,
   ArrowLeft,
-  FileText
+  FileText,
+  Plus,
+  DollarSign,
+  Layers
 } from 'lucide-react';
 import { formatCurrency, formatDate, priorityColors } from '@/lib/utils';
 import html2canvas from 'html2canvas';

@@ -255,6 +255,8 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
+
+
         {/* Total Budget */}
         <Card className="border-0 bg-gradient-to-br from-[#F59E0B] to-[#B45309] shadow-[0_10px_40px_-10px_rgba(245,158,11,0.3)] relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-4 opacity-10 transform scale-150 group-hover:scale-[2] transition-transform duration-700">
@@ -267,7 +269,12 @@ const Dashboard = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-black text-white Montserrat">{formatCurrency(stats.totalBudget)}</div>
+            <div
+              className="font-black text-white Montserrat"
+              style={{ fontSize: 'clamp(1.2rem, 2.5vw, 1.875rem)' }}
+            >
+              {formatCurrency(stats.totalBudget)}
+            </div>
             <p className="text-xs text-white/60 mt-1 Montserrat">Project allocation</p>
           </CardContent>
         </Card>

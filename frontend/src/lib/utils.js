@@ -10,11 +10,14 @@ export function formatDate(dateString) {
   return new Date(dateString).toLocaleDateString();
 }
 
-export const formatCurrency = (amount) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(amount);
+export const formatCurrency = (value) => {
+  if (value === null || value === undefined) return "$0";
+  const numValue = Number(value);
+  if (isNaN(numValue)) return "$0";
+
+  if (numValue >= 1_000_000) return `$${(numValue / 1_000_000).toFixed(1)}M`;
+  if (numValue >= 1_000) return `$${(numValue / 1_000).toFixed(1)}K`;
+  return `$${numValue.toLocaleString()}`;
 };
 
 export const priorityColors = {
