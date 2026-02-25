@@ -377,6 +377,8 @@ const ProjectsList = () => {
                     type="date"
                     value={formData.startDate}
                     onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                    onFocus={(e) => e.target.showPicker()}
+                    onClick={(e) => e.target.showPicker()}
                   />
                 </div>
                 <div className="space-y-2">
@@ -386,6 +388,8 @@ const ProjectsList = () => {
                     type="date"
                     value={formData.endDate}
                     onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                    onFocus={(e) => e.target.showPicker()}
+                    onClick={(e) => e.target.showPicker()}
                   />
                 </div>
                 <div className="space-y-2">

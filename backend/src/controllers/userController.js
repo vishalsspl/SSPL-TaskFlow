@@ -47,6 +47,7 @@ export const getUsers = async (req, res) => {
       { id: req.user.id }, // Themselves
       { role: 'MANAGER' }, // Other managers (visible as colleagues)
       { role: 'ADMIN' },   // Admins (visible)
+      { role: 'CLIENT' },  // Clients (visible for project assignment)
       // Members part of their projects
       {
         taskAssignments: {

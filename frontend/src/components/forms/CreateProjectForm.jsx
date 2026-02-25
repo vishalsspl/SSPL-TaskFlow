@@ -184,6 +184,8 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
                             type="date"
                             value={formData.startDate}
                             onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                            onFocus={(e) => e.target.showPicker()}
+                            onClick={(e) => e.target.showPicker()}
                             className="pl-9 transition-all focus:ring-2 focus:ring-primary/20"
                         />
                     </div>
@@ -198,6 +200,8 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
                             type="date"
                             value={formData.endDate}
                             onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                            onFocus={(e) => e.target.showPicker()}
+                            onClick={(e) => e.target.showPicker()}
                             className="pl-9 transition-all focus:ring-2 focus:ring-primary/20"
                         />
                     </div>
