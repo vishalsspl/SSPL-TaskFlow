@@ -81,7 +81,8 @@ const Team = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const response = await api.get('/users');
+      const params = currentUser?.role === 'MANAGER' ? { teamOnly: 'true' } : {};
+      const response = await api.get('/users', { params });
       setUsers(response.data.filter(u => u.isApproved && u.role !== 'ADMIN'));
     } catch (error) {
       console.error('Failed to fetch users:', error);
@@ -473,7 +474,7 @@ const Team = () => {
                     : 'bg-white/5 text-gray-500 hover:bg-white/10 hover:text-white'}`}
                 >
                   <Layers className="w-4 h-4" />
-                  All Members
+                  {currentUser?.role === 'MANAGER' ? 'My Team' : 'All Members'}
                   <Badge variant="none" className="ml-1 bg-white/10 text-inherit text-[10px] px-1.5">{users.length}</Badge>
                 </Button>
               </div>
@@ -503,17 +504,19 @@ const Team = () => {
                   <Badge variant="none" className="ml-1 bg-white/10 text-inherit text-[10px] px-1.5">{clients.length}</Badge>
                 </Button>
               )}
-              <Button
-                variant="none"
-                onClick={() => setSelectedManagerId('MEMBERS_LIST')}
-                className={`gap-2 h-10 px-4 rounded-xl Montserrat font-bold transition-all duration-300 ${selectedManagerId === 'MEMBERS_LIST'
-                  ? 'bg-[#10B981]/20 text-[#10B981] ring-1 ring-[#10B981]/50 shadow-[0_0_20px_rgba(16,185,129,0.15)]'
-                  : 'bg-white/5 text-gray-500 hover:bg-white/10 hover:text-white'}`}
-              >
-                <User className="w-4 h-4" />
-                Members
-                <Badge variant="none" className="ml-1 bg-white/10 text-inherit text-[10px] px-1.5">{members.length}</Badge>
-              </Button>
+              {currentUser?.role === 'ADMIN' && (
+                <Button
+                  variant="none"
+                  onClick={() => setSelectedManagerId('MEMBERS_LIST')}
+                  className={`gap-2 h-10 px-4 rounded-xl Montserrat font-bold transition-all duration-300 ${selectedManagerId === 'MEMBERS_LIST'
+                    ? 'bg-[#10B981]/20 text-[#10B981] ring-1 ring-[#10B981]/50 shadow-[0_0_20px_rgba(16,185,129,0.15)]'
+                    : 'bg-white/5 text-gray-500 hover:bg-white/10 hover:text-white'}`}
+                >
+                  <User className="w-4 h-4" />
+                  Members
+                  <Badge variant="none" className="ml-1 bg-white/10 text-inherit text-[10px] px-1.5">{members.length}</Badge>
+                </Button>
+              )}
               {pendingUsers.length > 0 && (
                 <Button
                   variant="none"
@@ -763,7 +766,7 @@ const Team = () => {
                   <div>
                     <CardTitle className="flex items-center gap-2">
                       {selectedManagerId === 'ALL'
-                        ? 'All Members'
+                        ? (currentUser?.role === 'MANAGER' ? 'My Team' : 'All Members')
                         : selectedManagerId === 'CLIENTS_LIST'
                           ? 'All Clients'
                           : selectedManagerId === 'MEMBERS_LIST'
