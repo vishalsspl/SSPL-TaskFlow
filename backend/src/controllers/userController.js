@@ -18,7 +18,7 @@ const getManagerProjectIds = async (managerId, organizationId) => {
 };
 
 export const getUsers = async (req, res) => {
-  const { pending } = req.query;
+  const { pending, teamOnly } = req.query;
 
   const where = {
     organizationId: req.user.organizationId,
@@ -31,39 +31,56 @@ export const getUsers = async (req, res) => {
 
   // If the requester is a MANAGER, restrict visibility
   if (req.user.role === 'MANAGER' && pending !== 'true') {
-    // Managers should see:
-    // 1. Themselves
-    // 2. Members assigned to their projects
-    // 3. Other MANAGERS (optional, but good for context - let's keep them visible for now or restricting them if needed. 
-    //    User said "not anoter manager member", implying they shouldn't see *members* of other managers.
-    //    Let's strictly show only their own team + themselves + other managers (as colleagues) but NOT other managers' private members.)
-
-    // Actually, simply returning "All Users" for a manager exposes everyone.
-    // We need to valid constraint.
-    // Let's find projects managed by this user.
     const managerProjectIds = await getManagerProjectIds(req.user.id, req.user.organizationId);
 
-    where.OR = [
-      { id: req.user.id }, // Themselves
-      { role: 'MANAGER' }, // Other managers (visible as colleagues)
-      { role: 'ADMIN' },   // Admins (visible)
-      { role: 'CLIENT' },  // Clients (visible for project assignment)
-      // Members part of their projects
-      {
-        taskAssignments: {
-          some: {
-            task: { projectId: { in: managerProjectIds } }
+    if (teamOnly === 'true') {
+      // Return ONLY the manager's own team members (MEMBERs assigned to their projects)
+      // This is used for the task assignee dropdown
+      where.AND = [
+        { role: 'MEMBER' },
+        {
+          OR: [
+            {
+              taskAssignments: {
+                some: {
+                  task: { projectId: { in: managerProjectIds } }
+                }
+              }
+            },
+            {
+              workloads: {
+                some: {
+                  projectId: { in: managerProjectIds }
+                }
+              }
+            }
+          ]
+        }
+      ];
+    } else {
+      // General visibility: themselves, other managers, admins, clients, and their team members
+      where.OR = [
+        { id: req.user.id }, // Themselves
+        { role: 'MANAGER' }, // Other managers (visible as colleagues)
+        { role: 'ADMIN' },   // Admins (visible)
+        { role: 'CLIENT' },  // Clients (visible for project assignment)
+        // Members part of their projects
+        {
+          taskAssignments: {
+            some: {
+              task: { projectId: { in: managerProjectIds } }
+            }
+          }
+        },
+        {
+          workloads: {
+            some: {
+              projectId: { in: managerProjectIds }
+            }
           }
         }
-      },
-      {
-        workloads: {
-          some: {
-            projectId: { in: managerProjectIds }
-          }
-        }
-      }
-    ];
+      ];
+    }
   }
 
   // If the requester is a CLIENT, restrict visibility

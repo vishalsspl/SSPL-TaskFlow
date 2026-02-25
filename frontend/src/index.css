@@ -102,6 +102,59 @@
   input[type="date"]::-webkit-calendar-picker-indicator:hover {
     opacity: 1;
   }
+
+}
+
+/* CKEditor Dark Mode Overrides — outside @layer to beat CKEditor's injected styles */
+.ck.ck-editor__editable,
+.ck.ck-editor__editable_inline,
+.ck.ck-content,
+.ck-editor__editable_inline,
+.ck-editor__editable {
+  background: #1A1A1A !important;
+  background-color: #1A1A1A !important;
+  color: #ffffff !important;
+  border-color: #333 !important;
+  min-height: 150px !important;
+}
+
+.ck.ck-content *,
+.ck-content *,
+.ck.ck-editor__editable *,
+.ck-editor__editable * {
+  color: #ffffff !important;
+}
+
+.ck.ck-toolbar {
+  background-color: #262626 !important;
+  border-color: #333 !important;
+}
+
+.ck.ck-button {
+  color: white !important;
+}
+
+.ck.ck-button:hover,
+.ck.ck-button.ck-on {
+  background-color: #333 !important;
+  color: white !important;
+}
+
+.ck.ck-dropdown__panel {
+  background-color: #262626 !important;
+  border-color: #333 !important;
+}
+
+.ck.ck-list {
+  background-color: #262626 !important;
+}
+
+.ck.ck-list__item .ck-button:hover {
+  background-color: #333 !important;
+}
+
+.ck.ck-placeholder {
+  color: #666 !important;
 }
 
 @layer utilities {

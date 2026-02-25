@@ -74,7 +74,7 @@ const ProjectView = () => {
 
       // Also fetch users for task assignment if not already loaded
       if (users.length === 0) {
-        const usersResponse = await api.get('/users');
+        const usersResponse = await api.get('/users', { params: { teamOnly: 'true' } });
         const teamMembers = usersResponse.data.filter(u => u.role !== 'CLIENT');
         setUsers(teamMembers);
       }
@@ -428,6 +428,24 @@ const ProjectView = () => {
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Project Description */}
+              {project.description && (
+                <Card className="bg-[#0A0A0A] border-white/5 ring-1 ring-white/10 shadow-2xl relative overflow-hidden group">
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-[10px] font-black text-gray-500 uppercase tracking-widest Montserrat">Project Scope & Description</CardTitle>
+                    <div className="p-1.5 bg-white/5 rounded-lg">
+                      <FileText className="h-3.5 w-3.5 text-primary" />
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div
+                      className="text-sm text-gray-400 Montserrat leading-relaxed prose prose-invert max-w-none"
+                      dangerouslySetInnerHTML={{ __html: project.description }}
+                    />
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Metrics */}
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">

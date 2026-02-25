@@ -98,7 +98,7 @@ const Tasks = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await api.get('/users');
+      const response = await api.get('/users', { params: { teamOnly: 'true' } });
       // Filter out CLIENT role users - only show team members for task assignment
       const teamMembers = response.data.filter(user => user.role !== 'CLIENT');
       setUsers(teamMembers);
