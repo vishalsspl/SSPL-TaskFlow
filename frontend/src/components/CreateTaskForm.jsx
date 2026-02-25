@@ -257,6 +257,8 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                             type="date"
                             value={formData.dueDate}
                             onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+                            onFocus={(e) => e.target.showPicker()}
+                            onClick={(e) => e.target.showPicker()}
                             className="pl-9"
                         />
                     </div>

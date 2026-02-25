@@ -45,6 +45,7 @@ export const getUsers = async (req, res) => {
         { role: 'MEMBER' },
         {
           OR: [
+            { managerId: req.user.id },
             {
               taskAssignments: {
                 some: {
