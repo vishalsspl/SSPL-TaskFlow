@@ -448,19 +448,19 @@ const ProjectView = () => {
               )}
 
               {/* Metrics */}
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                <Card className="bg-[#0A0A0A] border-white/5 ring-1 ring-white/10 shadow-2xl relative overflow-hidden group">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
+                <Card className="bg-[#0A0A0A] border-white/5 ring-1 ring-white/10 shadow-2xl relative overflow-hidden group lg:col-span-2">
+                  <CardHeader className="flex flex-row items-center justify-between pb-4">
                     <CardTitle className="text-[10px] font-black text-gray-500 uppercase tracking-widest Montserrat">Total Commitment</CardTitle>
-                    <div className="p-1.5 bg-white/5 rounded-lg">
-                      <DollarSign className="h-3.5 w-3.5 text-[#F59E0B]" />
+                    <div className="p-2 bg-white/5 rounded-xl">
+                      <DollarSign className="h-4 w-4 text-[#F59E0B]" />
                     </div>
                   </CardHeader>
-                  <CardContent className="min-w-0">
-                    <div className="text-xl font-black text-white Montserrat truncate">{formatCurrency(project.totalBudget)}</div>
-                    <p className="text-[10px] text-gray-500 mt-1 Montserrat font-bold italic">Planned Investment</p>
-                    <div className="mt-4 h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-[#F59E0B] w-full opacity-30" />
+                  <CardContent className="min-w-0 pb-8">
+                    <div className="text-3xl lg:text-4xl font-black text-white Montserrat truncate">{formatCurrency(project.totalBudget)}</div>
+                    <p className="text-[11px] text-gray-400 mt-2 Montserrat font-bold italic tracking-wide">Primary Project Investment</p>
+                    <div className="mt-6 h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                      <div className="h-full bg-[#F59E0B] w-full shadow-[0_0_15px_rgba(245,158,11,0.5)]" />
                     </div>
                   </CardContent>
                 </Card>
