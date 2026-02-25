@@ -47,10 +47,11 @@ const TaskKanban = () => {
 
     const fetchData = async () => {
         try {
+            const usersParams = user?.role === 'MANAGER' ? { teamOnly: 'true' } : {};
             const [projectsRes, tasksRes, usersRes] = await Promise.all([
                 api.get('/projects'),
                 api.get('/tasks'),
-                api.get('/users')
+                api.get('/users', { params: usersParams })
             ]);
             setProjects(projectsRes.data);
             setTasks(tasksRes.data);
@@ -224,7 +225,7 @@ const TaskKanban = () => {
             </div>
 
             <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-                <DialogContent className="sm:max-w-[700px] bg-[#0A0A0A] border-white/10 text-white rounded-3xl overflow-hidden p-0">
+                <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto bg-[#0A0A0A] border-white/10 text-white rounded-3xl p-0 no-scrollbar">
                     <div className="p-8">
                         <DialogHeader className="mb-6">
                             <DialogTitle className="text-2xl font-black Montserrat">Edit Task</DialogTitle>
@@ -247,7 +248,7 @@ const TaskKanban = () => {
             </Dialog>
 
             <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-                <DialogContent className="sm:max-w-[700px] bg-[#0A0A0A] border-white/10 text-white rounded-3xl overflow-hidden p-0">
+                <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto bg-[#0A0A0A] border-white/10 text-white rounded-3xl p-0 no-scrollbar">
                     <div className="p-8">
                         <DialogHeader className="mb-6">
                             <DialogTitle className="text-2xl font-black Montserrat">Initiate Task</DialogTitle>
