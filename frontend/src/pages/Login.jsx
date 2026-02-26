@@ -72,18 +72,7 @@ const Login = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex flex-col items-center justify-center mb-4 space-y-3">
-            {orgInfo?.logoUrl ? (
-              <img src={orgInfo.logoUrl} alt="Logo" className="h-32 w-auto object-contain" />
-            ) : (
-              <div className="w-24 h-24 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-5xl">
-                {orgInfo?.name?.charAt(0) || 'T'}
-              </div>
-            )}
-            {!orgInfo?.logoUrl && (
-              <span className="text-4xl font-extrabold bg-gradient-to-r from-[#2E7D32] to-[#4CAF50] bg-clip-text text-transparent tracking-tight">
-                {orgInfo?.name || 'TaskFlow'}
-              </span>
-            )}
+            <img src={orgInfo?.logoUrl} alt="Sveltoz logo" className="h-32 w-auto object-contain" />
           </div>
           <CardTitle className="text-3xl">Welcome Back</CardTitle>
           <CardDescription>Sign in to your account to continue</CardDescription>

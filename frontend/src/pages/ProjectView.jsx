@@ -48,6 +48,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import CreateTaskForm from '@/components/CreateTaskForm';
+import Chat from '@/components/Chat';
 
 const ProjectView = () => {
   const { id } = useParams();
@@ -385,6 +386,7 @@ const ProjectView = () => {
             <TabsTrigger value="overview" className="rounded-xl px-6 Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-white">Overview</TabsTrigger>
             <TabsTrigger value="tasks" className="rounded-xl px-6 Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-white">Tasks</TabsTrigger>
             <TabsTrigger value="team" className="rounded-xl px-6 Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-white">Team Distribution</TabsTrigger>
+            <TabsTrigger value="chat" className="rounded-xl px-6 Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-white">Discussions</TabsTrigger>
           </TabsList>
 
           <div ref={dashboardRef} className="space-y-6">
@@ -452,63 +454,69 @@ const ProjectView = () => {
 
               {/* Metrics */}
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
-                <Card className="bg-[#0A0A0A] border-white/5 ring-1 ring-white/10 shadow-2xl relative overflow-hidden group lg:col-span-2">
-                  <CardHeader className="flex flex-row items-center justify-between pb-4">
-                    <CardTitle className="text-[10px] font-black text-gray-500 uppercase tracking-widest Montserrat">Total Commitment</CardTitle>
-                    <div className="p-2 bg-white/5 rounded-xl">
-                      <DollarSign className="h-4 w-4 text-[#F59E0B]" />
-                    </div>
-                  </CardHeader>
-                  <CardContent className="min-w-0 pb-8">
-                    <div className="text-3xl lg:text-4xl font-black text-white Montserrat truncate">{formatCurrency(project.totalBudget)}</div>
-                    <p className="text-[11px] text-gray-400 mt-2 Montserrat font-bold italic tracking-wide">Primary Project Investment</p>
-                    <div className="mt-6 h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-[#F59E0B] w-full shadow-[0_0_15px_rgba(245,158,11,0.5)]" />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-[#0A0A0A] border-white/5 ring-1 ring-white/10 shadow-2xl relative overflow-hidden group">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-[10px] font-black text-gray-500 uppercase tracking-widest Montserrat">Current Utilization</CardTitle>
-                    <div className="p-1.5 bg-white/5 rounded-lg">
-                      <Clock className="h-3.5 w-3.5 text-[#00A3FF]" />
-                    </div>
-                  </CardHeader>
-                  <CardContent className="min-w-0">
-                    <div className="text-xl font-black text-white Montserrat truncate">{formatCurrency(budget.used)}</div>
-                    <p className="text-[10px] text-gray-500 mt-1 Montserrat font-bold italic">
-                      {budget.usedPercentage.toFixed(1)}% of total consumed
-                    </p>
-                    <div className="mt-4 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-[#00A3FF] shadow-[0_0_8px_rgba(0,163,255,0.5)] transition-all duration-1000"
-                        style={{ width: `${budget.usedPercentage}%` }}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-[#0A0A0A] border-white/5 ring-1 ring-white/10 shadow-2xl relative overflow-hidden group">
-                  <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-[10px] font-black text-gray-500 uppercase tracking-widest Montserrat">NET Balance (Remaining)</CardTitle>
-                    <div className="p-1.5 bg-white/5 rounded-lg">
-                      <div className="w-3.5 h-3.5 rounded-full bg-[#48A111]/20 flex items-center justify-center">
-                        <CheckCircle className="h-3 w-3 text-[#48A111]" />
+                {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
+                  <Card className="bg-[#0A0A0A] border-white/5 ring-1 ring-white/10 shadow-2xl relative overflow-hidden group lg:col-span-2">
+                    <CardHeader className="flex flex-row items-center justify-between pb-4">
+                      <CardTitle className="text-[10px] font-black text-gray-500 uppercase tracking-widest Montserrat">Total Commitment</CardTitle>
+                      <div className="p-2 bg-white/5 rounded-xl">
+                        <DollarSign className="h-4 w-4 text-[#F59E0B]" />
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="min-w-0">
-                    <div className="text-xl font-black text-[#48A111] Montserrat truncate">{formatCurrency(budget.remaining)}</div>
-                    <p className="text-[10px] text-gray-500 mt-1 Montserrat font-bold italic">Available for allocation</p>
-                    <div className="mt-4 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-[#48A111] shadow-[0_0_8px_rgba(72,161,17,0.5)] transition-all duration-1000"
-                        style={{ width: `${Math.max(0, 100 - budget.usedPercentage)}%` }}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardHeader>
+                    <CardContent className="min-w-0 pb-8">
+                      <div className="text-3xl lg:text-4xl font-black text-white Montserrat truncate">{formatCurrency(project.totalBudget)}</div>
+                      <p className="text-[11px] text-gray-400 mt-2 Montserrat font-bold italic tracking-wide">Primary Project Investment</p>
+                      <div className="mt-6 h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                        <div className="h-full bg-[#F59E0B] w-full shadow-[0_0_15px_rgba(245,158,11,0.5)]" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
+                  <Card className="bg-[#0A0A0A] border-white/5 ring-1 ring-white/10 shadow-2xl relative overflow-hidden group">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                      <CardTitle className="text-[10px] font-black text-gray-500 uppercase tracking-widest Montserrat">Current Utilization</CardTitle>
+                      <div className="p-1.5 bg-white/5 rounded-lg">
+                        <Clock className="h-3.5 w-3.5 text-[#00A3FF]" />
+                      </div>
+                    </CardHeader>
+                    <CardContent className="min-w-0">
+                      <div className="text-xl font-black text-white Montserrat truncate">{formatCurrency(budget.used)}</div>
+                      <p className="text-[10px] text-gray-500 mt-1 Montserrat font-bold italic">
+                        {budget.usedPercentage.toFixed(1)}% of total consumed
+                      </p>
+                      <div className="mt-4 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-[#00A3FF] shadow-[0_0_8px_rgba(0,163,255,0.5)] transition-all duration-1000"
+                          style={{ width: `${budget.usedPercentage}%` }}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
+                  <Card className="bg-[#0A0A0A] border-white/5 ring-1 ring-white/10 shadow-2xl relative overflow-hidden group">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                      <CardTitle className="text-[10px] font-black text-gray-500 uppercase tracking-widest Montserrat">NET Balance (Remaining)</CardTitle>
+                      <div className="p-1.5 bg-white/5 rounded-lg">
+                        <div className="w-3.5 h-3.5 rounded-full bg-[#48A111]/20 flex items-center justify-center">
+                          <CheckCircle className="h-3 w-3 text-[#48A111]" />
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="min-w-0">
+                      <div className="text-xl font-black text-[#48A111] Montserrat truncate">{formatCurrency(budget.remaining)}</div>
+                      <p className="text-[10px] text-gray-500 mt-1 Montserrat font-bold italic">Available for allocation</p>
+                      <div className="mt-4 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-[#48A111] shadow-[0_0_8px_rgba(72,161,17,0.5)] transition-all duration-1000"
+                          style={{ width: `${Math.max(0, 100 - budget.usedPercentage)}%` }}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
                 <Card className="bg-[#0A0A0A] border-white/5 ring-1 ring-white/10 shadow-2xl relative overflow-hidden group">
                   <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -618,6 +626,10 @@ const ProjectView = () => {
                   </ResponsiveContainer>
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            <TabsContent value="chat" className="h-[600px] flex flex-col">
+              <Chat projectId={id} title={`${project.name} Discussions`} />
             </TabsContent>
           </div>
         </Tabs>

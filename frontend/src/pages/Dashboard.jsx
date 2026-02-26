@@ -257,27 +257,29 @@ const Dashboard = () => {
 
 
 
-        {/* Total Budget */}
-        <Card className="border-0 bg-gradient-to-br from-[#F59E0B] to-[#B45309] shadow-[0_10px_40px_-10px_rgba(245,158,11,0.3)] relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-4 opacity-10 transform scale-150 group-hover:scale-[2] transition-transform duration-700">
-            <BarChart3 size={120} />
-          </div>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-black text-white/80 uppercase tracking-widest Montserrat">Net Budget</CardTitle>
-            <div className="p-2 bg-white/10 backdrop-blur-md rounded-xl ring-1 ring-white/20">
-              <BarChart3 className="h-5 w-5 text-white" />
+        {/* Total Budget - Restricted */}
+        {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
+          <Card className="border-0 bg-gradient-to-br from-[#F59E0B] to-[#B45309] shadow-[0_10px_40px_-10px_rgba(245,158,11,0.3)] relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 opacity-10 transform scale-150 group-hover:scale-[2] transition-transform duration-700">
+              <BarChart3 size={120} />
             </div>
-          </CardHeader>
-          <CardContent>
-            <div
-              className="font-black text-white Montserrat"
-              style={{ fontSize: 'clamp(1.2rem, 2.5vw, 1.875rem)' }}
-            >
-              {formatCurrency(stats.totalBudget)}
-            </div>
-            <p className="text-xs text-white/60 mt-1 Montserrat">Project allocation</p>
-          </CardContent>
-        </Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-black text-white/80 uppercase tracking-widest Montserrat">Net Budget</CardTitle>
+              <div className="p-2 bg-white/10 backdrop-blur-md rounded-xl ring-1 ring-white/20">
+                <BarChart3 className="h-5 w-5 text-white" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div
+                className="font-black text-white Montserrat"
+                style={{ fontSize: 'clamp(1.2rem, 2.5vw, 1.875rem)' }}
+              >
+                {formatCurrency(stats.totalBudget)}
+              </div>
+              <p className="text-xs text-white/60 mt-1 Montserrat">Project allocation</p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Pending Approvals (Admin Only) */}
         {user?.role === 'ADMIN' && (
@@ -369,7 +371,7 @@ const Dashboard = () => {
                         </div>
                       </div>
                       <div className="text-right ml-4 shrink-0 space-y-1">
-                        {project.totalBudget && (
+                        {project.totalBudget && (user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
                           <p className="text-sm font-black Montserrat" style={{ color: col.text }}>{formatCurrency(Number(project.totalBudget))}</p>
                         )}
                         <div className="flex items-center gap-2 justify-end">
@@ -432,21 +434,23 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#0A0A0A] border-white/5 ring-1 ring-white/5 shadow-2xl overflow-hidden">
-            <CardHeader className="border-b border-white/5">
-              <CardTitle className="text-white Montserrat">Budget Distribution</CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <BarChart
-                data={financialData}
-                title="Budget vs Spent"
-                series={[
-                  { dataKey: 'budget', name: 'Budget', color: '#0EA5E9' },
-                  { dataKey: 'spent', name: 'Spent', color: '#F43F5E' }
-                ]}
-              />
-            </CardContent>
-          </Card>
+          {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
+            <Card className="bg-[#0A0A0A] border-white/5 ring-1 ring-white/5 shadow-2xl overflow-hidden">
+              <CardHeader className="border-b border-white/5">
+                <CardTitle className="text-white Montserrat">Budget Distribution</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <BarChart
+                  data={financialData}
+                  title="Budget vs Spent"
+                  series={[
+                    { dataKey: 'budget', name: 'Budget', color: '#0EA5E9' },
+                    { dataKey: 'spent', name: 'Spent', color: '#F43F5E' }
+                  ]}
+                />
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>

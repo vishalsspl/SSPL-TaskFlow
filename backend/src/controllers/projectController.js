@@ -469,3 +469,70 @@ export const deleteProject = async (req, res) => {
 
   res.json({ message: 'Project deleted successfully' });
 };
+export const addProjectMember = async (req, res) => {
+  const { id: projectId } = req.params;
+  const { userId } = req.body;
+
+  try {
+    // Verify project belongs to user's organization and requester is manager/admin
+    const project = await prisma.project.findFirst({
+      where: {
+        id: projectId,
+        organizationId: req.user.organizationId,
+      },
+    });
+
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    if (req.user.role !== 'ADMIN' && project.managerId !== req.user.id) {
+      return res.status(403).json({ error: 'Only project managers or admins can add members' });
+    }
+
+    // Check if user is already a member
+    const existingWorkload = await prisma.workload.findUnique({
+      where: {
+        userId_projectId: {
+          userId,
+          projectId,
+        },
+      },
+    });
+
+    if (existingWorkload) {
+      return res.status(400).json({ error: 'User is already a member of this project' });
+    }
+
+    // Create workload (default 0% utilization just to link them)
+    const workload = await prisma.workload.create({
+      data: {
+        userId,
+        projectId,
+        utilization: 0,
+      },
+      include: {
+        user: {
+          select: { id: true, name: true, email: true, avatar: true }
+        }
+      }
+    });
+
+    // Log activity
+    await prisma.activityLog.create({
+      data: {
+        userId: req.user.id,
+        projectId,
+        action: 'added member',
+        entity: 'project',
+        entityId: projectId,
+        details: { memberId: userId, memberName: workload.user.name },
+      },
+    });
+
+    res.status(201).json(workload.user);
+  } catch (error) {
+    console.error('Error adding project member:', error);
+    res.status(500).json({ error: 'Failed to add project member' });
+  }
+};

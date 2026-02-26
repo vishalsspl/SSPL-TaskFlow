@@ -495,7 +495,7 @@ const ProjectsList = () => {
                     <TableHead>Client</TableHead>
                     <TableHead>Manager</TableHead>
                     <TableHead>Timeline</TableHead>
-                    <TableHead>Budget</TableHead>
+                    {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && <TableHead>Budget</TableHead>}
                     <TableHead>Status</TableHead>
                     <TableHead>Tasks</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -554,15 +554,17 @@ const ProjectsList = () => {
                             {project.endDate && <p>to {formatDate(project.endDate)}</p>}
                           </div>
                         </TableCell>
-                        <TableCell>
-                          {project.totalBudget ? (
-                            <span className="text-sm font-bold" style={{ color: rowColor }}>
-                              {formatCurrency(Number(project.totalBudget))}
-                            </span>
-                          ) : (
-                            <span className="text-muted-foreground text-xs">-</span>
-                          )}
-                        </TableCell>
+                        {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
+                          <TableCell>
+                            {project.totalBudget ? (
+                              <span className="text-sm font-bold" style={{ color: rowColor }}>
+                                {formatCurrency(Number(project.totalBudget))}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground text-xs">-</span>
+                            )}
+                          </TableCell>
+                        )}
                         <TableCell>
                           <span
                             className="text-xs font-bold px-2 py-1 rounded-full"

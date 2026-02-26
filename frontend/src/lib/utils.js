@@ -10,6 +10,26 @@ export function formatDate(dateString) {
   return new Date(dateString).toLocaleDateString();
 }
 
+export function formatChatTimestamp(dateString) {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  const now = new Date();
+
+  const isToday = date.toDateString() === now.toDateString();
+
+  const yesterday = new Date();
+  yesterday.setDate(now.getDate() - 1);
+  const isYesterday = date.toDateString() === yesterday.toDateString();
+
+  const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: true };
+  const timeStr = date.toLocaleTimeString([], timeOptions);
+
+  if (isToday) return `Today, ${timeStr}`;
+  if (isYesterday) return `Yesterday, ${timeStr}`;
+
+  return `${date.toLocaleDateString([], { month: 'short', day: 'numeric' })}, ${timeStr}`;
+}
+
 export const formatCurrency = (value) => {
   if (value === null || value === undefined) return "$0";
   const numValue = Number(value);
