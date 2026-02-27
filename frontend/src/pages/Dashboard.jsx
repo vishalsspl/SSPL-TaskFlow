@@ -151,7 +151,6 @@ const Dashboard = () => {
       <div className="flex-1 space-y-4 p-8 pt-6">
         <div className="flex items-center justify-between space-y-2">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
             <p className="text-muted-foreground">
               Project Overview and Insights
             </p>
@@ -191,7 +190,6 @@ const Dashboard = () => {
     <div className="flex-1 space-y-6 p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
         <div>
-          <h2 className="text-3xl font-black tracking-tight Montserrat text-white">Dashboard</h2>
           <p className="text-muted-foreground Montserrat text-sm">
             Overview of all projects and team performance
           </p>

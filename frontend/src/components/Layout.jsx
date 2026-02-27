@@ -78,6 +78,19 @@ const Layout = () => {
     },
   ];
 
+  const getPageTitle = (path) => {
+    if (path.startsWith('/dashboard')) return 'Dashboard';
+    if (path.startsWith('/projects')) return 'Projects';
+    if (path.startsWith('/task-board')) return 'Kanban Board';
+    if (path.startsWith('/tasks')) return 'Tasks';
+    if (path.startsWith('/tickets')) return 'Tickets';
+    if (path.startsWith('/team')) return 'Team';
+    if (path.startsWith('/chat')) return 'Chat';
+    if (path.startsWith('/settings')) return 'Settings';
+    if (path.startsWith('/change-password')) return 'Change Password';
+    return 'TaskFlow';
+  };
+
   const isActive = (path) => location.pathname.startsWith(path);
 
   const NavContent = () => (
@@ -190,14 +203,15 @@ const Layout = () => {
               <NavContent />
             </SheetContent>
           </Sheet>
-          {/* Mobile Logo/Title */}
-          <span className="text-lg font-black bg-gradient-to-r from-[#48A111] to-[#A3E635] bg-clip-text text-transparent Montserrat tracking-tighter">
-            TaskFlow
+          <span className="text-lg font-bold text-white Montserrat tracking-tight">
+            {getPageTitle(location.pathname)}
           </span>
         </div>
 
         <div className="hidden md:block">
-          {/* Breadcrumb or Page Title could go here */}
+          <h1 className="text-xl font-bold text-white Montserrat tracking-tight">
+            {getPageTitle(location.pathname)}
+          </h1>
         </div>
 
         <div className="flex items-center gap-4">

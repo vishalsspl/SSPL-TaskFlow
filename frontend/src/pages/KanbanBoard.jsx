@@ -271,7 +271,6 @@ const KanbanBoard = () => {
             <div className="max-w-7xl mx-auto space-y-10">
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div>
-                        <h1 className="text-4xl font-black Montserrat text-white leading-tight">Project <span className="text-primary italic">Intelligence</span></h1>
                         <p className="mt-2 text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em] Montserrat flex items-center gap-2">
                             <Layers className="w-3 h-3 text-primary" />
                             Holistic operational overview and strategic metrics

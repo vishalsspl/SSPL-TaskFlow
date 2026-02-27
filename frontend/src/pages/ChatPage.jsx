@@ -51,7 +51,6 @@ const ChatPage = () => {
         <div className="h-[calc(100vh-8rem)] flex flex-col gap-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-3xl font-black tracking-tight Montserrat text-white">Collaboration</h2>
                     <p className="text-muted-foreground Montserrat text-sm">
                         Chat with your team in dedicated project groups
                     </p>
