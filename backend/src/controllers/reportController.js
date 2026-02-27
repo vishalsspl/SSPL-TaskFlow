@@ -1,7 +1,102 @@
 import puppeteer from 'puppeteer';
+import { PrismaClient } from '@prisma/client';
+import { buildProjectReportHTML } from './reportTemplate.js';
+
+const prisma = new PrismaClient();
+
+export const generateReport = async (req, res) => {
+  const { projectId } = req.params;
+
+  try {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      include: {
+        client: { select: { name: true } },
+        manager: { select: { name: true } },
+        phases: {
+          include: {
+            tasks: {
+              select: { status: true }
+            }
+          }
+        },
+        tasks: {
+          include: {
+            assignees: {
+              include: {
+                user: { select: { id: true, name: true, role: true } }
+              }
+            }
+          }
+        },
+        activityLogs: {
+          take: 10,
+          orderBy: { createdAt: 'desc' },
+          include: {
+            user: { select: { name: true } }
+          }
+        }
+      }
+    });
+
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    // Prepare team members data
+    const memberMap = new Map();
+    project.tasks.forEach(task => {
+      task.assignees.forEach(assignee => {
+        const u = assignee.user;
+        if (!memberMap.has(u.id)) {
+          memberMap.set(u.id, {
+            name: u.name,
+            role: u.role,
+            tasksCompleted: 0,
+            tasksInProgress: 0
+          });
+        }
+        const stats = memberMap.get(u.id);
+        if (task.status === 'COMPLETED') stats.tasksCompleted++;
+        if (task.status === 'IN_PROGRESS') stats.tasksInProgress++;
+      });
+    });
+
+    const projectData = {
+      projectName: project.name,
+      clientName: project.client?.name || 'Internal',
+      reportDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+      projectManager: project.manager?.name || '-',
+      totalTasks: project.tasks.length,
+      completedTasks: project.tasks.filter(t => t.status === 'COMPLETED').length,
+      inProgressTasks: project.tasks.filter(t => t.status === 'IN_PROGRESS').length,
+      todoTasks: project.tasks.filter(t => t.status === 'TODO').length,
+      sprints: project.phases.map(p => ({
+        name: p.name,
+        startDate: p.startDate ? new Date(p.startDate).toLocaleDateString() : '-',
+        endDate: p.endDate ? new Date(p.endDate).toLocaleDateString() : '-',
+        totalTasks: p.tasks.length,
+        completedTasks: p.tasks.filter(t => t.status === 'COMPLETED').length,
+        status: p.status,
+      })),
+      teamMembers: Array.from(memberMap.values()),
+      recentActivity: project.activityLogs.map(a => ({
+        date: new Date(a.createdAt).toLocaleDateString(),
+        user: a.user.name,
+        action: a.action,
+        type: a.entity?.toLowerCase() || 'task', // map entity to type
+      })),
+    };
+
+    req.body.html = buildProjectReportHTML(projectData);
+    return exportToPDF(req, res);
+  } catch (error) {
+    console.error('Generate report error:', error);
+    res.status(500).json({ error: 'Failed to generate report data', details: error.message });
+  }
+};
 
 export const exportToPDF = async (req, res) => {
-  const { projectId } = req.params;
   const { html } = req.body;
 
   if (!html) {
@@ -39,13 +134,11 @@ export const exportToPDF = async (req, res) => {
     res.status(500).json({
       error: 'Failed to generate PDF',
       details: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 };
 
 export const exportToPNG = async (req, res) => {
-  const { projectId } = req.params;
   const { html } = req.body;
 
   if (!html) {
@@ -82,7 +175,6 @@ export const exportToPNG = async (req, res) => {
     res.status(500).json({
       error: 'Failed to generate PNG',
       details: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 };

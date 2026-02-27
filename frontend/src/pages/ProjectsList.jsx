@@ -38,6 +38,7 @@ import RichTextEditor from '@/components/ui/RichTextEditor';
 import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/hooks/use-toast';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import ProjectOverview from '@/components/ProjectOverview';
 
 const ProjectsList = () => {
   const { toast } = useToast();
@@ -50,6 +51,8 @@ const ProjectsList = () => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
   const [projectToDelete, setProjectToDelete] = useState(null);
+  const [selectedOverviewProject, setSelectedOverviewProject] = useState(null);
+  const [showOverviewDialog, setShowOverviewDialog] = useState(false);
   const [users, setUsers] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
@@ -149,7 +152,7 @@ const ProjectsList = () => {
         totalBudget: formData.totalBudget && formData.totalBudget !== '' ? formData.totalBudget : undefined,
       };
 
-      await api.put(`/ projects / ${editingProject.id} `, submitData);
+      await api.put(`/projects/${editingProject.id}`, submitData);
       setShowEditDialog(false);
       setEditingProject(null);
       setFormData({
@@ -509,7 +512,10 @@ const ProjectsList = () => {
                         key={project.id}
                         className="cursor-pointer transition-all hover:scale-[1.002]"
                         style={{ borderLeft: `4px solid ${rowColor} `, background: `${rowColor} 0d` }}
-                        onClick={() => navigate(`/ projects / ${project.id} `)}
+                        onClick={() => {
+                          setSelectedOverviewProject(project);
+                          setShowOverviewDialog(true);
+                        }}
                       >
                         <TableCell>
                           <div>
@@ -619,6 +625,33 @@ const ProjectsList = () => {
         description={`Are you sure you want to delete "${projectToDelete?.name}"? This will also remove all related tasks and data.`}
         confirmText="Yes, Delete"
       />
+
+      <Dialog open={showOverviewDialog} onOpenChange={setShowOverviewDialog}>
+        <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <div className="flex items-center justify-between pr-8">
+              <div>
+                <DialogTitle>Project Quick Overview</DialogTitle>
+                <DialogDescription>
+                  Real-time snapshot of mission progress and team workload.
+                </DialogDescription>
+              </div>
+              <Button
+                onClick={() => navigate(`/projects/${selectedOverviewProject?.id}`)}
+                className="bg-primary hover:bg-primary/90 text-white font-bold rounded-xl"
+              >
+                <Eye className="w-4 h-4 mr-2" />
+                View Full Details
+              </Button>
+            </div>
+          </DialogHeader>
+          <div className="py-4">
+            {selectedOverviewProject && (
+              <ProjectOverview projectId={selectedOverviewProject.id} />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
