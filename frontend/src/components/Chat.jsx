@@ -30,6 +30,7 @@ const Chat = ({ projectId = null, title = "General Chat" }) => {
     const [userSearch, setUserSearch] = useState('');
     const [isSearching, setIsSearching] = useState(false);
     const [invitingId, setInvitingId] = useState(null);
+    const [projectMembers, setProjectMembers] = useState([]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -83,8 +84,22 @@ const Chat = ({ projectId = null, title = "General Chat" }) => {
     useEffect(() => {
         if (addMemberOpen) {
             fetchAvailableUsers();
+            if (projectId) {
+                fetchProjectMembers();
+            }
         }
-    }, [addMemberOpen]);
+    }, [addMemberOpen, projectId]);
+
+    const fetchProjectMembers = async () => {
+        try {
+            const response = await api.get(`/projects/${projectId}`);
+            // Extract user IDs from workloads
+            const memberIds = (response.data.workloads || []).map(w => w.userId);
+            setProjectMembers(memberIds);
+        } catch (error) {
+            console.error('Failed to fetch project members:', error);
+        }
+    };
 
     const fetchAvailableUsers = async () => {
         setIsSearching(true);
@@ -102,6 +117,7 @@ const Chat = ({ projectId = null, title = "General Chat" }) => {
         setInvitingId(userId);
         try {
             await api.post(`/projects/${projectId}/members`, { userId });
+            setProjectMembers(prev => [...prev, userId]); // Update local state
             toast({
                 title: 'Success',
                 description: 'Member added successfully',
@@ -114,6 +130,23 @@ const Chat = ({ projectId = null, title = "General Chat" }) => {
             });
         } finally {
             setInvitingId(null);
+        }
+    };
+
+    const handleRemoveMember = async (userId) => {
+        try {
+            await api.delete(`/projects/${projectId}/members/${userId}`);
+            setProjectMembers(prev => prev.filter(id => id !== userId));
+            toast({
+                title: 'Success',
+                description: 'Member removed successfully',
+            });
+        } catch (error) {
+            toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: error.response?.data?.error || 'Failed to remove member',
+            });
         }
     };
 
@@ -239,22 +272,45 @@ const Chat = ({ projectId = null, title = "General Chat" }) => {
                                                     <p className="text-[10px] text-gray-500 truncate max-w-[150px]">{u.email}</p>
                                                 </div>
                                             </div>
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                disabled={invitingId === u.id}
-                                                onClick={() => handleInvite(u.id)}
-                                                className="h-8 border-white/10 hover:bg-primary hover:text-white hover:border-primary transition-all Montserrat"
-                                            >
-                                                {invitingId === u.id ? (
-                                                    <Loader2 className="w-3 h-3 animate-spin" />
-                                                ) : (
-                                                    <>
-                                                        <UserPlus className="w-3 h-3 mr-1" />
-                                                        Add
-                                                    </>
+                                            <div className="flex items-center gap-2">
+                                                {projectMembers.includes(u.id) && (
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleRemoveMember(u.id);
+                                                        }}
+                                                        className="h-8 text-red-500 hover:text-red-400 hover:bg-red-500/10 Montserrat text-[10px] font-bold"
+                                                    >
+                                                        Remove
+                                                    </Button>
                                                 )}
-                                            </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    disabled={invitingId === u.id || projectMembers.includes(u.id)}
+                                                    onClick={() => handleInvite(u.id)}
+                                                    className={`h-8 border-white/10 transition-all Montserrat ${projectMembers.includes(u.id)
+                                                        ? 'bg-[#48A111]/10 text-[#48A111] border-[#48A111]/20 hover:bg-[#48A111]/10 cursor-default'
+                                                        : 'hover:bg-primary hover:text-white hover:border-primary'
+                                                        }`}
+                                                >
+                                                    {invitingId === u.id ? (
+                                                        <Loader2 className="w-3 h-3 animate-spin" />
+                                                    ) : projectMembers.includes(u.id) ? (
+                                                        <div className="flex items-center gap-1">
+                                                            <UserPlus className="w-3 h-3 fill-[#48A111]" />
+                                                            <span>Added</span>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <UserPlus className="w-3 h-3 mr-1" />
+                                                            Add
+                                                        </>
+                                                    )}
+                                                </Button>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>

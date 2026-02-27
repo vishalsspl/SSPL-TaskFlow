@@ -386,7 +386,9 @@ const ProjectView = () => {
             <TabsTrigger value="overview" className="rounded-xl px-6 Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-white">Overview</TabsTrigger>
             <TabsTrigger value="tasks" className="rounded-xl px-6 Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-white">Tasks</TabsTrigger>
             <TabsTrigger value="team" className="rounded-xl px-6 Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-white">Team Distribution</TabsTrigger>
-            <TabsTrigger value="chat" className="rounded-xl px-6 Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-white">Discussions</TabsTrigger>
+            {user?.role !== 'CLIENT' && (
+              <TabsTrigger value="chat" className="rounded-xl px-6 Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-white">Discussions</TabsTrigger>
+            )}
           </TabsList>
 
           <div ref={dashboardRef} className="space-y-6">
@@ -628,9 +630,11 @@ const ProjectView = () => {
               </Card>
             </TabsContent>
 
-            <TabsContent value="chat" className="h-[600px] flex flex-col">
-              <Chat projectId={id} title={`${project.name} Discussions`} />
-            </TabsContent>
+            {user?.role !== 'CLIENT' && (
+              <TabsContent value="chat" className="h-[600px] flex flex-col">
+                <Chat projectId={id} title={`${project.name} Discussions`} />
+              </TabsContent>
+            )}
           </div>
         </Tabs>
       </div>

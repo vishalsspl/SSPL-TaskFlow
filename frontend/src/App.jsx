@@ -79,7 +79,10 @@ function App() {
             <Route path="tasks" element={<Tasks />} />
             <Route path="team" element={<Team />} />
             <Route path="settings" element={<Settings />} />
-            <Route path="chat" element={<ChatPage />} />
+            <Route
+              path="chat"
+              element={user?.role !== 'CLIENT' ? <ChatPage /> : <Navigate to="/dashboard" />}
+            />
             <Route path="tickets" element={<TicketList />} />
             <Route path="tickets/new" element={<SubmitTicket />} />
             <Route path="tickets/:id" element={<TicketDetail />} />

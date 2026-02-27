@@ -504,12 +504,12 @@ export const addProjectMember = async (req, res) => {
       return res.status(400).json({ error: 'User is already a member of this project' });
     }
 
-    // Create workload (default 0% utilization just to link them)
+    // Create workload (default 0% workloadPercentage just to link them)
     const workload = await prisma.workload.create({
       data: {
         userId,
         projectId,
-        utilization: 0,
+        workloadPercentage: 0,
       },
       include: {
         user: {
@@ -534,5 +534,59 @@ export const addProjectMember = async (req, res) => {
   } catch (error) {
     console.error('Error adding project member:', error);
     res.status(500).json({ error: 'Failed to add project member' });
+  }
+};
+
+export const removeProjectMember = async (req, res) => {
+  const { id: projectId, userId } = req.params;
+
+  try {
+    // Verify project belongs to user's organization and requester is manager/admin
+    const project = await prisma.project.findFirst({
+      where: {
+        id: projectId,
+        organizationId: req.user.organizationId,
+      },
+    });
+
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    if (req.user.role !== 'ADMIN' && project.managerId !== req.user.id) {
+      return res.status(403).json({ error: 'Only project managers or admins can remove members' });
+    }
+
+    // Prevent removing the project manager
+    if (userId === project.managerId) {
+      return res.status(400).json({ error: 'Cannot remove the project manager' });
+    }
+
+    // Delete the workload
+    await prisma.workload.delete({
+      where: {
+        userId_projectId: {
+          userId,
+          projectId,
+        },
+      },
+    });
+
+    // Log activity
+    await prisma.activityLog.create({
+      data: {
+        userId: req.user.id,
+        projectId,
+        action: 'removed member',
+        entity: 'project',
+        entityId: projectId,
+        details: { memberId: userId },
+      },
+    });
+
+    res.json({ message: 'Member removed successfully' });
+  } catch (error) {
+    console.error('Error removing project member:', error);
+    res.status(500).json({ error: 'Failed to remove project member' });
   }
 };

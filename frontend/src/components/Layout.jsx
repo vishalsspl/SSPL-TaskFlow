@@ -73,7 +73,8 @@ const Layout = () => {
     {
       name: 'Chat',
       href: '/chat',
-      icon: MessageSquare
+      icon: MessageSquare,
+      allowedRoles: ['ADMIN', 'MANAGER', 'MEMBER']
     },
   ];
 
@@ -200,27 +201,29 @@ const Layout = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="relative group overflow-visible">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => {
-                console.log('Bell clicked, navigating to chat');
-                navigate('/chat');
-              }}
-              className="relative hover:bg-white/5 rounded-full transition-all group p-2 h-12 w-12 overflow-visible"
-            >
-              <Bell className="w-8 h-8 text-[#00A3FF] fill-[#00A3FF]" />
-              {totalUnread > 0 && (
-                <div className="absolute -top-1 -right-1 z-50">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#EE2D24] opacity-75"></span>
-                  <div className="relative min-w-[22px] h-[22px] px-1 bg-[#EE2D24] text-[11px] font-black text-white rounded-full flex items-center justify-center ring-2 ring-[#0A0A0A] shadow-[0_0_15px_rgba(238,45,36,0.6)]">
-                    {totalUnread > 99 ? '99+' : totalUnread}
+          {user?.role !== 'CLIENT' && (
+            <div className="relative group overflow-visible">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  console.log('Bell clicked, navigating to chat');
+                  navigate('/chat');
+                }}
+                className="relative hover:bg-white/5 rounded-full transition-all group p-2 h-12 w-12 overflow-visible"
+              >
+                <Bell className="w-8 h-8 text-[#00A3FF] fill-[#00A3FF]" />
+                {totalUnread > 0 && (
+                  <div className="absolute -top-1 -right-1 z-50">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#EE2D24] opacity-75"></span>
+                    <div className="relative min-w-[22px] h-[22px] px-1 bg-[#EE2D24] text-[11px] font-black text-white rounded-full flex items-center justify-center ring-2 ring-[#0A0A0A] shadow-[0_0_15px_rgba(238,45,36,0.6)]">
+                      {totalUnread > 99 ? '99+' : totalUnread}
+                    </div>
                   </div>
-                </div>
-              )}
-            </Button>
-          </div>
+                )}
+              </Button>
+            </div>
+          )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0 ring-1 ring-white/10 hover:ring-primary/50 transition-all">
