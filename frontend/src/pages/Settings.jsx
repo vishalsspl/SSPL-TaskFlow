@@ -377,7 +377,7 @@ const Settings = () => {
                         </div>
                         <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold Montserrat transition-colors ${theme === 'light' ? 'bg-primary/20 text-primary' : 'text-gray-500 hover:text-white'}`}>
                           <Sun className="h-3.5 w-3.5" />
-                          Light
+                          Default
                         </div>
                       </div>
 
@@ -396,7 +396,7 @@ const Settings = () => {
                         </div>
                         <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold Montserrat transition-colors ${theme === 'dark' ? 'bg-[#8B5CF6]/20 text-[#8B5CF6]' : 'text-gray-500 hover:text-white'}`}>
                           <Moon className="h-3.5 w-3.5" />
-                          Dark
+                          Purple
                         </div>
                       </div>
 
@@ -415,7 +415,7 @@ const Settings = () => {
                         </div>
                         <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold Montserrat transition-colors ${theme === 'system' ? 'bg-[#0EA5E9]/20 text-[#0EA5E9]' : 'text-gray-500 hover:text-white'}`}>
                           <Monitor className="h-3.5 w-3.5" />
-                          System
+                          Blue
                         </div>
                       </div>
                     </div>
