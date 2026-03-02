@@ -5,6 +5,10 @@ const prisma = new PrismaClient();
 
 export const getAllTasks = async (req, res) => {
   const { projectId, status, priority, assignedTo } = req.query;
+  const page = req.query.page ? parseInt(req.query.page) : null;
+  const limit = req.query.limit ? parseInt(req.query.limit) : null;
+  const skip = page && limit ? (page - 1) * limit : undefined;
+  const take = limit || undefined;
 
   const where = {
     project: {
@@ -32,8 +36,13 @@ export const getAllTasks = async (req, res) => {
     where.project = { ...where.project, clientId: req.user.id };
   }
 
+  // Get total count for pagination
+  const total = await prisma.task.count({ where });
+
   const tasks = await prisma.task.findMany({
     where,
+    skip,
+    take,
     include: {
       assignees: {
         include: {
@@ -48,7 +57,19 @@ export const getAllTasks = async (req, res) => {
     orderBy: { createdAt: 'desc' },
   });
 
-  res.json(tasks);
+  if (page || limit) {
+    res.json({
+      data: tasks,
+      meta: {
+        total,
+        page: page || 1,
+        limit: limit || total,
+        totalPages: limit ? Math.ceil(total / limit) : 1
+      }
+    });
+  } else {
+    res.json(tasks);
+  }
 };
 
 export const getTask = async (req, res) => {
@@ -295,6 +316,11 @@ export const deleteTask = async (req, res) => {
 
 export const getMyTasks = async (req, res) => {
   try {
+    const page = req.query.page ? parseInt(req.query.page) : null;
+    const limit = req.query.limit ? parseInt(req.query.limit) : null;
+    const skip = page && limit ? (page - 1) * limit : undefined;
+    const take = limit || undefined;
+
     // Check if user is admin/manager - they see all tasks
     const isAdmin = req.user.role === 'ADMIN' || req.user.role === 'MANAGER';
 
@@ -311,6 +337,8 @@ export const getMyTasks = async (req, res) => {
 
     const tasks = await prisma.task.findMany({
       where,
+      skip,
+      take,
       include: {
         project: {
           select: {
@@ -330,7 +358,19 @@ export const getMyTasks = async (req, res) => {
       ],
     });
 
-    res.json(tasks);
+    if (page || limit) {
+      res.json({
+        data: tasks,
+        meta: {
+          total,
+          page: page || 1,
+          limit: limit || total,
+          totalPages: limit ? Math.ceil(total / limit) : 1
+        }
+      });
+    } else {
+      res.json(tasks);
+    }
   } catch (error) {
     console.error('Error fetching my tasks:', error);
     res.status(500).json({ error: 'Failed to fetch tasks' });

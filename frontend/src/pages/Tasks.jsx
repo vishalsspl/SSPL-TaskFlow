@@ -41,11 +41,14 @@ import {
   AlignLeft,
   Briefcase,
   Search,
-  Filter
+  Filter,
+  Trash2
 } from 'lucide-react';
+import ConfirmDialog from '@/components/ConfirmDialog';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { useAuthStore } from '@/store/authStore';
 import CreateTaskForm from '@/components/CreateTaskForm';
+import Pagination from '@/components/Pagination';
 
 const Tasks = () => {
   const { user } = useAuthStore();
@@ -62,16 +65,28 @@ const Tasks = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTask, setSelectedTask] = useState(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [pagination, setPagination] = useState({
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 0
+  });
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState(null);
 
   useEffect(() => {
     fetchTasks();
     fetchProjects();
     fetchUsers();
-  }, [filter, projectFilter]);
+  }, [filter, projectFilter, pagination.page]);
 
   const fetchTasks = async () => {
+    setLoading(true);
     try {
-      const params = {};
+      const params = {
+        page: pagination.page,
+        limit: pagination.limit
+      };
       if (filter !== 'all') {
         params.status = filter;
       }
@@ -79,7 +94,11 @@ const Tasks = () => {
         params.projectId = projectFilter;
       }
       const response = await api.get('/tasks', { params });
-      setTasks(response.data);
+      setTasks(response.data.data);
+      setPagination(prev => ({
+        ...prev,
+        ...response.data.meta
+      }));
     } catch (error) {
       console.error('Failed to fetch tasks:', error);
     } finally {
@@ -89,8 +108,8 @@ const Tasks = () => {
 
   const fetchProjects = async () => {
     try {
-      const response = await api.get('/projects');
-      setProjects(response.data);
+      const response = await api.get('/projects', { params: { limit: 100 } });
+      setProjects(response.data.data);
     } catch (error) {
       console.error('Failed to fetch projects:', error);
     }
@@ -98,9 +117,9 @@ const Tasks = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await api.get('/users', { params: { teamOnly: 'true' } });
+      const response = await api.get('/users', { params: { teamOnly: 'true', limit: 100 } });
       // Filter out CLIENT role users - only show team members for task assignment
-      const teamMembers = response.data.filter(user => user.role !== 'CLIENT');
+      const teamMembers = response.data.data.filter(user => user.role !== 'CLIENT');
       setUsers(teamMembers);
     } catch (error) {
       console.error('Failed to fetch users:', error);
@@ -142,6 +161,34 @@ const Tasks = () => {
       fetchTasks();
     } catch (error) {
       console.error('Failed to update status:', error);
+    }
+  };
+
+  const handleDelete = (e, task) => {
+    e.stopPropagation();
+    setTaskToDelete(task);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!taskToDelete) return;
+    try {
+      await api.delete(`/tasks/${taskToDelete.id}`);
+      toast({
+        title: "Task Deleted",
+        description: "The task has been removed successfully.",
+      });
+      fetchTasks();
+    } catch (error) {
+      console.error('Failed to delete task:', error);
+      toast({
+        title: "Delete Failed",
+        description: error.response?.data?.error || "Failed to delete task.",
+        variant: "destructive",
+      });
+    } finally {
+      setShowDeleteDialog(false);
+      setTaskToDelete(null);
     }
   };
 
@@ -313,6 +360,7 @@ const Tasks = () => {
                 <TableHead>Points</TableHead>
                 <TableHead>Due Date</TableHead>
                 <TableHead className="w-[15%]">Progress</TableHead>
+                <TableHead className="w-[10%] text-right text-gray-400 font-black uppercase tracking-widest Montserrat">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -403,13 +451,37 @@ const Tasks = () => {
                         </span>
                       </div>
                     </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10 transition-colors"
+                        onClick={(e) => handleDelete(e, task)}
+                        title="Delete Task"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 ))
               )}
             </TableBody>
           </Table>
+          <Pagination
+            meta={pagination}
+            onPageChange={(page) => setPagination(prev => ({ ...prev, page }))}
+          />
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        onConfirm={confirmDelete}
+        title="Delete Task?"
+        description={`Are you sure you want to delete "${taskToDelete?.title}"? This action cannot be undone.`}
+        confirmText="Delete Task"
+      />
     </div>
   );
 };

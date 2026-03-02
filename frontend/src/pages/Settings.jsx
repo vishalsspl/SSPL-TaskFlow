@@ -361,59 +361,41 @@ const Settings = () => {
                     <p className="text-sm text-muted-foreground">
                       Select the theme for the dashboard.
                     </p>
-                    <div className="grid max-w-2xl grid-cols-3 gap-12 pt-6">
+                    <div className="flex flex-wrap gap-6 pt-6">
                       <div onClick={() => setTheme('light')} className="group flex flex-col items-center gap-3">
-                        <div className={`cursor-pointer overflow-hidden items-center rounded-2xl border-2 p-1 transition-all duration-300 group-hover:scale-105 ${theme === 'light' ? 'border-primary shadow-[0_0_25px_rgba(72,161,17,0.2)]' : 'border-white/5 hover:border-white/20'}`}>
-                          <div className="space-y-2 rounded-xl bg-[#ecedef] p-2">
-                            <div className="space-y-2 rounded-lg bg-white p-2 shadow-sm">
-                              <div className="h-2 w-[80px] rounded-lg bg-[#ecedef]" />
-                              <div className="h-2 w-[100px] rounded-lg bg-[#ecedef]" />
-                            </div>
-                            <div className="flex items-center space-x-2 rounded-lg bg-white p-2 shadow-sm">
-                              <div className="h-4 w-4 rounded-full bg-[#ecedef]" />
-                              <div className="h-2 w-[100px] rounded-lg bg-[#ecedef]" />
-                            </div>
+                        <div className={`cursor-pointer w-20 h-20 rounded-2xl border-2 flex items-center justify-center transition-all duration-300 group-hover:scale-110 ${theme === 'light' ? 'border-[#10B981] shadow-[0_0_20px_rgba(16,185,129,0.3)] bg-[#10B981]' : 'border-white/10 hover:border-white/30 bg-white/5'}`}>
+                          <div className={`transition-all duration-300 ${theme === 'light' ? 'scale-100 opacity-100' : 'scale-0 opacity-0'}`}>
+                            <Check className="h-8 w-8 text-white stroke-[4]" />
                           </div>
+                          <div className={`absolute inset-0 rounded-2xl border-4 border-white/20 transition-all duration-300 ${theme === 'light' ? 'opacity-100' : 'opacity-0'}`} />
                         </div>
-                        <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold Montserrat transition-colors ${theme === 'light' ? 'bg-primary/20 text-primary' : 'text-gray-500 hover:text-white'}`}>
+                        <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold Montserrat transition-all duration-300 ${theme === 'light' ? 'bg-[#10B981]/20 text-[#10B981]' : 'text-gray-500 hover:text-white'}`}>
                           <Sun className="h-3.5 w-3.5" />
                           Default
                         </div>
                       </div>
 
                       <div onClick={() => setTheme('dark')} className="group flex flex-col items-center gap-3">
-                        <div className={`cursor-pointer overflow-hidden items-center rounded-2xl border-2 p-1 transition-all duration-300 group-hover:scale-105 ${theme === 'dark' ? 'border-[#8B5CF6] shadow-[0_0_25px_rgba(139,92,246,0.2)]' : 'border-white/5 hover:border-white/20'}`}>
-                          <div className="space-y-2 rounded-xl bg-slate-950 p-2">
-                            <div className="space-y-2 rounded-lg bg-slate-800 p-2 shadow-sm">
-                              <div className="h-2 w-[80px] rounded-lg bg-slate-400" />
-                              <div className="h-2 w-[100px] rounded-lg bg-slate-400" />
-                            </div>
-                            <div className="flex items-center space-x-2 rounded-lg bg-slate-800 p-2 shadow-sm">
-                              <div className="h-4 w-4 rounded-full bg-slate-400" />
-                              <div className="h-2 w-[100px] rounded-lg bg-slate-400" />
-                            </div>
+                        <div className={`cursor-pointer w-20 h-20 rounded-2xl border-2 flex items-center justify-center transition-all duration-300 group-hover:scale-110 ${theme === 'dark' ? 'border-[#8B5CF6] shadow-[0_0_20px_rgba(139,92,246,0.3)] bg-[#8B5CF6]' : 'border-white/10 hover:border-white/30 bg-white/5'}`}>
+                          <div className={`transition-all duration-300 ${theme === 'dark' ? 'scale-100 opacity-100' : 'scale-0 opacity-0'}`}>
+                            <Check className="h-8 w-8 text-white stroke-[4]" />
                           </div>
+                          <div className={`absolute inset-0 rounded-2xl border-4 border-white/20 transition-all duration-300 ${theme === 'dark' ? 'opacity-100' : 'opacity-0'}`} />
                         </div>
-                        <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold Montserrat transition-colors ${theme === 'dark' ? 'bg-[#8B5CF6]/20 text-[#8B5CF6]' : 'text-gray-500 hover:text-white'}`}>
+                        <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold Montserrat transition-all duration-300 ${theme === 'dark' ? 'bg-[#8B5CF6]/20 text-[#8B5CF6]' : 'text-gray-500 hover:text-white'}`}>
                           <Moon className="h-3.5 w-3.5" />
                           Purple
                         </div>
                       </div>
 
                       <div onClick={() => setTheme('system')} className="group flex flex-col items-center gap-3">
-                        <div className={`cursor-pointer overflow-hidden items-center rounded-2xl border-2 p-1 transition-all duration-300 group-hover:scale-105 ${theme === 'system' ? 'border-[#0EA5E9] shadow-[0_0_25px_rgba(14,165,233,0.2)]' : 'border-white/5 hover:border-white/20'}`}>
-                          <div className="space-y-2 rounded-xl bg-slate-950 p-2">
-                            <div className="space-y-2 rounded-lg bg-slate-800 p-2 shadow-sm">
-                              <div className="h-2 w-[80px] rounded-lg bg-slate-400" />
-                              <div className="h-2 w-[100px] rounded-lg bg-slate-400" />
-                            </div>
-                            <div className="flex items-center space-x-2 rounded-lg bg-slate-800 p-2 shadow-sm">
-                              <div className="h-4 w-4 rounded-full bg-slate-400" />
-                              <div className="h-2 w-[100px] rounded-lg bg-slate-400" />
-                            </div>
+                        <div className={`cursor-pointer w-20 h-20 rounded-2xl border-2 flex items-center justify-center transition-all duration-300 group-hover:scale-110 ${theme === 'system' ? 'border-[#0EA5E9] shadow-[0_0_20px_rgba(14,165,233,0.3)] bg-[#0EA5E9]' : 'border-white/10 hover:border-white/30 bg-white/5'}`}>
+                          <div className={`transition-all duration-300 ${theme === 'system' ? 'scale-100 opacity-100' : 'scale-0 opacity-0'}`}>
+                            <Check className="h-8 w-8 text-white stroke-[4]" />
                           </div>
+                          <div className={`absolute inset-0 rounded-2xl border-4 border-white/20 transition-all duration-300 ${theme === 'system' ? 'opacity-100' : 'opacity-0'}`} />
                         </div>
-                        <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold Montserrat transition-colors ${theme === 'system' ? 'bg-[#0EA5E9]/20 text-[#0EA5E9]' : 'text-gray-500 hover:text-white'}`}>
+                        <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold Montserrat transition-all duration-300 ${theme === 'system' ? 'bg-[#0EA5E9]/20 text-[#0EA5E9]' : 'text-gray-500 hover:text-white'}`}>
                           <Monitor className="h-3.5 w-3.5" />
                           Blue
                         </div>

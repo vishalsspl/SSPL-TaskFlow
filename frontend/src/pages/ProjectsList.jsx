@@ -39,6 +39,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/hooks/use-toast';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import ProjectOverview from '@/components/ProjectOverview';
+import Pagination from '@/components/Pagination';
 
 const ProjectsList = () => {
   const { toast } = useToast();
@@ -66,6 +67,13 @@ const ProjectsList = () => {
     category: 'INTERNAL',
   });
 
+  const [pagination, setPagination] = useState({
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 0
+  });
+
   // Search and Filter states
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -76,12 +84,22 @@ const ProjectsList = () => {
   useEffect(() => {
     fetchProjects();
     fetchUsers();
-  }, []);
+  }, [pagination.page]);
 
   const fetchProjects = async () => {
+    setLoading(true);
     try {
-      const response = await api.get('/projects');
-      setProjects(response.data);
+      const response = await api.get('/projects', {
+        params: {
+          page: pagination.page,
+          limit: pagination.limit
+        }
+      });
+      setProjects(response.data.data);
+      setPagination(prev => ({
+        ...prev,
+        ...response.data.meta
+      }));
     } catch (error) {
       console.error('Failed to fetch projects:', error);
     } finally {
@@ -91,8 +109,8 @@ const ProjectsList = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await api.get('/users');
-      setUsers(response.data);
+      const response = await api.get('/users', { params: { limit: 100 } });
+      setUsers(response.data.data);
     } catch (error) {
       console.error('Failed to fetch users:', error);
     }
@@ -614,6 +632,10 @@ const ProjectsList = () => {
               </Table>
             </div>
           )}
+          <Pagination
+            meta={pagination}
+            onPageChange={(page) => setPagination(prev => ({ ...prev, page }))}
+          />
         </CardContent>
       </Card>
 

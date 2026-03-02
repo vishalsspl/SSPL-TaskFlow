@@ -33,6 +33,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Users, Mail, Shield, Plus, Edit2, Trash2, UserCheck, Clock, Layers, Lock, User, Search, BarChart2 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import MemberProgress from '@/components/MemberProgress';
+import Pagination from '@/components/Pagination';
 
 const Team = () => {
   const { toast } = useToast();
@@ -65,6 +66,13 @@ const Team = () => {
     password: '',
   });
 
+  const [pagination, setPagination] = useState({
+    total: 0,
+    page: 1,
+    limit: 10,
+    totalPages: 0
+  });
+
   useEffect(() => {
     if (currentUser?.role === 'MANAGER') {
       setSelectedManagerId(currentUser.id);
@@ -73,7 +81,7 @@ const Team = () => {
     if (currentUser?.role === 'ADMIN') {
       fetchPendingUsers();
     }
-  }, [currentUser]);
+  }, [currentUser, pagination.page]);
 
   useEffect(() => {
     if (selectedManagerId !== 'ALL' && selectedManagerId !== 'PENDING' && selectedManagerId !== 'MANAGERS_LIST') {
@@ -86,9 +94,19 @@ const Team = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const params = currentUser?.role === 'MANAGER' ? { teamOnly: 'true' } : {};
+      const params = {
+        page: pagination.page,
+        limit: pagination.limit
+      };
+      if (currentUser?.role === 'MANAGER') {
+        params.teamOnly = 'true';
+      }
       const response = await api.get('/users', { params });
-      setUsers(response.data.filter(u => u.isApproved && u.role !== 'ADMIN'));
+      setUsers(response.data.data.filter(u => u.isApproved && u.role !== 'ADMIN'));
+      setPagination(prev => ({
+        ...prev,
+        ...response.data.meta
+      }));
     } catch (error) {
       console.error('Failed to fetch users:', error);
     } finally {
@@ -98,8 +116,8 @@ const Team = () => {
 
   const fetchPendingUsers = async () => {
     try {
-      const response = await api.get('/users?pending=true');
-      setPendingUsers(response.data);
+      const response = await api.get('/users?pending=true&limit=100');
+      setPendingUsers(response.data.data);
     } catch (error) {
       console.error('Failed to fetch pending users:', error);
     }
@@ -721,6 +739,10 @@ const Team = () => {
               </Table>
             </CardContent>
           </Card>
+          <Pagination
+            meta={pagination}
+            onPageChange={(page) => setPagination(prev => ({ ...prev, page }))}
+          />
         </div>
       ) : (
         /* Existing Logic for ADMIN/MANAGER */
@@ -910,6 +932,10 @@ const Team = () => {
                   )}
                 </TableBody>
               </Table>
+              <Pagination
+                meta={pagination}
+                onPageChange={(page) => setPagination(prev => ({ ...prev, page }))}
+              />
             </CardContent>
           </Card>
         )))

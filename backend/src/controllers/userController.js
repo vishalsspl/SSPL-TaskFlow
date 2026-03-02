@@ -19,6 +19,10 @@ const getManagerProjectIds = async (managerId, organizationId) => {
 
 export const getUsers = async (req, res) => {
   const { pending, teamOnly } = req.query;
+  const page = req.query.page ? parseInt(req.query.page) : null;
+  const limit = req.query.limit ? parseInt(req.query.limit) : null;
+  const skip = page && limit ? (page - 1) * limit : undefined;
+  const take = limit || undefined;
 
   const where = {
     organizationId: req.user.organizationId,
@@ -176,8 +180,13 @@ export const getUsers = async (req, res) => {
     ];
   }
 
+  // Get total count for pagination
+  const total = await prisma.user.count({ where });
+
   const users = await prisma.user.findMany({
     where,
+    skip,
+    take,
     select: {
       id: true,
       name: true,
@@ -243,7 +252,19 @@ export const getUsers = async (req, res) => {
     };
   });
 
-  res.json(usersWithManagers);
+  if (page || limit) {
+    res.json({
+      data: usersWithManagers,
+      meta: {
+        total,
+        page: page || 1,
+        limit: limit || total,
+        totalPages: limit ? Math.ceil(total / limit) : 1
+      }
+    });
+  } else {
+    res.json(usersWithManagers);
+  }
 };
 
 export const updateUser = async (req, res) => {
