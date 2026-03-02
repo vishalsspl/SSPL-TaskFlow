@@ -551,3 +551,173 @@ export const updateProfile = async (req, res) => {
     res.status(500).json({ error: 'Failed to update profile' });
   }
 };
+
+export const getMemberProgress = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Authorization: managers can only view their subordinates, members can view themselves
+    if (req.user.role === 'MEMBER' && req.user.id !== id) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+    if (req.user.role === 'MANAGER') {
+      // Managers can view their own team members only
+      const targetUser = await prisma.user.findUnique({ where: { id }, select: { managerId: true, organizationId: true } });
+      if (!targetUser || (targetUser.managerId !== req.user.id && id !== req.user.id)) {
+        // Allow if the member is assigned to this manager's project tasks
+        const managerProjects = await prisma.project.findMany({
+          where: { managerId: req.user.id, organizationId: req.user.organizationId },
+          select: { id: true }
+        });
+        const projectIds = managerProjects.map(p => p.id);
+        const isTeamMember = await prisma.taskAssignee.findFirst({
+          where: { userId: id, task: { projectId: { in: projectIds } } }
+        });
+        if (!isTeamMember) {
+          return res.status(403).json({ error: 'Unauthorized' });
+        }
+      }
+    }
+
+    // Verify user exists in same org
+    const targetUser = await prisma.user.findFirst({
+      where: { id, organizationId: req.user.organizationId },
+      select: { id: true, name: true, email: true, avatar: true, role: true }
+    });
+    if (!targetUser) return res.status(404).json({ error: 'User not found' });
+
+    const now = new Date();
+
+    // Fetch all tasks assigned to this user
+    const tasks = await prisma.task.findMany({
+      where: {
+        assignees: { some: { userId: id } },
+        project: { organizationId: req.user.organizationId }
+      },
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        priority: true,
+        completionPercentage: true,
+        dueDate: true,
+        storyPoints: true,
+        project: { select: { id: true, name: true } }
+      }
+    });
+
+    // Status breakdown
+    const statusCounts = { TODO: 0, IN_PROGRESS: 0, IN_REVIEW: 0, COMPLETED: 0, BLOCKED: 0 };
+    const priorityCounts = { LOW: 0, MEDIUM: 0, HIGH: 0, URGENT: 0 };
+    let overdueCount = 0;
+    let totalCompletion = 0;
+    let totalStoryPoints = 0;
+    let completedStoryPoints = 0;
+
+    // Per-project map
+    const projectMap = {};
+
+    for (const task of tasks) {
+      statusCounts[task.status] = (statusCounts[task.status] || 0) + 1;
+      priorityCounts[task.priority] = (priorityCounts[task.priority] || 0) + 1;
+      totalCompletion += task.completionPercentage || 0;
+      totalStoryPoints += task.storyPoints || 0;
+      if (task.status === 'COMPLETED') completedStoryPoints += task.storyPoints || 0;
+      if (task.dueDate && new Date(task.dueDate) < now && task.status !== 'COMPLETED') {
+        overdueCount++;
+      }
+
+      const pId = task.project.id;
+      if (!projectMap[pId]) {
+        projectMap[pId] = {
+          projectId: pId,
+          projectName: task.project.name,
+          total: 0, completed: 0, inProgress: 0, todo: 0, blocked: 0, inReview: 0
+        };
+      }
+      projectMap[pId].total++;
+      if (task.status === 'COMPLETED') projectMap[pId].completed++;
+      else if (task.status === 'IN_PROGRESS') projectMap[pId].inProgress++;
+      else if (task.status === 'TODO') projectMap[pId].todo++;
+      else if (task.status === 'BLOCKED') projectMap[pId].blocked++;
+      else if (task.status === 'IN_REVIEW') projectMap[pId].inReview++;
+    }
+
+    const totalTasks = tasks.length;
+    const avgCompletion = totalTasks > 0 ? Math.round(totalCompletion / totalTasks) : 0;
+    const completionRate = totalTasks > 0 ? Math.round((statusCounts.COMPLETED / totalTasks) * 100) : 0;
+
+    let managementData = null;
+
+    if (targetUser.role === 'MANAGER' || targetUser.role === 'ADMIN') {
+      // Fetch all projects managed by this user
+      const managedProjects = await prisma.project.findMany({
+        where: { managerId: id, organizationId: req.user.organizationId },
+        include: {
+          tasks: {
+            select: {
+              status: true,
+              priority: true,
+              completionPercentage: true,
+              dueDate: true,
+              storyPoints: true,
+            }
+          }
+        }
+      });
+
+      const mStatusCounts = { TODO: 0, IN_PROGRESS: 0, IN_REVIEW: 0, COMPLETED: 0, BLOCKED: 0 };
+      const mPriorityCounts = { LOW: 0, MEDIUM: 0, HIGH: 0, URGENT: 0 };
+      let mOverdueCount = 0;
+      let mTotalCompletion = 0;
+      let mTotalStoryPoints = 0;
+      let mCompletedStoryPoints = 0;
+      let mTotalTasks = 0;
+
+      managedProjects.forEach(project => {
+        project.tasks.forEach(task => {
+          mTotalTasks++;
+          mStatusCounts[task.status] = (mStatusCounts[task.status] || 0) + 1;
+          mPriorityCounts[task.priority] = (mPriorityCounts[task.priority] || 0) + 1;
+          mTotalCompletion += task.completionPercentage || 0;
+          mTotalStoryPoints += task.storyPoints || 0;
+          if (task.status === 'COMPLETED') mCompletedStoryPoints += task.storyPoints || 0;
+          if (task.dueDate && new Date(task.dueDate) < now && task.status !== 'COMPLETED') {
+            mOverdueCount++;
+          }
+        });
+      });
+
+      managementData = {
+        projectCount: managedProjects.length,
+        totalTasks: mTotalTasks,
+        statusCounts: mStatusCounts,
+        priorityCounts: mPriorityCounts,
+        overdueCount: mOverdueCount,
+        avgCompletion: mTotalTasks > 0 ? Math.round(mTotalCompletion / mTotalTasks) : 0,
+        completionRate: mTotalTasks > 0 ? Math.round((mStatusCounts.COMPLETED / mTotalTasks) * 100) : 0,
+        totalStoryPoints: mTotalStoryPoints,
+        completedStoryPoints: mCompletedStoryPoints,
+      };
+    }
+
+    res.json({
+      user: targetUser,
+      individual: {
+        totalTasks,
+        statusCounts,
+        priorityCounts,
+        overdueCount,
+        avgCompletion,
+        completionRate,
+        totalStoryPoints,
+        completedStoryPoints,
+        projectBreakdown: Object.values(projectMap)
+      },
+      management: managementData
+    });
+  } catch (error) {
+    console.error('Error fetching member progress:', error);
+    res.status(500).json({ error: 'Failed to fetch member progress' });
+  }
+};

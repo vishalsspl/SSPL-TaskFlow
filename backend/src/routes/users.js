@@ -1,5 +1,5 @@
 import express from 'express';
-import { getUsers, updateUser, deleteUser, approveUser, getManagedUsers, updateProfile } from '../controllers/userController.js';
+import { getUsers, updateUser, deleteUser, approveUser, getManagedUsers, updateProfile, getMemberProgress } from '../controllers/userController.js';
 
 import { authenticate } from '../middleware/auth.js';
 
@@ -12,6 +12,7 @@ router.patch('/profile', updateProfile);
 router.put('/:id', updateUser);
 router.put('/:id/approve', approveUser);
 router.get('/:id/team', getManagedUsers);
+router.get('/:id/progress', getMemberProgress);
 router.delete('/:id', deleteUser);
 
 export default router;

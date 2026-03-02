@@ -30,8 +30,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Users, Mail, Shield, Plus, Edit2, Trash2, UserCheck, Clock, Layers, Lock, User, Search } from 'lucide-react';
+import { Users, Mail, Shield, Plus, Edit2, Trash2, UserCheck, Clock, Layers, Lock, User, Search, BarChart2 } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import MemberProgress from '@/components/MemberProgress';
 
 const Team = () => {
   const { toast } = useToast();
@@ -52,6 +53,10 @@ const Team = () => {
   const [showAddToTeamDialog, setShowAddToTeamDialog] = useState(false);
   const [addToTeamMemberId, setAddToTeamMemberId] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Progress Panel State
+  const [viewingProgressUserId, setViewingProgressUserId] = useState(null);
+  const [showProgressPanel, setShowProgressPanel] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -572,14 +577,29 @@ const Team = () => {
                       <Shield className="w-3 h-3" />
                       Manager Role
                     </div>
-                    <Badge
-                      variant="none"
-                      className="text-[10px] px-2 py-0.5 font-black"
-                      style={{ background: 'rgba(16,185,129,0.1)', color: '#6EE7B7', border: '1px solid rgba(16,185,129,0.2)' }}
-                    >
-                      <Users className="w-3 h-3 mr-1" />
-                      {teamCount} {teamCount === 1 ? 'Member' : 'Members'}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant="none"
+                        className="text-[10px] px-2 py-0.5 font-black"
+                        style={{ background: 'rgba(16,185,129,0.1)', color: '#6EE7B7', border: '1px solid rgba(16,185,129,0.2)' }}
+                      >
+                        <Users className="w-3 h-3 mr-1" />
+                        {teamCount} {teamCount === 1 ? 'Member' : 'Members'}
+                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-primary hover:text-primary hover:bg-primary/10"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setViewingProgressUserId(manager.id);
+                          setShowProgressPanel(true);
+                        }}
+                        title="View Progress"
+                      >
+                        <BarChart2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -864,6 +884,18 @@ const Team = () => {
                         {currentUser?.role !== 'CLIENT' && currentUser?.role !== 'MEMBER' && (
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-primary hover:text-primary hover:bg-primary/10"
+                                onClick={() => {
+                                  setViewingProgressUserId(user.id);
+                                  setShowProgressPanel(true);
+                                }}
+                                title="View Progress"
+                              >
+                                <BarChart2 className="w-4 h-4" />
+                              </Button>
                               <Button variant="ghost" size="icon" onClick={() => handleEdit(user)}>
                                 <Edit2 className="w-4 h-4" />
                               </Button>
@@ -940,6 +972,12 @@ const Team = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <MemberProgress
+        userId={viewingProgressUserId}
+        open={showProgressPanel}
+        onOpenChange={setShowProgressPanel}
+      />
     </div >
   );
 };

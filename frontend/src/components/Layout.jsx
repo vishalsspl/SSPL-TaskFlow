@@ -96,15 +96,15 @@ const Layout = () => {
   const NavContent = () => (
     <div className="flex flex-col h-full py-4">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-6 mb-6">
+      <div className="flex items-center gap-2 px-4 mb-6">
         {user?.organization?.logoUrl ? (
-          <img src={user.organization.logoUrl} alt="Logo" className="h-16 w-16 object-contain" />
+          <img src={user.organization.logoUrl} alt="Logo" className="h-12 w-12 object-contain" />
         ) : (
-          <div className="w-16 h-16 rounded bg-primary/10 flex items-center justify-center text-primary font-bold text-xl">
+          <div className="w-12 h-12 rounded bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
             {user?.organization?.name?.charAt(0) || 'T'}
           </div>
         )}
-        <span className="text-xl font-extrabold bg-gradient-to-r from-[#48A111] via-[#A3E635] to-[#48A111] bg-clip-text text-transparent truncate tracking-tight">
+        <span className="text-lg font-extrabold bg-gradient-to-r from-[#48A111] via-[#A3E635] to-[#48A111] bg-clip-text text-transparent tracking-tight whitespace-nowrap">
           {user?.organization?.name || 'TaskFlow'}
         </span>
       </div>
@@ -146,17 +146,17 @@ const Layout = () => {
       <div className="px-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="w-full justify-start h-auto py-3 px-2 hover:bg-muted">
+            <Button variant="ghost" className="w-full justify-start h-auto py-3 px-2 hover:bg-muted whitespace-normal">
               <div className="flex items-center gap-3 text-left w-full">
-                <Avatar className="w-8 h-8 border">
+                <Avatar className="w-8 h-8 border shrink-0">
                   <AvatarImage src={user?.avatar} />
                   <AvatarFallback className="bg-primary/10 text-primary">
                     {user?.name?.charAt(0) || <User className="w-4 h-4" />}
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex-1 overflow-hidden">
-                  <p className="text-sm font-medium truncate">{user?.name}</p>
-                  <p className="text-xs text-muted-foreground truncate capitalize">{user?.role?.toLowerCase()}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium leading-tight">{user?.name}</p>
+                  <p className="text-xs text-muted-foreground capitalize">{user?.role?.toLowerCase()}</p>
                 </div>
               </div>
             </Button>
@@ -186,12 +186,12 @@ const Layout = () => {
   return (
     <div className="min-h-screen bg-[#050505] flex">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex w-64 flex-col border-r border-white/5 bg-[#0A0A0A] fixed h-full z-30 shadow-2xl">
+      <aside className="hidden md:flex w-52 flex-col border-r border-white/5 bg-[#0A0A0A] fixed h-full z-30 shadow-2xl">
         <NavContent />
       </aside>
 
       {/* Shared Header for Desktop & Mobile */}
-      <div className="fixed top-0 right-0 left-0 md:left-64 h-16 border-b border-white/5 bg-[#0A0A0A]/80 backdrop-blur-xl z-20 flex items-center justify-between px-6">
+      <div className="fixed top-0 right-0 left-0 md:left-52 h-16 border-b border-white/5 bg-[#0A0A0A]/80 backdrop-blur-xl z-20 flex items-center justify-between px-6">
         <div className="md:hidden flex items-center gap-4">
           <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
             <SheetTrigger asChild>
@@ -199,7 +199,7 @@ const Layout = () => {
                 <Menu className="w-5 h-5 text-gray-400" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-64 border-r border-white/5 bg-[#0A0A0A]">
+            <SheetContent side="left" className="p-0 w-52 border-r border-white/5 bg-[#0A0A0A]">
               <NavContent />
             </SheetContent>
           </Sheet>
@@ -272,7 +272,7 @@ const Layout = () => {
       </div>
 
       {/* Main content */}
-      <main className={`flex-1 md:ml-64 ${location.pathname === '/task-board' ? 'p-0' : 'p-6'} pt-20 animate-in fade-in duration-500`}>
+      <main className={`flex-1 md:ml-52 ${location.pathname === '/task-board' ? 'p-0' : 'p-6'} pt-20 animate-in fade-in duration-500`}>
         <Outlet />
       </main>
     </div>

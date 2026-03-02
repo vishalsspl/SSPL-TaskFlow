@@ -155,50 +155,45 @@ const TaskKanban = () => {
                         </p>
                     </div>
 
-                    <div className="flex flex-wrap items-center justify-between gap-4">
-                        <div className="flex flex-wrap items-center gap-4">
-                            <div className="relative w-full sm:w-auto group">
-                                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 group-focus-within:text-primary transition-colors duration-300" />
-                                <Input
-                                    type="search"
-                                    placeholder="Find tasks..."
-                                    className="pl-11 w-full sm:w-[240px] bg-white/5 border-white/10 text-white Montserrat font-bold rounded-2xl h-11 focus:ring-primary/20 transition-all"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <SearchableSelect
-                                    options={[{ value: 'all', label: 'All Projects' }, ...projects.map(p => ({ value: p.id, label: p.name }))]}
-                                    value={selectedProjectId}
-                                    onChange={(val) => setSelectedProjectId(val || 'all')}
-                                    placeholder="Filter by Project"
-                                    searchPlaceholder="Search projects..."
-                                    className="w-full sm:w-[200px]"
-                                />
-                                <SearchableSelect
-                                    options={managerOptions}
-                                    value={managerFilter}
-                                    onChange={setManagerFilter}
-                                    placeholder="Filter by lead"
-                                    searchPlaceholder="Search leads..."
-                                    className="w-full sm:w-[200px]"
-                                />
-                                <SearchableSelect
-                                    options={priorityOptions}
-                                    value={priorityFilter}
-                                    onChange={setPriorityFilter}
-                                    placeholder="Priority Level"
-                                    searchPlaceholder="Search priority..."
-                                    className="w-full sm:w-[160px]"
-                                />
-                            </div>
+                    <div className="flex flex-wrap items-center gap-3">
+                        <div className="relative flex-shrink-0 group">
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 group-focus-within:text-primary transition-colors duration-300" />
+                            <Input
+                                type="search"
+                                placeholder="Find tasks..."
+                                className="pl-11 w-[200px] bg-white/5 border-white/10 text-white Montserrat font-bold rounded-2xl h-11 focus:ring-primary/20 transition-all"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
                         </div>
-
+                        <SearchableSelect
+                            options={[{ value: 'all', label: 'All Projects' }, ...projects.map(p => ({ value: p.id, label: p.name }))]}
+                            value={selectedProjectId}
+                            onChange={(val) => setSelectedProjectId(val || 'all')}
+                            placeholder="All Projects"
+                            searchPlaceholder="Search projects..."
+                            className="w-[180px]"
+                        />
+                        <SearchableSelect
+                            options={managerOptions}
+                            value={managerFilter}
+                            onChange={setManagerFilter}
+                            placeholder="All Managers"
+                            searchPlaceholder="Search leads..."
+                            className="w-[160px]"
+                        />
+                        <SearchableSelect
+                            options={priorityOptions}
+                            value={priorityFilter}
+                            onChange={setPriorityFilter}
+                            placeholder="All Priorities"
+                            searchPlaceholder="Search priority..."
+                            className="w-[150px]"
+                        />
                         {!isReadOnly && (
                             <Button
                                 onClick={() => setShowCreateDialog(true)}
-                                className="bg-primary hover:bg-primary/90 text-white Montserrat font-black uppercase tracking-widest rounded-2xl h-11 px-8 shadow-[0_4px_20px_rgba(var(--primary-rgb),0.3)] transition-all hover:scale-105"
+                                className="bg-primary hover:bg-primary/90 text-white Montserrat font-black uppercase tracking-widest rounded-2xl h-11 px-8 shadow-[0_4px_20px_rgba(var(--primary-rgb),0.3)] transition-all hover:scale-105 flex-shrink-0"
                             >
                                 <Plus className="w-5 h-5 mr-2 stroke-[3]" />
                                 New Task

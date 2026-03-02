@@ -58,7 +58,7 @@ const ChatPage = () => {
             </div>
 
             <div className="flex-1 min-h-0 flex gap-6">
-                <div className="w-64 flex flex-col gap-4 bg-card rounded-xl border border-white/10 p-4 shadow-xl overflow-hidden">
+                <div className="w-[300px] flex-shrink-0 flex flex-col gap-4 bg-card rounded-xl border border-white/10 p-4 shadow-xl overflow-hidden">
                     <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-500 Montserrat px-2">Channels</h3>
                     <ScrollArea className="flex-1">
                         <div className="space-y-1">
@@ -70,7 +70,7 @@ const ChatPage = () => {
                                     <Button
                                         key={room.id}
                                         variant={activeRoom?.id === room.id ? "secondary" : "ghost"}
-                                        className={`w-full justify-start Montserrat font-bold rounded-xl h-auto py-3 ${activeRoom?.id === room.id
+                                        className={`w-full justify-start Montserrat font-bold rounded-xl h-auto py-3 whitespace-normal ${activeRoom?.id === room.id
                                             ? 'bg-primary/10 text-primary hover:bg-primary/20'
                                             : 'text-gray-400 hover:text-white'
                                             }`}
@@ -83,7 +83,7 @@ const ChatPage = () => {
                                         )}
                                         <div className="flex flex-col items-start min-w-0 flex-1">
                                             <div className="flex items-center w-full">
-                                                <span className="truncate flex-1 text-left">{room.name}</span>
+                                                <span className="flex-1 text-left leading-tight py-0.5">{room.name}</span>
                                                 {count > 0 && (
                                                     <div className="relative ml-2 shrink-0">
                                                         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#EE2D24] opacity-75"></span>
@@ -94,7 +94,7 @@ const ChatPage = () => {
                                                 )}
                                             </div>
                                             {room.lastMsg && (
-                                                <p className="text-[10px] text-gray-500 truncate w-full text-left font-normal mt-0.5">
+                                                <p className="text-[10px] text-gray-500 w-full text-left font-normal mt-0.5 line-clamp-1">
                                                     <span className="font-bold text-gray-400">{room.lastMsg.user.name}: </span>
                                                     {room.lastMsg.content}
                                                 </p>
