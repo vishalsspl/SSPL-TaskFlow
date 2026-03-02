@@ -17,20 +17,39 @@
     --muted: 0 0% 10%;
     --muted-foreground: 0 0% 60%;
     --accent: 0 0% 15%;
-    --accent-foreground: 97 82% 35%;
+    --accent-foreground: var(--primary);
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
     --border: 0 0% 12%;
     --input: 0 0% 12%;
-    --ring: 97 82% 35%;
+    --ring: var(--primary);
     --radius: 0.75rem;
-    --chart-1: 97 82% 35%;
+    --chart-1: var(--primary);
     --chart-2: 200 100% 50%;
     --chart-3: 280 100% 60%;
     --chart-4: 340 100% 50%;
     --chart-5: 45 100% 50%;
     --ck-z-default: 100;
     --ck-z-modal: 100;
+  }
+
+  /* Theme Accent Definitions */
+  .theme-light {
+    --primary: 97 82% 35%;
+    /* Green */
+    --ring: 97 82% 35%;
+  }
+
+  .theme-dark {
+    --primary: 259 94% 66%;
+    /* Purple */
+    --ring: 259 94% 66%;
+  }
+
+  .theme-system {
+    --primary: 199 89% 48%;
+    /* Blue */
+    --ring: 199 89% 48%;
   }
 
   .dark {
@@ -40,24 +59,15 @@
     --card-foreground: 0 0% 100%;
     --popover: 0 0% 4%;
     --popover-foreground: 0 0% 100%;
-    --primary: 97 82% 35%;
-    --primary-foreground: 0 0% 100%;
     --secondary: 0 0% 10%;
     --secondary-foreground: 0 0% 100%;
     --muted: 0 0% 10%;
     --muted-foreground: 0 0% 60%;
     --accent: 0 0% 15%;
-    --accent-foreground: 97 82% 35%;
     --destructive: 0 62% 30%;
     --destructive-foreground: 0 0% 100%;
     --border: 0 0% 16%;
     --input: 0 0% 16%;
-    --ring: 97 82% 35%;
-    --chart-1: 97 82% 35%;
-    --chart-2: 200 100% 50%;
-    --chart-3: 280 100% 60%;
-    --chart-4: 340 100% 50%;
-    --chart-5: 45 100% 50%;
   }
 }
 

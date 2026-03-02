@@ -12,7 +12,10 @@ export function ThemeProvider({ children, defaultTheme = 'system', storageKey = 
 
     useEffect(() => {
         const root = window.document.documentElement;
-        root.classList.remove('light', 'dark');
+        root.classList.remove('light', 'dark', 'theme-light', 'theme-dark', 'theme-system');
+
+        // Apply theme-specific accent class
+        root.classList.add(`theme-${theme}`);
 
         if (theme === 'system') {
             const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
