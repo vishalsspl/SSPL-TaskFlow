@@ -136,74 +136,64 @@ const TaskKanban = () => {
     }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     return (
-        <div className="p-4 h-full flex flex-col bg-[#050505] no-scrollbar overflow-hidden">
-            <div className="flex flex-col gap-4 mb-4">
-                <div className="flex flex-col gap-4">
-                    <div>
-                        <h1 className="text-4xl font-black Montserrat text-white tracking-tight">
-                            {selectedProjectId === 'all' ? (
-                                <>Global <span className="text-primary">Kanban</span></>
-                            ) : (
-                                projects.find(p => p.id === selectedProjectId)?.name || 'Project Kanban'
-                            )}
-                        </h1>
-                        <p className="mt-2 text-[10px] text-gray-500 font-bold uppercase tracking-[0.2em] Montserrat flex items-center gap-2">
-                            <Layers className="w-3 h-3 text-primary" />
-                            {isReadOnly
-                                ? 'View-only access to task status and progress'
-                                : 'Orchestrate tasks with dynamic drag-and-drop workflow'}
-                        </p>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-3">
-                        <div className="relative flex-shrink-0 group">
-                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 group-focus-within:text-primary transition-colors duration-300" />
-                            <Input
-                                type="search"
-                                placeholder="Find tasks..."
-                                className="pl-11 w-[200px] bg-white/5 border-white/10 text-white Montserrat font-bold rounded-2xl h-11 focus:ring-primary/20 transition-all"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
-                        <SearchableSelect
-                            options={[{ value: 'all', label: 'All Projects' }, ...projects.map(p => ({ value: p.id, label: p.name }))]}
-                            value={selectedProjectId}
-                            onChange={(val) => setSelectedProjectId(val || 'all')}
-                            placeholder="All Projects"
-                            searchPlaceholder="Search projects..."
-                            className="w-[180px]"
-                        />
-                        <SearchableSelect
-                            options={managerOptions}
-                            value={managerFilter}
-                            onChange={setManagerFilter}
-                            placeholder="All Managers"
-                            searchPlaceholder="Search leads..."
-                            className="w-[160px]"
-                        />
-                        <SearchableSelect
-                            options={priorityOptions}
-                            value={priorityFilter}
-                            onChange={setPriorityFilter}
-                            placeholder="All Priorities"
-                            searchPlaceholder="Search priority..."
-                            className="w-[150px]"
-                        />
-                        {!isReadOnly && (
-                            <Button
-                                onClick={() => setShowCreateDialog(true)}
-                                className="bg-primary hover:bg-primary/90 text-white Montserrat font-black uppercase tracking-widest rounded-2xl h-11 px-8 shadow-[0_4px_20px_rgba(var(--primary-rgb),0.3)] transition-all hover:scale-105 flex-shrink-0"
-                            >
-                                <Plus className="w-5 h-5 mr-2 stroke-[3]" />
-                                New Task
-                            </Button>
+        <div className="p-6 min-h-full flex flex-col bg-[#050505]">
+            <div className="flex items-end justify-between mb-4 gap-4 px-2">
+                <div className="flex-1">
+                    <h1 className="text-xl font-black Montserrat text-white tracking-tight leading-none">
+                        {selectedProjectId === 'all' ? (
+                            <>Global <span className="text-primary text-sm tracking-[0.2em] ml-2">KANBAN</span></>
+                        ) : (
+                            projects.find(p => p.id === selectedProjectId)?.name || 'Project Kanban'
                         )}
+                    </h1>
+                </div>
+
+                <div className="flex items-center gap-2 flex-wrap justify-end">
+                    <div className="relative group">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-600" />
+                        <Input
+                            type="search"
+                            placeholder="Find..."
+                            className="pl-8 w-[140px] bg-white/5 border-white/5 text-white Montserrat font-bold rounded-lg h-8 focus:ring-primary/20 transition-all text-[10px]"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
                     </div>
+                    <SearchableSelect
+                        options={[{ value: 'all', label: 'All Projects' }, ...projects.map(p => ({ value: p.id, label: p.name }))]}
+                        value={selectedProjectId}
+                        onChange={(val) => setSelectedProjectId(val || 'all')}
+                        placeholder="Project"
+                        className="w-[120px] h-8 text-[9px]"
+                    />
+                    <SearchableSelect
+                        options={managerOptions}
+                        value={managerFilter}
+                        onChange={setManagerFilter}
+                        placeholder="Lead"
+                        className="w-[110px] h-8 text-[9px]"
+                    />
+                    <SearchableSelect
+                        options={priorityOptions}
+                        value={priorityFilter}
+                        onChange={setPriorityFilter}
+                        placeholder="Priority"
+                        className="w-[110px] h-8 text-[9px]"
+                    />
+                    {!isReadOnly && (
+                        <Button
+                            onClick={() => setShowCreateDialog(true)}
+                            className="bg-primary hover:bg-primary/90 text-white Montserrat font-black uppercase tracking-widest rounded-lg h-8 px-3 text-[9px]"
+                        >
+                            <Plus className="w-3 h-3 mr-1" />
+                            Task
+                        </Button>
+                    )}
                 </div>
             </div>
 
-            <div className="flex-1 overflow-hidden rounded-3xl bg-white/[0.02] border border-white/5 p-6 glass">
+            <div className="flex-1 rounded-2xl bg-[#080808]/80 border border-white/5 p-3 glass mb-2 shadow-2xl relative overflow-hidden group/board">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-50 pointer-events-none" />
                 <KanbanBoard
                     tasks={filteredTasks}
                     onTaskUpdate={async (taskId, newStatus) => {

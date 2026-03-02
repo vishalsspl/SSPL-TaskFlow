@@ -80,7 +80,7 @@ const KanbanBoard = ({ tasks, onTaskUpdate, isReadOnly, onEdit }) => {
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
         >
-            <div className="flex h-full w-full gap-4">
+            <div className="flex min-h-full w-full gap-4 overflow-x-auto pb-2 custom-scroll transition-all duration-300">
                 <KanbanColumn id="TODO" title="To Do" tasks={columns.TODO} isReadOnly={isReadOnly} onEdit={onEdit} />
                 <KanbanColumn id="IN_PROGRESS" title="In Progress" tasks={columns.IN_PROGRESS} isReadOnly={isReadOnly} onEdit={onEdit} />
                 <KanbanColumn id="IN_REVIEW" title="In Review" tasks={columns.IN_REVIEW} isReadOnly={isReadOnly} onEdit={onEdit} />

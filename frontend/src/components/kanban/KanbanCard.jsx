@@ -1,12 +1,14 @@
 import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, User, AlignLeft, Paperclip } from 'lucide-react';
-import { priorityColors } from '@/lib/utils'; // Make sure this utility exists or redefine it locally
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Calendar, User } from 'lucide-react';
+import { format } from 'date-fns';
+import { priorityColors } from '@/lib/utils';
 
-const KanbanCard = ({ task, isReadOnly, onEdit }) => {
+const KanbanCard = ({ task, isReadOnly, onEdit, columnStatus }) => {
     const {
         attributes,
         listeners,
@@ -23,6 +25,13 @@ const KanbanCard = ({ task, isReadOnly, onEdit }) => {
         disabled: isReadOnly,
     });
 
+    const statusAccents = {
+        TODO: 'border-l-amber-500/50',
+        IN_PROGRESS: 'border-l-blue-500/50',
+        IN_REVIEW: 'border-l-purple-500/50',
+        COMPLETED: 'border-l-emerald-500/50',
+    };
+
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
@@ -34,73 +43,59 @@ const KanbanCard = ({ task, isReadOnly, onEdit }) => {
             <div
                 ref={setNodeRef}
                 style={style}
-                className="opacity-50 h-[150px] bg-muted rounded-lg border border-dashed border-border"
+                className="opacity-50 h-[120px] bg-white/[0.02] rounded-2xl border border-dashed border-white/10 mb-3"
             />
         );
     }
 
     return (
-        <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="mb-1 touch-none group">
+        <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="mb-2 touch-none group">
             <Card
-                className="bg-[#0A0A0A]/60 backdrop-blur-sm border-white/5 ring-1 ring-white/10 cursor-grab active:cursor-grabbing hover:ring-primary/40 hover:bg-white/5 transition-all duration-300 rounded-xl overflow-hidden shadow-xl"
+                className={`bg-[#0A0A0A]/60 backdrop-blur-md border-white/5 ring-1 ring-white/10 cursor-grab active:cursor-grabbing hover:ring-primary/40 hover:bg-white/5 transition-all duration-300 rounded-xl overflow-hidden shadow-xl border-l-[3px] ${statusAccents[columnStatus] || 'border-l-transparent'}`}
                 onClick={() => onEdit && onEdit(task)}
             >
-                <div className="p-3 space-y-2">
-                    <div className="flex justify-between items-start">
-                        <Badge className={`${priorityColors[task.priority] || 'bg-white/5 text-gray-500'} border-0 px-2 py-0.5 text-[9px] font-black tracking-widest uppercase rounded-sm`}>
-                            {task.priority || 'NORMAL'}
+                <div className="p-3">
+                    <div className="flex justify-between items-start gap-3 mb-2">
+                        <Badge className={`${priorityColors[task.priority] || 'bg-white/5'} border-none text-[8px] font-black Montserrat uppercase px-2 py-0.5 rounded-md`}>
+                            {task.priority}
                         </Badge>
                         {task.storyPoints > 0 && (
-                            <span className="text-[10px] font-black Montserrat text-primary/80 px-1.5 py-0.5 bg-primary/10 rounded tracking-tighter">
-                                {task.storyPoints} PTS
-                            </span>
+                            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white/[0.03] border border-white/5">
+                                <div className="w-1 h-1 rounded-full bg-primary" />
+                                <span className="text-[9px] font-black text-primary Montserrat tracking-tighter">{task.storyPoints} PTS</span>
+                            </div>
                         )}
                     </div>
 
-                    <h4 className="text-sm font-bold text-white Montserrat leading-snug group-hover:text-primary transition-colors line-clamp-2">
+                    <h3 className="text-[13px] font-bold text-white mb-1 Montserrat leading-snug group-hover:text-primary transition-colors">
                         {task.title}
-                    </h4>
+                    </h3>
 
-                    {task.project && (
-                        <p className="text-[10px] font-black Montserrat text-gray-600 uppercase tracking-widest truncate">
-                            {task.project.name}
-                        </p>
-                    )}
+                    <div className="flex items-center gap-2 mb-3">
+                        <div className="w-1 h-1 rounded-full bg-white/10" />
+                        <span className="text-[9px] font-black text-gray-500 Montserrat uppercase tracking-widest">
+                            {task.project?.name || 'Global HQ'}
+                        </span>
+                    </div>
 
-                    <div className="pt-2 flex items-center justify-between border-t border-white/5">
-                        <div className="flex items-center gap-2">
-                            {task.assignees && task.assignees.length > 0 ? (
-                                <div className="flex -space-x-1.5">
-                                    {task.assignees.slice(0, 3).map(({ user }) => (
-                                        <div key={user.id} className="w-5 h-5 rounded-full border-2 border-[#0A0A0A] ring-1 ring-white/10 overflow-hidden bg-white/5">
-                                            {user.avatar ? (
-                                                <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-[7px] font-black text-white/50 Montserrat">
-                                                    {user.name.charAt(0)}
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
-                                    {task.assignees.length > 3 && (
-                                        <div className="w-5 h-5 rounded-full bg-white/10 border-2 border-[#0A0A0A] flex items-center justify-center text-[7px] text-white font-black Montserrat">
-                                            +{task.assignees.length - 3}
-                                        </div>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="w-5 h-5 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
-                                    <User className="w-2.5 h-2.5 text-gray-600" />
-                                </div>
-                            )}
+                    <div className="flex items-center justify-between pt-3 border-t border-white/[0.03]">
+                        <div className="flex -space-x-1.5">
+                            {task.assignees?.map((assignee, idx) => (
+                                <Avatar key={idx} className="w-6 h-6 border-2 border-[#0A0A0A] ring-1 ring-white/5">
+                                    <AvatarImage src={assignee.user.avatar} />
+                                    <AvatarFallback className="text-[9px] font-black bg-primary/10 text-primary Montserrat">
+                                        {assignee.user.name?.charAt(0) || 'U'}
+                                    </AvatarFallback>
+                                </Avatar>
+                            ))}
                         </div>
 
-                        {task.dueDate && (
-                            <div className={`flex items-center gap-1.5 text-[10px] font-black Montserrat tracking-tighter ${new Date(task.dueDate) < new Date() ? 'text-red-500' : 'text-gray-500'}`}>
-                                <Calendar className="w-3 h-3" />
-                                <span>{new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
-                            </div>
-                        )}
+                        <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-white/[0.01] border border-white/5">
+                            <Calendar className="w-3 h-3 text-gray-600" />
+                            <span className="text-[8px] font-black text-gray-600 uppercase tracking-widest Montserrat">
+                                {task.dueDate ? format(new Date(task.dueDate), 'MMM d') : 'Standby'}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </Card>
