@@ -24,7 +24,7 @@ const SuperAdminDashboard = () => {
  const [loading, setLoading] = useState(true);
 
  useEffect(() => {
- setHeader('Platform Overview', 'Central monitoring and control for all organizations');
+ setHeader('Dashboard', 'Overview of all organizations and platform activity');
  fetchData();
  }, [setHeader]);
 
@@ -104,15 +104,15 @@ const SuperAdminDashboard = () => {
  <MetricCard
  title="Organizations"
  value={stats?.totalOrgs}
- subtext={`${stats?.activeOrgs ?? 0} Active, ${stats?.trialOrgs ?? 0} Trial`}
+ subtext={`${stats?.activeOrgs ?? 0} active, ${stats?.trialOrgs ?? 0} on trial`}
  icon={Building2}
  trend={12}
  colorClass="bg-primary"
  />
  <MetricCard
- title="Global Users"
+ title="Total Users"
  value={stats?.totalUsers}
- subtext="Total members across all orgs"
+ subtext="All users across every organization"
  icon={Users}
  trend={8}
  colorClass="bg-indigo-500"
@@ -120,12 +120,12 @@ const SuperAdminDashboard = () => {
  <MetricCard
  title="Suspended"
  value={stats?.suspendedOrgs}
- subtext="Organisations currently blocked"
+ subtext="Organizations currently blocked"
  icon={ShieldAlert}
  colorClass="bg-red-500"
  />
  <MetricCard
- title="Platform Uptime"
+ title="Uptime"
  value="99.9%"
  subtext="All systems operational"
  icon={Globe}
@@ -138,21 +138,21 @@ const SuperAdminDashboard = () => {
  <Card className="lg:col-span-4 border-border/40 shadow-2xl bg-white/40 dark:bg-[#0A0A0A]/60 backdrop-blur-3xl rounded-[2.5rem] overflow-hidden">
  <CardHeader className="flex flex-row items-center justify-between border-b border-border/10 pb-6 px-8 pt-8">
  <div className="space-y-1">
- <CardTitle className="text-sm font-bold tracking-widest text-foreground">Infrastructure Health</CardTitle>
- <CardDescription className="text-[10px] font-bold text-muted-foreground opacity-60">Real-time status monitor</CardDescription>
+ <CardTitle className="text-sm font-bold tracking-widest text-foreground">System Status</CardTitle>
+ <CardDescription className="text-[10px] font-bold text-muted-foreground opacity-60">Current health of all services</CardDescription>
  </div>
  <div className="flex items-center gap-2 px-3 py-1 bg-green-500/10 rounded-full border border-green-500/20">
  <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
- <span className="text-[9px] font-bold text-green-500 ">Active</span>
+ <span className="text-[9px] font-bold text-green-500 ">All Good</span>
  </div>
  </CardHeader>
  <CardContent className="px-8 py-6">
  <div className="space-y-8">
  {[
- { name: 'Core API Gateway', status: 'Operational', latency: '42ms', load: 12 },
- { name: 'PostgreSQL Cluster', status: 'Operational', latency: '5ms', load: 8 },
- { name: 'Redis Cache Layer', status: 'Operational', latency: '1ms', load: 4 },
- { name: 'S3 Storage Engine', status: 'Operational', latency: '110ms', load: 24 },
+ { name: 'Main Server', status: 'Running', latency: '42ms', load: 12 },
+ { name: 'Database', status: 'Running', latency: '5ms', load: 8 },
+ { name: 'Cache System', status: 'Running', latency: '1ms', load: 4 },
+ { name: 'File Storage', status: 'Running', latency: '110ms', load: 24 },
  ].map((service) => (
  <div key={service.name} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 group">
  <div className="flex items-center gap-4">
@@ -167,11 +167,11 @@ const SuperAdminDashboard = () => {
  <div className="flex items-center gap-6 sm:text-right">
  <div className="hidden sm:block">
  <p className="text-xs font-bold text-foreground font-mono">{service.latency}</p>
- <p className="text-[8px] text-muted-foreground font-bold ">Latency</p>
+ <p className="text-[8px] text-muted-foreground font-bold ">Response Time</p>
  </div>
  <div className="flex-1 sm:flex-none">
  <div className="flex justify-between sm:justify-end mb-1">
- <span className="text-[8px] font-bold text-muted-foreground sm:hidden">System Load</span>
+ <span className="text-[8px] font-bold text-muted-foreground sm:hidden">Usage</span>
  <span className="text-[9px] font-bold text-foreground font-mono">{service.load}%</span>
  </div>
  <div className="w-full sm:w-32 h-1.5 bg-border/20 rounded-full overflow-hidden">
@@ -188,8 +188,8 @@ const SuperAdminDashboard = () => {
  {/* Recent Orgs */}
  <Card className="lg:col-span-3 border-border/40 shadow-2xl bg-white/40 dark:bg-[#0A0A0A]/60 backdrop-blur-3xl rounded-[2.5rem] overflow-hidden">
  <CardHeader className="border-b border-border/10 pb-6 px-8 pt-8">
- <CardTitle className="text-sm font-bold tracking-widest text-foreground">Latest Organizations</CardTitle>
- <CardDescription className="text-[10px] font-bold text-muted-foreground opacity-60">Newest platform subscribers</CardDescription>
+ <CardTitle className="text-sm font-bold tracking-widest text-foreground">Recent Organizations</CardTitle>
+ <CardDescription className="text-[10px] font-bold text-muted-foreground opacity-60">Recently added organizations</CardDescription>
  </CardHeader>
  <CardContent className="px-8 py-6">
  <div className="space-y-6">
@@ -206,7 +206,7 @@ const SuperAdminDashboard = () => {
  ))}
  </div>
  ) : recentOrgs.length === 0 ? (
- <p className="text-[10px] font-bold text-muted-foreground text-center py-10 opacity-40">Zero subscribers records</p>
+ <p className="text-[10px] font-bold text-muted-foreground text-center py-10 opacity-40">No organizations found</p>
  ) : recentOrgs.map((org) => (
  <div key={org.id} className="flex items-center gap-4 group">
  <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors border border-primary/5">
@@ -229,7 +229,7 @@ const SuperAdminDashboard = () => {
  className="w-full mt-10 rounded-2xl border-primary/20 bg-primary/5 text-[10px] font-bold tracking-widest text-primary hover:bg-primary hover:text-white transition-all duration-500 h-14 shadow-lg hover:shadow-primary/30"
  onClick={() => navigate('/superadmin/orgs')}
  >
- See Detailed Inventory <ArrowUpRight className="ml-2 w-4 h-4" />
+ View All Organizations <ArrowUpRight className="ml-2 w-4 h-4" />
  </Button>
  </CardContent>
  </Card>

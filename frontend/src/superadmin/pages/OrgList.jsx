@@ -37,7 +37,7 @@ const OrgList = () => {
   });
 
   useEffect(() => {
-    setHeader('Organization Management', 'View and manage all tenant organisations and their subscriptions', {
+    setHeader('Organizations', 'View and manage all organizations and their plans', {
       showSearch: true,
       searchPlaceholder: 'Search organizations or industries...'
     });
@@ -219,7 +219,7 @@ const OrgList = () => {
             {loading ? (
               <div className="p-20 text-center flex flex-col items-center gap-4">
                 <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                <p className="text-xs font-medium text-muted-foreground animate-pulse">Synchronizing Data...</p>
+                <p className="text-xs font-medium text-muted-foreground animate-pulse">Loading...</p>
               </div>
             ) : filtered.length === 0 ? (
               <div className="p-20 text-center border-2 border-dashed border-border/20 rounded-xl bg-muted/5">
@@ -285,7 +285,7 @@ const OrgList = () => {
         onOpenChange={setShowDeleteDialog}
         onConfirm={confirmDelete}
         title="Delete Organisation"
-        description={`Are you absolutely sure you want to delete ${orgToDelete?.name}? This action cannot be undone and will remove all tenant data.`}
+        description={`Are you absolutely sure you want to delete ${orgToDelete?.name}? This action cannot be undone and will remove all organization data.`}
       />
     </div>
   );

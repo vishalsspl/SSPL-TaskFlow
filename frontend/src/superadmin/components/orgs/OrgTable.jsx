@@ -27,11 +27,11 @@ const OrgTable = ({
  <Table>
  <TableHeader>
  <TableRow>
- <TableHead className="w-[300px] text-xs font-medium py-5 px-8">Asset Details</TableHead>
- <TableHead className="text-xs font-medium">Service Tier</TableHead>
- <TableHead className="text-xs font-medium">Live Status</TableHead>
- <TableHead className="text-xs font-medium text-center">Quota (U/P)</TableHead>
- <TableHead className="text-xs font-medium">Registration</TableHead>
+ <TableHead className="w-[300px] text-xs font-medium py-5 px-8">Organization</TableHead>
+ <TableHead className="text-xs font-medium">Plan</TableHead>
+ <TableHead className="text-xs font-medium">Status</TableHead>
+ <TableHead className="text-xs font-medium text-center">Users / Limit</TableHead>
+ <TableHead className="text-xs font-medium">Joined</TableHead>
  <TableHead className="text-right text-xs font-medium pr-8">Actions</TableHead>
  </TableRow>
  </TableHeader>
@@ -52,7 +52,7 @@ const OrgTable = ({
  <p className="font-semibold text-sm text-foreground break-words">{org.name}</p>
  <p className="text-xs text-muted-foreground font-bold flex items-center gap-1.5 mt-1">
  <Globe className="w-3 h-3 text-primary" />
- {org.industry || 'General Operations'}
+ {org.industry || 'General'}
  </p>
  </div>
  </div>
@@ -79,36 +79,36 @@ const OrgTable = ({
  </DropdownMenuTrigger>
  <DropdownMenuContent align="end" className="w-56 rounded-lg shadow-2xl border-border/40 bg-black/90 backdrop-blur-xl p-2">
  <DropdownMenuLabel className="text-xs font-medium text-primary/60 px-3 py-2">
- Administrative Tools
+ Actions
  </DropdownMenuLabel>
  <DropdownMenuSeparator className="bg-primary/10" />
  {org.status === 'PENDING' ? (
  <>
  <DropdownMenuItem className="text-green-500 hover:text-white hover:bg-green-500 rounded-xl cursor-pointer font-semibold text-xs py-3 mb-1" onClick={() => onApprove(org)}>
- <ShieldAlert className="w-4 h-4 mr-3" /> Approve Portfolio
+ <ShieldAlert className="w-4 h-4 mr-3" /> Approve
  </DropdownMenuItem>
  <DropdownMenuItem className="text-red-500 hover:text-white hover:bg-red-500 rounded-xl cursor-pointer font-semibold text-xs py-3" onClick={() => onDelete(org)}>
- <Trash2 className="w-4 h-4 mr-3" /> Purge Request
+ <Trash2 className="w-4 h-4 mr-3" /> Reject & Delete
  </DropdownMenuItem>
  </>
  ) : (
  <>
  <DropdownMenuItem className="rounded-xl cursor-pointer font-semibold text-xs py-3 mb-1 transition-all" onClick={() => onEdit(org)}>
- <Edit2 className="w-4 h-4 mr-3 text-primary" /> Modify Asset
+ <Edit2 className="w-4 h-4 mr-3 text-primary" /> Edit
  </DropdownMenuItem>
  <DropdownMenuItem
  className="text-orange-500 hover:text-white hover:bg-orange-500 rounded-xl cursor-pointer font-semibold text-xs py-3 mb-1 transition-all"
  onClick={() => onSuspend(org)}
  >
  <ShieldAlert className="w-4 h-4 mr-3" />
- {org.status === 'SUSPENDED' ? 'Legacy Restore' : 'Security Freeze'}
+ {org.status === 'SUSPENDED' ? 'Reactivate' : 'Suspend'}
  </DropdownMenuItem>
  <DropdownMenuSeparator className="bg-primary/10" />
  <DropdownMenuItem
  className="text-red-500 hover:text-white hover:bg-red-500 rounded-xl cursor-pointer font-semibold text-xs py-3 transition-all"
  onClick={() => onDelete(org)}
  >
- <Trash2 className="w-4 h-4 mr-3" /> Delete Permanent
+ <Trash2 className="w-4 h-4 mr-3" /> Delete
  </DropdownMenuItem>
  </>
  )}

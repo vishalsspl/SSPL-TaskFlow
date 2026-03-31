@@ -25,9 +25,9 @@ const AuditLog = () => {
   const [selectedOrgId, setSelectedOrgId] = useState('');
 
   useEffect(() => {
-    setHeader('System Ledger', 'Immutable chronosphere of all administrative and security operations', {
+    setHeader('Activity Log', 'Track all admin actions and changes across the platform', {
       showSearch: true,
-      searchPlaceholder: 'Filter by event, identity, or timestamp...'
+      searchPlaceholder: 'Search by action, user, or date...'
     });
     fetchOrgs();
   }, [setHeader]);
@@ -49,7 +49,7 @@ const AuditLog = () => {
       const res = await api.get('/superadmin/orgs');
       setOrgs(res.data || []);
     } catch {
-      toast({ title: 'Organization synchronization failed', variant: 'destructive' });
+      toast({ title: 'Could not load organizations', variant: 'destructive' });
     }
   };
 
@@ -68,7 +68,7 @@ const AuditLog = () => {
       setLogs(data.data || data || []);
       setTotal(data.pagination?.totalPages || 1);
     } catch {
-      toast({ title: 'Failed to retrieve audit streams', variant: 'destructive' });
+      toast({ title: 'Could not load activity logs', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -163,8 +163,8 @@ const AuditLog = () => {
         <Card className="flex-1 flex flex-col min-h-0 border-none sm:border shadow-none sm:shadow-sm">
           <CardContent className="flex-1 flex flex-col min-h-0 pt-2 sm:pt-4 px-2 sm:px-4">
             <div className="flex flex-col mb-8 p-1 mt-4">
-              <h2 className="text-2xl font-bold mb-1 tracking-widest uppercase">Select Sector</h2>
-              <p className="text-muted-foreground text-xs font-medium">Choose an organization to view its immutable audit ledger.</p>
+              <h2 className="text-2xl font-bold mb-1 tracking-widest uppercase">Select Organization</h2>
+              <p className="text-muted-foreground text-xs font-medium">Choose an organization to view its activity log.</p>
             </div>
 
             {orgs.length === 0 ? (
@@ -208,7 +208,7 @@ const AuditLog = () => {
               className="h-10 rounded-xl px-4 font-bold text-[10px] tracking-widest uppercase border border-border/40 hover:bg-primary/10 transition-all"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Return to Registry
+              Back to Organizations
             </Button>
             <div className="h-4 w-px bg-border/40" />
             <h2 className="text-xl font-bold flex items-center gap-3 tracking-tight">
@@ -231,7 +231,7 @@ const AuditLog = () => {
             {loading ? (
               <div className="h-96 rounded-xl bg-muted/20 animate-pulse border border-border/10 flex flex-col items-center justify-center gap-4">
                 <Activity className="w-12 h-12 text-primary/20 animate-spin" />
-                <p className="font-semibold tracking-widest text-primary/20">Syncing Ledger...</p>
+                <p className="font-semibold tracking-widest text-primary/20">Loading...</p>
               </div>
             ) : logs.length === 0 ? (
               <Card className="p-32 text-center rounded-xl border-dashed border-2 border-border/20 bg-muted/5">
@@ -239,8 +239,8 @@ const AuditLog = () => {
                   <div className="w-16 h-16 bg-muted/20 rounded-xl mx-auto flex items-center justify-center">
                     <History className="w-8 h-8 text-muted-foreground/40" />
                   </div>
-                  <h3 className="font-medium text-muted-foreground">Empty Synchronosphere</h3>
-                  <p className="text-sm text-muted-foreground/60">No administrative events have been recorded in this temporal sector.</p>
+                  <h3 className="font-medium text-muted-foreground">No Activity Found</h3>
+                  <p className="text-sm text-muted-foreground/60">No actions have been recorded for this organization yet.</p>
                 </div>
               </Card>
             ) : (

@@ -139,7 +139,7 @@ export const getOrganizations = async (req, res) => {
 // PUT /api/superadmin/orgs/:id
 export const updateOrganization = async (req, res) => {
     const { id } = req.params;
-    const { plan, status, maxUsers, maxProjects, suspendedReason } = req.body;
+    const { plan, status, maxUsers, maxProjects, suspendedReason, customFeatures } = req.body;
 
     try {
         const updated = await prisma.organization.update({
@@ -150,6 +150,7 @@ export const updateOrganization = async (req, res) => {
                 ...(maxUsers !== undefined && { maxUsers: Number(maxUsers) }),
                 ...(maxProjects !== undefined && { maxProjects: Number(maxProjects) }),
                 ...(suspendedReason !== undefined && { suspendedReason }),
+                ...(customFeatures !== undefined && { customFeatures }),
                 ...(status === 'SUSPENDED' ? { suspendedAt: new Date() } : (status === 'ACTIVE' ? { suspendedAt: null } : {})),
             }
         });

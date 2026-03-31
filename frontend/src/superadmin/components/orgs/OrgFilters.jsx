@@ -39,14 +39,14 @@ const OrgFilters = ({
  value={planFilter}
  onChange={setPlan}
  options={[
- { label: 'Tier: All', value: '' },
- { label: 'FREE', value: 'FREE' },
- { label: 'STARTER', value: 'STARTER' },
- { label: 'PRO', value: 'PRO' },
- { label: 'ENTERPRISE', value: 'ENTERPRISE' }
+ { label: 'Plan: All', value: '' },
+ { label: 'Free', value: 'FREE' },
+ { label: 'Starter', value: 'STARTER' },
+ { label: 'Pro', value: 'PRO' },
+ { label: 'Enterprise', value: 'ENTERPRISE' }
  ]}
- placeholder="Tier: All"
- searchPlaceholder="Search tier..."
+ placeholder="Plan: All"
+ searchPlaceholder="Search plan..."
  className="w-full sm:w-44 h-11 rounded-xl bg-background border-border/40 hover:bg-accent/20 transition-all font-semibold"
  />
 
@@ -55,7 +55,7 @@ const OrgFilters = ({
         className="h-11 rounded-xl gap-3 font-bold text-[10px] tracking-widest hover:bg-primary hover:text-white transition-all duration-300 w-full lg:w-auto px-6 border-primary/40 text-primary border-[1.5px] uppercase"
         onClick={onProvision}
       >
-        <Building2 className="w-3.5 h-3.5" /> Provision New
+        <Building2 className="w-3.5 h-3.5" /> Add New
       </Button>
  </div>
  </div>

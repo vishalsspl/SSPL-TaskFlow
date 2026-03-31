@@ -28,9 +28,9 @@ const SuperAdminUserList = () => {
   const [deleteTarget, setDelete] = useState(null);
 
   useEffect(() => {
-    setHeader('Registry: Galactic Identity', 'Universal synchronization of all biological and synthetic entities', {
+    setHeader('All Users', 'View and manage users across all organizations', {
       showSearch: true,
-      searchPlaceholder: 'Search by name, email or affiliation...'
+      searchPlaceholder: 'Search by name, email, or organization...'
     });
     fetchOrgs();
   }, [setHeader]);
@@ -49,7 +49,7 @@ const SuperAdminUserList = () => {
       const res = await api.get('/superadmin/orgs', { params: { limit: 100 } });
       setOrgs(res.data.data || res.data || []);
     } catch {
-      toast({ title: 'Failed to fetch sectors', variant: 'destructive' });
+      toast({ title: 'Could not load organizations', variant: 'destructive' });
     } finally {
       setOrgLoading(false);
     }
@@ -71,7 +71,7 @@ const SuperAdminUserList = () => {
       setUsers(data.data || data || []);
       setTotal(data.pagination?.totalPages || 1);
     } catch {
-      toast({ title: 'Failed to synchronize lifeforms', variant: 'destructive' });
+      toast({ title: 'Could not load users', variant: 'destructive' });
     } finally {
       setLoading(false);
     }
@@ -80,20 +80,20 @@ const SuperAdminUserList = () => {
   const forceReset = async (user) => {
     try {
       await api.post(`/superadmin/users/${user.id}/force-reset`);
-      toast({ title: `Access override initiated for ${user.name}` });
+      toast({ title: `Password reset sent to ${user.name}` });
     } catch (err) {
-      toast({ title: 'Override Failed', description: err.response?.data?.error, variant: 'destructive' });
+      toast({ title: 'Reset Failed', description: err.response?.data?.error, variant: 'destructive' });
     }
   };
 
   const deleteUser = async () => {
     try {
       await api.delete(`/superadmin/users/${deleteTarget.id}`);
-      toast({ title: 'Entity terminated successfully' });
+      toast({ title: 'User deleted successfully' });
       setDelete(null);
       fetchUsers();
     } catch (err) {
-      toast({ title: 'Termination Failed', description: err.response?.data?.error, variant: 'destructive' });
+      toast({ title: 'Delete Failed', description: err.response?.data?.error, variant: 'destructive' });
     }
   };
 
@@ -101,10 +101,10 @@ const SuperAdminUserList = () => {
 
   const getRoleBadge = (role) => {
     switch (role) {
-      case 'ADMIN': return <Badge className="bg-purple-500/10 text-purple-600 border-purple-200 dark:border-purple-900/50 text-xs font-semibold rounded-lg px-2 shadow-sm">Command</Badge>;
-      case 'MANAGER': return <Badge className="bg-blue-500/10 text-blue-600 border-blue-200 dark:border-blue-900/50 text-xs font-semibold rounded-lg px-2 shadow-sm">Overlord</Badge>;
-      case 'MEMBER': return <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-200 dark:border-emerald-900/50 text-xs font-semibold rounded-lg px-2 shadow-sm">Operator</Badge>;
-      case 'CLIENT': return <Badge className="bg-orange-500/10 text-orange-600 border-orange-200 dark:border-orange-900/50 text-xs font-semibold rounded-lg px-2 shadow-sm">Guest</Badge>;
+      case 'ADMIN': return <Badge className="bg-purple-500/10 text-purple-600 border-purple-200 dark:border-purple-900/50 text-xs font-semibold rounded-lg px-2 shadow-sm">Admin</Badge>;
+      case 'MANAGER': return <Badge className="bg-blue-500/10 text-blue-600 border-blue-200 dark:border-blue-900/50 text-xs font-semibold rounded-lg px-2 shadow-sm">Manager</Badge>;
+      case 'MEMBER': return <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-200 dark:border-emerald-900/50 text-xs font-semibold rounded-lg px-2 shadow-sm">Member</Badge>;
+      case 'CLIENT': return <Badge className="bg-orange-500/10 text-orange-600 border-orange-200 dark:border-orange-900/50 text-xs font-semibold rounded-lg px-2 shadow-sm">Client</Badge>;
       default: return <Badge variant="secondary" className="text-xs font-semibold rounded-lg px-2">{role}</Badge>;
     }
   };
@@ -117,8 +117,8 @@ const SuperAdminUserList = () => {
         <CardContent className="flex-1 flex flex-col min-h-0 pt-2 sm:pt-4 px-2 sm:px-4">
           {!selectedOrgId ? (
             <div className="flex flex-col mb-8 p-1 mt-4">
-              <h2 className="text-2xl font-bold mb-1 tracking-widest uppercase">Select Sector</h2>
-              <p className="text-muted-foreground text-xs font-medium">Choose an organization to manage its biological and synthetic entities.</p>
+              <h2 className="text-2xl font-bold mb-1 tracking-widest uppercase">Select Organization</h2>
+              <p className="text-muted-foreground text-xs font-medium">Choose an organization to manage its users.</p>
             </div>
           ) : (
             <div className="bg-secondary/40 p-2 rounded-2xl mb-6 mt-4 shadow-inner backdrop-blur-sm" style={{ border: '1px solid var(--table-border)' }}>
@@ -131,7 +131,7 @@ const SuperAdminUserList = () => {
                     onClick={() => setSelectedOrgId(null)}
                   >
                     <ChevronLeft className="w-3 h-3" />
-                    Back to Sectors
+                    Back to Organizations
                   </Button>
                   <h2 className="text-xl font-bold flex items-center gap-3">
                     {orgs.find(o => o.id === selectedOrgId)?.name || 'Loading...'}
@@ -150,7 +150,7 @@ const SuperAdminUserList = () => {
                         { label: 'CLIENT', value: 'CLIENT' }
                       ]}
                       placeholder="All Users"
-                      searchPlaceholder="Search echelon..."
+                      searchPlaceholder="Search role..."
                       className="w-full h-14 rounded-lg bg-white/50 dark:bg-black/50 border-border/40 hover:bg-accent/20 transition-all font-semibold"
                     />
                   </div>
@@ -208,8 +208,8 @@ const SuperAdminUserList = () => {
                     <div className="w-16 h-16 bg-muted/20 rounded-xl mx-auto flex items-center justify-center">
                       <UserX className="w-8 h-8 text-muted-foreground/40" />
                     </div>
-                    <h3 className="font-medium text-muted-foreground">No Entities Found</h3>
-                    <p className="text-sm text-muted-foreground/60">Registry search returned zero active or dormant lifeforms in this sector.</p>
+                    <h3 className="font-medium text-muted-foreground">No Users Found</h3>
+                    <p className="text-sm text-muted-foreground/60">No users found in this organization.</p>
                   </div>
                 </Card>
               ) : (
@@ -221,7 +221,7 @@ const SuperAdminUserList = () => {
                   {totalPages > 1 && (
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-6 px-10 py-6 border-t border-border/10 mt-auto">
                       <p className="text-xs font-medium text-muted-foreground opacity-50">
-                        Showing {(page - 1) * 20 + 1} - {Math.min(users.length + (page - 1) * 20, page * 20)} Entities Synced
+                        Showing {(page - 1) * 20 + 1} - {Math.min(users.length + (page - 1) * 20, page * 20)} Users
                       </p>
                       <div className="flex items-center gap-3">
                         <Button
@@ -230,7 +230,7 @@ const SuperAdminUserList = () => {
                           disabled={page === 1}
                           onClick={() => setPage(p => p - 1)}
                         >
-                          Previous Sector
+                          Previous
                         </Button>
                         <Button
                           variant="outline"
@@ -238,7 +238,7 @@ const SuperAdminUserList = () => {
                           disabled={page === totalPages}
                           onClick={() => setPage(p => p + 1)}
                         >
-                          Next Sector
+                          Next
                         </Button>
                       </div>
                     </div>

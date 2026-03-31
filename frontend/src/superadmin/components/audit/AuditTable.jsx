@@ -15,10 +15,10 @@ const AuditTable = ({ logs, getActionIcon, getStatusBadge, getSeverity, onOrgFil
       <Table>
  <TableHeader>
  <TableRow>
- <TableHead className="text-[11px] font-semibold text-muted-foreground px-4">Event</TableHead>
- <TableHead className="text-[11px] font-semibold text-muted-foreground px-4">Initiator</TableHead>
- <TableHead className="text-[11px] font-semibold text-muted-foreground px-4">Entity</TableHead>
- <TableHead className="text-[11px] font-semibold text-muted-foreground px-4">Timestamp</TableHead>
+ <TableHead className="text-[11px] font-semibold text-muted-foreground px-4">Action</TableHead>
+ <TableHead className="text-[11px] font-semibold text-muted-foreground px-4">Done By</TableHead>
+ <TableHead className="text-[11px] font-semibold text-muted-foreground px-4">Organization</TableHead>
+ <TableHead className="text-[11px] font-semibold text-muted-foreground px-4">Date & Time</TableHead>
  <TableHead className="text-[11px] font-semibold text-muted-foreground px-4 text-right">Status</TableHead>
  </TableRow>
  </TableHeader>
@@ -47,8 +47,8 @@ const AuditTable = ({ logs, getActionIcon, getStatusBadge, getSeverity, onOrgFil
  {log.user?.name?.charAt(0) || 'S'}
  </div>
  <div className="flex flex-col">
- <p className="text-sm font-medium text-foreground">{log.user?.name || 'System Auto'}</p>
- <p className="text-[11px] text-muted-foreground capitalize">{log.user?.role?.toLowerCase() || 'Service'}</p>
+ <p className="text-sm font-medium text-foreground">{log.user?.name || 'System'}</p>
+ <p className="text-[11px] text-muted-foreground capitalize">{log.user?.role?.toLowerCase() || 'System'}</p>
  </div>
  </div>
  </TableCell>
@@ -59,7 +59,7 @@ const AuditTable = ({ logs, getActionIcon, getStatusBadge, getSeverity, onOrgFil
  >
  <div className="flex flex-col text-left">
  <span className="text-sm font-medium text-foreground group-hover/btn:text-primary transition-colors">
- {log.organization?.name || 'Global Platform'}
+ {log.organization?.name || 'Platform'}
  </span>
  {log.project && (
  <span className="text-[11px] text-muted-foreground shrink-0 max-w-[200px] truncate">

@@ -31,9 +31,9 @@ const OrgEditDialog = ({ editOrg, setEditOrg, onSave, saving }) => {
               <Edit2 className="w-6 h-6 text-primary" />
             </div>
             <div className="text-left">
-              <DialogTitle className="text-xl font-medium">Registry Update</DialogTitle>
+              <DialogTitle className="text-xl font-medium">Edit Organization</DialogTitle>
               <DialogDescription className="text-xs font-bold tracking-widest text-muted-foreground opacity-60">
-                Provisioning adjustments for {editOrg?.name}
+                Update settings for {editOrg?.name}
               </DialogDescription>
             </div>
           </div>
@@ -44,7 +44,7 @@ const OrgEditDialog = ({ editOrg, setEditOrg, onSave, saving }) => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {/* Status */}
               <div className="space-y-2">
-                <Label className="text-xs font-medium ml-1 opacity-70">Asset Status</Label>
+                <Label className="text-xs font-medium ml-1 opacity-70">Status</Label>
                 <div className="relative">
                   <Target className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/60 z-10" />
                   <DropdownMenu>
@@ -74,7 +74,7 @@ const OrgEditDialog = ({ editOrg, setEditOrg, onSave, saving }) => {
 
               {/* Plan */}
               <div className="space-y-2">
-                <Label className="text-xs font-medium ml-1 opacity-70">Service Tier</Label>
+                <Label className="text-xs font-medium ml-1 opacity-70">Plan</Label>
                 <div className="relative">
                   <Zap className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/60 z-10" />
                   <DropdownMenu>
@@ -107,7 +107,7 @@ const OrgEditDialog = ({ editOrg, setEditOrg, onSave, saving }) => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
               <div className="space-y-2">
                 <Label className="text-xs font-medium ml-1 opacity-70 flex items-center gap-2">
-                  <Users className="w-3.5 h-3.5" /> User Quota
+                  <Users className="w-3.5 h-3.5" /> Max Users
                 </Label>
                 <Input
                   type="number"
@@ -119,7 +119,7 @@ const OrgEditDialog = ({ editOrg, setEditOrg, onSave, saving }) => {
               </div>
               <div className="space-y-2">
                 <Label className="text-xs font-medium ml-1 opacity-70 flex items-center gap-2">
-                  <Briefcase className="w-3.5 h-3.5" /> Project Quota
+                  <Briefcase className="w-3.5 h-3.5" /> Max Projects
                 </Label>
                 <Input
                   type="number"
@@ -138,11 +138,11 @@ const OrgEditDialog = ({ editOrg, setEditOrg, onSave, saving }) => {
                   <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
                     <User className="w-4 h-4 text-primary" />
                   </div>
-                  <h3 className="text-xs font-medium text-primary">Root Administrator Payload</h3>
+                  <h3 className="text-xs font-medium text-primary">Admin Account Details</h3>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label className="text-xs font-medium ml-1 opacity-50">Admin Identity</Label>
+                    <Label className="text-xs font-medium ml-1 opacity-50">Admin Name</Label>
                     <Input
                       value={editOrg.adminName || ''}
                       onChange={(e) => setEditOrg((p) => ({ ...p, adminName: e.target.value }))}
@@ -150,7 +150,7 @@ const OrgEditDialog = ({ editOrg, setEditOrg, onSave, saving }) => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label className="text-xs font-medium ml-1 opacity-50">Secure Email</Label>
+                    <Label className="text-xs font-medium ml-1 opacity-50">Admin Email</Label>
                     <Input
                       value={editOrg.adminEmail || ''}
                       onChange={(e) => setEditOrg((p) => ({ ...p, adminEmail: e.target.value }))}
@@ -165,14 +165,14 @@ const OrgEditDialog = ({ editOrg, setEditOrg, onSave, saving }) => {
 
         <DialogFooter className="p-8 pt-6 flex sm:justify-between items-center gap-4 border-t border-border/10">
           <Button variant="ghost" className="rounded-lg font-semibold text-xs tracking-widest h-12 px-6" onClick={() => setEditOrg(null)}>
-            Abort Mission
+            Cancel
           </Button>
           <Button
             className="rounded-lg px-12 h-14 font-semibold text-sm tracking-widest shadow-xl shadow-primary/30 min-w-[200px]"
             onClick={onSave}
             disabled={saving}
           >
-            {saving ? 'Synchronizing...' : 'Save Configuration'}
+            {saving ? 'Saving...' : 'Save Changes'}
           </Button>
         </DialogFooter>
       </DialogContent>

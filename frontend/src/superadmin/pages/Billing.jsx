@@ -36,7 +36,7 @@ const SuperAdminBilling = () => {
   const [statusFilter, setStatusFilter] = useState('ALL');
 
   useEffect(() => {
-    setHeader('Global Billing', 'Manage platform-wide subscriptions and financial records');
+    setHeader('Billing', 'Manage payments and invoices for all organizations');
     fetchInvoices();
   }, [setHeader]);
 
@@ -121,8 +121,8 @@ const SuperAdminBilling = () => {
         <CardHeader className="p-8 pb-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-1">
-              <CardTitle className="text-xl font-black tracking-tight">Invoice Repository</CardTitle>
-              <CardDescription className="text-[10px] font-bold tracking-widest uppercase opacity-60">System-wide financial transaction records</CardDescription>
+              <CardTitle className="text-xl font-black tracking-tight">All Invoices</CardTitle>
+              <CardDescription className="text-[10px] font-bold tracking-widest uppercase opacity-60">Payment records for all organizations</CardDescription>
             </div>
             <div className="flex items-center gap-3">
               <div className="relative group">
@@ -173,7 +173,7 @@ const SuperAdminBilling = () => {
                     <TableCell colSpan={6} className="h-64 text-center">
                       <div className="flex flex-col items-center justify-center gap-4">
                         <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                        <p className="text-[10px] font-black tracking-widest uppercase text-muted-foreground">Streaming data...</p>
+                        <p className="text-[10px] font-black tracking-widest uppercase text-muted-foreground">Loading...</p>
                       </div>
                     </TableCell>
                   </TableRow>

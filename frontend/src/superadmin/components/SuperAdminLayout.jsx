@@ -30,6 +30,7 @@ import {
  Globe,
  Search,
  CreditCard,
+ Zap,
 } from 'lucide-react';
 import { useHeaderStore } from '@/store/headerStore';
 
@@ -51,12 +52,13 @@ const SuperAdminLayout = () => {
  };
 
  const navigation = [
- { name: 'Platform Overview', href: '/superadmin', icon: LayoutDashboard },
+ { name: 'Dashboard', href: '/superadmin', icon: LayoutDashboard },
  { name: 'Organizations', href: '/superadmin/orgs', icon: Building2 },
- { name: 'Global Users', href: '/superadmin/users', icon: Users },
- { name: 'Global Billing', href: '/superadmin/billing', icon: CreditCard },
- { name: 'Audit Logs', href: '/superadmin/audit', icon: Activity },
- { name: 'Platform Settings', href: '/superadmin/settings', icon: Globe },
+ { name: 'All Users', href: '/superadmin/users', icon: Users },
+ { name: 'Billing', href: '/superadmin/billing', icon: CreditCard },
+ { name: 'Plans & Limits', href: '/superadmin/plans', icon: Zap },
+ { name: 'Activity Log', href: '/superadmin/audit', icon: Activity },
+ { name: 'Settings', href: '/superadmin/settings', icon: Globe },
  ];
 
  const isActive = (path) => {
@@ -144,7 +146,7 @@ const SuperAdminLayout = () => {
  </DropdownMenuTrigger>
  <DropdownMenuContent align="end" className="w-64 rounded-2xl shadow-2xl border-border/40 bg-background/95 backdrop-blur-xl p-2" forceMount>
  <DropdownMenuLabel className="font-bold text-[10px] text-primary tracking-widest px-3 pt-3 pb-2 opacity-70">
- System Control
+ Account
  </DropdownMenuLabel>
  <DropdownMenuSeparator className="bg-primary/10 mx-2 my-2" />
  <DropdownMenuItem
@@ -152,7 +154,7 @@ const SuperAdminLayout = () => {
  className="text-red-500 focus:text-white focus:bg-red-500 rounded-xl cursor-pointer py-3 font-bold text-[10px] tracking-widest transition-all"
  >
  <LogOut className="w-4 h-4 mr-3" />
- <span>Terminate Session</span>
+ <span>Log Out</span>
  </DropdownMenuItem>
  </DropdownMenuContent>
  </DropdownMenu>
@@ -218,7 +220,7 @@ const SuperAdminLayout = () => {
  <div className="flex items-center gap-2 sm:gap-4">
  <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-primary/5 rounded-full border border-primary/10">
  <Activity className="w-3 h-3 text-primary animate-pulse" />
- <span className="text-[9px] font-bold text-primary/80 tracking-widest">Live Monitoring</span>
+ <span className="text-[9px] font-bold text-primary/80 tracking-widest">Live</span>
  </div>
  
  <Button variant="ghost" size="icon" className="relative hover:bg-primary/5 rounded-xl h-10 w-10 group">

@@ -21,15 +21,15 @@ const AuditCards = ({ logs, getActionIcon, getStatusBadge, getSeverity }) => {
 
  <div className="space-y-4 pt-6 mt-6 border-t border-border/10">
  <div className="flex items-center justify-between text-sm">
- <span className="font-medium text-muted-foreground opacity-50">Initiator</span>
- <span className="font-bold ">{log.user?.name || 'Automata'}</span>
+ <span className="font-medium text-muted-foreground opacity-50">Done By</span>
+ <span className="font-bold ">{log.user?.name || 'System'}</span>
  </div>
  <div className="flex items-center justify-between text-sm">
- <span className="font-medium text-muted-foreground opacity-50">Affiliation</span>
+ <span className="font-medium text-muted-foreground opacity-50">Organization</span>
  <span className="font-bold flex items-center gap-1.5"><Building2 className="w-3 h-3" /> {log.organization?.name || 'Platform'}</span>
  </div>
  <div className="flex items-center justify-between text-sm">
- <span className="font-medium text-muted-foreground opacity-50">Timestamp</span>
+ <span className="font-medium text-muted-foreground opacity-50">Date & Time</span>
  <span className="font-mono text-xs opacity-60">{log.createdAt ? new Date(log.createdAt).toLocaleDateString() : 'N/A'}</span>
  </div>
  </div>

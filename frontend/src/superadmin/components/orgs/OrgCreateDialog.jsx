@@ -22,8 +22,8 @@ const OrgCreateDialog = ({ open, onOpenChange, newOrg, setNewOrg, onProvision, s
               <Building2 className="w-5 h-5 text-primary" />
             </div>
             <div className="text-left font-montserrat">
-              <DialogTitle className="text-lg font-bold tracking-tight">Tenant Provisioning</DialogTitle>
-              <DialogDescription className="text-[10px] font-bold tracking-widest text-muted-foreground opacity-50 uppercase">Initialize Infrastructure</DialogDescription>
+              <DialogTitle className="text-lg font-bold tracking-tight">Create New Organization</DialogTitle>
+              <DialogDescription className="text-[10px] font-bold tracking-widest text-muted-foreground opacity-50 uppercase">Set up a new organization with an admin account</DialogDescription>
             </div>
           </div>
         </DialogHeader>
@@ -31,12 +31,12 @@ const OrgCreateDialog = ({ open, onOpenChange, newOrg, setNewOrg, onProvision, s
         <div className="p-6 pt-2 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-bold uppercase tracking-widest ml-1 opacity-50 leading-none">Entity Name *</Label>
+              <Label className="text-[10px] font-bold uppercase tracking-widest ml-1 opacity-50 leading-none">Organization Name *</Label>
               <Input placeholder="Cyberdyne Systems" className="h-10 rounded-xl bg-background/50 border-border/40 px-4 font-bold text-sm"
                 value={newOrg.name} onChange={e => setNewOrg(p => ({ ...p, name: e.target.value }))} />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-bold uppercase tracking-widest ml-1 opacity-50 leading-none">Service Tier</Label>
+              <Label className="text-[10px] font-bold uppercase tracking-widest ml-1 opacity-50 leading-none">Plan</Label>
               <div className="relative">
                 <Zap className="absolute left-4 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-primary/60 z-10" />
                 <DropdownMenu>
@@ -66,24 +66,24 @@ const OrgCreateDialog = ({ open, onOpenChange, newOrg, setNewOrg, onProvision, s
               <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
                 <User className="w-3.5 h-3.5 text-primary" />
               </div>
-              <h3 className="text-[11px] font-bold uppercase tracking-widest text-primary/70">Administrator Access</h3>
+              <h3 className="text-[11px] font-bold uppercase tracking-widest text-primary/70">Admin Account</h3>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-bold uppercase tracking-widest ml-1 opacity-40 leading-none">Admin Identity</Label>
+                <Label className="text-[10px] font-bold uppercase tracking-widest ml-1 opacity-40 leading-none">Admin Name</Label>
                 <Input placeholder="Sarah Connor" className="h-10 rounded-xl border-border/20 bg-background/80 px-4 font-bold text-sm"
                   value={newOrg.adminName} onChange={e => setNewOrg(p => ({ ...p, adminName: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[10px] font-bold uppercase tracking-widest ml-1 opacity-40 leading-none">Secure Email</Label>
+                <Label className="text-[10px] font-bold uppercase tracking-widest ml-1 opacity-40 leading-none">Admin Email</Label>
                 <Input placeholder="sarah@resistance.io" type="email" className="h-10 rounded-xl border-border/20 bg-background/80 px-4 font-bold text-sm"
                   value={newOrg.adminEmail} onChange={e => setNewOrg(p => ({ ...p, adminEmail: e.target.value }))} />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[10px] font-bold uppercase tracking-widest ml-1 opacity-40 leading-none">Initial Token (Password)</Label>
+              <Label className="text-[10px] font-bold uppercase tracking-widest ml-1 opacity-40 leading-none">Password</Label>
               <Input placeholder="••••••••" type="password" className="h-10 rounded-xl border-border/20 bg-background/80 px-4 font-bold text-sm font-mono"
                 value={newOrg.adminPassword} onChange={e => setNewOrg(p => ({ ...p, adminPassword: e.target.value }))} />
             </div>
@@ -92,14 +92,14 @@ const OrgCreateDialog = ({ open, onOpenChange, newOrg, setNewOrg, onProvision, s
 
         <DialogFooter className="p-6 pt-4 flex sm:justify-between items-center gap-4 border-t border-border/10">
           <Button variant="ghost" className="rounded-xl font-bold text-[10px] tracking-widest h-10 px-6 uppercase text-muted-foreground hover:text-foreground" onClick={() => onOpenChange(false)}>
-            Abort Mission
+            Cancel
           </Button>
           <Button
             onClick={onProvision}
             disabled={saving}
             className="rounded-xl px-12 h-10 font-bold text-[10px] tracking-widest shadow-lg shadow-primary/20 min-w-[200px] uppercase"
           >
-            {saving ? 'Initializing...' : 'Deploy Tenant'}
+            {saving ? 'Creating...' : 'Create Organization'}
           </Button>
         </DialogFooter>
       </DialogContent>

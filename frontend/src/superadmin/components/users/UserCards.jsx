@@ -35,10 +35,10 @@ const UserCards = ({ users, getRoleBadge, onForceReset, onDelete }) => {
  </DropdownMenuTrigger>
  <DropdownMenuContent align="end" className="w-56 rounded-lg shadow-2xl bg-black/90 p-2 border-white/10">
  <DropdownMenuItem className="rounded-xl py-3 font-semibold text-xs " onClick={() => onForceReset(u)}>
- <Key className="w-4 h-4 mr-3" /> Key Override
+ <Key className="w-4 h-4 mr-3" /> Reset Password
  </DropdownMenuItem>
  <DropdownMenuItem className="text-red-500 rounded-xl py-3 font-semibold text-xs " onClick={() => onDelete(u)}>
- <UserX className="w-4 h-4 mr-3" /> Purge Entity
+ <UserX className="w-4 h-4 mr-3" /> Delete User
  </DropdownMenuItem>
  </DropdownMenuContent>
  </DropdownMenu>
@@ -46,12 +46,12 @@ const UserCards = ({ users, getRoleBadge, onForceReset, onDelete }) => {
 
  <div className="space-y-4 pt-4 border-t border-border/10">
  <div className="flex items-center justify-between text-sm">
- <span className="font-medium text-muted-foreground opacity-50">Signal</span>
+ <span className="font-medium text-muted-foreground opacity-50">Email</span>
  <span className="font-mono font-bold truncate max-w-[200px]">{u.email}</span>
  </div>
  <div className="flex items-center justify-between text-sm">
- <span className="font-medium text-muted-foreground opacity-50">Affiliation</span>
- <span className="font-bold flex items-center gap-1.5"><Building2 className="w-3 h-3" /> {u.organization?.name || 'Independent'}</span>
+ <span className="font-medium text-muted-foreground opacity-50">Organization</span>
+ <span className="font-bold flex items-center gap-1.5"><Building2 className="w-3 h-3" /> {u.organization?.name || 'No Organization'}</span>
  </div>
  </div>
  </Card>

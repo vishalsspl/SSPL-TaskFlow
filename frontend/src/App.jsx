@@ -51,6 +51,7 @@ const SuperAdminUserList = lazy(() => import('./superadmin/pages/UserList'));
 const AuditLog = lazy(() => import('./superadmin/pages/AuditLog'));
 const PlatformSettings = lazy(() => import('./superadmin/pages/PlatformSettings'));
 const SuperAdminBilling = lazy(() => import('./superadmin/pages/Billing'));
+const PlansAndLimits = lazy(() => import('./superadmin/pages/PlansAndLimits'));
 
 // ── Loading fallback component ─────────────────────────────────────────────
 function PageLoader() {
@@ -146,6 +147,7 @@ function App() {
               <Route path="users" element={<SuperAdminUserList />} />
               <Route path="audit" element={<AuditLog />} />
               <Route path="billing" element={<SuperAdminBilling />} />
+              <Route path="plans" element={<PlansAndLimits />} />
               <Route path="settings" element={<PlatformSettings />} />
             </Route>
 

@@ -35,6 +35,7 @@ model Organization {
   website               String?
   dbUrl                 String?     @map("db_url")
   dbStrategy            DbStrategy  @default(SHARED) @map("db_strategy")
+  customFeatures        Json?       @map("custom_features")
   projects              Project[]
   tickets               Ticket[]
   users                 User[]

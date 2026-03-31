@@ -21,11 +21,11 @@ const UserTable = ({ users, getRoleBadge, onForceReset, onDelete }) => {
  <Table>
  <TableHeader>
  <TableRow>
- <TableHead className="text-xs font-medium pl-10 text-muted-foreground">Entity Identifier</TableHead>
- <TableHead className="text-xs font-medium text-muted-foreground">Affiliation</TableHead>
- <TableHead className="text-xs font-medium text-muted-foreground">Echelon</TableHead>
- <TableHead className="text-xs font-medium text-muted-foreground">Synchrony</TableHead>
- <TableHead className="text-right text-xs font-medium pr-10 text-muted-foreground">Directives</TableHead>
+ <TableHead className="text-xs font-medium pl-10 text-muted-foreground">User</TableHead>
+ <TableHead className="text-xs font-medium text-muted-foreground">Organization</TableHead>
+ <TableHead className="text-xs font-medium text-muted-foreground">Role</TableHead>
+ <TableHead className="text-xs font-medium text-muted-foreground">Status</TableHead>
+ <TableHead className="text-right text-xs font-medium pr-10 text-muted-foreground">Actions</TableHead>
  </TableRow>
  </TableHeader>
  <TableBody>
@@ -56,9 +56,9 @@ const UserTable = ({ users, getRoleBadge, onForceReset, onDelete }) => {
  <div className="flex flex-col">
  <div className="flex items-center gap-2 text-xs font-semibold text-foreground/80">
  <Building2 className="w-3.5 h-3.5 text-primary/60" />
- <span>{u.organization?.name || 'Independent'}</span>
+ <span>{u.organization?.name || 'No Organization'}</span>
  </div>
- <p className="text-xs font-bold text-muted-foreground/50 mt-1 ml-5">Base Sector</p>
+ <p className="text-xs font-bold text-muted-foreground/50 mt-1 ml-5">Organization</p>
  </div>
  </TableCell>
  <TableCell>{getRoleBadge(u.role)}</TableCell>
@@ -66,7 +66,7 @@ const UserTable = ({ users, getRoleBadge, onForceReset, onDelete }) => {
  <div className="flex items-center gap-3">
  <div className={cn("w-2 h-2 rounded-full shadow-[0_0_12px_rgba(0,0,0,0.1)]", u.isApproved ? 'bg-green-500 shadow-green-500/40' : 'bg-slate-400 opacity-50')} />
  <span className={cn("text-xs font-medium", u.isApproved ? 'text-green-600' : 'text-muted-foreground/60')}>
- {u.isApproved ? 'Authorized' : 'Verification'}
+ {u.isApproved ? 'Active' : 'Pending'}
  </span>
  </div>
  </TableCell>
@@ -82,14 +82,14 @@ const UserTable = ({ users, getRoleBadge, onForceReset, onDelete }) => {
  className="rounded-xl py-3 font-semibold text-xs cursor-pointer focus:bg-primary/20 focus:text-white"
  onClick={() => onForceReset(u)}
  >
- <Key className="w-4 h-4 mr-3 text-primary" /> Key Override
+ <Key className="w-4 h-4 mr-3 text-primary" /> Reset Password
  </DropdownMenuItem>
  <DropdownMenuSeparator className="bg-white/5 opacity-50" />
  <DropdownMenuItem
  className="text-red-500 rounded-xl py-3 font-semibold text-xs cursor-pointer focus:bg-red-500 focus:text-white"
  onClick={() => onDelete(u)}
  >
- <UserX className="w-4 h-4 mr-3" /> Purge Entity
+ <UserX className="w-4 h-4 mr-3" /> Delete User
  </DropdownMenuItem>
  </DropdownMenuContent>
  </DropdownMenu>

@@ -34,10 +34,10 @@ const OrgCards = ({ orgs, getStatusBadge, getPlanBadge, onEdit, onDelete }) => {
  </DropdownMenuTrigger>
  <DropdownMenuContent align="end" className="w-56 rounded-lg shadow-2xl bg-black/90 backdrop-blur-xl border-white/10 p-2">
  <DropdownMenuItem className="rounded-xl py-3 font-semibold text-xs " onClick={() => onEdit(org)}>
- <Edit2 className="w-4 h-4 mr-3" /> Quick Edit
+ <Edit2 className="w-4 h-4 mr-3" /> Edit
  </DropdownMenuItem>
  <DropdownMenuItem className="text-red-500 rounded-xl py-3 font-semibold text-xs " onClick={() => onDelete(org)}>
- <Trash2 className="w-4 h-4 mr-3" /> Terminate Org
+ <Trash2 className="w-4 h-4 mr-3" /> Delete
  </DropdownMenuItem>
  </DropdownMenuContent>
  </DropdownMenu>
@@ -46,19 +46,19 @@ const OrgCards = ({ orgs, getStatusBadge, getPlanBadge, onEdit, onDelete }) => {
 
  <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-border/10">
  <div className="space-y-1">
- <p className="text-xs font-medium text-muted-foreground opacity-60">Industry Sector</p>
+ <p className="text-xs font-medium text-muted-foreground opacity-60">Industry</p>
  <p className="text-xs font-bold truncate">{org.industry || 'General'}</p>
  </div>
  <div className="space-y-1">
- <p className="text-xs font-medium text-muted-foreground opacity-60">System Quota</p>
+ <p className="text-xs font-medium text-muted-foreground opacity-60">Users</p>
  <p className="text-xs font-bold">{org._count?.users ?? 0}/{org.maxUsers} Users</p>
  </div>
  <div className="space-y-1">
- <p className="text-xs font-medium text-muted-foreground opacity-60">Joined Date</p>
+ <p className="text-xs font-medium text-muted-foreground opacity-60">Joined</p>
  <p className="text-xs font-mono font-bold ">{org.createdAt ? new Date(org.createdAt).toLocaleDateString() : '—'}</p>
  </div>
  <div className="space-y-1">
- <p className="text-xs font-medium text-muted-foreground opacity-60">Record ID</p>
+ <p className="text-xs font-medium text-muted-foreground opacity-60">ID</p>
  <p className="text-xs font-mono opacity-50 truncate">#{org.id.slice(0, 8)}</p>
  </div>
  </div>

@@ -39,7 +39,7 @@ const PlatformSettings = () => {
   });
 
   useEffect(() => {
-    setHeader('Platform Core', 'Global infrastructure and multi-tenant security architecture');
+    setHeader('Platform Settings', 'Manage general settings, plans, and security options');
     fetchSettings();
   }, [setHeader]);
 
@@ -67,12 +67,12 @@ const PlatformSettings = () => {
   const handleSave = async () => {
     try {
       await api.put('/superadmin/settings', settings);
-      toast({ title: 'Infrastructure configuration synced' });
+      toast({ title: 'Settings saved successfully' });
       setDirty(false);
     } catch (error) {
       toast({ 
-        title: 'Sync failed', 
-        description: 'Failed to update platform configuration to backend.',
+        title: 'Save failed', 
+        description: 'Could not save settings. Please try again.',
         variant: 'destructive' 
       });
     }
@@ -121,139 +121,34 @@ const PlatformSettings = () => {
       
       {/* ── Public Identity ────────────────────────────────────────────── */}
       <SettingSection
-        title="Public Protocols"
-        description="Global platform identities and core branding"
+        title="General Settings"
+        description="Basic platform name and contact details"
         icon={Globe}
       >
-        <FormRow label="Neural Identifier (Name)" description="The official name projected across all interface modules">
+        <FormRow label="Platform Name" description="The name shown across the platform">
           <Input 
             value={settings.platformName} 
             className="h-14 rounded-2xl bg-background/50 border-border/40 px-5 font-bold focus:ring-4 focus:ring-primary/10 transition-all shadow-inner" 
             onChange={e => mark('platformName', e.target.value)} 
           />
         </FormRow>
-        <FormRow label="Support Uplink (Email)" description="Global contact for platform-wide infrastructure issues">
+        <FormRow label="Support Email" description="Contact email for support requests">
           <Input 
             value={settings.supportEmail} 
             className="h-14 rounded-2xl bg-background/50 border-border/40 px-5 font-bold focus:ring-4 focus:ring-primary/10 transition-all shadow-inner" 
             onChange={e => mark('supportEmail', e.target.value)} 
           />
         </FormRow>
-        <FormRow label="Stasis Mode" description="Block all entity access to the platform (Superadmin Override)">
+        <FormRow label="Maintenance Mode" description="Block all user access to the platform (only Super Admin can access)">
           <div className="flex items-center justify-end">
             <div className="flex items-center gap-3 px-4 py-2 bg-primary/5 rounded-2xl border border-primary/10">
-              <span className="text-[10px] font-bold text-primary/60">Offline</span>
+              <span className="text-[10px] font-bold text-primary/60">Off</span>
               <Switch checked={settings.stasisMode === 'true'} onCheckedChange={checked => mark('stasisMode', String(checked))} />
             </div>
           </div>
         </FormRow>
       </SettingSection>
 
-      {/* ── Resources ────────────────────────────────────────────── */}
-      <SettingSection
-        title="Tier & Quotas"
-        description="Global default constraints for new organizations"
-        icon={Cpu}
-      >
-        <FormRow label="Default Trial Span" description="Temporal allocation for newly provisioned entities">
-          <div className="relative group">
-            <Input 
-              type="number" 
-              value={settings.defaultTrialDays} 
-              className="h-14 pr-16 rounded-2xl bg-background/50 border-border/40 px-5 font-bold focus:ring-4 focus:ring-primary/10 transition-all shadow-inner" 
-              onChange={e => mark('defaultTrialDays', e.target.value)} 
-            />
-            <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[10px] font-bold opacity-40">Days</span>
-          </div>
-        </FormRow>
-
-        <FormRow label="Annual Discount (%)" description="Global discount for annual billing cycles">
-          <div className="relative group">
-            <Input 
-              type="number" 
-              value={settings.annual_discount_percent || '17'} 
-              className="h-14 pr-16 rounded-2xl bg-background/50 border-border/40 px-5 font-bold focus:ring-4 focus:ring-primary/10 transition-all shadow-inner" 
-              onChange={e => mark('annual_discount_percent', e.target.value)} 
-            />
-            <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[10px] font-bold opacity-40">%</span>
-          </div>
-        </FormRow>
-
-        <Separator className="bg-border/10 my-4" />
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Starter Plan */}
-          <div className="p-6 rounded-3xl bg-primary/5 border border-primary/10 space-y-4">
-            <h4 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
-              <Zap className="w-3 h-3" /> Starter Plan
-            </h4>
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <Label className="text-[10px] font-bold uppercase opacity-50">Max Users</Label>
-                <Input type="number" value={settings.starter_max_users || '30'} onChange={e => mark('starter_max_users', e.target.value)} className="h-10 rounded-xl bg-background/40" />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-[10px] font-bold uppercase opacity-50">Max Projects</Label>
-                <Input type="number" value={settings.starter_max_projects || '5'} onChange={e => mark('starter_max_projects', e.target.value)} className="h-10 rounded-xl bg-background/40" />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-[10px] font-bold uppercase opacity-50">Monthly Base (₹)</Label>
-                <Input type="text" value={settings.starter_price || '₹19'} onChange={e => mark('starter_price', e.target.value)} className="h-10 rounded-xl bg-background/40" />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-[10px] font-bold uppercase opacity-50">Per User (₹)</Label>
-                <Input type="number" value={settings.starter_per_user_price || '400'} onChange={e => mark('starter_per_user_price', e.target.value)} className="h-10 rounded-xl bg-background/40" />
-              </div>
-            </div>
-          </div>
-
-          {/* Pro Plan */}
-          <div className="p-6 rounded-3xl bg-blue-500/5 border border-blue-500/10 space-y-4">
-            <h4 className="text-xs font-black uppercase tracking-widest text-blue-500 flex items-center gap-2">
-              <Zap className="w-3 h-3" /> Pro Plan
-            </h4>
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <Label className="text-[10px] font-bold uppercase opacity-50">Max Users</Label>
-                <Input type="number" value={settings.pro_max_users || '100'} onChange={e => mark('pro_max_users', e.target.value)} className="h-10 rounded-xl bg-background/40" />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-[10px] font-bold uppercase opacity-50">Max Projects</Label>
-                <Input type="number" value={settings.pro_max_projects || '50'} onChange={e => mark('pro_max_projects', e.target.value)} className="h-10 rounded-xl bg-background/40" />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-[10px] font-bold uppercase opacity-50">Monthly Base (₹)</Label>
-                <Input type="text" value={settings.pro_price || '₹49'} onChange={e => mark('pro_price', e.target.value)} className="h-10 rounded-xl bg-background/40" />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-[10px] font-bold uppercase opacity-50">Per User (₹)</Label>
-                <Input type="number" value={settings.pro_per_user_price || '900'} onChange={e => mark('pro_per_user_price', e.target.value)} className="h-10 rounded-xl bg-background/40" />
-              </div>
-            </div>
-          </div>
-
-          {/* Enterprise Plan */}
-          <div className="p-6 rounded-3xl bg-purple-500/5 border border-purple-500/10 space-y-4">
-            <h4 className="text-xs font-black uppercase tracking-widest text-purple-500 flex items-center gap-2">
-              <Zap className="w-3 h-3" /> Enterprise Plan
-            </h4>
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <Label className="text-[10px] font-bold uppercase opacity-50">Max Users</Label>
-                <Input type="number" value={settings.enterprise_max_users || '1000'} onChange={e => mark('enterprise_max_users', e.target.value)} className="h-10 rounded-xl bg-background/40" />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-[10px] font-bold uppercase opacity-50">Max Projects</Label>
-                <Input type="number" value={settings.enterprise_max_projects || '500'} onChange={e => mark('enterprise_max_projects', e.target.value)} className="h-10 rounded-xl bg-background/40" />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-[10px] font-bold uppercase opacity-50">Monthly Price (₹)</Label>
-                <Input type="text" value={settings.enterprise_price || 'Custom'} onChange={e => mark('enterprise_price', e.target.value)} className="h-10 rounded-xl bg-background/40" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </SettingSection>
 
       {/* ── Appearance ────────────────────────────────────────────── */}
       <SettingSection
@@ -373,16 +268,16 @@ const PlatformSettings = () => {
 
       {/* ── Security ────────────────────────────────────────────── */}
       <SettingSection
-        title="Security Matrix"
-        description="Encrypted protocols and biometric defaults"
+        title="Security Settings"
+        description="Login and session security options"
         icon={Fingerprint}
       >
-        <FormRow label="Multi-Factor Mandate" description="Force secondary authentication for all Overlord (Admin) roles">
+        <FormRow label="Require Two-Step Login" description="Require two-step verification for all Admin users">
           <div className="flex items-center justify-end">
             <Switch checked={settings.mfaMandate === 'true' || settings.mfaMandate === true} onCheckedChange={checked => mark('mfaMandate', checked)} className="data-[state=checked]:bg-primary" />
           </div>
         </FormRow>
-        <FormRow label="Session Expiry" description="Global idle session timeout before link severance (minutes)">
+        <FormRow label="Auto Logout Time" description="Minutes of no activity before users are automatically logged out">
           <Input 
             type="number" 
             value={settings.sessionExpiry} 
@@ -401,16 +296,16 @@ const PlatformSettings = () => {
                 <AlertCircle className="w-6 h-6 text-primary" />
               </div>
               <div className="text-left">
-                <h4 className="text-white font-bold text-sm">Synchronization Required</h4>
-                <p className="text-white/40 text-[10px] font-bold ">Unsaved configuration changes detected</p>
+                <h4 className="text-white font-bold text-sm">Unsaved Changes</h4>
+                <p className="text-white/40 text-[10px] font-bold ">You have changes that haven't been saved yet</p>
               </div>
             </div>
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <Button variant="ghost" className="h-14 rounded-2xl px-8 text-white/60 hover:text-white font-bold text-[11px] " onClick={() => setDirty(false)}>
-                Discard Records
+                Discard
               </Button>
               <Button className="h-14 rounded-2xl px-12 bg-primary text-white font-bold text-[11px] shadow-xl shadow-primary/30 flex-1 sm:flex-none" onClick={handleSave}>
-                Sync Infrastructure
+                Save Changes
               </Button>
             </div>
           </div>
