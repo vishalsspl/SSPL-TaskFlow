@@ -1,0 +1,457 @@
+import prisma from '../lib/prisma.js';
+import { createNotification } from '../utils/notifications.js';
+import { sendTimesheetSubmissionEmail, sendTimesheetStatusEmail } from '../services/emailService.js';
+const include = {
+    user: { select: { id: true, name: true, email: true, avatar: true } },
+    project: { select: { id: true, name: true } },
+    task: { select: { id: true, title: true } },
+};
+
+export const getTimeEntries = async (req, res) => {
+    const { startDate, endDate, userId, projectId, status, page, limit: rawLimit } = req.query;
+
+    const where = {
+        project: { organizationId: req.user.organizationId },
+    };
+
+    if (startDate && endDate) {
+        where.date = { gte: new Date(startDate), lte: new Date(endDate) };
+    }
+    if (projectId) where.projectId = projectId;
+    if (status) where.status = status;
+
+    if (req.user.role === 'MEMBER') {
+        where.userId = req.user.id;
+    } else if (req.user.role === 'MANAGER') {
+        where.OR = [
+            { userId: req.user.id },
+            { project: { managerId: req.user.id } },
+        ];
+        if (userId) where.userId = userId;
+    } else if (req.user.role === 'ADMIN') {
+        if (userId) where.userId = userId;
+    }
+
+    if (page) {
+        const pageNum = Math.max(1, parseInt(page));
+        const limit = Math.max(1, parseInt(rawLimit) || 10);
+        const skip = (pageNum - 1) * limit;
+
+        const [entries, total] = await Promise.all([
+            req.db.timeEntry.findMany({ where, include, orderBy: { date: 'desc' }, skip, take: limit }),
+            req.db.timeEntry.count({ where }),
+        ]);
+
+        return res.json({
+            data: entries,
+            pagination: { total, page: pageNum, limit, totalPages: Math.ceil(total / limit) },
+        });
+    }
+
+    const entries = await req.db.timeEntry.findMany({ where, include, orderBy: { date: 'desc' } });
+    res.json(entries);
+};
+
+export const createTimeEntry = async (req, res) => {
+    const { projectId, taskId, date, hours, description, billable = true } = req.body;
+
+    if (!projectId || !date || !hours) {
+        return res.status(400).json({ error: 'Project, date, and hours are required' });
+    }
+
+    // Verify project/task belongs to user's organization
+    const project = await req.db.project.findFirst({
+        where: { id: projectId, organizationId: req.user.organizationId }
+    });
+    if (!project) return res.status(404).json({ error: 'Project not found' });
+
+    if (taskId) {
+        const task = await req.db.task.findFirst({
+            where: { id: taskId, projectId }
+        });
+        if (!task) return res.status(400).json({ error: 'Invalid task for this project' });
+    }
+
+    const entry = await req.db.timeEntry.create({
+        data: {
+            userId: req.user.id,
+            projectId,
+            taskId: taskId || null,
+            date: new Date(date),
+            hours: parseFloat(hours),
+            description,
+            status: 'PENDING',
+            billable,
+            isManual: true,
+        },
+        include,
+    });
+
+    await req.db.activityLog.create({
+        data: {
+            userId: req.user.id,
+            organizationId: req.user.organizationId,
+            projectId,
+            action: 'LOGGED_TIME',
+            entity: 'time_entry',
+            entityId: entry.id,
+            details: { hours, date },
+        },
+    });
+
+    if (project.managerId && project.managerId !== req.user.id) {
+        const manager = await req.db.user.findUnique({
+            where: { id: project.managerId },
+            select: { email: true, name: true }
+        });
+        
+        if (manager) {
+            await createNotification(req, {
+                userId: project.managerId,
+                title: 'Timesheet Requires Approval',
+                message: `${req.user.name} logged ${hours}h on ${project.name}`,
+                type: 'WORKLOG_SUBMITTED' // Using existing icon from worklog
+            });
+
+            await sendTimesheetSubmissionEmail(manager.email, manager.name, req.user.name, project.name, hours, date);
+        }
+    }
+
+    res.status(201).json(entry);
+};
+
+export const updateTimeEntry = async (req, res) => {
+    const { id } = req.params;
+    const { hours, description, billable } = req.body;
+
+    const existingEntry = await req.db.timeEntry.findUnique({
+        where: { id },
+        include: { project: true },
+    });
+
+    if (!existingEntry || existingEntry.project.organizationId !== req.user.organizationId) {
+        return res.status(404).json({ error: 'Time entry not found' });
+    }
+
+    const isOwner = existingEntry.userId === req.user.id;
+    if (!isOwner && req.user.role !== 'ADMIN' && req.user.role !== 'MANAGER') {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    const data = {};
+    if (hours !== undefined) data.hours = parseFloat(hours);
+    if (description !== undefined) data.description = description;
+    if (billable !== undefined) data.billable = billable;
+
+    const entry = await req.db.timeEntry.update({ where: { id }, data, include });
+    res.json(entry);
+};
+
+export const updateTimeEntryStatus = async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!['APPROVED', 'REJECTED', 'PENDING'].includes(status)) {
+        return res.status(400).json({ error: 'Invalid status' });
+    }
+
+    if (req.user.role !== 'ADMIN' && req.user.role !== 'MANAGER') {
+        return res.status(403).json({ error: 'Only managers and admins can update status' });
+    }
+
+    const existingEntry = await req.db.timeEntry.findUnique({
+        where: { id },
+        include: { project: true, user: true },
+    });
+
+    if (!existingEntry || existingEntry.project.organizationId !== req.user.organizationId) {
+        return res.status(404).json({ error: 'Time entry not found' });
+    }
+
+    const entry = await req.db.timeEntry.update({ where: { id }, data: { status }, include });
+
+    // Ensure we don't notify loop if the user approves their own entry (if they are a manager acting as admin)
+    if (existingEntry.userId !== req.user.id && (status === 'APPROVED' || status === 'REJECTED')) {
+        await createNotification(req, {
+            userId: existingEntry.userId,
+            title: `Timesheet ${status === 'APPROVED' ? 'Approved' : 'Rejected'}`,
+            message: `Your time log for ${existingEntry.project.name} has been ${status.toLowerCase()}`,
+            type: `TIMESHEET_${status}`
+        });
+
+        await sendTimesheetStatusEmail(
+            existingEntry.user.email,
+            existingEntry.user.name,
+            existingEntry.project.name,
+            status,
+            req.user.name,
+            existingEntry.hours
+        );
+    }
+
+    await req.db.activityLog.create({
+        data: {
+            userId: req.user.id,
+            organizationId: req.user.organizationId,
+            projectId: existingEntry.projectId,
+            action: status === 'APPROVED' ? 'APPROVED' : 'REJECTED',
+            entity: 'time_entry',
+            entityId: entry.id,
+            details: { 
+                previousStatus: existingEntry.status, 
+                newStatus: status,
+                hours: existingEntry.hours,
+                userName: existingEntry.user.name
+            },
+        },
+    });
+
+    res.json(entry);
+};
+
+export const deleteTimeEntry = async (req, res) => {
+    const { id } = req.params;
+
+    const existingEntry = await req.db.timeEntry.findUnique({
+        where: { id },
+        include: { project: true },
+    });
+
+    if (!existingEntry || existingEntry.project.organizationId !== req.user.organizationId) {
+        return res.status(404).json({ error: 'Time entry not found' });
+    }
+
+    if (existingEntry.userId !== req.user.id && req.user.role !== 'ADMIN') {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    await req.db.timeEntry.delete({ where: { id } });
+    res.json({ message: 'Time entry deleted successfully' });
+};
+
+// ── WorkLog (task-level granular logging) ─────────────────────────────────
+
+export const getWorkLogs = async (req, res) => {
+    const { taskId, userId } = req.query;
+
+    const where = {
+        project: { organizationId: req.user.organizationId }
+    };
+    if (taskId) where.taskId = taskId;
+    if (userId) where.userId = userId;
+    if (req.user.role === 'MEMBER') where.userId = req.user.id;
+
+    const logs = await req.db.workLog.findMany({
+        where,
+        include: {
+            user: { select: { id: true, name: true, avatar: true } },
+            task: { select: { id: true, title: true } },
+            project: { select: { id: true, name: true } },
+        },
+        orderBy: { loggedAt: 'desc' },
+    });
+
+    res.json(logs);
+};
+
+export const createWorkLog = async (req, res) => {
+    const { taskId, projectId, minutes, comment } = req.body;
+
+    if (!taskId || !projectId || !minutes) {
+        return res.status(400).json({ error: 'Task, project, and minutes are required' });
+    }
+
+    // Verify project/task belongs to user's organization
+    const project = await req.db.project.findFirst({
+        where: { id: projectId, organizationId: req.user.organizationId }
+    });
+    if (!project) return res.status(404).json({ error: 'Project not found' });
+
+    const task = await req.db.task.findFirst({
+        where: { id: taskId, projectId }
+    });
+    if (!task) return res.status(400).json({ error: 'Invalid task for this project' });
+
+    const log = await req.db.workLog.create({
+        data: {
+            userId: req.user.id,
+            taskId,
+            projectId,
+            minutes: parseInt(minutes),
+            comment,
+        },
+        include: {
+            user: { select: { id: true, name: true, avatar: true } },
+            task: { select: { id: true, title: true } },
+        },
+    });
+
+    await req.db.activityLog.create({
+        data: {
+            userId: req.user.id,
+            organizationId: req.user.organizationId,
+            projectId,
+            action: 'LOGGED_TIME',
+            entity: 'worklog',
+            entityId: log.id,
+            details: { minutes, comment, method: 'manual' },
+        },
+    });
+
+    res.status(201).json(log);
+};
+
+export const deleteWorkLog = async (req, res) => {
+    const { id } = req.params;
+
+    const log = await req.db.workLog.findFirst({
+        where: { id },
+        include: { project: true }
+    });
+    if (!log || log.project.organizationId !== req.user.organizationId) {
+        return res.status(404).json({ error: 'Work log not found' });
+    }
+    if (log.userId !== req.user.id && req.user.role !== 'ADMIN') {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    await req.db.workLog.delete({ where: { id } });
+    res.json({ message: 'Work log deleted' });
+};
+
+// ── Performance ───────────────────────────────────────────────────────────
+
+export const getUserPerformance = async (req, res) => {
+    const { userId } = req.params;
+    const { projectId, dateFrom, dateTo } = req.query;
+    const orgId = req.user.organizationId;
+
+    const dateFilter = {};
+    if (dateFrom) dateFilter.gte = new Date(dateFrom);
+    if (dateTo) dateFilter.lte = new Date(dateTo);
+
+    const taskWhere = {
+        project: { organizationId: orgId },
+        assignees: { some: { userId } },
+    };
+    if (projectId) taskWhere.projectId = projectId;
+
+    const timeWhere = { userId, project: { organizationId: orgId } };
+    if (projectId) timeWhere.projectId = projectId;
+    if (dateFrom || dateTo) timeWhere.date = dateFilter;
+
+    const [tasks, timeEntries, workLogs] = await Promise.all([
+        req.db.task.findMany({
+            where: taskWhere,
+            select: {
+                id: true, title: true, status: true, priority: true,
+                dueDate: true, storyPoints: true, completionPercentage: true,
+                createdAt: true, updatedAt: true,
+                project: { select: { id: true, name: true } },
+            },
+        }),
+        req.db.timeEntry.findMany({
+            where: timeWhere,
+            select: { hours: true, date: true, billable: true, status: true, project: { select: { id: true, name: true } } },
+        }),
+        req.db.workLog.findMany({
+            where: { userId, project: { organizationId: orgId } },
+            select: { minutes: true, loggedAt: true, task: { select: { id: true, title: true } } },
+        }),
+    ]);
+
+    const totalTasks = tasks.length;
+    const completedTasks = tasks.filter(t => t.status === 'COMPLETED').length;
+    const inProgressTasks = tasks.filter(t => t.status === 'IN_PROGRESS').length;
+    const overdueTasks = tasks.filter(t => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'COMPLETED').length;
+    const onTimeTasks = tasks.filter(t => t.status === 'COMPLETED' && t.dueDate && new Date(t.updatedAt) <= new Date(t.dueDate)).length;
+
+    const totalHours = timeEntries.reduce((sum, e) => sum + parseFloat(e.hours), 0);
+    const billableHours = timeEntries.filter(e => e.billable).reduce((sum, e) => sum + parseFloat(e.hours), 0);
+    const approvedHours = timeEntries.filter(e => e.status === 'APPROVED').reduce((sum, e) => sum + parseFloat(e.hours), 0);
+
+    const totalStoryPoints = tasks.reduce((sum, t) => sum + (t.storyPoints || 0), 0);
+    const completedStoryPoints = tasks.filter(t => t.status === 'COMPLETED').reduce((sum, t) => sum + (t.storyPoints || 0), 0);
+
+    const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+    const onTimeRate = completedTasks > 0 ? Math.round((onTimeTasks / completedTasks) * 100) : 0;
+
+    const hoursByProject = {};
+    timeEntries.forEach(e => {
+        const key = e.project.name;
+        hoursByProject[key] = (hoursByProject[key] || 0) + parseFloat(e.hours);
+    });
+
+    const tasksByStatus = {
+        TODO: tasks.filter(t => t.status === 'TODO').length,
+        IN_PROGRESS: inProgressTasks,
+        IN_REVIEW: tasks.filter(t => t.status === 'IN_REVIEW').length,
+        COMPLETED: completedTasks,
+        BLOCKED: tasks.filter(t => t.status === 'BLOCKED').length,
+    };
+
+    res.json({
+        summary: {
+            totalTasks, completedTasks, inProgressTasks, overdueTasks,
+            completionRate, onTimeRate,
+            totalHours: parseFloat(totalHours.toFixed(2)),
+            billableHours: parseFloat(billableHours.toFixed(2)),
+            approvedHours: parseFloat(approvedHours.toFixed(2)),
+            totalStoryPoints, completedStoryPoints,
+            velocity: completedStoryPoints,
+        },
+        tasksByStatus,
+        hoursByProject: Object.entries(hoursByProject).map(([name, hours]) => ({ name, hours: parseFloat(hours.toFixed(2)) })),
+        recentTasks: tasks.slice(0, 10),
+        workLogs: workLogs.slice(0, 20),
+    });
+};
+
+export const getTeamPerformance = async (req, res) => {
+    const { projectId, dateFrom, dateTo } = req.query;
+    const orgId = req.user.organizationId;
+
+    const users = await req.db.user.findMany({
+        where: { organizationId: orgId, isApproved: true, role: { in: ['MEMBER', 'MANAGER'] } },
+        select: { id: true, name: true, avatar: true, role: true },
+    });
+
+    const dateFilter = {};
+    if (dateFrom) dateFilter.gte = new Date(dateFrom);
+    if (dateTo) dateFilter.lte = new Date(dateTo);
+
+    const teamStats = await Promise.all(users.map(async (u) => {
+        const taskWhere = {
+            project: { organizationId: orgId },
+            assignees: { some: { userId: u.id } },
+        };
+        if (projectId) taskWhere.projectId = projectId;
+
+        const timeWhere = { userId: u.id, project: { organizationId: orgId } };
+        if (projectId) timeWhere.projectId = projectId;
+        if (dateFrom || dateTo) timeWhere.date = dateFilter;
+
+        const [tasks, timeEntries] = await Promise.all([
+            req.db.task.findMany({ where: taskWhere, select: { status: true, dueDate: true, storyPoints: true, updatedAt: true } }),
+            req.db.timeEntry.findMany({ where: timeWhere, select: { hours: true, billable: true } }),
+        ]);
+
+        const completed = tasks.filter(t => t.status === 'COMPLETED').length;
+        const overdue = tasks.filter(t => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'COMPLETED').length;
+        const totalHours = timeEntries.reduce((sum, e) => sum + parseFloat(e.hours), 0);
+        const velocity = tasks.filter(t => t.status === 'COMPLETED').reduce((sum, t) => sum + (t.storyPoints || 0), 0);
+        const completionRate = tasks.length > 0 ? Math.round((completed / tasks.length) * 100) : 0;
+
+        return {
+            user: u,
+            totalTasks: tasks.length,
+            completedTasks: completed,
+            overdueTasks: overdue,
+            totalHours: parseFloat(totalHours.toFixed(2)),
+            velocity,
+            completionRate,
+        };
+    }));
+
+    res.json(teamStats);
+};

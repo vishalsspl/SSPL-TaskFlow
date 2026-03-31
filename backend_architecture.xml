@@ -1,0 +1,912 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SSPL-TaskFlow Backend Architecture Reference
+  Stack: Node.js, Express.js, Prisma ORM, PostgreSQL, Socket.IO, JWT Auth, Nodemailer
+  Root: /home/vishal/Vishal/SSPL-TaskFlow/backend
+  Dev Port: 5000 | DB: PostgreSQL via DATABASE_URL env var
+  Module system: ES Modules (import/export, NOT require/module.exports)
+-->
+<backend_architecture project="SSPL-TaskFlow" version="1.0.0" framework="Express.js" runtime="Node.js">
+
+  <tech_stack>
+    <item name="Version"       value="1.0.0" />
+    <item name="Runtime"       value="Node.js (ES Modules — use import/export everywhere)" />
+    <item name="Framework"     value="Express.js with express-async-errors (no try/catch needed in routes)" />
+    <item name="ORM"           value="Prisma with PostgreSQL" />
+    <item name="Multi-tenancy" value="Dynamic organization scoping, custom plans (FREE/PRO/etc.), and platform-level Superadmin" />
+    <item name="Auth"          value="JWT (jsonwebtoken), bcryptjs for password hashing" />
+    <item name="Realtime"      value="Socket.IO (chat feature, excluded for Superadmins)" />
+    <item name="Email"         value="Nodemailer (emailService.js)" />
+    <item name="API Docs"      value="Swagger UI at /api/docs (swagger-ui-express)" />
+    <item name="Dev Server"    value="Nodemon (npm run dev)" />
+    <item name="Schema File"   value="backend/prisma/schema.prisma" />
+    <item name="Env Vars"      value="DATABASE_URL, JWT_SECRET, PORT, SMTP_* (email config)" />
+  </tech_stack>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- SERVER ENTRY POINT (src/server.js)                             -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <server file="src/server.js">
+    - Creates Express app + HTTP server + Socket.IO server
+    - Middleware order: cors(), express.json(50mb limit), express.urlencoded(50mb limit)
+    - Mounts all route files under /api prefix
+    - errorHandler middleware is LAST (catches all errors from routes)
+    - Socket.IO handles: join-room, send-message, disconnect events
+    - Health check: GET /api/health
+
+    Route mounting:
+      /api/auth          → src/routes/auth.js
+      /api/projects      → src/routes/projects.js
+      /api/tasks         → src/routes/tasks.js
+      /api/dashboard     → src/routes/dashboard.js
+      /api/reports       → src/routes/reports.js
+      /api/users         → src/routes/users.js
+      /api/tickets       → src/routes/ticket.js
+      /api/organizations → src/routes/organizations.js
+      /api/chat          → src/routes/chat.js
+      /api/timesheets    → src/routes/timesheets.js
+      /api/performance   → src/routes/performance.js
+      /api/worklogs      → src/routes/worklog.js
+      /api/superadmin    → src/routes/superadmin.js
+      /api/docs          → Swagger UI
+  </server>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- MIDDLEWARE (src/middleware/)                                    -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <middleware>
+
+    <file name="auth.js" path="src/middleware/auth.js">
+      authenticate(req, res, next):
+        - Reads Bearer token from Authorization header
+        - Verifies JWT using JWT_SECRET env var
+        - Populates req.user with decoded payload:
+          { id, email, role, organizationId }
+        - organizationId is null for SUPERADMIN role.
+        - Returns 401 if missing/invalid token
+
+      authorize(...roles)(req, res, next):
+        - Checks req.user.role against allowed roles array
+        - Returns 403 if role not allowed
+        - Usage: router.post('/', authorize('ADMIN', 'MANAGER'), createProject)
+    </file>
+
+    <file name="errorHandler.js" path="src/middleware/errorHandler.js">
+      Global error handler. Catches all errors thrown in route handlers.
+      Returns JSON: { error: message } with appropriate status code.
+      Works with express-async-errors (no try/catch needed in controllers).
+    </file>
+
+  </middleware>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- DATABASE SCHEMA (backend/prisma/schema.prisma)                 -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <database provider="PostgreSQL" orm="Prisma">
+
+    <model name="Organization">
+      id                    String    @id @default(uuid())
+      name                  String
+      logoUrl               String?   @map("logo_url")
+      themeColor            String?   @default("#3B82F6") @map("theme_color")
+      createdAt             DateTime  @default(now()) @map("created_at")
+      updatedAt             DateTime  @updatedAt @map("updated_at")
+      address               String?
+      allowClientSignup     Boolean   @default(false) @map("allow_client_signup")
+      billingEmail          String?   @map("billing_email")
+      country               String?
+      industry              String?
+      maxProjects           Int       @default(5) @map("max_projects")
+      maxUsers              Int       @default(10) @map("max_users")
+      plan                  OrgPlan   @default(FREE)
+      primaryContactName    String?   @map("primary_contact_name")
+      primaryContactPhone   String?   @map("primary_contact_phone")
+      requireApproval       Boolean   @default(true) @map("require_approval")
+      sessionTimeoutMinutes Int       @default(60) @map("session_timeout_minutes")
+      size                  String?
+      status                OrgStatus @default(TRIAL)
+      suspendedAt           DateTime? @map("suspended_at")
+      suspendedReason       String?   @map("suspended_reason")
+      timezone              String?   @default("Asia/Kolkata")
+      trialEndsAt           DateTime? @map("trial_ends_at")
+      website               String?
+      relations: users[], projects[], tickets[], chatMessages[], chatRoomLastSeen[], activityLogs[]
+    </model>
+
+    <model name="User">
+      id                 String   @id @default(uuid())
+      organizationId     String   (FK → Organization)
+      name               String
+      email              String   @unique
+      passwordHash       String
+      role               Role     enum: ADMIN | MANAGER | MEMBER | CLIENT | SUPERADMIN
+      isApproved         Boolean  @default(false)
+      mustChangePassword Boolean  @default(false)
+      avatar             String?  (base64 or URL)
+      resetToken         String?
+      resetTokenExpiry   DateTime?
+      managerId          String?  (FK → User self-reference — ManagerSubordinates relation)
+      createdAt          DateTime
+      updatedAt          DateTime
+
+      relations:
+        organization        Organization
+        manager             User?   (via managerId — their assigned manager)
+        subordinates        User[]  (users this user manages)
+        taskAssignments     TaskAssignee[]
+        workloads           Workload[]
+        managedProjects     Project[]  (projects where this user is manager)
+        clientProjects      Project[]  @relation("ClientProjects") — projects as client
+        activityLogs        ActivityLog[]
+        createdTickets      Ticket[]
+        ticketComments      TicketComment[]
+        chatMessages        ChatMessage[]
+        chatRoomLastSeen    ChatRoomLastSeen[]
+        timeEntries         TimeEntry[]
+    </model>
+
+    <model name="Project">
+      id             String          @id @default(uuid())
+      organizationId String          (FK → Organization)
+      name           String
+      description    String?
+      category       ProjectCategory enum: INTERNAL | CLIENT
+      clientId       String?         (FK → User @relation("ClientProjects"))
+      managerId      String?         (FK → User)
+      startDate      DateTime?
+      endDate        DateTime?
+      totalBudget    Decimal(12,2)?
+      usedBudget     Decimal(12,2)   @default(0)
+      status         ProjectStatus   enum: PLANNING | ACTIVE | ON_HOLD | COMPLETED | CANCELLED
+      createdAt      DateTime
+      updatedAt      DateTime
+
+      relations:
+        organization   Organization
+        client         User?  @relation("ClientProjects")
+        manager        User?
+        phases         Phase[]
+        tasks          Task[]
+        workloads      Workload[]
+        activityLogs   ActivityLog[]
+        chatMessages   ChatMessage[]
+        chatRoomLastSeen ChatRoomLastSeen[]
+        timeEntries    TimeEntry[]
+    </model>
+
+    <model name="Phase">
+      id                   String      @id @default(uuid())
+      projectId            String      (FK → Project)
+      name                 String
+      status               PhaseStatus enum: WAITING | IN_PROGRESS | COMPLETED
+      completionPercentage Int         @default(0)
+      order                Int
+      startDate            DateTime?
+      endDate              DateTime?
+      createdAt            DateTime
+      updatedAt            DateTime
+      relations: project Project, tasks Task[]
+    </model>
+
+    <model name="Task">
+      id                   String       @id @default(uuid())
+      projectId            String       (FK → Project)
+      phaseId              String?      (FK → Phase, nullable)
+      title                String
+      description          String?
+      status               TaskStatus   enum: TODO | IN_PROGRESS | IN_REVIEW | COMPLETED | BLOCKED
+      priority             TaskPriority enum: LOW | MEDIUM | HIGH | URGENT
+      completionPercentage Int          @default(0)
+      dueDate              DateTime?
+      tags                 String[]     @default([])
+      storyPoints          Int?         @default(0) @map("story_points")
+      type                 TaskType     @default(TASK)
+      createdAt            DateTime
+      updatedAt            DateTime
+      relations: project Project, phase Phase?, assignees TaskAssignee[], timeEntries TimeEntry[]
+    </model>
+
+    <model name="TaskAssignee">
+      taskId String (FK → Task)
+      userId String (FK → User)
+      @@id([taskId, userId])  — composite primary key
+    </model>
+
+    <model name="Workload">
+      userId             String  (FK → User)
+      projectId          String  (FK → Project)
+      workloadPercentage Int     @default(0)
+      calculatedAt       DateTime
+      @@id([userId, projectId])  — composite primary key
+    </model>
+
+    <model name="ActivityLog">
+      id        String   @id
+      userId    String   (FK → User)
+      projectId String?  (FK → Project)
+      action    String
+      entity    String
+      entityId  String?
+      details   Json?
+      createdAt DateTime
+    </model>
+
+    <model name="Ticket">
+      id             String         @id
+      organizationId String         (FK → Organization)
+      clientId       String         (FK → User @relation("ClientTickets"))
+      title          String
+      description    String
+      status         TicketStatus   enum: OPEN | IN_PROGRESS | RESOLVED | CLOSED
+      priority       TicketPriority enum: LOW | MEDIUM | HIGH | URGENT
+      createdAt      DateTime
+      updatedAt      DateTime
+      relations: organization, client User, comments TicketComment[]
+    </model>
+
+    <model name="TicketComment">
+      id        String   @id
+      ticketId  String   (FK → Ticket)
+      userId    String   (FK → User)
+      message   String
+      createdAt DateTime
+      updatedAt DateTime
+    </model>
+
+    <model name="ChatMessage">
+      id        String   @id
+      content   String
+      userId    String   (FK → User)
+      projectId String?  (FK → Project) — null = global chat room
+      createdAt DateTime
+    </model>
+
+    <model name="ChatRoomLastSeen">
+      id        String   @id
+      userId    String   (FK → User)
+      projectId String?  (FK → Project) — null = global chat room
+      lastSeen  DateTime
+      @@unique([userId, projectId])
+    </model>
+
+    <model name="TimeEntry">
+      id          String          @id @default(uuid())
+      userId      String          (FK → User)
+      projectId   String          (FK → Project)
+      taskId      String?         (FK → Task)
+      date        DateTime
+      hours       Decimal(5,2)
+      description String?
+      status      TimeEntryStatus enum: PENDING | APPROVED | REJECTED
+      billable    Boolean         @default(true)
+      isManual    Boolean         @default(true)
+      createdAt   DateTime
+      updatedAt   DateTime
+    </model>
+
+    <model name="WorkLog">
+      id          String   @id @default(uuid())
+      userId      String   (FK → User)
+      taskId      String   (FK → Task)
+      projectId   String   (FK → Project)
+      minutes     Int
+      comment     String?
+      loggedAt    DateTime @default(now())
+      createdAt   DateTime
+    </model>
+
+    <enum name="OrgPlan">FREE | STARTER | PRO | ENTERPRISE</enum>
+    <enum name="OrgStatus">TRIAL | ACTIVE | SUSPENDED | CANCELLED | PENDING</enum>
+    <enum name="Role">ADMIN | MANAGER | MEMBER | CLIENT | SUPERADMIN</enum>
+    <enum name="TimeEntryStatus">PENDING | APPROVED | REJECTED</enum>
+    <enum name="ProjectStatus">PLANNING | ACTIVE | ON_HOLD | COMPLETED | CANCELLED</enum>
+    <enum name="ProjectCategory">INTERNAL | CLIENT</enum>
+    <enum name="PhaseStatus">WAITING | IN_PROGRESS | COMPLETED</enum>
+    <enum name="TaskStatus">TODO | IN_PROGRESS | IN_REVIEW | COMPLETED | BLOCKED</enum>
+    <enum name="TaskPriority">LOW | MEDIUM | HIGH | URGENT</enum>
+    <enum name="TaskType">
+      TASK | BUG | STORY | EPIC | SUBTASK
+    </enum>
+
+    <enum name="TicketStatus">OPEN | IN_PROGRESS | RESOLVED | CLOSED</enum>
+    <enum name="TicketPriority">LOW | MEDIUM | HIGH | URGENT</enum>
+  </database>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- ROUTES + CONTROLLERS (complete endpoint map)                   -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <api_endpoints>
+
+    <!-- AUTH (/api/auth) — src/routes/auth.js → src/controllers/authController.js -->
+    <group prefix="/api/auth">
+      <endpoint method="POST" path="/login"           auth="none"
+        body="{ email, password }"
+        response="{ token, user }"
+        controller="login"
+        notes="bcrypt compare. Returns JWT. Sets mustChangePassword flag if needed." />
+
+      <endpoint method="GET" path="/me"              auth="any"
+        response="{ user }"
+        controller="me"
+        notes="Returns current user profile based on JWT." />
+
+      <endpoint method="POST" path="/signup"          auth="none"
+        body="{ name, email, password, organizationName, industry, size, website }"
+        response="{ token, user }"
+        controller="signup"
+        notes="Creates Organization + ADMIN user. Fix: organization lookup reordered before email validation to avoid reference errors. Auto-approved." />
+
+      <endpoint method="POST" path="/invite"          auth="ADMIN|MANAGER"
+        body="{ name, email, role, password }"
+        response="{ user }"
+        controller="invite"
+        notes="Creates user in org. Sends welcome email. Sets mustChangePassword=true." />
+
+      <endpoint method="POST" path="/change-password" auth="any"
+        body="{ currentPassword, newPassword }"
+        controller="changePassword"
+        notes="Verifies current password then updates hash." />
+
+      <endpoint method="POST" path="/forgot-password" auth="none"
+        body="{ email }"
+        controller="forgotPassword"
+        notes="Generates resetToken, saves to user, sends email with reset link." />
+
+      <endpoint method="POST" path="/reset-password"  auth="none"
+        body="{ token, password }"
+        controller="resetPassword"
+        notes="Validates resetToken + expiry, updates passwordHash, clears token." />
+    </group>
+
+    <!-- PROJECTS (/api/projects) — src/routes/projects.js → src/controllers/projectController.js -->
+    <group prefix="/api/projects">
+      <endpoint method="GET" path="/" auth="any"
+        params="page, limit, search, status, category, managerId, clientId"
+        response="{ data: Project[], pagination: { total, page, limit, totalPages } } OR Project[] (no pagination if no page param)"
+        controller="getAllProjects"
+        notes="
+          Role-based visibility:
+            ADMIN    → all org projects
+            MANAGER  → only projects where managerId = self
+            CLIENT   → only projects where clientId = self
+            MEMBER   → only projects where assigned via tasks or workloads
+          All filter params are applied server-side with Prisma where clause.
+          If 'page' param present → returns paginated response.
+          If 'page' absent → returns flat array (used by dropdowns).
+          Each project includes: progress % (calculated from storyPoints or task count),
+            client object, manager object, _count.tasks, _count.phases.
+          IMPORTANT: Duplicate project name check (case-insensitive, per org) on POST.
+          IMPORTANT: Project name must NOT start with a number (enforced on POST).
+        " />
+
+      <endpoint method="GET" path="/:id" auth="any"
+        response="Project with phases, tasks, workloads"
+        controller="getProject" />
+
+      <endpoint method="POST" path="/" auth="ADMIN|MANAGER"
+        body="{ name, description, clientId, managerId, startDate, endDate, totalBudget, status, category }"
+        controller="createProject"
+        validation="
+          name: 3-100 chars, alphanumeric+spaces, no special chars, must not start with number
+          name must be unique per org (case-insensitive)
+          category required: INTERNAL or CLIENT
+          if category=CLIENT then clientId required
+          startDate required, endDate required, endDate must be after startDate
+          budget non-negative
+        " />
+
+      <endpoint method="PUT" path="/:id" auth="ADMIN|MANAGER"
+        body="same as POST"
+        controller="updateProject" />
+
+      <endpoint method="DELETE" path="/:id" auth="ADMIN|MANAGER"
+        controller="deleteProject" />
+
+      <endpoint method="POST" path="/:id/members" auth="ADMIN|MANAGER"
+        body="{ userId, workloadPercentage }"
+        controller="addProjectMember"
+        notes="Creates Workload record linking user to project." />
+
+      <endpoint method="DELETE" path="/:id/members/:userId" auth="ADMIN|MANAGER"
+        controller="removeProjectMember"
+        notes="Deletes Workload record." />
+    </group>
+
+    <!-- TASKS (/api/tasks) — src/routes/tasks.js → src/controllers/taskController.js -->
+    <group prefix="/api/tasks">
+      <endpoint method="GET" path="/my-tasks" auth="any"
+        response="Task[]"
+        controller="getMyTasks"
+        notes="Returns tasks assigned to the authenticated user." />
+
+      <endpoint method="GET" path="/" auth="any"
+        params="page, limit, status, projectId, managerId, clientId, priority, search, assignedTo, type"
+        response="{ data: Task[], pagination } OR Task[] (no page = all, for Kanban)"
+        controller="getAllTasks"
+        notes="
+          Role-based visibility:
+            ADMIN  → all org tasks
+            MANAGER→ tasks in own projects OR assigned to self
+            CLIENT → tasks in own client projects
+            MEMBER → tasks assigned to self
+          All filters server-side.
+          Each task includes: assignees[{user}], project{id,name}, phase{id,name}
+        " />
+
+      <endpoint method="GET" path="/:id" auth="any"
+        controller="getTask" />
+
+      <endpoint method="POST" path="/" auth="any"
+        body="{ projectId, phaseId, title, description, assigneeIds[], status, priority, completionPercentage, dueDate, tags[], storyPoints, type }"
+        controller="createTask"
+        validation="
+          projectId and title required
+          title must not start with a number
+          title alphanumeric+spaces only
+          title must be unique per project (case-insensitive)
+        " />
+
+      <endpoint method="PUT" path="/:id" auth="any"
+        body="same as POST"
+        controller="updateTask" />
+
+      <endpoint method="PATCH" path="/:id/progress" auth="any"
+        body="{ completionPercentage }"
+        controller="updateTaskProgress" />
+
+      <endpoint method="PATCH" path="/:id/status" auth="any"
+        body="{ status }"
+        controller="updateTaskStatus"
+        notes="Used by Kanban drag-and-drop." />
+
+      <endpoint method="DELETE" path="/:id" auth="any"
+        controller="deleteTask" />
+    </group>
+
+    <!-- USERS (/api/users) — src/routes/users.js → src/controllers/userController.js -->
+    <group prefix="/api/users">
+      <endpoint method="GET" path="/" auth="any"
+        params="page, limit, search, roleFilter, pending, teamOnly"
+        response="{ data: User[], pagination } OR User[] (no pagination)"
+        controller="getUsers"
+        notes="
+          Role-based visibility:
+            ADMIN  → all org users
+            MANAGER + teamOnly=true → only own team MEMBER users
+            MANAGER (no teamOnly) → self + other managers + admins + clients + own team
+            CLIENT → self + project managers/clients they interact with
+            MEMBER → self + project managers/clients on their projects
+          Each user includes: managers[] (derived from projects) for dependent filter use.
+          pending=true → filter for isApproved=false
+          roleFilter → filter by specific role enum value
+        " />
+
+      <endpoint method="PATCH" path="/profile" auth="any"
+        body="{ name, avatar }"
+        controller="updateProfile"
+        notes="Updates own profile only." />
+
+      <endpoint method="PUT" path="/:id" auth="any"
+        body="{ name, role, managerId }"
+        controller="updateUser"
+        notes="ADMIN can change any user. MANAGER can change own team members only." />
+
+      <endpoint method="PUT" path="/:id/approve" auth="ADMIN"
+        controller="approveUser"
+        notes="Sets isApproved=true. Sends approval email." />
+
+      <endpoint method="GET" path="/:id/team" auth="any"
+        controller="getManagedUsers"
+        notes="Returns all MEMBER users with managerId = :id" />
+
+      <endpoint method="GET" path="/:id/progress" auth="any"
+        response="{ totalTasks, completedTasks, inProgressTasks, overdueTasks, tasksByProject[] }"
+        controller="getMemberProgress" />
+
+      <endpoint method="DELETE" path="/:id" auth="ADMIN|MANAGER"
+        controller="deleteUser" />
+    </group>
+
+    <!-- DASHBOARD (/api/dashboard) — src/routes/dashboard.js → src/controllers/dashboardController.js -->
+    <group prefix="/api/dashboard">
+      <endpoint method="GET" path="/" auth="any"
+        response="{ totalProjects, activeProjects, completedProjects, totalTasks, completedTasks, overdueTasks, teamMembers }"
+        controller="getDashboardStats"
+        notes="Stats scoped to user's org and role-based visibility." />
+    </group>
+
+    <!-- ORGANIZATIONS (/api/organizations) — src/routes/organizations.js → src/controllers/organizationController.js -->
+    <group prefix="/api/organizations">
+      <endpoint method="GET" path="/me"              auth="any"
+        response="Organization object with user/project counts"
+        controller="getMyOrganization" />
+      <endpoint method="PUT" path="/me"              auth="ADMIN"
+        body="{ name, logoUrl, industry, size, website, billingEmail, ... }"
+        controller="updateMyOrganization" />
+      <endpoint method="GET" path="/"                 auth="SUPERADMIN"
+        notes="Superadmin: Get all organizations across platform" />
+    </group>
+
+    <!-- TICKETS (/api/tickets) — src/routes/ticket.js → src/controllers/ticketController.js -->
+    <group prefix="/api/tickets">
+      <endpoint method="GET"    path="/"          auth="any"   params="page,limit,status,priority" controller="getAllTickets" />
+      <endpoint method="GET"    path="/:id"        auth="any"   controller="getTicket" />
+      <endpoint method="POST"   path="/"           auth="any"   body="{ title, description, priority }" controller="createTicket" />
+      <endpoint method="PATCH"  path="/:id/status" auth="ADMIN|MANAGER" body="{ status }" controller="updateTicketStatus" />
+      <endpoint method="POST"   path="/:id/comments" auth="any" body="{ message }" controller="addComment" />
+    </group>
+
+    <!-- TIMESHEETS (/api/timesheets) — src/routes/timesheets.js → src/controllers/timesheetController.js -->
+    <group prefix="/api/timesheets">
+      <endpoint method="GET"    path="/"            auth="any"   params="page,limit,userId,projectId,status,dateFrom,dateTo" controller="getAllTimeEntries" />
+      <endpoint method="POST"   path="/"            auth="any"   body="{ projectId, taskId, date, hours, description }" controller="createTimeEntry" />
+      <endpoint method="PUT"    path="/:id"         auth="any"   controller="updateTimeEntry" />
+      <endpoint method="DELETE" path="/:id"         auth="any"   controller="deleteTimeEntry" />
+      <endpoint method="PATCH"  path="/:id/status"  auth="ADMIN|MANAGER" body="{ status }" controller="updateTimeEntryStatus" />
+    </group>
+
+    <!-- PERFORMANCE (/api/performance) — src/routes/performance.js → src/controllers/performanceController.js -->
+    <group prefix="/api/performance">
+      <endpoint method="GET"    path="/metrics"      auth="any"   params="userId, projectId, startDate, endDate" controller="getPerformanceMetrics" />
+      <endpoint method="GET"    path="/projects/:id" auth="any"   controller="getProjectPerformance" />
+      <endpoint method="GET"    path="/users/:id"    auth="any"   controller="getUserPerformance" />
+    </group>
+
+    <!-- WORKLOGS (/api/worklogs) — src/routes/worklog.js → src/controllers/worklogController.js -->
+    <group prefix="/api/worklogs">
+      <endpoint method="GET"    path="/"            auth="any"   params="page,limit,taskId,userId,dateFrom,dateTo" controller="getWorklogs" />
+      <endpoint method="POST"   path="/"            auth="any"   body="{ taskId, timeSpentMinutes, description, billable, isTimerBased }" controller="createWorklog" />
+      <endpoint method="PUT"    path="/:id"         auth="any"   controller="updateWorklog" />
+      <endpoint method="DELETE" path="/:id"         auth="any"   controller="deleteWorklog" />
+    </group>
+
+    <!-- CHAT (/api/chat) — src/routes/chat.js → src/controllers/chat.js -->
+    <group prefix="/api/chat">
+      <endpoint method="GET" path="/rooms"    auth="any"
+        response="[{ id, name, isGlobal, unreadCount }]"
+        controller="getRooms"
+        notes="Returns global room + all project rooms user has access to. Each room includes unreadCount." />
+      <endpoint method="GET" path="/messages" auth="any"
+        params="roomId, limit, before"
+        controller="getMessages"
+        notes="Paginated chat history. before=messageId for infinite scroll." />
+    </group>
+
+    <!-- REPORTS (/api/reports) — src/routes/reports.js → src/controllers/reportController.js -->
+    <group prefix="/api/reports">
+      <endpoint method="GET" path="/" auth="ADMIN|MANAGER" controller="getReport"
+        notes="Generates project/task summary report data." />
+      <endpoint method="GET" path="/export" auth="ADMIN|MANAGER"
+        notes="Generates downloadable report (PDF/CSV via reportTemplate.js)." />
+    </group>
+
+    <!-- SUPERADMIN (/api/superadmin) — src/routes/superadmin.js → src/controllers/superadminController.js -->
+    <group prefix="/api/superadmin">
+      <endpoint method="GET"    path="/stats"          auth="SUPERADMIN" controller="getStats" notes="Platform-wide KPIs." />
+      <endpoint method="GET"    path="/orgs"           auth="SUPERADMIN" controller="getOrganizations" notes="List all tenants." />
+      <endpoint method="POST"   path="/orgs"           auth="SUPERADMIN" controller="createOrganization" notes="Provision new tenant + Admin." />
+      <endpoint method="PUT"    path="/orgs/:id"       auth="SUPERADMIN" controller="updateOrganization" />
+      <endpoint method="PATCH"  path="/orgs/:id/status" auth="SUPERADMIN" controller="updateOrganizationStatus" />
+      <endpoint method="GET"    path="/users"          auth="SUPERADMIN" controller="getGlobalUsers" />
+      <endpoint method="POST"   path="/users/:id/force-reset" auth="SUPERADMIN" controller="forceResetPassword" />
+      <endpoint method="DELETE" path="/users/:id"      auth="SUPERADMIN" controller="deleteGlobalUser" />
+      <endpoint method="GET"    path="/audit"          auth="SUPERADMIN" controller="getGlobalAuditLogs" />
+    </group>
+
+  </api_endpoints>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- CONTROLLERS (src/controllers/)                                 -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <controllers>
+
+    <controller name="authController.js">
+      Exports: login, signup, invite, me, changePassword, forgotPassword, resetPassword
+      Uses: PrismaClient, bcryptjs (compare + hash), jsonwebtoken (sign), emailService
+      JWT payload: { id, email, role, organizationId }
+      JWT_SECRET from env. Token expiry: typically 7d.
+    </controller>
+
+    <controller name="projectController.js">
+      Exports: getAllProjects, getProject, createProject, updateProject, deleteProject,
+               addProjectMember, removeProjectMember
+      Key logic in getAllProjects:
+        - Role-based where clause (MANAGER sees own projects, CLIENT sees own client projects,
+          MEMBER sees assigned projects)
+        - ALL filters (search, status, category, managerId, clientId) applied via Prisma
+        - Progress % calculated from storyPoints (preferred) or task count ratio
+        - Pagination: if 'page' query param present → paginated; else → flat array
+      Key validation in createProject:
+        - name length 3-100, alphanumeric+spaces, no leading digit
+        - Unique per org (case-insensitive)
+        - category required, clientId required if category=CLIENT
+        - Date logic validation
+    </controller>
+
+    <controller name="taskController.js">
+      Exports: getAllTasks, getTask, createTask, updateTask, deleteTask,
+               getMyTasks, updateTaskProgress, updateTaskStatus
+      Key logic in getAllTasks:
+        - Role-based where clause on project relation
+        - All filters in Prisma where (projectId, status, priority, managerId, clientId, search)
+        - Pagination: if 'page' present → paginated; else → flat array (for Kanban)
+      Key validation in createTask:
+        - title non-empty, alphanumeric+spaces, no leading digit
+        - Unique per project (case-insensitive)
+    </controller>
+
+    <controller name="userController.js">
+      Exports: getUsers, updateUser, deleteUser, approveUser, getManagedUsers,
+               updateProfile, getMemberProgress
+      Key logic in getUsers:
+        - Complex role-based visibility (Prisma OR conditions per role)
+        - Returns users with derived 'managers' array (for frontend dependent filter)
+        - Pagination or flat array based on 'page' param
+      getMemberProgress: aggregates task stats (total, completed, in-progress, overdue)
+    </controller>
+
+    <controller name="dashboardController.js">
+      Exports: getDashboardStats
+      Returns: aggregate counts scoped to user org.
+    </controller>
+
+    <controller name="organizationController.js">
+      Exports: getMyOrganization, updateMyOrganization
+      Note: Scoped to req.user.organizationId. Admin can update company info.
+    </controller>
+
+    <controller name="ticketController.js">
+      Exports: getAllTickets, getTicket, createTicket, updateTicketStatus, addComment
+      CLIENT role: getAllTickets returns only their own tickets (filtered by clientId)
+    </controller>
+
+    <controller name="timesheetController.js">
+      Exports: getAllTimeEntries, createTimeEntry, updateTimeEntry, deleteTimeEntry,
+               updateTimeEntryStatus (PENDING/APPROVED/REJECTED)
+    </controller>
+
+    <controller name="performanceController.js">
+      Exports: getPerformanceMetrics, getProjectPerformance, getUserPerformance
+      Aggregates task data, story points, and logged minutes to calculate individual velocity, 
+      team productivity, and project progress. Handles "all" project filtering.
+    </controller>
+
+    <controller name="worklogController.js">
+      Exports: getWorklogs, createWorklog, updateWorklog, deleteWorklog
+      Handles granular task-level work log CRUD. Maps minutes to 'loggedAt' and comments.
+      Allows filtering by projectId and taskId.
+    </controller>
+
+    <controller name="chat.js">
+      Exports: getRooms, getMessages
+      getRooms: Returns global room + project rooms user has access to.
+                Calculates unreadCount per room using ChatRoomLastSeen.lastSeen.
+      getMessages: Paginated message fetch with before cursor support.
+    </controller>
+
+    <controller name="reportController.js">
+      Exports: getReport, exportReport
+      Uses reportTemplate.js for PDF/export generation.
+    </controller>
+
+    <controller name="superadminController.js">
+      Exports: getStats, getOrganizations, createOrganization, updateOrganization, updateOrganizationStatus,
+               getGlobalUsers, forceResetPassword, deleteGlobalUser, getGlobalAuditLogs
+      Notes: Full control over multi-tenant infrastructure.
+    </controller>
+
+  </controllers>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- SERVICES (src/services/)                                       -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <services>
+    <service name="emailService.js" path="src/services/emailService.js">
+      Exports various email sending functions:
+        sendProjectManagerEmail(manager, project)
+        sendProjectClientEmail(client, project)
+        sendUserApprovalEmail(user)
+        sendTaskAssignmentEmail(user, task, project)
+        sendTaskStatusUpdateEmail(user, task)
+        (and others for invites, password reset, etc.)
+      Uses Nodemailer with SMTP config from env vars (SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS).
+    </service>
+  </services>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- SOCKET.IO (handled in src/server.js)                          -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <socketio cors="origin: *">
+    EVENTS SERVER LISTENS FOR:
+      'join-room'    — payload: roomId(string). Socket joins that room.
+      'send-message' — payload: { content, userId, projectId }.
+                       Saves to DB (ChatMessage), broadcasts 'new-message' to room,
+                       broadcasts 'message-notification' to ALL connected users.
+      'disconnect'   — logs disconnection.
+
+    EVENTS SERVER EMITS:
+      'new-message'          — to specific room. payload: full message object with user.
+      'message-notification' — to ALL connected clients. payload: { roomId, senderId, content, senderName }.
+                               Frontend uses this to increment unread counts.
+  </socketio>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- PAGINATION CONVENTION                                          -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <pagination_convention>
+    ALL list endpoints support optional pagination via query params: page, limit.
+    If 'page' is NOT provided → returns flat array (backward compatible for dropdowns/Kanban).
+    If 'page' IS provided → returns:
+      {
+        data: [...],
+        pagination: {
+          total: number,
+          page: number,
+          limit: number,
+          totalPages: number
+        }
+      }
+    Default limit: 10. Minimum page: 1. Minimum limit: 1.
+  </pagination_convention>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- VALIDATION RULES (enforced in controllers)                    -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <validation_rules>
+    Project Name:
+      - 3 to 100 characters
+      - Regex: /^[a-zA-Z0-9\s]+$/ (alphanumeric + spaces only, no special characters)
+      - Must NOT start with a digit: /^\d/.test(name) returns false
+      - Must be unique within the organization (case-insensitive)
+      - Response on failure: 400 with JSON { error: "message" }
+
+    Task Title:
+      - Must not be empty
+      - Regex: /^[a-zA-Z0-9\s]+$/ (alphanumeric + spaces only)
+      - Must NOT start with a digit
+      - Must be unique within the same project (case-insensitive)
+      - Response on failure: 400 with JSON { error: "message" }
+
+    User Name (invite/create):
+      - Alphanumeric + spaces only (special characters not allowed)
+
+    Passwords:
+      - Minimum length enforced (check controller for exact value)
+      - Hashed with bcryptjs (saltRounds: 10)
+  </validation_rules>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- ENVIRONMENT VARIABLES                                          -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <environment_variables>
+    DATABASE_URL    — PostgreSQL connection string (required)
+    JWT_SECRET      — Secret for JWT signing (required)
+    PORT            — Server port (optional, default: 5000)
+    SMTP_HOST       — Email server host
+    SMTP_PORT       — Email server port
+    SMTP_USER       — Email username
+    SMTP_PASS       — Email password
+    SMTP_FROM       — From address for emails
+  </environment_variables>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- HOW TO ADD A NEW API ENDPOINT                                  -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <how_to_add_endpoint>
+    1. Add controller function to appropriate file in src/controllers/.
+       Pattern (with express-async-errors — NO try/catch needed):
+         export const myEndpoint = async (req, res) => {
+           const { param } = req.params;
+           const { field } = req.body;
+           const { queryParam } = req.query;
+           const { id, role, organizationId } = req.user;  // from authenticate middleware
+           const result = await prisma.model.findMany({ where: { organizationId } });
+           res.json(result);
+         };
+
+    2. Export function from controller file.
+
+    3. Add route to appropriate router in src/routes/:
+         import { myEndpoint } from '../controllers/myController.js';
+         router.get('/path', authenticate, authorize('ADMIN'), myEndpoint);
+         Note: router.use(authenticate) is already at top of most route files.
+
+    4. If new route file needed, register in src/server.js:
+         import myRoutes from './routes/myRoutes.js';
+         app.use('/api/myresource', myRoutes);
+
+    5. For Prisma queries:
+         import { PrismaClient } from '@prisma/client';
+         const prisma = new PrismaClient();
+         (Each controller file creates its own PrismaClient instance.)
+
+    6. Error responses:
+         return res.status(400).json({ error: 'Validation message' });
+         return res.status(404).json({ error: 'Not found' });
+         return res.status(403).json({ error: 'Forbidden' });
+         // Throwing errors also works (caught by errorHandler middleware)
+
+    7. For Prisma schema changes:
+         Edit backend/prisma/schema.prisma
+         Run: npx prisma migrate dev --name describe_your_change
+         Run: npx prisma generate
+  </how_to_add_endpoint>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- COMPLETE FILE TREE                                             -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <file_tree root="backend">
+    prisma/
+      schema.prisma                   — Full database schema (source of truth)
+      migrations/                     — Auto-generated migration files
+
+    src/
+      server.js                       — Express app init, middleware, route mounting, Socket.IO
+
+      config/
+        swagger.js                    — Swagger spec config
+
+      middleware/
+        auth.js                       — authenticate() + authorize(...roles) middleware
+        errorHandler.js               — Global error handler (must be last middleware)
+
+      routes/
+        auth.js                       — /api/auth/*
+        projects.js                   — /api/projects/*
+        tasks.js                      — /api/tasks/*
+        superadmin.js                 — /api/superadmin/*
+        users.js                      — /api/users/*
+        dashboard.js                  — /api/dashboard
+        reports.js                    — /api/reports
+        organizations.js              — /api/organizations
+        ticket.js                     — /api/tickets/*
+        timesheets.js                 — /api/timesheets/*
+        performance.js                  — /api/performance/*
+        worklog.js                      — /api/worklogs/*
+        chat.js                       — /api/chat/*
+
+      controllers/
+        authController.js             — login, signup, invite, changePassword, forgotPassword, resetPassword
+        projectController.js          — getAllProjects, getProject, createProject, updateProject,
+                                        deleteProject, addProjectMember, removeProjectMember
+        taskController.js             — getAllTasks, getTask, createTask, updateTask, deleteTask,
+                                        getMyTasks, updateTaskProgress, updateTaskStatus
+        userController.js             — getUsers, updateUser, deleteUser, approveUser,
+                                        getManagedUsers, updateProfile, getMemberProgress
+        dashboardController.js        — getDashboardStats
+        organizationController.js     — getOrganization, updateOrganization
+        ticketController.js           — getAllTickets, getTicket, createTicket,
+                                        updateTicketStatus, addComment
+        timesheetController.js        — getAllTimeEntries, createTimeEntry, updateTimeEntry,
+                                        deleteTimeEntry, updateTimeEntryStatus
+        performanceController.js        — getPerformanceMetrics, getProjectPerformance, getUserPerformance
+        worklogController.js            — getWorklogs, createWorklog, updateWorklog, deleteWorklog
+        chat.js                       — getRooms, getMessages
+        reportController.js           — getReport, exportReport
+        reportTemplate.js             — PDF/export template helpers
+
+      services/
+        emailService.js               — All email sending functions (Nodemailer)
+
+      utils/                          — Utility helpers (if any)
+  </file_tree>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- RECENT ARCHITECTURAL UPDATES                                     -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <recent_updates>
+    <update date="2026-03-24" component="Timesheets & Worklogs">
+      Implemented manager approval workflow for timesheets. Global timer submissions (WorkLogs)
+      are now synchronized with Timesheet approval processes. Notifications are dispatched upon status changes.
+    </update>
+    <update date="2026-03-24" component="Resource Limits & Premium Upgrades">
+      Enforced organization-level quotas (maxProjects, maxUsers) in controllers (`createProject`, `authController` invites).
+      Returns 403 Forbidden with custom message prompting premium upgrade when limits are reached.
+    </update>
+    <update date="2026-03-24" component="Audit Logs (System Ledger)">
+      Normalized `activity_logs` in database (stripped newlines, UPPER() casing).
+      Re-introduced `INVITED`, `APPROVED`, and `MEMBER_ADDED` to accurate front-end filtering.
+    </update>
+  </recent_updates>
+
+</backend_architecture>

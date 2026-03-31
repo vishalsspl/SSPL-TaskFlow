@@ -1,0 +1,690 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SSPL-TaskFlow Frontend Architecture Reference
+  Stack: React 18, Vite, React Router v6, Zustand, Axios, TailwindCSS, shadcn/ui, Socket.IO client
+  Root: /home/vishal/Vishal/SSPL-TaskFlow/frontend
+  Dev Port: 5173 | API: VITE_API_URL (default http://localhost:5000)
+  Import alias: '@' maps to 'src/'
+-->
+<frontend_architecture project="SSPL-TaskFlow" version="1.0.0" framework="React 18" build="Vite">
+
+  <tech_stack>
+    <item name="Version"          value="1.0.0" />
+    <item name="Language"         value="JavaScript (JSX, NO TypeScript)" />
+    <item name="Routing"          value="React Router v6 - BrowserRouter, nested routes via Outlet" />
+    <item name="State"            value="Zustand (one store per domain)" />
+    <item name="HTTP"             value="Axios singleton at src/lib/api.js" />
+    <item name="Realtime"         value="Socket.IO client - managed by chatStore" />
+    <item name="Styling"          value="TailwindCSS + src/index.css for custom utilities" />
+    <item name="UI Components"    value="shadcn/ui (in src/components/ui/)" />
+    <item name="Env Var - API"    value="VITE_API_URL (fallback: http://localhost:5000)" />
+  </tech_stack>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- ENTRY POINTS                                                    -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <entry_points>
+    <file path="src/main.jsx"  purpose="React root mount. Renders App into #root. No providers here." />
+    <file path="src/App.jsx"   purpose="Root component. ThemeProvider > BrowserRouter > Routes. Initialises authStore + socket on mount." />
+    <file path="index.html"    purpose="Vite shell. Single div id='root'." />
+    <file path="vite.config.js" purpose="Path alias '@' = src/. No dev proxy. Direct API calls to VITE_API_URL." />
+  </entry_points>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- USER ROLES (affects EVERY page's visibility and API response)  -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <roles>
+    <role name="SUPERADMIN">
+      Platform-level access. Manage all organizations, global users, system logs,
+      and platform-wide settings (limits, tiers). Restricted from regular chat.
+    </role>
+    <role name="ADMIN">
+      Organization-level admin. Full access within own org. Manage projects, team, 
+      tickets, and organization settings (Company Profile).
+    </role>
+    <role name="MANAGER">
+      Own team management. Create projects/tasks, see assigned team members. 
+      Cannot manage org settings.
+    </role>
+    <role name="MEMBER">
+      Standard user. Update own task progress/status. Read-only for assigned projects.
+    </role>
+    <role name="CLIENT">
+      External access. Submit tickets, view own projects. No chat access.
+    </role>
+  </roles>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- ROUTING STRUCTURE (src/App.jsx)                                -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <routing>
+    <note>
+      All protected routes are children of Layout route at '/'.
+      No token → redirected to /login.
+      RoleBasedRedirect (src/components/RoleBasedRedirect.jsx) redirects after login by role.
+      All roles → /dashboard (but layout sidebar items vary by role).
+    </note>
+
+    <public_routes>
+      <route path="/login"                component="Login"          file="src/components/forms/auth/Login.jsx" />
+      <route path="/signup"               component="Signup"         file="src/components/forms/auth/Signup.jsx" note="Creates org + ADMIN user. Uses premium Select components." />
+      <route path="/forgot-password"      component="ForgotPassword" file="src/components/forms/auth/ForgotPassword.jsx" />
+      <route path="/reset-password/:token" component="ResetPassword" file="src/components/forms/auth/ResetPassword.jsx" />
+      <route path="/pending-approval"     component="PendingApproval" file="src/pages/PendingApproval.jsx" />
+      <route path="/change-password"      component="ChangePassword"  file="src/components/forms/auth/ChangePassword.jsx" note="Requires token. Forced password change flow." />
+    </public_routes>
+
+    <protected_routes layout="Layout" file="src/components/Layout.jsx">
+      <route path="/"            component="RoleBasedRedirect" />
+      <route path="dashboard"    component="Dashboard"          file="src/pages/Dashboard.jsx" />
+      <route path="performance"  component="Performance"        file="src/pages/Performance.jsx" />
+      <route path="projects"     component="ProjectsList"        file="src/pages/ProjectsList.jsx" />
+      <route path="projects/:id" component="ProjectView"         file="src/pages/ProjectView.jsx" />
+      <route path="kanban"       component="KanbanBoard"         file="src/pages/KanbanBoard.jsx" />
+      <route path="task-board"   component="TaskKanban"          file="src/pages/TaskKanban.jsx" />
+      <route path="tasks"        component="Tasks"               file="src/pages/Tasks.jsx" />
+      <route path="team"         component="Team"                file="src/pages/Team.jsx" />
+      <route path="settings"     component="Settings"            file="src/pages/Settings.jsx" />
+      <route path="organization" component="OrganizationSettings" file="src/pages/organization/OrganizationSettings.jsx" note="ADMIN only" />
+      <route path="timesheets"   component="Timesheets"          file="src/pages/Timesheets.jsx" />
+      <route path="chat"         component="ChatPage"            file="src/pages/ChatPage.jsx" />
+      <route path="tickets"      component="TicketList"          file="src/pages/tickets/TicketList.jsx" />
+    </protected_routes>
+
+    <superadmin_routes layout="SuperAdminLayout" file="src/superadmin/components/SuperAdminLayout.jsx">
+      <route path="/superadmin"          component="SuperAdminDashboard" file="src/superadmin/pages/Dashboard.jsx" />
+      <route path="/superadmin/orgs"     component="OrgList"            file="src/superadmin/pages/OrgList.jsx" />
+      <route path="/superadmin/users"    component="UserList"           file="src/superadmin/pages/UserList.jsx" />
+      <route path="/superadmin/audit"    component="AuditLog"           file="src/superadmin/pages/AuditLog.jsx" />
+      <route path="/superadmin/settings" component="PlatformSettings"   file="src/superadmin/pages/PlatformSettings.jsx" />
+    </superadmin_routes>
+  </routing>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- ZUSTAND STORES                                                  -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <stores>
+
+    <store name="useAuthStore" file="src/store/authStore.js">
+      Persisted to localStorage key 'auth-storage' (JSON: { state: { token, user } }).
+      <state>
+        token: string|null  — JWT. Null = unauthenticated.
+        user: { id, name, email, role, organizationId, isApproved, mustChangePassword, avatar } | null
+      </state>
+      <actions>
+        login(token, user)   — Set state + save to localStorage
+        logout()             — Clear state + remove from localStorage
+        updateUser(user)     — Update user in memory only (no localStorage)
+        initialize()         — Read from localStorage on app load (called in App.jsx useEffect)
+      </actions>
+    </store>
+
+    <store name="useChatStore" file="src/store/chatStore.js">
+      Manages Socket.IO connection and per-room unread message counts.
+      <state>
+        socket: object|null
+        userId: string|null
+        isConnected: boolean
+        unreadCounts: { [roomId: string]: number }  — 'global' = global chat room
+        totalUnread: number  — Sum of all unreadCounts
+        activeRoomId: string|null  — Currently open room (suppresses unread increments)
+      </state>
+      <actions>
+        initSocket(userId)           — Create Socket.IO conn to VITE_API_URL. Called in App.jsx.
+        joinRoom(roomId)             — Emit 'join-room' event
+        rejoinRooms(apiInstance)     — Re-join global + all project rooms. Fetches from /api/chat/rooms.
+        setActiveRoom(roomId)        — Track current chat room, clear its unread count
+        clearUnread(roomId)          — Set unread count for a room to 0
+        fetchInitialUnread()         — On connect, fetch initial unread from /api/chat/rooms
+        disconnectSocket()           — Disconnect on logout
+      </actions>
+      <socket_events>
+        LISTENS: 'message-notification' — Global broadcast. Increment unread if sender≠me AND room≠activeRoom.
+        LISTENS: 'new-message'          — Received when IN the room. Clear unread for that room.
+        EMITS:   'join-room'            — payload: roomId (string)
+        EMITS:   'send-message'         — payload: { content, userId, projectId } (projectId=null for global)
+      </socket_events>
+    </store>
+
+    <store name="useHeaderStore" file="src/store/headerStore.js">
+      Simple store for the page header (shown in Layout.jsx top bar).
+      <state>title: string, subtitle: string</state>
+      <actions>setHeader(title, subtitle) — Pages call this in useEffect on mount.</actions>
+    </store>
+
+  </stores>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- API CLIENT (src/lib/api.js)                                    -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <api_client file="src/lib/api.js">
+    Singleton Axios instance. ALL components import from this file.
+    baseURL: VITE_API_URL/api (e.g. http://localhost:5000/api)
+
+    REQUEST INTERCEPTOR:
+      Reads token from localStorage 'auth-storage' → path: state.token
+      Attaches as: Authorization: Bearer {token}
+
+    RESPONSE INTERCEPTOR:
+      On 401 → remove 'auth-storage' from localStorage → hard redirect to /login
+
+    USAGE:
+      import api from '@/lib/api';
+      const res = await api.get('/projects', { params: { page: 1, limit: 10 } });
+      const res = await api.post('/tasks', payload);
+      const res = await api.put('/tasks/:id', payload);
+      const res = await api.delete('/tasks/:id');
+  </api_client>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- LAYOUT (src/components/Layout.jsx)                            -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <layout file="src/components/Layout.jsx">
+    Shell for all authenticated pages: sidebar (desktop), bottom nav (mobile),
+    top header bar (title/subtitle from headerStore), React Router Outlet.
+
+    SIDEBAR ITEMS (role-based visibility):
+      Dashboard    → /dashboard       — ALL roles
+      Performance  → /performance     — ADMIN, MANAGER, MEMBER
+      Projects     → /projects        — ALL roles
+      Kanban       → /kanban          — ADMIN, MANAGER, MEMBER
+      Task Board   → /task-board      — ADMIN, MANAGER, MEMBER
+      Tasks        → /tasks           — ALL roles
+      Team         → /team            — ADMIN, MANAGER
+      Timesheets   → /timesheets      — ALL roles
+      Chat         → /chat            — ADMIN, MANAGER, MEMBER (not CLIENT)
+      Tickets      → /tickets         — ALL roles
+      Settings     → /settings        — ALL roles (includes Appearance)
+      Organization → /organization    — ADMIN only (Accessible via Account menu)
+  </layout>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- PAGES (detailed)                                               -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <pages>
+
+    <page name="Dashboard" file="src/pages/Dashboard.jsx">
+      APIs: GET /projects, GET /tasks/my-tasks, GET /dashboard
+      Features: Stats cards, recent projects list, recent tasks list, charts (recharts).
+    </page>
+
+    <page name="Performance" file="src/pages/Performance.jsx">
+      APIs: GET /performance/metrics, GET /projects (for dropdown)
+      Features: Renders charts for project health, story point burnup, and team velocity using Recharts.
+    </page>
+
+    <page name="ProjectsList" file="src/pages/ProjectsList.jsx">
+      APIs:
+        GET  /projects       params: page,limit,search,status,category,managerId,clientId
+        GET  /users          — for filter dropdowns (managers + clients)
+        POST /projects       — create project
+        PUT  /projects/:id   — edit project
+        DELETE /projects/:id — delete project
+
+      State: projects, loading, users, searchTerm, debouncedSearch(400ms),
+             statusFilter, managerFilter, clientFilter,
+             page, pageSize, totalPages, totalItems, showFiltersMobile
+
+      IMPORTANT: ALL filtering is server-side. 'filteredProjects' = raw 'projects' state.
+      Manager→Client dependency: clientOptions derived from users where user.managers
+        array contains the selected managerFilter ID.
+      Components used: SearchableSelect (for manager/client filters), TablePagination,
+                       ProjectOverview (in dialog), ConfirmDialog.
+    </page>
+
+    <page name="ProjectView" file="src/pages/ProjectView.jsx">
+      APIs:
+        GET    /projects/:id
+        POST   /projects/:id/members
+        DELETE /projects/:id/members/:userId
+        POST   /tasks
+        PUT    /tasks/:id
+        DELETE /tasks/:id
+      Features: Phase management, task list per phase, team member list,
+                project settings panel, budget tracking progress bar, and **Worklogs tab** 
+                for granular task-level time tracking.
+    </page>
+
+    <page name="Tasks" file="src/pages/Tasks.jsx">
+      APIs:
+        GET  /tasks  params: page,limit,status,projectId,managerId,clientId,priority,type,search
+        GET  /projects  — for project filter dropdown
+        GET  /users     — for manager/client filter dropdowns
+        POST /tasks
+        PUT  /tasks/:id
+        DELETE /tasks/:id
+
+      State: tasks, loading, filter(status), projectFilter, managerFilter, clientFilter,
+             priorityFilter, typeFilter, searchTerm, debouncedSearch(400ms), page, pageSize, totalPages,
+             totalItems, users, projects, showFiltersMobile
+
+      ALL filtering is server-side. Manager→Client dependent dropdown same as ProjectsList.
+      Components: CreateTaskForm (for create/edit dialog), ConfirmDialog, TablePagination.
+      <feature name="Task List Table">
+        Displays tasks with Project, Assignee, Status, Type, and Priority badges.
+      </feature>
+      <feature name="Task Filtering">
+        Filter by Project, Manager, Priority, Type, and Status (All, To Do, In Progress, etc.).
+      </feature>
+    </page>
+
+    <page name="TaskKanban" file="src/pages/TaskKanban.jsx">
+      Shows project picker first, then task kanban by STATUS (5 columns).
+      APIs:
+        GET  /projects   params: search, managerId  — project picker
+        GET  /tasks      params: projectId           — all tasks for selected project (no pagination)
+        PATCH /tasks/:id/status — drag-and-drop status update
+      Columns: TODO | IN_PROGRESS | IN_REVIEW | COMPLETED | BLOCKED
+    </page>
+
+    <page name="KanbanBoard" file="src/pages/KanbanBoard.jsx">
+      Phase-based kanban for a single selected project.
+      APIs:
+        GET /projects       — project picker
+        GET /projects/:id   — load phases + tasks
+        PATCH /tasks/:id/status — drag-and-drop
+      Sub-components: src/components/kanban/KanbanBoard.jsx, KanbanColumn.jsx, KanbanCard.jsx
+    </page>
+
+    <page name="Team" file="src/pages/Team.jsx">
+      APIs:
+        GET    /users          params: page,limit,search,roleFilter,pending
+        PUT    /users/:id      — edit role/name/managerId
+        DELETE /users/:id
+        PUT    /users/:id/approve — ADMIN only
+        GET    /users/:id/progress
+        POST   /auth/invite
+      Features: Role tabs (All/Managers/Members/Clients/Pending),
+                invite form, edit/delete dialogs, member progress charts.
+    </page>
+
+    <page name="Settings" file="src/pages/Settings.jsx">
+      APIs:
+        GET   /organizations
+        PUT   /organizations  — update name, logo, theme color
+        PATCH /users/profile  — update own name, avatar (base64)
+      Features: Profile editing, org branding, theme color picker, dark/light mode toggle.
+    </page>
+
+    <page name="Timesheets" file="src/pages/Timesheets.jsx">
+      APIs:
+        GET   /timesheets  params: page,limit,userId,projectId,status,dateFrom,dateTo
+        POST  /timesheets
+        PUT   /timesheets/:id
+        DELETE /timesheets/:id
+        PATCH /timesheets/:id/status — approve/reject (ADMIN/MANAGER only)
+    </page>
+
+    <page name="ChatPage" file="src/pages/ChatPage.jsx">
+      APIs: GET /chat/rooms, GET /chat/messages params: roomId,limit,before
+      Socket: emits 'send-message', listens 'new-message'
+      Sub-component: src/components/Chat.jsx (main UI)
+      Not accessible to CLIENT role.
+    </page>
+
+    <page name="TicketList" file="src/pages/tickets/TicketList.jsx">
+      APIs: GET /tickets  params: page,limit,status,priority
+      Note: CLIENT role sees only own tickets. ADMIN/MANAGER sees all.
+    </page>
+
+    <page name="SubmitTicket" file="src/pages/tickets/SubmitTicket.jsx">
+      APIs: POST /tickets
+    </page>
+
+    <page name="TicketDetail" file="src/pages/tickets/TicketDetail.jsx">
+      APIs: GET /tickets/:id, POST /tickets/:id/comments, PATCH /tickets/:id/status
+    </page>
+
+    <page name="OrganizationSettings" file="src/pages/organization/OrganizationSettings.jsx">
+      APIs: GET /organizations/me, PUT /organizations/me
+      Features: Admin can edit company profile, logo, industry, contact details.
+    </page>
+
+    <page name="SuperAdmin Dashboard" file="src/superadmin/pages/Dashboard.jsx">
+      Features: Platform-wide metrics (with rounded-3xl cards), system health monitoring (high-blur glassmorphism), latest system signups.
+    </page>
+
+    <page name="SuperAdmin OrgList" file="src/superadmin/pages/OrgList.jsx">
+      Features: Manage all organizations, edit plans, suspend/activate tenants. Uses premium DropdownMenu for all filtering and status updates.
+    </page>
+
+    <page name="SuperAdmin UserList" file="src/superadmin/pages/UserList.jsx">
+      Features: Global user management, echelons (roles) assignment. Features search and role-based filtering via DropdownMenu.
+    </page>
+
+    <page name="SuperAdmin AuditLog" file="src/superadmin/pages/AuditLog.jsx">
+      Features: Platform-wide event auditing. Filters by region (org) and operation type via premium DropdownMenu.
+    </page>
+
+    <page name="SuperAdmin PlatformSettings" file="src/superadmin/pages/PlatformSettings.jsx">
+      Features: Global infrastructure configuration (branding, quotas, security matrix). Includes **Appearance settings** (Light/Dark/System) for platform customization. Uses premium rounded-[2.5rem] cards and high-blur backgrounds.
+    </page>
+
+  </pages>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- KEY SHARED COMPONENTS                                          -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <components>
+
+    <component name="CreateProjectForm" file="src/components/forms/CreateProjectForm.jsx">
+      Props: onSuccess(createdProject), onCancel()
+      Validation (frontend + backend):
+        - name: 3-100 chars, alphanumeric+spaces only, must NOT start with a number
+        - name must be unique per organization (case-insensitive, backend check)
+        - startDate required, endDate required, endDate > startDate
+        - budget non-negative (if provided)
+    </component>
+
+    <component name="CreateTaskForm" file="src/components/forms/CreateTaskForm.jsx">
+      Props: projects(array), users(array — filter out CLIENTs before passing),
+             onSuccess(), onCancel(), initialProjectId(string), task(object|null for edit mode)
+      <prop name="task" type="object" note="If provided, form enters Edit mode" />
+      <feature name="Dynamic Phase Loading">Phases are fetched based on selected Project</feature>
+      <feature name="Type Selector">Dropdown for TASK, BUG, STORY, EPIC, SUBTASK</feature>
+      Validation (frontend + backend):
+        - title: non-empty, alphanumeric+spaces, must NOT start with a number
+        - title must be unique per project (case-insensitive, backend check)
+        - phase required, at least 1 assignee, dueDate required, storyPoints 0-10
+    </component>
+
+    <component name="UserForm" file="src/components/forms/UserForm.jsx">
+      Used for inviting new users. Props: managers(array), onSuccess, onCancel.
+    </component>
+
+    <component name="ProjectOverview" file="src/components/ProjectOverview.jsx">
+      Full project overview in a Dialog. Prop: project(object).
+    </component>
+
+    <component name="MemberProgress" file="src/components/MemberProgress.jsx">
+      Per-member task statistics. Calls GET /users/:id/progress internally.
+    </component>
+
+    <component name="TimerWidget" file="src/components/TimerWidget.jsx">
+      Props: taskId(string), projectId(string), onSave(function)
+      Features: Floating start/stop timer. On save, creates a `WorkLog` entry 
+                with elapsed minutes and an optional comment.
+    </component>
+
+    <component name="WorkLogPanel" file="src/components/WorkLogPanel.jsx">
+      Props: projectId(string), taskId(string) — taskId is optional to show all project logs.
+      Features: Displays logs from the `WorkLog` model. Includes manual entry 
+                form for Date, Minutes, and Comment.
+    </component>
+
+    <component name="Chat" file="src/components/Chat.jsx">
+      Full chat UI. Manages rooms, message list, send input. Uses useChatStore.
+    </component>
+
+    <component name="ConfirmDialog" file="src/components/ConfirmDialog.jsx">
+      Props: open(bool), onOpenChange(fn), onConfirm(fn), title(str), description(str)
+    </component>
+
+    <component name="TablePagination" file="src/components/ui/table-pagination.jsx">
+      Props: page, totalPages, pageSize, totalItems, onPageChange, onPageSizeChange
+      Used in: ProjectsList, Tasks, Team, Timesheets, TicketList
+    </component>
+
+  </components>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- UI LIBRARY (src/components/ui/) — all shadcn/ui               -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <ui_components>
+    Import pattern: import { X } from '@/components/ui/x';
+
+    button.jsx           — Button. variants: default|destructive|outline|secondary|ghost|link
+    input.jsx            — Input
+    label.jsx            — Label
+    select.jsx           — Select, SelectContent, SelectItem, SelectTrigger, SelectValue
+    searchable-select.jsx — SearchableSelect
+                            props: options[{value,label}], value, onChange, placeholder,
+                                   searchPlaceholder, disabled
+                            Single-value searchable dropdown built on Command component.
+    multi-searchable-select.jsx — MultiSearchableSelect
+                            props: options[{value,label}], value(array), onChange, placeholder
+    dialog.jsx           — Dialog, DialogContent, DialogHeader, DialogTitle,
+                            DialogDescription, DialogTrigger
+    alert-dialog.jsx     — AlertDialog, AlertDialogAction, AlertDialogCancel,
+                            AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
+                            AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger
+    card.jsx             — Card, CardContent, CardHeader, CardTitle, CardDescription
+    table.jsx            — Table, TableBody, TableCell, TableHead, TableHeader, TableRow
+    badge.jsx            — Badge. variants: default|secondary|destructive|outline
+    avatar.jsx           — Avatar, AvatarFallback, AvatarImage
+    tabs.jsx             — Tabs, TabsContent, TabsList, TabsTrigger
+    date-picker.jsx      — DatePicker. props: date, setDate, placeholder, className
+    toast.jsx            — Toast components (use useToast hook to trigger, not directly)
+    toaster.jsx          — Toaster (rendered once in App.jsx)
+    progress.jsx         — Progress. props: value(0-100)
+    dropdown-menu.jsx    — DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+                            DropdownMenuTrigger, etc.
+    popover.jsx          — Popover, PopoverContent, PopoverTrigger
+    command.jsx          — Command, CommandEmpty, CommandGroup, CommandInput,
+                            CommandItem, CommandList (used inside SearchableSelect)
+    sheet.jsx            — Sheet (slide-in panel). SheetContent, SheetHeader, SheetTitle,
+                            SheetDescription, SheetTrigger
+    scroll-area.jsx      — ScrollArea
+    separator.jsx        — Separator
+    calendar.jsx         — Calendar (used inside DatePicker)
+    charts.jsx           — BarChart, PieChart, LineChart wrappers around recharts
+    RichTextEditor.jsx   — RichTextEditor. props: value, onChange, placeholder
+    table-pagination.jsx — TablePagination (custom, described above)
+    Modal.jsx            — Simple Dialog wrapper with standard layout
+  </ui_components>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- UTILITIES (src/lib/utils.js)                                   -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <utilities file="src/lib/utils.js">
+    cn(...classes)              — Tailwind class merger (clsx + twMerge). Use for conditional Tailwind.
+    formatDate(dateString)      — Returns 'N/A' for null. Formats to locale date string.
+    formatChatTimestamp(date)   — 'Today, HH:MM AM/PM' | 'Yesterday, ...' | date string.
+    formatCurrency(value)       — $1.2M | $1.2K | $N | '$0' for null/NaN.
+    priorityColors              — object: LOW|MEDIUM|HIGH|URGENT → Tailwind Badge class string
+    statusColors                — object: TODO|IN_PROGRESS|IN_REVIEW|COMPLETED|BLOCKED → Badge class string
+  </utilities>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- HOOKS                                                          -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <hooks>
+    useToast()  — src/hooks/use-toast.js
+      Returns: { toast }
+      Usage: toast({ title: "...", description: "...", variant: "default"|"destructive" })
+  </hooks>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- STYLING CONVENTIONS                                            -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <styling>
+    Primary color:     CSS var --primary (configured per org in Settings, default blue)
+    Dark mode:         class-based via ThemeProvider. storageKey: 'taskflow-theme'
+    Mobile utilities:  mobile-reduce-spacing, mobile-reduce-grid, mobile-reduce-input,
+                       mobile-reduce-label (defined in src/index.css)
+    
+    Premium Aesthetic (SuperAdmin Default):
+      Main Cards:       bg-white/40 dark:bg-black/40 border-border/40 backdrop-blur-3xl rounded-[2.5rem] shadow-2xl
+      Metric Cards:     rounded-3xl backdrop-blur-2xl shadow-xl
+      Primary Buttons:  h-14 rounded-2xl font-black uppercase tracking-[0.2em] shadow-lg shadow-primary/20
+      Inputs/Filters:   h-14 rounded-2xl bg-white/50 dark:bg-black/50 border-border/40 focus:ring-4 focus:ring-primary/10
+      Dropdowns:        bg-black/90 backdrop-blur-xl border-border/40 shadow-2xl rounded-2xl p-2 with orange (bg-orange-500) active state
+      Inner Shadows:    Applied to inputs/search bars via 'shadow-inner' for a high-fidelity embedded look.
+    
+    Filter bar look:   bg-secondary/40 border border-border/60 p-2 rounded-2xl (legacy) | Glassmorphic engine (new)
+    Page layout:       flex-1 flex flex-col h-full overflow-hidden (every page root)
+    Badge fonts:       class 'Montserrat font-bold' applied to status/priority badges
+    Kanban Borders:    Columns use `ring-2` with 60% opacity for high visibility. 
+                       Cards use `ring-border/80` for distinct separation.
+  </styling>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- HOW TO ADD A NEW PAGE (step by step)                          -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <how_to_add_new_page>
+    1. Create: src/pages/YourPage.jsx
+       Required imports:
+         import api from '@/lib/api';
+         import { useAuthStore } from '@/store/authStore';
+         import { useHeaderStore } from '@/store/headerStore';
+         import { useToast } from '@/hooks/use-toast';
+
+    2. Call setHeader in useEffect:
+         const { setHeader } = useHeaderStore();
+         useEffect(() => { setHeader("Page Title", "Subtitle"); }, [setHeader]);
+
+    3. Add route to src/App.jsx inside the Layout route:
+         import YourPage from './pages/YourPage';
+         ...
+         &lt;Route path="your-path" element={&lt;YourPage /&gt;} /&gt;
+
+    4. Add sidebar item to src/components/Layout.jsx with role restriction.
+
+    5. For paginated data use TablePagination:
+         import TablePagination from '@/components/ui/table-pagination';
+         &lt;TablePagination page={page} totalPages={totalPages} pageSize={pageSize}
+           totalItems={totalItems} onPageChange={setPage} onPageSizeChange={setPageSize} /&gt;
+
+    6. For role-based UI:
+         const { user } = useAuthStore();
+         if (user?.role === 'ADMIN') { ... }
+
+    7. For error/success messages:
+         const { toast } = useToast();
+         toast({ title: "Success", description: "Done!" });
+         toast({ title: "Error", description: "msg", variant: "destructive" });
+  </how_to_add_new_page>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- COMPLETE FILE TREE                                             -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <file_tree root="frontend/src">
+    App.jsx                                  — Root routes + auth init
+    main.jsx                                 — React.createRoot mount
+    index.css                                — Global styles, custom utilities
+
+    store/
+      authStore.js                           — Auth state (Zustand)
+      chatStore.js                           — Socket.IO + unread counts (Zustand)
+      headerStore.js                         — Page header title/subtitle (Zustand)
+
+    lib/
+      api.js                                 — Axios singleton with auth interceptors
+      utils.js                               — cn, formatDate, formatCurrency, priorityColors, statusColors
+      encryption.js                          — Client-side encryption utilities (if any)
+
+    hooks/
+      use-toast.js                           — useToast() hook
+
+    pages/
+      Dashboard.jsx
+      Performance.jsx
+      ProjectsList.jsx
+      ProjectView.jsx
+      KanbanBoard.jsx
+      TaskKanban.jsx
+      Tasks.jsx
+      Team.jsx
+      Settings.jsx
+      Timesheets.jsx
+      ChatPage.jsx
+      PendingApproval.jsx
+      PendingUsers.jsx
+      Kanban.jsx                             — Legacy or alternate kanban view
+      tickets/
+        TicketList.jsx
+        SubmitTicket.jsx
+        TicketDetail.jsx
+      organization/
+        OrganizationSettings.jsx
+
+    superadmin/
+      components/
+        SuperAdminLayout.jsx
+      pages/
+        Dashboard.jsx
+        OrgList.jsx
+        UserList.jsx
+        AuditLog.jsx
+        PlatformSettings.jsx
+
+    components/
+      Layout.jsx                             — App shell (sidebar, nav, header, Outlet)
+      Chat.jsx                               — Full chat feature component
+      MemberProgress.jsx                     — Member task stats
+      TimerWidget.jsx                        — Task timer component start/stop
+      WorkLogPanel.jsx                       — Task time logging panel
+      ProjectOverview.jsx                    — Project detail view in dialog
+      ConfirmDialog.jsx                      — Reusable confirm/delete dialog
+      RoleBasedRedirect.jsx                  — Redirect by role after login
+      ThemeProvider.jsx                      — Dark/light mode context
+      PageShell.jsx                          — Simple page wrapper
+      forms/
+        CreateProjectForm.jsx
+        CreateTaskForm.jsx
+        UserForm.jsx
+        auth/
+          Login.jsx
+          Signup.jsx
+          ForgotPassword.jsx
+          ResetPassword.jsx
+          ChangePassword.jsx
+      kanban/
+        KanbanBoard.jsx                      — Kanban column layout
+        KanbanColumn.jsx                     — Single column
+        KanbanCard.jsx                       — Single task card
+      ui/
+        button.jsx
+        input.jsx
+        label.jsx
+        select.jsx
+        searchable-select.jsx
+        multi-searchable-select.jsx
+        dialog.jsx
+        alert-dialog.jsx
+        card.jsx
+        table.jsx
+        badge.jsx
+        avatar.jsx
+        tabs.jsx
+        date-picker.jsx
+        calendar.jsx
+        toast.jsx
+        toaster.jsx
+        progress.jsx
+        dropdown-menu.jsx
+        popover.jsx
+        command.jsx
+        sheet.jsx
+        scroll-area.jsx
+        separator.jsx
+        skeleton.jsx
+        charts.jsx
+        RichTextEditor.jsx
+        table-pagination.jsx
+        Modal.jsx
+        textarea.jsx
+  </file_tree>
+
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <!-- RECENT ARCHITECTURAL UPDATES                                     -->
+  <!-- ─────────────────────────────────────────────────────────────── -->
+  <recent_updates>
+    <update date="2026-03-24" component="UpgradePlanModal & Glassmorphism">
+      Integrated a high-fidelity glassmorphic `UpgradePlanModal` triggered when users
+      attempt to exceed trial resource limits (e.g., max projects / max users).
+      Maintains premium aesthetic guidelines inside `lib/utils` and Tailwind classes.
+    </update>
+    <update date="2026-03-24" component="System Ledger (Audit Filters)">
+      Fixed filtering logic inside `AuditFilters.jsx` to accurately display `INVITED` and `APPROVED` 
+      actions (from org member addition flow). Prevented SearchableSelect toggle deselection glitch.
+    </update>
+    <update date="2026-03-26" component="Super Admin & Signup Enhancements">
+      Added platform-level **Appearance settings** (Light/Dark/System) to the Super Admin dashboard.
+      Refactored the **Signup page** to use premium Shadcn `Select` components for a better UX.
+      Removed redundant Organisation sidebar links; consolidated into the Account dropdown. 
+      Updated `SuperAdminLayout` for theme-aware dropdown visibility (bg-background/95).
+    </update>
+  </recent_updates>
+
+</frontend_architecture>
