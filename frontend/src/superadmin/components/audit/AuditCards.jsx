@@ -3,7 +3,7 @@ import { Building2 } from 'lucide-react';
 
 const AuditCards = ({ logs, getActionIcon, getStatusBadge, getSeverity }) => {
  return (
- <div className="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-6">
+  <div className="sm:hidden grid grid-cols-1 md:grid-cols-2 gap-6">
  {logs.map((log, i) => (
  <Card key={log.id || i} className="rounded-xl border-border/40 shadow-xl bg-white/50 dark:bg-black/40 backdrop-blur-xl p-6 relative overflow-hidden group">
  <div className="flex justify-between items-start mb-6">

@@ -242,6 +242,8 @@ const OrgList = () => {
                   getStatusBadge={getStatusBadge}
                   getPlanBadge={getPlanBadge}
                   onEdit={handleEdit}
+                  onSuspend={quickSuspend}
+                  onApprove={approvePending}
                   onDelete={deleteOrg}
                 />
 

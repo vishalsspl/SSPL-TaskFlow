@@ -145,22 +145,22 @@ const SuperAdminBilling = () => {
       {/* ── Main Billing Table ────────────────────────────────────────── */}
       <Card className="rounded-[2.5rem] border-border/40 shadow-2xl bg-white/40 dark:bg-black/40 backdrop-blur-3xl overflow-hidden">
         <CardHeader className="p-8 pb-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="space-y-1">
               <CardTitle className="text-xl font-black tracking-tight">All Invoices</CardTitle>
               <CardDescription className="text-[10px] font-bold tracking-widest uppercase opacity-60">Payment records for all organizations</CardDescription>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="relative group">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div className="relative group flex-1 sm:flex-initial">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50 transition-colors group-focus-within:text-primary" />
                 <Input
                   placeholder="Search org or description..."
-                  className="pl-10 h-11 w-64 rounded-xl border-border/40 bg-background/50 focus:ring-4 focus:ring-primary/10 transition-all font-bold text-xs"
+                  className="pl-10 h-11 w-full sm:w-64 rounded-xl border-border/40 bg-background/50 focus:ring-4 focus:ring-primary/10 transition-all font-bold text-xs"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <Button className="h-11 px-6 rounded-xl bg-primary text-white font-bold text-[10px] tracking-widest uppercase shadow-lg shadow-primary/20 gap-2">
+              <Button className="h-11 px-6 rounded-xl bg-primary text-white font-bold text-[10px] tracking-widest uppercase shadow-lg shadow-primary/20 gap-2 w-full sm:w-auto">
                 <Plus className="w-4 h-4" /> Generate Invoice
               </Button>
             </div>
@@ -185,10 +185,10 @@ const SuperAdminBilling = () => {
             <Table>
               <TableHeader>
                 <TableRow className="border-border/60 hover:bg-transparent bg-muted/30">
-                  <TableHead className="px-8 h-14 text-[10px] font-black tracking-widest uppercase text-foreground/70">Invoice ID</TableHead>
+                  <TableHead className="hidden lg:table-cell px-8 h-14 text-[10px] font-black tracking-widest uppercase text-foreground/70">Invoice ID</TableHead>
                   <TableHead className="h-14 text-[10px] font-black tracking-widest uppercase text-foreground/70">Source & Organization</TableHead>
                   <TableHead className="h-14 text-[10px] font-black tracking-widest uppercase text-foreground/70">Billing Details</TableHead>
-                  <TableHead className="h-14 text-[10px] font-black tracking-widest uppercase text-foreground/70">Billing Date</TableHead>
+                  <TableHead className="hidden sm:table-cell h-14 text-[10px] font-black tracking-widest uppercase text-foreground/70">Billing Date</TableHead>
                   <TableHead className="h-14 text-[10px] font-black tracking-widest uppercase text-foreground/70">Payment Status</TableHead>
                   <TableHead className="text-right px-8 h-14 text-[10px] font-black tracking-widest uppercase text-foreground/70">Actions</TableHead>
                 </TableRow>
@@ -211,7 +211,7 @@ const SuperAdminBilling = () => {
                   </TableRow>
                 ) : filteredInvoices.map((invoice) => (
                   <TableRow key={invoice.id} className="border-b border-border/20 hover:bg-primary/[0.04] transition-all group duration-300">
-                    <TableCell className="px-8 py-6">
+                    <TableCell className="hidden lg:table-cell px-8 py-6">
                       <div className="flex flex-col gap-1">
                         <span className="font-mono text-[10px] font-black text-primary/70 tracking-tighter bg-primary/5 px-2 py-1 rounded-md w-fit">
                           #{invoice.id.slice(0, 8).toUpperCase()}
@@ -221,7 +221,7 @@ const SuperAdminBilling = () => {
                     <TableCell className="py-6">
                       <div className="flex flex-col">
                         <span className="text-sm font-black text-foreground">{invoice.organization.name}</span>
-                        <span className="text-[10px] text-muted-foreground/60 font-bold tracking-tight">{invoice.organization.billingEmail}</span>
+                        <span className="text-[10px] text-muted-foreground/60 font-bold tracking-tight truncate max-w-[120px]">{invoice.organization.billingEmail}</span>
                       </div>
                     </TableCell>
                     <TableCell className="py-6">
@@ -234,7 +234,7 @@ const SuperAdminBilling = () => {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="py-6">
+                    <TableCell className="hidden sm:table-cell py-6">
                       <div className="flex flex-col gap-0.5">
                         <span className="text-[10px] font-black text-foreground uppercase tracking-wider">{format(new Date(invoice.invoiceDate), 'MMM dd, yyyy')}</span>
                         {invoice.dueDate && (

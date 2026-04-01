@@ -228,10 +228,10 @@ const PlansAndLimits = () => {
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-24 px-4 sm:px-0">
       {/* Tab Switcher */}
-      <div className="flex items-center gap-2 bg-secondary/40 p-1.5 rounded-2xl w-fit backdrop-blur-sm" style={{ border: '1px solid var(--table-border)' }}>
+      <div className="flex items-center gap-2 bg-secondary/40 p-1.5 rounded-2xl w-full sm:w-fit overflow-x-auto no-scrollbar backdrop-blur-sm" style={{ border: '1px solid var(--table-border)' }}>
         <button
           onClick={() => setActiveTab('limits')}
-          className={`px-6 py-3 rounded-xl text-xs font-bold tracking-widest uppercase transition-all duration-300 ${
+          className={`flex-1 sm:flex-none px-4 sm:px-6 py-3 rounded-xl text-[10px] sm:text-xs font-bold tracking-widest uppercase transition-all duration-300 whitespace-nowrap ${
             activeTab === 'limits'
               ? 'bg-primary text-white shadow-lg shadow-primary/20'
               : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
@@ -241,7 +241,7 @@ const PlansAndLimits = () => {
         </button>
         <button
           onClick={() => setActiveTab('features')}
-          className={`px-6 py-3 rounded-xl text-xs font-bold tracking-widest uppercase transition-all duration-300 ${
+          className={`flex-1 sm:flex-none px-4 sm:px-6 py-3 rounded-xl text-[10px] sm:text-xs font-bold tracking-widest uppercase transition-all duration-300 whitespace-nowrap ${
             activeTab === 'features'
               ? 'bg-primary text-white shadow-lg shadow-primary/20'
               : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
@@ -251,7 +251,7 @@ const PlansAndLimits = () => {
         </button>
         <button
           onClick={() => setActiveTab('organizations')}
-          className={`px-6 py-3 rounded-xl text-xs font-bold tracking-widest uppercase transition-all duration-300 ${
+          className={`flex-1 sm:flex-none px-4 sm:px-6 py-3 rounded-xl text-[10px] sm:text-xs font-bold tracking-widest uppercase transition-all duration-300 whitespace-nowrap ${
             activeTab === 'organizations'
               ? 'bg-primary text-white shadow-lg shadow-primary/20'
               : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
@@ -382,63 +382,65 @@ const PlansAndLimits = () => {
               </div>
             </CardHeader>
             <Separator className="bg-border/10" />
-            <CardContent className="p-0">
-              {/* Table Header */}
-              <div className="grid grid-cols-[1fr_120px_120px_120px] items-center px-8 py-5 border-b border-border/10 bg-muted/20">
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Feature</span>
-                {PLAN_CONFIG.map(plan => (
-                  <div key={plan.key} className="text-center">
-                    <Badge className={`${plan.bgClass} ${plan.textClass} border text-[9px] font-black tracking-widest uppercase px-3 py-1`}>
-                      {plan.label}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-
-              {/* Feature Rows */}
-              {FEATURES.map((feature, idx) => {
-                const FeatureIcon = feature.icon;
-                return (
-                  <div
-                    key={feature.key}
-                    className={`grid grid-cols-[1fr_120px_120px_120px] items-center px-8 py-5 transition-colors hover:bg-primary/[0.02] ${
-                      idx < FEATURES.length - 1 ? 'border-b border-border/10' : ''
-                    }`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-center shrink-0">
-                        <FeatureIcon className="w-5 h-5 text-primary/60" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-foreground">{feature.label}</p>
-                        <p className="text-[11px] text-muted-foreground font-medium">{feature.description}</p>
-                      </div>
+            <CardContent className="p-0 overflow-x-auto no-scrollbar">
+              <div className="min-w-[800px]">
+                {/* Table Header */}
+                <div className="grid grid-cols-[1fr_120px_120px_120px] items-center px-8 py-5 border-b border-border/10 bg-muted/20">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Feature</span>
+                  {PLAN_CONFIG.map(plan => (
+                    <div key={plan.key} className="text-center">
+                      <Badge className={`${plan.bgClass} ${plan.textClass} border text-[9px] font-black tracking-widest uppercase px-3 py-1`}>
+                        {plan.label}
+                      </Badge>
                     </div>
-                    {PLAN_CONFIG.map(plan => {
-                      const features = getFeatures(plan.key);
-                      const isOn = features[feature.key] ?? false;
-                      return (
-                        <div key={plan.key} className="flex justify-center">
-                          <button
-                            onClick={() => toggleFeature(plan.key, feature.key)}
-                            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${
-                              isOn
-                                ? `${plan.bgClass} border shadow-sm`
-                                : 'bg-muted/30 border border-border/20 opacity-40 hover:opacity-70'
-                            }`}
-                          >
-                            {isOn ? (
-                              <Check className={`w-5 h-5 ${plan.textClass}`} />
-                            ) : (
-                              <X className="w-4 h-4 text-muted-foreground" />
-                            )}
-                          </button>
+                  ))}
+                </div>
+
+                {/* Feature Rows */}
+                {FEATURES.map((feature, idx) => {
+                  const FeatureIcon = feature.icon;
+                  return (
+                    <div
+                      key={feature.key}
+                      className={`grid grid-cols-[1fr_120px_120px_120px] items-center px-8 py-5 transition-colors hover:bg-primary/[0.02] ${
+                        idx < FEATURES.length - 1 ? 'border-b border-border/10' : ''
+                      }`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-center shrink-0">
+                          <FeatureIcon className="w-5 h-5 text-primary/60" />
                         </div>
-                      );
-                    })}
-                  </div>
-                );
-              })}
+                        <div>
+                          <p className="text-sm font-bold text-foreground">{feature.label}</p>
+                          <p className="text-[11px] text-muted-foreground font-medium">{feature.description}</p>
+                        </div>
+                      </div>
+                      {PLAN_CONFIG.map(plan => {
+                        const features = getFeatures(plan.key);
+                        const isOn = features[feature.key] ?? false;
+                        return (
+                          <div key={plan.key} className="flex justify-center">
+                            <button
+                              onClick={() => toggleFeature(plan.key, feature.key)}
+                              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                                isOn
+                                  ? `${plan.bgClass} border shadow-sm`
+                                  : 'bg-muted/30 border border-border/20 opacity-40 hover:opacity-70'
+                              }`}
+                            >
+                              {isOn ? (
+                                <Check className={`w-5 h-5 ${plan.textClass}`} />
+                              ) : (
+                                <X className="w-4 h-4 text-muted-foreground" />
+                              )}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
             </CardContent>
           </Card>
 
@@ -534,78 +536,80 @@ const PlansAndLimits = () => {
               </div>
             </CardHeader>
             <Separator className="bg-border/10" />
-            <CardContent className="p-0">
-              {/* Table Header */}
-              <div className="grid grid-cols-[2fr_1fr_1fr_auto] items-center px-8 py-5 border-b border-border/10 bg-muted/20">
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Organization</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Plan</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground text-center">Custom Overrides</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground text-right">Action</span>
-              </div>
-              
-              {loadingOrgs ? (
-                <div className="p-16 flex items-center justify-center">
-                  <div className="w-8 h-8 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+            <CardContent className="p-0 overflow-x-auto no-scrollbar">
+              <div className="min-w-[700px]">
+                {/* Table Header */}
+                <div className="grid grid-cols-[2fr_1fr_1fr_auto] items-center px-8 py-5 border-b border-border/10 bg-muted/20">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Organization</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Plan</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground text-center">Custom Overrides</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground text-right">Action</span>
                 </div>
-              ) : orgs.length === 0 ? (
-                <div className="p-16 text-center text-muted-foreground font-bold text-sm">No organizations found.</div>
-              ) : (
-                orgs.map((org, idx) => {
-                  const overrides = org.customFeatures || org.custom_features || {};
-                  const hasOverrides = Object.keys(overrides).length > 0;
-                  const planConfig = PLAN_CONFIG.find(p => p.key === org.plan?.toLowerCase()) || PLAN_CONFIG[0];
-                  
-                  return (
-                    <div
-                      key={org.id}
-                      className={`grid grid-cols-[2fr_1fr_1fr_auto] items-center px-8 py-5 transition-colors hover:bg-primary/[0.02] ${
-                        idx < orgs.length - 1 ? 'border-b border-border/10' : ''
-                      }`}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-muted/40 flex items-center justify-center shrink-0 border border-border/30">
-                          {org.logoUrl ? (
-                             <img src={org.logoUrl} alt={org.name} className="w-6 h-6 object-contain" />
+                
+                {loadingOrgs ? (
+                  <div className="p-16 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+                  </div>
+                ) : orgs.length === 0 ? (
+                  <div className="p-16 text-center text-muted-foreground font-bold text-sm">No organizations found.</div>
+                ) : (
+                  orgs.map((org, idx) => {
+                    const overrides = org.customFeatures || org.custom_features || {};
+                    const hasOverrides = Object.keys(overrides).length > 0;
+                    const planConfig = PLAN_CONFIG.find(p => p.key === org.plan?.toLowerCase()) || PLAN_CONFIG[0];
+                    
+                    return (
+                      <div
+                        key={org.id}
+                        className={`grid grid-cols-[2fr_1fr_1fr_auto] items-center px-8 py-5 transition-colors hover:bg-primary/[0.02] ${
+                          idx < orgs.length - 1 ? 'border-b border-border/10' : ''
+                        }`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-muted/40 flex items-center justify-center shrink-0 border border-border/30">
+                            {org.logoUrl ? (
+                               <img src={org.logoUrl} alt={org.name} className="w-6 h-6 object-contain" />
+                            ) : (
+                               <span className="font-black text-sm text-foreground/50">{org.name.slice(0, 2).toUpperCase()}</span>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-foreground">{org.name}</p>
+                            <p className="text-[11px] text-muted-foreground font-medium">{org._count?.users || 0} Users</p>
+                          </div>
+                        </div>
+                        
+                        <div>
+                           <Badge className={`${planConfig.bgClass} ${planConfig.textClass} border text-[9px] font-black tracking-widest uppercase px-3 py-1`}>
+                             {org.plan}
+                           </Badge>
+                        </div>
+                        
+                        <div className="text-center">
+                          {hasOverrides ? (
+                             <Badge variant="outline" className="border-primary text-primary bg-primary/5 text-[9px] font-black uppercase tracking-widest px-2 py-0.5">
+                                Customized
+                             </Badge>
                           ) : (
-                             <span className="font-black text-sm text-foreground/50">{org.name.slice(0, 2).toUpperCase()}</span>
+                             <span className="text-xs text-muted-foreground/60 font-bold">-</span>
                           )}
                         </div>
-                        <div>
-                          <p className="text-sm font-bold text-foreground">{org.name}</p>
-                          <p className="text-[11px] text-muted-foreground font-medium">{org._count?.users || 0} Users</p>
+                        
+                        <div className="text-right">
+                          <Button 
+                             variant="outline" 
+                             size="sm" 
+                             onClick={() => openOrgOverrides(org)}
+                             className="h-9 px-4 rounded-xl text-[10px] font-bold tracking-widest uppercase hover:bg-primary hover:text-white transition-all shadow-sm"
+                          >
+                             Manage Access
+                          </Button>
                         </div>
                       </div>
-                      
-                      <div>
-                         <Badge className={`${planConfig.bgClass} ${planConfig.textClass} border text-[9px] font-black tracking-widest uppercase px-3 py-1`}>
-                           {org.plan}
-                         </Badge>
-                      </div>
-                      
-                      <div className="text-center">
-                        {hasOverrides ? (
-                           <Badge variant="outline" className="border-primary text-primary bg-primary/5 text-[9px] font-black uppercase tracking-widest px-2 py-0.5">
-                              Customized
-                           </Badge>
-                        ) : (
-                           <span className="text-xs text-muted-foreground/60 font-bold">-</span>
-                        )}
-                      </div>
-                      
-                      <div className="text-right">
-                        <Button 
-                           variant="outline" 
-                           size="sm" 
-                           onClick={() => openOrgOverrides(org)}
-                           className="h-9 px-4 rounded-xl text-[10px] font-bold tracking-widest uppercase hover:bg-primary hover:text-white transition-all shadow-sm"
-                        >
-                           Manage Access
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
+                    );
+                  })
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>

@@ -11,7 +11,7 @@ const AuditTable = ({ logs, getActionIcon, getStatusBadge, getSeverity, onOrgFil
     '#8B5CF6', '#0EA5E9', '#10B981', '#F59E0B', '#F43F5E', '#F97316', '#D946EF'
   ];
   return (
-    <div className="overflow-x-auto w-full">
+     <div className="hidden sm:block overflow-x-auto w-full">
       <Table>
  <TableHeader>
  <TableRow>
