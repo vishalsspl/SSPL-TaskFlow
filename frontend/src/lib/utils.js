@@ -31,13 +31,13 @@ export function formatChatTimestamp(dateString) {
 }
 
 export const formatCurrency = (value) => {
-  if (value === null || value === undefined) return "$0";
+  if (value === null || value === undefined) return "₹0";
   const numValue = Number(value);
-  if (isNaN(numValue)) return "$0";
+  if (isNaN(numValue)) return "₹0";
 
-  if (numValue >= 1_000_000) return `$${(numValue / 1_000_000).toFixed(1)}M`;
-  if (numValue >= 1_000) return `$${(numValue / 1_000).toFixed(1)}K`;
-  return `$${numValue.toLocaleString()}`;
+  if (numValue >= 1_000_000) return `₹${(numValue / 1_000_000).toFixed(1)}M`;
+  if (numValue >= 1_000) return `₹${(numValue / 1_000).toFixed(1)}K`;
+  return `₹${numValue.toLocaleString()}`;
 };
 
 export const priorityColors = {

@@ -138,8 +138,17 @@ const OrganizationSettings = () => {
       {/* Branding & Essentials */}
       <Card className="border-border/40 shadow-sm overflow-hidden bg-white/50 dark:bg-black/20 backdrop-blur-sm">
         <CardHeader className="pb-4">
-          <CardTitle className="text-lg">Company Identity</CardTitle>
-          <CardDescription className="text-xs">Your public profile info as seen by team members and clients</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-lg">Company Identity</CardTitle>
+              <CardDescription className="text-xs">Your public profile info as seen by team members and clients</CardDescription>
+            </div>
+            {user?.organization?.activeFeatures?.branding === false && (
+              <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/20 px-3 py-1 text-[10px] uppercase font-black tracking-widest animate-pulse">
+                Upgrade for Branding
+              </Badge>
+            )}
+          </div>
         </CardHeader>
         <Separator className="bg-border/40" />
         <CardContent className="pt-6 space-y-8">
@@ -153,8 +162,22 @@ const OrganizationSettings = () => {
                 onChange={handleLogoUpload}
               />
               <div 
-                className="w-32 h-32 rounded-2xl bg-accent flex items-center justify-center border-2 border-dashed border-border/60 hover:border-primary/40 transition-colors cursor-pointer group relative overflow-hidden"
-                onClick={() => logoInputRef.current?.click()}
+                className={`w-32 h-32 rounded-2xl flex items-center justify-center border-2 border-dashed transition-all relative overflow-hidden group ${
+                  user?.organization?.activeFeatures?.branding === false 
+                    ? 'bg-muted/20 border-border/40 cursor-not-allowed opacity-60' 
+                    : 'bg-accent border-border/60 hover:border-primary/40 cursor-pointer'
+                }`}
+                onClick={() => {
+                  if (user?.organization?.activeFeatures?.branding === false) {
+                    toast({
+                      title: "Feature Locked",
+                      description: "Custom branding is only available on Pro and Enterprise plans.",
+                      variant: "destructive"
+                    });
+                    return;
+                  }
+                  logoInputRef.current?.click();
+                }}
               >
                 {user?.organization?.logoUrl ? (
                   <img src={user.organization.logoUrl} alt="Logo" className="w-full h-full object-contain p-4" />

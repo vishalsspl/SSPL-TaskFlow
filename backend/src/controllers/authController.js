@@ -4,6 +4,36 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { sendMemberInvitationEmail, sendPasswordResetEmail, sendOrgSignupEmail } from '../services/emailService.js';
 
+// ── Helper: Resolve Active Features (Single Source of Truth) ──────────────────
+const getActiveFeatures = async (org) => {
+  if (!org) return {};
+  
+  // 1. Check for a "Master List" override (Organization-level customization)
+  if (org.customFeatures && typeof org.customFeatures === 'object' && Object.keys(org.customFeatures).length > 0) {
+    return org.customFeatures;
+  }
+
+  // 2. FALLBACK: Baseline hardcoded defaults to prevent total loss of access if DB settings are missing
+  const baselines = {
+    free: { projects: true, tasks: true, team: false, chat: false, tickets: false, branding: false, kanban: false, timesheets: false, performance: false },
+    starter: { projects: true, tasks: true, team: true, chat: false, tickets: false, branding: false, kanban: true, timesheets: false, performance: false },
+    pro: { projects: true, tasks: true, team: true, chat: true, tickets: false, branding: true, kanban: true, timesheets: true, performance: true },
+    enterprise: { projects: true, tasks: true, team: true, chat: true, tickets: true, branding: true, kanban: true, timesheets: true, performance: true }
+  };
+
+  const planKey = org.plan.toLowerCase(); // 'starter', 'pro', 'enterprise'
+  
+  // 3. Try to fetch plan defaults from Database settings
+  const defaultFeaturesSetting = await prisma.platformSetting.findUnique({
+    where: { key: `${planKey}_features` }
+  });
+  
+  // Choose Source: 1. DB, 2. Hardcoded Baseline, 3. Empty Object
+  return defaultFeaturesSetting 
+    ? JSON.parse(defaultFeaturesSetting.value) 
+    : (baselines[planKey] || {});
+};
+
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -41,7 +71,17 @@ export const login = async (req, res) => {
     { expiresIn: '7d' }
   );
 
+  const activeFeatures = await getActiveFeatures(user.organization);
   const { passwordHash, ...userWithoutPassword } = user;
+  
+  if (userWithoutPassword.organization) {
+    userWithoutPassword.organization = { 
+      ...userWithoutPassword.organization, 
+      activeFeatures 
+    };
+    userWithoutPassword.activeFeatures = activeFeatures;
+    userWithoutPassword.permissionsTimestamp = Date.now();
+  }
 
   res.json({ token, user: userWithoutPassword });
 };
@@ -320,7 +360,18 @@ export const changePassword = async (req, res) => {
 
 // ── me ─────────────────────────────────────────────────────────────────────
 export const me = async (req, res) => {
+  const activeFeatures = await getActiveFeatures(req.user.organization);
   const { passwordHash, ...userWithoutPassword } = req.user;
+  
+  if (userWithoutPassword.organization) {
+    userWithoutPassword.organization = { 
+      ...userWithoutPassword.organization, 
+      activeFeatures 
+    };
+    userWithoutPassword.activeFeatures = activeFeatures;
+    userWithoutPassword.permissionsTimestamp = Date.now();
+  }
+  
   res.json(userWithoutPassword);
 };
 

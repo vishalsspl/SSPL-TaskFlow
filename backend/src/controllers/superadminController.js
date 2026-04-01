@@ -129,6 +129,8 @@ export const getOrganizations = async (req, res) => {
             },
             orderBy: { createdAt: 'desc' }
         });
+        
+        // Ensure every org has customFeatures returned correctly
         res.json(orgs);
     } catch (error) {
         console.error('Error fetching organizations:', error);

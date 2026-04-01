@@ -43,7 +43,8 @@ async function main() {
   await prisma.project.deleteMany();
   await prisma.user.deleteMany();
   await prisma.organization.deleteMany();
-  console.log('✅ Cleared existing data');
+  await prisma.platformSetting.deleteMany();
+  console.log('✅ Cleared existing data and platform settings');
 
   // ── Passwords ─────────────────────────────────────────────────────────
   const h = (pw) => bcrypt.hash(pw, 10);
@@ -68,6 +69,28 @@ async function main() {
     },
   });
   console.log('✅ Created superadmin:', superAdmin.email);
+
+  // ── Platform Settings (Prices & Limits) ───────────────────────────────
+  const settingsData = [
+    { key: 'starter_per_user_price', value: '5000' },
+    { key: 'pro_per_user_price', value: '15000' },
+    { key: 'starter_max_users', value: '30' },
+    { key: 'starter_max_projects', value: '5' },
+    { key: 'pro_max_users', value: '100' },
+    { key: 'pro_max_projects', value: '50' },
+    { key: 'enterprise_max_users', value: '1000' },
+    { key: 'enterprise_max_projects', value: '500' },
+    { key: 'enterprise_price', value: 'Custom' },
+    { key: 'annual_discount_percent', value: '17' },
+    { key: 'defaultTrialDays', value: '14' },
+    { key: 'free_features', value: JSON.stringify({ projects: true, kanban: false, tasks: true, team: false, timesheets: false, performance: false, chat: false, tickets: false, branding: false }) },
+    { key: 'starter_features', value: JSON.stringify({ projects: true, kanban: true, tasks: true, team: true, timesheets: false, performance: false, chat: false, tickets: false, branding: false }) },
+    { key: 'pro_features', value: JSON.stringify({ projects: true, kanban: true, tasks: true, team: true, timesheets: true, performance: true, chat: true, tickets: false, branding: true }) },
+    { key: 'enterprise_features', value: JSON.stringify({ projects: true, kanban: true, tasks: true, team: true, timesheets: true, performance: true, chat: true, tickets: true, branding: true }) },
+  ];
+
+  await prisma.platformSetting.createMany({ data: settingsData });
+  console.log('✅ Initialized platform settings with new ₹5000/₹15000 pricing');
 
   const trialEnd = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
 
@@ -520,7 +543,10 @@ async function main() {
   // ══════════════════════════════════════════════════════════════════════
   const orgs = [org1, org2, org4]; // org3 is suspended, maybe no recent invoice?
   for (const org of orgs) {
-    const amount = org.plan === 'PRO' ? 49.00 : (org.plan === 'STARTER' ? 19.00 : 0.00);
+    // With new Per User Pricing model:
+    // PRO: ₹15000/user. Let's assume ~15 users -> 225000.00
+    // STARTER: ₹5000/user. Let's assume ~3 users -> 15000.00
+    const amount = org.plan === 'PRO' ? 225000.00 : (org.plan === 'STARTER' ? 15000.00 : 0.00);
     if (amount > 0) {
       await prisma.invoice.create({
         data: {

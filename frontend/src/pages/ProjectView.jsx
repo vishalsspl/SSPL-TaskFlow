@@ -285,10 +285,9 @@ const ProjectView = () => {
 
           <div class="section">
             <h2>5. Budget Summary</h2>
-            <div class="grid">
               <div class="info-item">
                 <div class="label">Total Budget</div>
-                <div class="value">$${project.totalBudget || '0.00'}</div>
+                <div class="value">₹${project.totalBudget || '0.00'}</div>
               </div>
               <div class="info-item">
                 <div class="label">Status</div>

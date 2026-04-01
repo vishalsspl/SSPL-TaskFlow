@@ -32,19 +32,19 @@ import api from '@/lib/api';
 
 // All features that can be toggled on/off per plan
 const FEATURES = [
-  { key: 'kanban', label: 'Kanban Board', description: 'Drag-and-drop task boards', icon: FolderKanban },
-  { key: 'timeTracking', label: 'Time Tracking', description: 'Log hours and track time on tasks', icon: Timer },
-  { key: 'teamChat', label: 'Team Chat', description: 'Real-time messaging between team members', icon: MessageSquare },
-  { key: 'performance', label: 'Performance Reports', description: 'Team and individual performance analytics', icon: BarChart3 },
-  { key: 'tickets', label: 'Support Tickets', description: 'Client-facing ticket system', icon: Ticket },
-  { key: 'timesheets', label: 'Timesheets', description: 'Weekly/monthly timesheet reports', icon: FileText },
-  { key: 'fileStorage', label: 'File Storage', description: 'Upload and share files in projects', icon: Cloud },
-  { key: 'advancedRoles', label: 'Advanced Roles', description: 'Custom roles beyond Admin/Member', icon: Shield },
-  { key: 'prioritySupport', label: 'Priority Support', description: 'Faster response times from support team', icon: Headphones },
-  { key: 'customBranding', label: 'Custom Branding', description: 'Custom logo and theme colors', icon: Building2 },
+  { key: 'projects', label: 'Project Management', description: 'Create and manage multiple project workspaces', icon: FolderKanban },
+  { key: 'kanban', label: 'Kanban Boards', description: 'Visual drag-and-drop task management', icon: Rocket },
+  { key: 'tasks', label: 'Task Tracking', description: 'Personal and team task tracking', icon: Check },
+  { key: 'team', label: 'Team Management', description: 'User roles, invitations, and member control', icon: Users },
+  { key: 'timesheets', label: 'Time Tracking', description: 'Log work hours and generate timesheet reports', icon: Timer },
+  { key: 'performance', label: 'Performance Analytics', description: 'Team productivity and performance metrics', icon: BarChart3 },
+  { key: 'chat', label: 'Team Chat', description: 'Real-time collaboration and messaging', icon: MessageSquare },
+  { key: 'tickets', label: 'Support Helpdesk', description: 'Ticketing system for client support requests', icon: Ticket },
+  { key: 'branding', label: 'Custom Branding', description: 'Organization logo and theme customization', icon: Building2 },
 ];
 
 const PLAN_CONFIG = [
+  { key: 'free', label: 'Free', color: 'slate-500', icon: Building2, bgClass: 'bg-slate-500/5 border-slate-500/10', textClass: 'text-slate-500' },
   { key: 'starter', label: 'Starter', color: 'primary', icon: Zap, bgClass: 'bg-primary/5 border-primary/10', textClass: 'text-primary' },
   { key: 'pro', label: 'Pro', color: 'blue-500', icon: Rocket, bgClass: 'bg-blue-500/5 border-blue-500/10', textClass: 'text-blue-500' },
   { key: 'enterprise', label: 'Enterprise', color: 'purple-500', icon: Crown, bgClass: 'bg-purple-500/5 border-purple-500/10', textClass: 'text-purple-500' },
@@ -68,32 +68,33 @@ const PlansAndLimits = () => {
     // Starter
     starter_max_users: '30',
     starter_max_projects: '5',
-    starter_price: '₹19',
-    starter_per_user_price: '400',
+    starter_price: '19',
+    starter_per_user_price: '5000',
     // Pro
     pro_max_users: '100',
     pro_max_projects: '50',
-    pro_price: '₹49',
-    pro_per_user_price: '900',
+    pro_price: '49',
+    pro_per_user_price: '15000',
     // Enterprise
     enterprise_max_users: '1000',
     enterprise_max_projects: '500',
     enterprise_price: 'Custom',
     // Feature toggles
+    free_features: JSON.stringify({
+      projects: true, kanban: false, tasks: true, team: false, 
+      timesheets: false, performance: false, chat: false, tickets: false, branding: false
+    }),
     starter_features: JSON.stringify({
-      kanban: true, timeTracking: true, teamChat: false, performance: false,
-      tickets: false, timesheets: true, fileStorage: false, advancedRoles: false,
-      prioritySupport: false, customBranding: false,
+      projects: true, kanban: true, tasks: true, team: true, 
+      timesheets: false, performance: false, chat: false, tickets: false, branding: false
     }),
     pro_features: JSON.stringify({
-      kanban: true, timeTracking: true, teamChat: true, performance: true,
-      tickets: true, timesheets: true, fileStorage: true, advancedRoles: false,
-      prioritySupport: false, customBranding: false,
+      projects: true, kanban: true, tasks: true, team: true, 
+      timesheets: true, performance: true, chat: true, tickets: false, branding: true
     }),
     enterprise_features: JSON.stringify({
-      kanban: true, timeTracking: true, teamChat: true, performance: true,
-      tickets: true, timesheets: true, fileStorage: true, advancedRoles: true,
-      prioritySupport: true, customBranding: true,
+      projects: true, kanban: true, tasks: true, team: true, 
+      timesheets: true, performance: true, chat: true, tickets: true, branding: true
     }),
   });
 
@@ -141,9 +142,16 @@ const PlansAndLimits = () => {
 
   const getFeatures = (planKey) => {
     try {
-      return JSON.parse(settings[`${planKey}_features`] || '{}');
+      const stored = JSON.parse(settings[`${planKey}_features`] || '{}');
+      const sanitized = {};
+      FEATURES.forEach(f => {
+        sanitized[f.key] = stored[f.key] !== undefined ? stored[f.key] : false;
+      });
+      return sanitized;
     } catch {
-      return {};
+      const empty = {};
+      FEATURES.forEach(f => { empty[f.key] = false; });
+      return empty;
     }
   };
 
@@ -177,13 +185,37 @@ const PlansAndLimits = () => {
 
   const saveOrgOverrides = async () => {
     try {
-      await api.put(`/superadmin/orgs/${selectedOrg.id}`, { customFeatures: orgOverrides });
-      setOrgs(orgs.map(o => o.id === selectedOrg.id ? { ...o, customFeatures: orgOverrides } : o));
+      // Ensure we send the complete set of features (Master List)
+      const masterList = {};
+      FEATURES.forEach(f => {
+        masterList[f.key] = orgOverrides[f.key] ?? false;
+      });
+
+      await api.put(`/superadmin/orgs/${selectedOrg.id}`, { customFeatures: masterList });
+      setOrgs(orgs.map(o => o.id === selectedOrg.id ? { ...o, customFeatures: masterList } : o));
       toast({ title: 'Organization access customized successfully' });
       setSelectedOrg(null);
     } catch (error) {
-      console.error('Error saving overrides:', error);
-      toast({ title: 'Failed to save customizations', variant: 'destructive' });
+      toast({
+        title: 'Update failed',
+        variant: 'destructive',
+        description: 'Failed to save custom access settings.'
+      });
+    }
+  };
+
+  const resetOrgOverrides = async (orgId) => {
+    try {
+      await api.put(`/superadmin/orgs/${orgId}`, { customFeatures: {} });
+      setOrgs(orgs.map(o => o.id === orgId ? { ...o, customFeatures: null } : o));
+      toast({ title: 'Organization reset to plan defaults' });
+      setSelectedOrg(null);
+    } catch (error) {
+      toast({
+        title: 'Reset failed',
+        variant: 'destructive',
+        description: 'Could not revert to plan defaults.'
+      });
     }
   };
 
@@ -317,25 +349,14 @@ const PlansAndLimits = () => {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[10px] font-bold uppercase opacity-50">Monthly Price (₹)</Label>
+                    <Label className="text-[10px] font-bold uppercase opacity-50">Per User Price (₹)</Label>
                     <Input
-                      type="text"
-                      value={settings[`${plan.key}_price`] || ''}
-                      onChange={e => mark(`${plan.key}_price`, e.target.value)}
+                      type={plan.key === 'enterprise' ? 'text' : 'number'}
+                      value={plan.key === 'enterprise' ? (settings[`${plan.key}_price`] || '') : (settings[`${plan.key}_per_user_price`] || '')}
+                      onChange={e => mark(plan.key === 'enterprise' ? `${plan.key}_price` : `${plan.key}_per_user_price`, e.target.value)}
                       className="h-12 rounded-xl bg-background/40 font-bold"
                     />
                   </div>
-                  {plan.key !== 'enterprise' && (
-                    <div className="space-y-1.5">
-                      <Label className="text-[10px] font-bold uppercase opacity-50">Per User Price (₹)</Label>
-                      <Input
-                        type="number"
-                        value={settings[`${plan.key}_per_user_price`] || ''}
-                        onChange={e => mark(`${plan.key}_per_user_price`, e.target.value)}
-                        className="h-12 rounded-xl bg-background/40 font-bold"
-                      />
-                    </div>
-                  )}
                 </CardContent>
               </Card>
             ))}
@@ -530,7 +551,8 @@ const PlansAndLimits = () => {
                 <div className="p-16 text-center text-muted-foreground font-bold text-sm">No organizations found.</div>
               ) : (
                 orgs.map((org, idx) => {
-                  const hasOverrides = org.customFeatures && Object.keys(org.customFeatures).length > 0;
+                  const overrides = org.customFeatures || org.custom_features || {};
+                  const hasOverrides = Object.keys(overrides).length > 0;
                   const planConfig = PLAN_CONFIG.find(p => p.key === org.plan?.toLowerCase()) || PLAN_CONFIG[0];
                   
                   return (
@@ -550,7 +572,7 @@ const PlansAndLimits = () => {
                         </div>
                         <div>
                           <p className="text-sm font-bold text-foreground">{org.name}</p>
-                          <p className="text-[11px] text-muted-foreground font-medium">{org.users?.length || 0} Users</p>
+                          <p className="text-[11px] text-muted-foreground font-medium">{org._count?.users || 0} Users</p>
                         </div>
                       </div>
                       
@@ -638,9 +660,18 @@ const PlansAndLimits = () => {
                   )
                })}
             </div>
-            <div className="p-6 border-t border-border/10 bg-muted/10 flex gap-4 justify-end shadow-[0_-10px_40px_rgba(0,0,0,0.03)] z-10">
-               <Button variant="ghost" className="rounded-2xl px-8 h-12 font-bold text-[11px] uppercase tracking-widest" onClick={() => setSelectedOrg(null)}>Discard</Button>
-               <Button className="rounded-2xl px-10 h-12 bg-primary font-bold text-[11px] shadow-xl shadow-primary/20 uppercase tracking-widest" onClick={saveOrgOverrides}>Save Customizations</Button>
+            <div className="p-6 border-t border-border/10 bg-muted/10 flex gap-4 justify-between items-center shadow-[0_-10px_40px_rgba(0,0,0,0.03)] z-10 font-bold uppercase text-[10px] tracking-widest px-6 shadow-lg shadow-primary/20">
+               <Button 
+                variant="outline" 
+                onClick={() => resetOrgOverrides(selectedOrg.id)}
+                className="bg-destructive/10 hover:bg-destructive/20 text-destructive border-destructive/20 font-bold uppercase text-[11px] tracking-widest rounded-2xl px-8 h-12"
+               >
+                 Reset to Plan
+               </Button>
+               <div className="flex gap-4">
+                  <Button variant="ghost" className="rounded-2xl px-8 h-12 font-bold text-[11px] uppercase tracking-widest" onClick={() => setSelectedOrg(null)}>Discard</Button>
+                  <Button className="rounded-2xl px-10 h-12 bg-primary font-bold text-[11px] shadow-xl shadow-primary/20 uppercase tracking-widest" onClick={saveOrgOverrides}>Save Customizations</Button>
+               </div>
             </div>
           </div>
         </div>

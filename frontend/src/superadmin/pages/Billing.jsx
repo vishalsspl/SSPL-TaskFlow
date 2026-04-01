@@ -5,11 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { 
-  CreditCard, 
-  Search, 
-  Filter, 
-  Download, 
+import {
+  CreditCard,
+  Search,
+  Filter,
+  Download,
   ExternalLink,
   CheckCircle2,
   Clock,
@@ -35,22 +35,28 @@ const SuperAdminBilling = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
 
+  const [settings, setSettings] = useState(null);
+
   useEffect(() => {
     setHeader('Billing', 'Manage payments and invoices for all organizations');
-    fetchInvoices();
+    fetchData();
   }, [setHeader]);
 
-  const fetchInvoices = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
-      const res = await api.get('/superadmin/billing/invoices');
-      setInvoices(res.data.data);
+      const [invRes, setRes] = await Promise.all([
+        api.get('/superadmin/billing/invoices'),
+        api.get('/superadmin/settings').catch(() => ({ data: {} }))
+      ]);
+      setSettings(setRes.data || {});
+      setInvoices(invRes.data.data);
     } catch (error) {
-      console.error('Failed to fetch invoices:', error);
-      toast({ 
-        title: 'Error', 
+      console.error('Failed to fetch data:', error);
+      toast({
+        title: 'Error',
         description: 'Could not load billing records',
-        variant: 'destructive' 
+        variant: 'destructive'
       });
     } finally {
       setLoading(false);
@@ -61,11 +67,11 @@ const SuperAdminBilling = () => {
     try {
       await api.patch(`/superadmin/billing/invoices/${id}/status`, { status });
       toast({ title: `Invoice marked as ${status}` });
-      fetchInvoices();
+      fetchData();
     } catch (error) {
-      toast({ 
-        title: 'Update failed', 
-        variant: 'destructive' 
+      toast({
+        title: 'Update failed',
+        variant: 'destructive'
       });
     }
   };
@@ -84,20 +90,40 @@ const SuperAdminBilling = () => {
   };
 
   const filteredInvoices = invoices.filter(inv => {
-    const matchesSearch = inv.organization.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          inv.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = inv.organization.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      inv.description?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'ALL' || inv.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const getInvoiceAmount = (invoice) => {
+    const usersCount = invoice.userCount || invoice.organization?._count?.users || 0;
+
+    // If we don't have settings or users, just show what's stored in the database
+    if (!settings || usersCount === 0) return Number(invoice.amount);
+
+    // Dynamic calculation for non-Enterprise plans
+    if (invoice.plan === 'PRO') return (Number(settings.pro_per_user_price) || 15000) * usersCount;
+    if (invoice.plan === 'STARTER') return (Number(settings.starter_per_user_price) || 5000) * usersCount;
+    if (invoice.plan === 'ENTERPRISE') return null; // Custom handling
+
+    return Number(invoice.amount);
+  };
+
+  const getUnitPrice = (invoice) => {
+    if (invoice.plan === 'PRO') return Number(settings?.pro_per_user_price) || 15000;
+    if (invoice.plan === 'STARTER') return Number(settings?.starter_per_user_price) || 5000;
+    return null;
+  };
 
   return (
     <div className="space-y-8 pb-20">
       {/* ── Stats Overview ────────────────────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {[
-          { label: 'Total Revenue', value: `$${invoices.filter(i => i.status === 'PAID').reduce((acc, curr) => acc + Number(curr.amount), 0).toLocaleString()}`, icon: CreditCard, color: 'text-primary' },
-          { label: 'Pending Payments', value: `$${invoices.filter(i => i.status === 'PENDING').reduce((acc, curr) => acc + Number(curr.amount), 0).toLocaleString()}`, icon: Clock, color: 'text-amber-500' },
-          { label: 'Overdue Amount', value: `$${invoices.filter(i => i.status === 'OVERDUE').reduce((acc, curr) => acc + Number(curr.amount), 0).toLocaleString()}`, icon: AlertCircle, color: 'text-rose-500' },
+          { label: 'Total Revenue', value: `₹${invoices.filter(i => i.status === 'PAID').reduce((acc, curr) => acc + (getUnitPrice(curr) || Number(curr.amount) || 0), 0).toLocaleString('en-IN')}`, icon: CreditCard, color: 'text-primary' },
+          { label: 'Pending Payments', value: `₹${invoices.filter(i => i.status === 'PENDING').reduce((acc, curr) => acc + (getUnitPrice(curr) || Number(curr.amount) || 0), 0).toLocaleString('en-IN')}`, icon: Clock, color: 'text-amber-500' },
+          { label: 'Overdue Amount', value: `₹${invoices.filter(i => i.status === 'OVERDUE').reduce((acc, curr) => acc + (getUnitPrice(curr) || Number(curr.amount) || 0), 0).toLocaleString('en-IN')}`, icon: AlertCircle, color: 'text-rose-500' },
           { label: 'Active Invoices', value: invoices.length, icon: CheckCircle2, color: 'text-emerald-500' }
         ].map((stat, i) => (
           <Card key={i} className="rounded-[2rem] border-border/40 bg-white/50 dark:bg-black/40 backdrop-blur-xl shadow-xl overflow-hidden group transition-all hover:scale-[1.02]">
@@ -127,8 +153,8 @@ const SuperAdminBilling = () => {
             <div className="flex items-center gap-3">
               <div className="relative group">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50 transition-colors group-focus-within:text-primary" />
-                <Input 
-                  placeholder="Search org or description..." 
+                <Input
+                  placeholder="Search org or description..."
                   className="pl-10 h-11 w-64 rounded-xl border-border/40 bg-background/50 focus:ring-4 focus:ring-primary/10 transition-all font-bold text-xs"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -140,12 +166,12 @@ const SuperAdminBilling = () => {
             </div>
           </div>
         </CardHeader>
-        
+
         <div className="px-8 pb-4 flex items-center gap-2">
           {['ALL', 'PAID', 'PENDING', 'OVERDUE'].map(status => (
-            <Button 
-              key={status} 
-              variant={statusFilter === status ? 'secondary' : 'ghost'} 
+            <Button
+              key={status}
+              variant={statusFilter === status ? 'secondary' : 'ghost'}
               className={`h-8 px-4 rounded-full text-[10px] font-black tracking-widest uppercase transition-all ${statusFilter === status ? 'bg-primary/10 text-primary hover:bg-primary/20' : 'text-muted-foreground'}`}
               onClick={() => setStatusFilter(status)}
             >
@@ -158,13 +184,13 @@ const SuperAdminBilling = () => {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="border-border/40 hover:bg-transparent">
-                  <TableHead className="px-8 text-[10px] font-black tracking-widest uppercase opacity-50">Invoice ID</TableHead>
-                  <TableHead className="text-[10px] font-black tracking-widest uppercase opacity-50">Organization</TableHead>
-                  <TableHead className="text-[10px] font-black tracking-widest uppercase opacity-50">Amount</TableHead>
-                  <TableHead className="text-[10px] font-black tracking-widest uppercase opacity-50">Date</TableHead>
-                  <TableHead className="text-[10px] font-black tracking-widest uppercase opacity-50">Status</TableHead>
-                  <TableHead className="text-right px-8 text-[10px] font-black tracking-widest uppercase opacity-50">Actions</TableHead>
+                <TableRow className="border-border/60 hover:bg-transparent bg-muted/30">
+                  <TableHead className="px-8 h-14 text-[10px] font-black tracking-widest uppercase text-foreground/70">Invoice ID</TableHead>
+                  <TableHead className="h-14 text-[10px] font-black tracking-widest uppercase text-foreground/70">Source & Organization</TableHead>
+                  <TableHead className="h-14 text-[10px] font-black tracking-widest uppercase text-foreground/70">Billing Details</TableHead>
+                  <TableHead className="h-14 text-[10px] font-black tracking-widest uppercase text-foreground/70">Billing Date</TableHead>
+                  <TableHead className="h-14 text-[10px] font-black tracking-widest uppercase text-foreground/70">Payment Status</TableHead>
+                  <TableHead className="text-right px-8 h-14 text-[10px] font-black tracking-widest uppercase text-foreground/70">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -184,32 +210,45 @@ const SuperAdminBilling = () => {
                     </TableCell>
                   </TableRow>
                 ) : filteredInvoices.map((invoice) => (
-                  <TableRow key={invoice.id} className="border-border/10 hover:bg-primary/[0.02] transition-colors group">
-                    <TableCell className="px-8 font-mono text-[10px] font-bold text-muted-foreground">
-                      #{invoice.id.slice(0, 8).toUpperCase()}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-black text-foreground">{invoice.organization.name}</span>
-                        <span className="text-[10px] text-muted-foreground font-bold">{invoice.organization.billingEmail}</span>
+                  <TableRow key={invoice.id} className="border-b border-border/20 hover:bg-primary/[0.04] transition-all group duration-300">
+                    <TableCell className="px-8 py-6">
+                      <div className="flex flex-col gap-1">
+                        <span className="font-mono text-[10px] font-black text-primary/70 tracking-tighter bg-primary/5 px-2 py-1 rounded-md w-fit">
+                          #{invoice.id.slice(0, 8).toUpperCase()}
+                        </span>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <span className="text-sm font-black text-foreground">${Number(invoice.amount).toFixed(2)}</span>
-                    </TableCell>
-                    <TableCell>
+                    <TableCell className="py-6">
                       <div className="flex flex-col">
-                        <span className="text-[10px] font-black text-foreground uppercase tracking-widest">{format(new Date(invoice.invoiceDate), 'MMM dd, yyyy')}</span>
+                        <span className="text-sm font-black text-foreground">{invoice.organization.name}</span>
+                        <span className="text-[10px] text-muted-foreground/60 font-bold tracking-tight">{invoice.organization.billingEmail}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-6">
+                      <div className="flex flex-col gap-1.5">
+                        <span className="text-base font-black text-foreground [text-shadow:0_1px_1px_rgba(0,0,0,0.05)]">
+                          {getUnitPrice(invoice) !== null ? `₹${getUnitPrice(invoice).toLocaleString('en-IN')}` : 'Custom'}
+                        </span>
+                        <div className="flex items-center gap-2">
+                           <Badge variant="outline" className="text-[8px] font-black tracking-wider uppercase px-1.5 py-0 border-primary/20 text-primary/70 bg-primary/5">{invoice.plan || 'Custom'}</Badge>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-6">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-[10px] font-black text-foreground uppercase tracking-wider">{format(new Date(invoice.invoiceDate), 'MMM dd, yyyy')}</span>
                         {invoice.dueDate && (
-                          <span className="text-[9px] text-rose-500 font-bold uppercase tracking-widest mt-0.5">Due: {format(new Date(invoice.dueDate), 'MMM dd')}</span>
+                          <span className="text-[9px] text-rose-500/80 font-bold uppercase tracking-[0.1em] mt-0.5">Expires: {format(new Date(invoice.dueDate), 'MMM dd')}</span>
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>
-                      {getStatusBadge(invoice.status)}
+                    <TableCell className="py-6">
+                      <div className="flex items-center">
+                        {getStatusBadge(invoice.status)}
+                      </div>
                     </TableCell>
                     <TableCell className="px-8 text-right">
-                      <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center justify-end gap-2 transition-all">
                         <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/10 hover:text-primary transition-all">
                           <Download className="w-4 h-4" />
                         </Button>
@@ -221,7 +260,7 @@ const SuperAdminBilling = () => {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="w-48 rounded-xl border-border/40 bg-black/90 backdrop-blur-xl p-1">
                             {invoice.status === 'PENDING' && (
-                              <DropdownMenuItem 
+                              <DropdownMenuItem
                                 onClick={() => handleUpdateStatus(invoice.id, 'PAID')}
                                 className="flex items-center gap-3 px-3 py-2 text-emerald-500 focus:text-white focus:bg-emerald-500 rounded-lg cursor-pointer text-[10px] font-bold tracking-widest uppercase"
                               >

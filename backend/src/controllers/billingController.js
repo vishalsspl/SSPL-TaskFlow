@@ -19,7 +19,11 @@ export const getGlobalInvoices = async (req, res) => {
                 where,
                 include: {
                     organization: {
-                        select: { name: true, billingEmail: true }
+                        include: {
+                            _count: {
+                                select: { users: true }
+                            }
+                        }
                     }
                 },
                 skip,
@@ -30,7 +34,10 @@ export const getGlobalInvoices = async (req, res) => {
         ]);
 
         res.json({
-            data: invoices,
+            data: invoices.map(inv => ({
+                ...inv,
+                userCount: inv.organization?._count?.users || 0
+            })),
             pagination: {
                 totalCount,
                 totalPages: Math.ceil(totalCount / Number(limit)),

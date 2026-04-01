@@ -9,6 +9,7 @@ import { useChatStore } from './store/chatStore';
 import api from './lib/api';
 import RoleBasedRedirect from './components/RoleBasedRedirect';
 import Layout from './components/Layout';
+import { useToast } from './hooks/use-toast';
 
 // ── Lazy-loaded: Auth pages ────────────────────────────────────────────────
 const Login = lazy(() => import('./components/forms/auth/Login'));
@@ -77,12 +78,50 @@ function SuperAdminGuard({ children }) {
   return children;
 }
 
+// ── Guard — protects routes based on Organization Features ───────────────
+function FeatureGuard({ feature, children }) {
+  const { user } = useAuthStore();
+  const { toast } = useToast();
+
+  const activeFeatures = user?.activeFeatures || user?.organization?.activeFeatures;
+  
+  // ── DEEP SYNC: Convert everything to lowercase to ensure absolute match ──────────
+  if (activeFeatures) {
+    const normalizedFeatures = {};
+    Object.keys(activeFeatures).forEach(k => {
+      normalizedFeatures[k.toLowerCase()] = activeFeatures[k];
+    });
+    
+    // If explicitly disabled, hide it immediately
+    if (normalizedFeatures[feature.toLowerCase()] === false) {
+      // Show a helpful warning on next render
+      setTimeout(() => {
+        toast({
+          title: "Feature Restricted",
+          description: `Your current plan doesn't include access to ${feature.charAt(0).toUpperCase() + feature.slice(1)}. Please contact your administrator to upgrade.`,
+          variant: "destructive"
+        });
+      }, 100);
+      
+      return <Navigate to="/dashboard" replace />;
+    }
+  }
+
+  return children;
+}
+
 function App() {
-  const { token, initialize, user } = useAuthStore();
+  const { token, initialize, syncUser, user } = useAuthStore();
 
   useEffect(() => {
-    initialize();
-  }, [initialize]);
+    const init = async () => {
+      const storedToken = initialize();
+      if (storedToken || token) {
+        await syncUser(api);
+      }
+    };
+    init();
+  }, [initialize, token, syncUser]);
 
   // Handle global chat socket
   // SUPERADMIN has no org so skip socket init for them
@@ -158,22 +197,59 @@ function App() {
             >
               <Route index element={<RoleBasedRedirect />} />
               <Route path="dashboard" element={<Dashboard />} />
-              <Route path="projects" element={<ProjectsList />} />
-              <Route path="projects/:id" element={<ProjectView />} />
-              <Route path="kanban" element={<KanbanBoard />} />
-              <Route path="task-board" element={<TaskKanban />} />
-              <Route path="tasks" element={<Tasks />} />
-              <Route path="team" element={<Team />} />
+              <Route 
+                path="projects" 
+                element={<FeatureGuard feature="projects"><ProjectsList /></FeatureGuard>} 
+              />
+              <Route 
+                path="projects/:id" 
+                element={<FeatureGuard feature="projects"><ProjectView /></FeatureGuard>} 
+              />
+              <Route 
+                path="kanban" 
+                element={<FeatureGuard feature="kanban"><KanbanBoard /></FeatureGuard>} 
+              />
+              <Route 
+                path="task-board" 
+                element={<FeatureGuard feature="kanban"><TaskKanban /></FeatureGuard>} 
+              />
+              <Route 
+                path="tasks" 
+                element={<FeatureGuard feature="tasks"><Tasks /></FeatureGuard>} 
+              />
+              <Route 
+                path="team" 
+                element={<FeatureGuard feature="team"><Team /></FeatureGuard>} 
+              />
               <Route path="settings" element={<Settings />} />
-              <Route path="timesheets" element={<Timesheets />} />
-              <Route path="performance" element={<Performance />} />
+              <Route 
+                path="timesheets" 
+                element={<FeatureGuard feature="timesheets"><Timesheets /></FeatureGuard>} 
+              />
+              <Route 
+                path="performance" 
+                element={<FeatureGuard feature="performance"><Performance /></FeatureGuard>} 
+              />
               <Route
                 path="chat"
-                element={user?.role !== 'CLIENT' ? <ChatPage /> : <Navigate to="/dashboard" />}
+                element={
+                  <FeatureGuard feature="chat">
+                    {user?.role !== 'CLIENT' ? <ChatPage /> : <Navigate to="/dashboard" />}
+                  </FeatureGuard>
+                }
               />
-              <Route path="tickets" element={<TicketList />} />
-              <Route path="tickets/new" element={<SubmitTicket />} />
-              <Route path="tickets/:id" element={<TicketDetail />} />
+              <Route 
+                path="tickets" 
+                element={<FeatureGuard feature="tickets"><TicketList /></FeatureGuard>} 
+              />
+              <Route 
+                path="tickets/new" 
+                element={<FeatureGuard feature="tickets"><SubmitTicket /></FeatureGuard>} 
+              />
+              <Route 
+                path="tickets/:id" 
+                element={<FeatureGuard feature="tickets"><TicketDetail /></FeatureGuard>} 
+              />
 
               {/* Organisation settings — ADMIN only */}
               <Route

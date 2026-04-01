@@ -149,6 +149,7 @@ export const updateOrgByAdmin = async (req, res) => {
         adminName,
         adminEmail,
         adminPassword,
+        customFeatures,
     } = req.body;
 
     // Guard: org must exist
@@ -164,6 +165,7 @@ export const updateOrgByAdmin = async (req, res) => {
             ...(maxProjects !== undefined && { maxProjects: parseInt(maxProjects) }),
             ...(suspendedReason !== undefined && { suspendedReason }),
             ...(trialEndsAt !== undefined && { trialEndsAt: new Date(trialEndsAt) }),
+            ...(customFeatures !== undefined && { customFeatures }),
             // auto-stamp suspendedAt when suspending, clear it when reactivating
             ...(status === 'SUSPENDED' && { suspendedAt: new Date() }),
             ...(status === 'ACTIVE' && { suspendedAt: null, suspendedReason: null }),

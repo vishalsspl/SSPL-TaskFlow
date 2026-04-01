@@ -35,8 +35,8 @@ const Pricing = () => {
     if (planName === "Enterprise") return "Custom";
     
     let basePricePerUser = 0;
-    if (planName === "Starter") basePricePerUser = parseInt(settings?.starter_per_user_price) || 400;
-    if (planName === "Professional") basePricePerUser = parseInt(settings?.pro_per_user_price) || 900;
+    if (planName === "Starter") basePricePerUser = parseInt(settings?.starter_per_user_price) || 5000;
+    if (planName === "Professional") basePricePerUser = parseInt(settings?.pro_per_user_price) || 15000;
     
     let total = basePricePerUser * teamSize;
     const discountPercent = parseInt(settings?.annual_discount_percent) || 17;

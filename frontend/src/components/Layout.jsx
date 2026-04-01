@@ -136,38 +136,43 @@ const Layout = () => {
   };
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Projects', href: '/projects', icon: FolderKanban },
-    { name: 'Kanban Board', href: '/task-board', icon: Kanban },
-    { name: 'Tasks', href: '/tasks', icon: CheckSquare },
+    { name: 'Projects', href: '/projects', icon: FolderKanban, featureKey: 'projects' },
+    { name: 'Kanban Board', href: '/task-board', icon: Kanban, featureKey: 'kanban' },
+    { name: 'Tasks', href: '/tasks', icon: CheckSquare, featureKey: 'tasks' },
     {
       name: 'Tickets',
       href: '/tickets',
       icon: LifeBuoy,
-      allowedRoles: ['ADMIN', 'CLIENT']
+      allowedRoles: ['ADMIN', 'CLIENT'],
+      featureKey: 'tickets'
     },
     {
       name: 'Team',
       href: '/team',
       icon: Users,
-      allowedRoles: ['ADMIN', 'MANAGER']
+      allowedRoles: ['ADMIN', 'MANAGER'],
+      featureKey: 'team'
     },
     {
       name: 'Chat',
       href: '/chat',
       icon: MessageSquare,
-      allowedRoles: ['ADMIN', 'MANAGER', 'MEMBER']
+      allowedRoles: ['ADMIN', 'MANAGER', 'MEMBER'],
+      featureKey: 'chat'
     },
     {
       name: 'Performance',
       href: '/performance',
       icon: BarChart2,
-      allowedRoles: ['ADMIN', 'MANAGER', 'MEMBER']
+      allowedRoles: ['ADMIN', 'MANAGER', 'MEMBER'],
+      featureKey: 'performance'
     },
     {
       name: 'Timesheets',
       href: '/timesheets',
       icon: Clock,
-      allowedRoles: ['ADMIN', 'MANAGER', 'MEMBER']
+      allowedRoles: ['ADMIN', 'MANAGER', 'MEMBER'],
+      featureKey: 'timesheets'
     },
 
   ];
@@ -205,12 +210,28 @@ const Layout = () => {
       <nav className="flex-1 px-4 pt-4 space-y-1 overflow-y-auto no-scrollbar">
         {navigation
           .filter(item => {
-            if (item.allowedRoles) {
-              return item.allowedRoles.includes(user?.role);
+            // Admin only features (Internal Admin config)
+            if (item.adminOnly && user?.role !== 'ADMIN') return false;
+            
+            // Role based filtering
+            if (item.allowedRoles && !item.allowedRoles.includes(user?.role)) return false;
+            
+            // Feature based filtering (Enforced by Plan)
+            if (item.featureKey) {
+              const activeFeatures = user?.activeFeatures || user?.organization?.activeFeatures;
+              
+              // ── DEEP SYNC: Convert everything to lowercase to ensure absolute match ──────────
+              if (activeFeatures) {
+                 const normalizedFeatures = {};
+                 Object.keys(activeFeatures).forEach(k => {
+                   normalizedFeatures[k.toLowerCase()] = activeFeatures[k];
+                 });
+                 
+                 // If explicitly disabled, hide it immediately
+                 if (normalizedFeatures[item.featureKey.toLowerCase()] === false) return false;
+              }
             }
-            if (item.adminOnly) {
-              return user?.role === 'ADMIN';
-            }
+            
             return true;
           })
           .map((item) => (
