@@ -60,6 +60,8 @@ const PlansAndLimits = () => {
   const [loadingOrgs, setLoadingOrgs] = useState(false);
   const [selectedOrg, setSelectedOrg] = useState(null);
   const [orgOverrides, setOrgOverrides] = useState({});
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 10;
 
   const [settings, setSettings] = useState({
     // Trial & discount
@@ -553,7 +555,7 @@ const PlansAndLimits = () => {
                 ) : orgs.length === 0 ? (
                   <div className="p-16 text-center text-muted-foreground font-bold text-sm">No organizations found.</div>
                 ) : (
-                  orgs.map((org, idx) => {
+                  orgs.slice((page - 1) * itemsPerPage, page * itemsPerPage).map((org, idx) => {
                     const overrides = org.customFeatures || org.custom_features || {};
                     const hasOverrides = Object.keys(overrides).length > 0;
                     const planConfig = PLAN_CONFIG.find(p => p.key === org.plan?.toLowerCase()) || PLAN_CONFIG[0];
@@ -610,6 +612,32 @@ const PlansAndLimits = () => {
                   })
                 )}
               </div>
+
+              {!loadingOrgs && orgs.length > itemsPerPage && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-6 px-10 py-6 border-t border-border/10 mt-auto">
+                  <p className="text-xs font-medium text-muted-foreground opacity-50">
+                    Showing {(page - 1) * itemsPerPage + 1} - {Math.min(orgs.length, page * itemsPerPage)} of {orgs.length} Organizations
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="ghost"
+                      className="h-10 rounded-lg px-6 border border-border/10 font-semibold text-xs hover:bg-primary/5 transition-all"
+                      disabled={page === 1}
+                      onClick={() => setPage(p => p - 1)}
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="h-10 rounded-lg px-8 shadow-sm font-semibold text-xs transition-all hover:bg-primary hover:text-white"
+                      disabled={page >= Math.ceil(orgs.length / itemsPerPage)}
+                      onClick={() => setPage(p => p + 1)}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

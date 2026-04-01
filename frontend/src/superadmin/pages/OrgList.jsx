@@ -29,7 +29,7 @@ const OrgList = () => {
   const [page, setPage] = useState(1);
   const [orgToDelete, setOrgToDelete] = useState(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const itemsPerPage = 8;
+  const itemsPerPage = 10;
 
   const [newOrg, setNewOrg] = useState({
     name: '', industry: '', plan: 'FREE',

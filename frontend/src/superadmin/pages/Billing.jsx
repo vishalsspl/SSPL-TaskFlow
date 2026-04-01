@@ -209,76 +209,104 @@ const SuperAdminBilling = () => {
                       <p className="text-sm font-bold opacity-40 italic">No billing records found</p>
                     </TableCell>
                   </TableRow>
-                ) : filteredInvoices.map((invoice) => (
-                  <TableRow key={invoice.id} className="border-b border-border/20 hover:bg-primary/[0.04] transition-all group duration-300">
-                    <TableCell className="hidden lg:table-cell px-8 py-6">
-                      <div className="flex flex-col gap-1">
-                        <span className="font-mono text-[10px] font-black text-primary/70 tracking-tighter bg-primary/5 px-2 py-1 rounded-md w-fit">
-                          #{invoice.id.slice(0, 8).toUpperCase()}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="py-6">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-black text-foreground">{invoice.organization.name}</span>
-                        <span className="text-[10px] text-muted-foreground/60 font-bold tracking-tight truncate max-w-[120px]">{invoice.organization.billingEmail}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="py-6">
-                      <div className="flex flex-col gap-1.5">
-                        <span className="text-base font-black text-foreground [text-shadow:0_1px_1px_rgba(0,0,0,0.05)]">
-                          {getUnitPrice(invoice) !== null ? `₹${getUnitPrice(invoice).toLocaleString('en-IN')}` : 'Custom'}
-                        </span>
-                        <div className="flex items-center gap-2">
-                           <Badge variant="outline" className="text-[8px] font-black tracking-wider uppercase px-1.5 py-0 border-primary/20 text-primary/70 bg-primary/5">{invoice.plan || 'Custom'}</Badge>
+                ) : (
+                  filteredInvoices.slice((page - 1) * 10, page * 10).map((invoice) => (
+                    <TableRow key={invoice.id} className="border-b border-border/20 hover:bg-primary/[0.04] transition-all group duration-300">
+                      <TableCell className="hidden lg:table-cell px-8 py-6">
+                        <div className="flex flex-col gap-1">
+                          <span className="font-mono text-[10px] font-black text-primary/70 tracking-tighter bg-primary/5 px-2 py-1 rounded-md w-fit">
+                            #{invoice.id.slice(0, 8).toUpperCase()}
+                          </span>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden sm:table-cell py-6">
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-[10px] font-black text-foreground uppercase tracking-wider">{format(new Date(invoice.invoiceDate), 'MMM dd, yyyy')}</span>
-                        {invoice.dueDate && (
-                          <span className="text-[9px] text-rose-500/80 font-bold uppercase tracking-[0.1em] mt-0.5">Expires: {format(new Date(invoice.dueDate), 'MMM dd')}</span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="py-6">
-                      <div className="flex items-center">
-                        {getStatusBadge(invoice.status)}
-                      </div>
-                    </TableCell>
-                    <TableCell className="px-8 text-right">
-                      <div className="flex items-center justify-end gap-2 transition-all">
-                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/10 hover:text-primary transition-all">
-                          <Download className="w-4 h-4" />
-                        </Button>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/10 text-muted-foreground">
-                              <MoreVertical className="w-4 h-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48 rounded-xl border-border/40 bg-black/90 backdrop-blur-xl p-1">
-                            {invoice.status === 'PENDING' && (
-                              <DropdownMenuItem
-                                onClick={() => handleUpdateStatus(invoice.id, 'PAID')}
-                                className="flex items-center gap-3 px-3 py-2 text-emerald-500 focus:text-white focus:bg-emerald-500 rounded-lg cursor-pointer text-[10px] font-bold tracking-widest uppercase"
-                              >
-                                <CheckCircle2 className="w-4 h-4" /> Mark as Paid
+                      </TableCell>
+                      <TableCell className="py-6">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-black text-foreground">{invoice.organization.name}</span>
+                          <span className="text-[10px] text-muted-foreground/60 font-bold tracking-tight truncate max-w-[120px]">{invoice.organization.billingEmail || 'No Email'}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-6">
+                        <div className="flex flex-col gap-1.5">
+                          <span className="text-base font-black text-foreground [text-shadow:0_1px_1px_rgba(0,0,0,0.05)]">
+                            {getUnitPrice(invoice) !== null ? `₹${getUnitPrice(invoice).toLocaleString('en-IN')}` : 'Custom'}
+                          </span>
+                          <div className="flex items-center gap-2">
+                             <Badge variant="outline" className="text-[8px] font-black tracking-wider uppercase px-1.5 py-0 border-primary/20 text-primary/70 bg-primary/5">{invoice.plan || 'Custom'}</Badge>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell py-6">
+                        <div className="flex flex-col gap-0.5">
+                          <span className="text-[10px] font-black text-foreground uppercase tracking-wider">{format(new Date(invoice.invoiceDate), 'MMM dd, yyyy')}</span>
+                          {invoice.dueDate && (
+                            <span className="text-[9px] text-rose-500/80 font-bold uppercase tracking-[0.1em] mt-0.5">Expires: {format(new Date(invoice.dueDate), 'MMM dd')}</span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-6">
+                        <div className="flex items-center">
+                          {getStatusBadge(invoice.status)}
+                        </div>
+                      </TableCell>
+                      <TableCell className="px-8 text-right">
+                        <div className="flex items-center justify-end gap-2 transition-all">
+                          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/10 hover:text-primary transition-all">
+                            <Download className="w-4 h-4" />
+                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/10 text-muted-foreground">
+                                <MoreVertical className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48 rounded-xl border-border/40 bg-black/90 backdrop-blur-xl p-1">
+                              {invoice.status === 'PENDING' && (
+                                <DropdownMenuItem
+                                  onClick={() => handleUpdateStatus(invoice.id, 'PAID')}
+                                  className="flex items-center gap-3 px-3 py-2 text-emerald-500 focus:text-white focus:bg-emerald-500 rounded-lg cursor-pointer text-[10px] font-bold tracking-widest uppercase"
+                                >
+                                  <CheckCircle2 className="w-4 h-4" /> Mark as Paid
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuItem className="flex items-center gap-3 px-3 py-2 text-white focus:bg-primary/20 rounded-lg cursor-pointer text-[10px] font-black tracking-widest uppercase">
+                                <ExternalLink className="w-4 h-4" /> View Organization
                               </DropdownMenuItem>
-                            )}
-                            <DropdownMenuItem className="flex items-center gap-3 px-3 py-2 text-white focus:bg-primary/20 rounded-lg cursor-pointer text-[10px] font-bold tracking-widest uppercase">
-                              <ExternalLink className="w-4 h-4" /> View Organization
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
+
+          {!loading && filteredInvoices.length > 10 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 px-10 py-6 border-t border-border/10 mt-auto">
+              <p className="text-xs font-medium text-muted-foreground opacity-50">
+                Showing {(page - 1) * 10 + 1} - {Math.min(filteredInvoices.length, page * 10)} of {filteredInvoices.length} Invoices
+              </p>
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  className="h-10 rounded-lg px-6 border border-border/10 font-semibold text-xs hover:bg-primary/5 transition-all"
+                  disabled={page === 1}
+                  onClick={() => setPage(p => p - 1)}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  className="h-10 rounded-lg px-8 shadow-sm font-semibold text-xs transition-all hover:bg-primary hover:text-white"
+                  disabled={page >= Math.ceil(filteredInvoices.length / 10)}
+                  onClick={() => setPage(p => p + 1)}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

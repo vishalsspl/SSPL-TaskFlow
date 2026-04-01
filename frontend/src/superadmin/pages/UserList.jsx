@@ -61,7 +61,7 @@ const SuperAdminUserList = () => {
       const res = await api.get('/superadmin/users', {
         params: { 
           page, 
-          limit: 20, 
+          limit: 10, 
           role: roleFilter || undefined, 
           search: globalSearch || undefined,
           organizationId: selectedOrgId 
@@ -221,7 +221,7 @@ const SuperAdminUserList = () => {
                   {totalPages > 1 && (
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-6 px-10 py-6 border-t border-border/10 mt-auto">
                       <p className="text-xs font-medium text-muted-foreground opacity-50">
-                        Showing {(page - 1) * 20 + 1} - {Math.min(users.length + (page - 1) * 20, page * 20)} Users
+                        Showing {(page - 1) * 10 + 1} - {Math.min(users.length + (page - 1) * 10, page * 10)} Users
                       </p>
                       <div className="flex items-center gap-3">
                         <Button
