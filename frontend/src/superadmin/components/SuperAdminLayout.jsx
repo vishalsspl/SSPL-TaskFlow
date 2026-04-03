@@ -58,7 +58,6 @@ const SuperAdminLayout = () => {
     { name: 'Billing', href: '/superadmin/billing', icon: CreditCard },
     { name: 'Plans & Limits', href: '/superadmin/plans', icon: Zap },
     { name: 'Activity Log', href: '/superadmin/audit', icon: Activity },
-    { name: 'Settings', href: '/superadmin/settings', icon: Globe },
   ];
 
   const isActive = (path) => {
@@ -98,16 +97,16 @@ const SuperAdminLayout = () => {
               title={!isSidebarOpen ? item.name : undefined}
             >
               <Button
-                variant={active ? "secondary" : "ghost"}
-                className={`w-full justify-start mb-1 h-10 rounded-xl transition-all duration-300 group
+                variant="ghost"
+                className={`w-full justify-start mb-1 h-11 rounded-xl transition-all duration-300 group
                 ${(isMobile || isSidebarOpen) ? 'px-4' : 'justify-center px-0'}
                 ${active
-                  ? 'font-semibold bg-primary/10 text-primary hover:bg-primary/20'
+                  ? 'font-bold bg-[#48A111] text-white shadow-xl shadow-[#48A111]/30 hover:bg-[#48A111]/90 hover:text-white'
                   : 'text-muted-foreground hover:bg-primary/5 hover:text-primary'}`}
               >
-                <item.icon className={`w-4 h-4 shrink-0 transition-transform duration-300 group-hover:scale-110 ${(isMobile || isSidebarOpen) ? 'mr-3' : ''}`} />
+                <item.icon className={`w-4 h-4 shrink-0 transition-transform duration-300 group-hover:scale-110 ${(isMobile || isSidebarOpen) ? 'mr-3' : ''} ${active ? 'text-white' : 'text-muted-foreground group-hover:text-primary'}`} />
                 {(isMobile || isSidebarOpen) && (
-                  <span className={`text-sm font-medium truncate flex-1 text-left`}>
+                  <span className={`text-sm tracking-tight truncate flex-1 text-left`}>
                     {item.name}
                   </span>
                 )}
@@ -149,6 +148,13 @@ const SuperAdminLayout = () => {
               Account
             </DropdownMenuLabel>
             <DropdownMenuSeparator className="bg-primary/10 mx-2 my-2" />
+            <DropdownMenuItem
+              onClick={() => navigate('/superadmin/settings')}
+              className="focus:bg-primary/5 rounded-xl cursor-pointer py-3 font-bold text-[10px] tracking-widest transition-all"
+            >
+              <Globe className="w-4 h-4 mr-3 text-primary" />
+              <span>Platform Settings</span>
+            </DropdownMenuItem>
             <DropdownMenuItem
               onClick={handleLogout}
               className="text-red-500 focus:text-white focus:bg-red-500 rounded-xl cursor-pointer py-3 font-bold text-[10px] tracking-widest transition-all"
@@ -201,15 +207,14 @@ const SuperAdminLayout = () => {
             </div>
           </div>
 
-          {/* Global Search Center - More accessible on md */}
+          {/* Global Search Center */}
           {showSearch && (
-            <div className="hidden md:flex flex-1 max-w-md mx-4 overflow-visible">
+            <div className="flex-1 max-w-sm sm:max-w-md mx-2 sm:mx-6 overflow-visible animate-in fade-in zoom-in duration-300">
               <div className="relative w-full group overflow-visible">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50 group-hover:text-primary/70 transition-colors z-10" />
                 <Input
                   type="search"
                   placeholder={searchPlaceholder}
-                  className="w-full h-10 pl-10 sm:pl-10 rounded-2xl bg-secondary/30 border-white/5 focus:bg-secondary/50 focus:border-primary/30 transition-all text-sm shadow-inner "
+                  className="w-full h-10 px-4 rounded-xl bg-secondary/10 border-border/5 focus:bg-background focus:ring-4 focus:ring-[#48A111]/10 focus:border-[#48A111]/30 transition-all text-xs font-bold shadow-inner Montserrat"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />

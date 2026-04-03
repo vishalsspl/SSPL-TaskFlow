@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { io } from 'socket.io-client';
 import api from '@/lib/api';
 import { useNotificationStore } from './notificationStore';
+import { useAuthStore } from './authStore';
 
 export const useChatStore = create((set, get) => ({
     socket: null,
@@ -104,6 +105,20 @@ export const useChatStore = create((set, get) => ({
             const currentUserId = get().userId;
             if (String(notification.userId) === String(currentUserId)) {
                 useNotificationStore.getState().addNotification(notification);
+            }
+        });
+
+        // When Super Admin updates org plan/features, refresh user permissions immediately.
+        socket.on('org-permissions-updated', async (payload) => {
+            try {
+                const state = get();
+                if (!state.organizationId) return;
+                if (String(payload?.organizationId) !== String(state.organizationId)) return;
+
+                console.log('[Socket] org-permissions-updated received. Re-syncing /auth/me...');
+                await useAuthStore.getState().syncUser(api);
+            } catch (err) {
+                console.error('[Socket] Failed to re-sync permissions after org update:', err);
             }
         });
 

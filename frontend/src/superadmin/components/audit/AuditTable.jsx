@@ -1,87 +1,131 @@
-import { Card } from '@/components/ui/card';
-import {
- Table, TableBody, TableCell, TableHead,
- TableHeader, TableRow,
-} from '@/components/ui/table';
-import { Building2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { format } from 'date-fns';
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from '@/components/ui/table';
 
-const AuditTable = ({ logs, getActionIcon, getStatusBadge, getSeverity, onOrgFilter }) => {
-  const PROJECT_COLORS = [
-    '#8B5CF6', '#0EA5E9', '#10B981', '#F59E0B', '#F43F5E', '#F97316', '#D946EF'
-  ];
+const AuditTable = ({ logs, getActionIcon }) => {
+  const getSeverityStyle = (action) => {
+    const act = action.toUpperCase();
+    if (act.includes('DELETE') || act.includes('SUSPEND') || act.includes('REMOVE')) return 'border-red-500 bg-red-500/10';
+    if (act.includes('CREATE') || act.includes('ADD')) return 'border-purple-500 bg-purple-500/10';
+    if (act.includes('UPDATE') || act.includes('EDIT')) return 'border-blue-500 bg-blue-500/10';
+    if (act.includes('LOG') || act.includes('TIME')) return 'border-teal-500 bg-teal-500/10';
+    if (act.includes('APPROVE') || act.includes('INVITE') || act.includes('ACTIVATE')) return 'border-emerald-500 bg-emerald-500/10';
+    return 'border-primary/20 bg-primary/5';
+  };
+
+  const getBorderColor = (action) => {
+    const act = action.toUpperCase();
+    if (act.includes('DELETE') || act.includes('SUSPEND')) return '#ef4444'; // red-500
+    if (act.includes('CREATE')) return '#a855f7'; // purple-500
+    if (act.includes('UPDATE')) return '#3b82f6'; // blue-500
+    if (act.includes('LOG') || act.includes('TIME')) return '#14b8a6'; // teal-500
+    if (act.includes('APPROVE')) return '#10b981'; // emerald-500
+    return '#64748b'; // slate-500
+  };
+
   return (
-     <div className="hidden sm:block overflow-x-auto w-full">
+    <div className="hidden lg:block rounded-2xl border border-border/10 overflow-hidden bg-background/20 backdrop-blur-sm">
       <Table>
- <TableHeader>
- <TableRow>
- <TableHead className="text-[11px] font-semibold text-muted-foreground px-4">Action</TableHead>
- <TableHead className="text-[11px] font-semibold text-muted-foreground px-4">Done By</TableHead>
- <TableHead className="text-[11px] font-semibold text-muted-foreground px-4">Organization</TableHead>
- <TableHead className="text-[11px] font-semibold text-muted-foreground px-4">Date & Time</TableHead>
- <TableHead className="text-[11px] font-semibold text-muted-foreground px-4 text-right">Status</TableHead>
- </TableRow>
- </TableHeader>
- <TableBody>
- {logs.map((log, idx) => {
- const rowColor = PROJECT_COLORS[idx % PROJECT_COLORS.length];
- return (
- <TableRow key={log.id || idx} className="cursor-pointer transition-all hover:scale-[1.002] border-b border-border/10" style={{ borderLeft: `4px solid ${rowColor}`, background: `${rowColor}0d` }}><TableCell className="px-4 py-3 align-middle">
- <div className="flex items-center gap-3">
- <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
- {getActionIcon(log.action)}
- </div>
- <div className="flex flex-col">
- <p className="font-semibold text-sm text-foreground capitalize">
- {log.action?.replace(/_/g, ' ').toLowerCase() || 'Operation'}
- </p>
- <p className="text-[11px] text-muted-foreground">
- {log.entity || 'System'} {log.entityId ? `#${log.entityId.slice(0, 6)}` : ''}
- </p>
- </div>
- </div>
- </TableCell>
- <TableCell className="px-4 py-3 align-middle">
- <div className="flex items-center gap-2">
- <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary shrink-0">
- {log.user?.name?.charAt(0) || 'S'}
- </div>
- <div className="flex flex-col">
- <p className="text-sm font-medium text-foreground">{log.user?.name || 'System'}</p>
- <p className="text-[11px] text-muted-foreground capitalize">{log.user?.role?.toLowerCase() || 'System'}</p>
- </div>
- </div>
- </TableCell>
- <TableCell className="px-4 py-3 align-middle">
- <button
- onClick={() => onOrgFilter(log.organizationId || '')}
- className="flex flex-col items-start hover:bg-muted/50 p-1.5 -ml-1.5 rounded transition-colors group/btn"
- >
- <div className="flex flex-col text-left">
- <span className="text-sm font-medium text-foreground group-hover/btn:text-primary transition-colors">
- {log.organization?.name || 'Platform'}
- </span>
- {log.project && (
- <span className="text-[11px] text-muted-foreground shrink-0 max-w-[200px] truncate">
- Project: {log.project.name}
- </span>
- )}
- </div>
- </button>
- </TableCell>
- <TableCell className="px-4 py-3 align-middle text-sm text-muted-foreground whitespace-nowrap">
- {log.createdAt ? format(new Date(log.createdAt), 'MMM d, yyyy h:mm a') : 'N/A'}
- </TableCell>
- <TableCell className="px-4 py-3 align-middle text-right">
- {getStatusBadge(getSeverity(log.action))}
- </TableCell>
- </TableRow>
- );
- })}
- </TableBody>
- </Table>
- </div>
- );
+        <TableHeader className="bg-secondary/10">
+          <TableRow className="hover:bg-transparent border-border/10">
+            <TableHead className="text-[10px] font-black uppercase tracking-widest py-4 text-center">Action</TableHead>
+            <TableHead className="text-[10px] font-black uppercase tracking-widest text-center">Done By</TableHead>
+            <TableHead className="text-[10px] font-black uppercase tracking-widest text-center">Organization</TableHead>
+            <TableHead className="text-[10px] font-black uppercase tracking-widest text-center">Date & Time</TableHead>
+            <TableHead className="text-[10px] font-black uppercase tracking-widest text-center">Status</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {logs.map((log) => {
+            const borderColor = getBorderColor(log.action);
+            return (
+              <TableRow key={log.id} className="group hover:bg-white/[0.02] border-border/5 h-20 transition-all">
+                {/* Action Column with Vertical Bar */}
+                <TableCell className="relative">
+                  <div 
+                    className="absolute left-0 top-0 bottom-0 w-1 transition-all group-hover:w-1.5" 
+                    style={{ backgroundColor: borderColor }}
+                  />
+                  <div className="flex items-center justify-center gap-4">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 shrink-0" style={{ backgroundColor: `${borderColor}20` }}>
+                      <div style={{ color: borderColor }}>
+                        {getActionIcon(log.action)}
+                      </div>
+                    </div>
+                    <div className="text-left w-[120px]">
+                      <div className="text-sm font-bold tracking-tight text-foreground/90 capitalize truncate">
+                        {log.action.toLowerCase().replace(/_/g, ' ')}
+                      </div>
+                      <div className="text-[10px] font-medium text-muted-foreground/60 mt-0.5 truncate">
+                        {log.entity} {log.entityId ? `#${log.entityId.slice(-6)}` : ''}
+                      </div>
+                    </div>
+                  </div>
+                </TableCell>
+
+                {/* Done By Column */}
+                <TableCell>
+                  <div className="flex items-center justify-center gap-3">
+                    <Avatar className="w-10 h-10 rounded-full border-2 border-border/10 ring-2 ring-transparent group-hover:ring-primary/20 transition-all shrink-0">
+                      <AvatarImage src={log.user?.avatar} />
+                      <AvatarFallback className="bg-secondary/50 text-xs font-bold text-primary">
+                        {log.user?.name?.charAt(0) || '?'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="text-left w-[100px]">
+                      <div className="text-sm font-bold tracking-tight text-foreground/80 truncate">
+                        {log.user?.name || 'System'}
+                      </div>
+                      <div className="text-[10px] font-medium text-muted-foreground/50 capitalize mt-0.5 truncate">
+                        {log.user?.role?.toLowerCase() || 'N/A'}
+                      </div>
+                    </div>
+                  </div>
+                </TableCell>
+
+                {/* Organization Column */}
+                <TableCell>
+                  <div className="text-center flex flex-col items-center">
+                    <div className="text-sm font-bold tracking-tight text-foreground/80 truncate max-w-[150px]">
+                      {log.organization?.name || 'Global'}
+                    </div>
+                    <div className="text-[10px] font-medium text-muted-foreground/50 mt-0.5 truncate max-w-[150px]">
+                      {log.project ? `Project: ${log.project.name}` : (log.organization?.industry || 'Platform Action')}
+                    </div>
+                  </div>
+                </TableCell>
+
+                {/* Date & Time Column */}
+                <TableCell className="text-center">
+                  <div className="text-xs font-semibold text-muted-foreground/80">
+                    {log.createdAt ? format(new Date(log.createdAt), 'MMM d, yyyy h:mm a') : '-'}
+                  </div>
+                </TableCell>
+
+                {/* Status Column */}
+                <TableCell className="text-center">
+                  <Badge 
+                    variant="outline" 
+                    className="rounded-full px-4 py-0.5 text-[10px] font-bold border-emerald-500/50 text-emerald-500 bg-emerald-500/5"
+                  >
+                    Success
+                  </Badge>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </div>
+  );
 };
 
 export default AuditTable;

@@ -38,6 +38,7 @@ const ChatPage = lazy(() => import('./pages/ChatPage'));
 const Timesheets = lazy(() => import('./pages/Timesheets'));
 const Performance = lazy(() => import('./pages/Performance'));
 const OrganizationSettings = lazy(() => import('./pages/organization/OrganizationSettings'));
+const RestrictedAccess = lazy(() => import('./pages/RestrictedAccess'));
 
 // ── Lazy-loaded: Ticket pages ──────────────────────────────────────────────
 const TicketList = lazy(() => import('./pages/tickets/TicketList'));
@@ -81,29 +82,19 @@ function SuperAdminGuard({ children }) {
 // ── Guard — protects routes based on Organization Features ───────────────
 function FeatureGuard({ feature, children }) {
   const { user } = useAuthStore();
-  const { toast } = useToast();
 
   const activeFeatures = user?.activeFeatures || user?.organization?.activeFeatures;
-  
+
   // ── DEEP SYNC: Convert everything to lowercase to ensure absolute match ──────────
   if (activeFeatures) {
     const normalizedFeatures = {};
     Object.keys(activeFeatures).forEach(k => {
       normalizedFeatures[k.toLowerCase()] = activeFeatures[k];
     });
-    
-    // If explicitly disabled, hide it immediately
+
+    // If explicitly disabled, show the Restricted Access page
     if (normalizedFeatures[feature.toLowerCase()] === false) {
-      // Show a helpful warning on next render
-      setTimeout(() => {
-        toast({
-          title: "Feature Restricted",
-          description: `Your current plan doesn't include access to ${feature.charAt(0).toUpperCase() + feature.slice(1)}. Please contact your administrator to upgrade.`,
-          variant: "destructive"
-        });
-      }, 100);
-      
-      return <Navigate to="/dashboard" replace />;
+      return <RestrictedAccess feature={feature} />;
     }
   }
 
@@ -122,6 +113,15 @@ function App() {
     };
     init();
   }, [initialize, token, syncUser]);
+
+  // ── Periodic re-sync: refresh user permissions every 5 minutes ──────────
+  useEffect(() => {
+    if (!token) return;
+    const interval = setInterval(() => {
+      syncUser(api);
+    }, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [token, syncUser]);
 
   // Handle global chat socket
   // SUPERADMIN has no org so skip socket init for them
@@ -197,38 +197,38 @@ function App() {
             >
               <Route index element={<RoleBasedRedirect />} />
               <Route path="dashboard" element={<Dashboard />} />
-              <Route 
-                path="projects" 
-                element={<FeatureGuard feature="projects"><ProjectsList /></FeatureGuard>} 
+              <Route
+                path="projects"
+                element={<FeatureGuard feature="projects"><ProjectsList /></FeatureGuard>}
               />
-              <Route 
-                path="projects/:id" 
-                element={<FeatureGuard feature="projects"><ProjectView /></FeatureGuard>} 
+              <Route
+                path="projects/:id"
+                element={<FeatureGuard feature="projects"><ProjectView /></FeatureGuard>}
               />
-              <Route 
-                path="kanban" 
-                element={<FeatureGuard feature="kanban"><KanbanBoard /></FeatureGuard>} 
+              <Route
+                path="kanban"
+                element={<FeatureGuard feature="kanban"><KanbanBoard /></FeatureGuard>}
               />
-              <Route 
-                path="task-board" 
-                element={<FeatureGuard feature="kanban"><TaskKanban /></FeatureGuard>} 
+              <Route
+                path="task-board"
+                element={<FeatureGuard feature="kanban"><TaskKanban /></FeatureGuard>}
               />
-              <Route 
-                path="tasks" 
-                element={<FeatureGuard feature="tasks"><Tasks /></FeatureGuard>} 
+              <Route
+                path="tasks"
+                element={<FeatureGuard feature="tasks"><Tasks /></FeatureGuard>}
               />
-              <Route 
-                path="team" 
-                element={<FeatureGuard feature="team"><Team /></FeatureGuard>} 
+              <Route
+                path="team"
+                element={<FeatureGuard feature="team"><Team /></FeatureGuard>}
               />
               <Route path="settings" element={<Settings />} />
-              <Route 
-                path="timesheets" 
-                element={<FeatureGuard feature="timesheets"><Timesheets /></FeatureGuard>} 
+              <Route
+                path="timesheets"
+                element={<FeatureGuard feature="timesheets"><Timesheets /></FeatureGuard>}
               />
-              <Route 
-                path="performance" 
-                element={<FeatureGuard feature="performance"><Performance /></FeatureGuard>} 
+              <Route
+                path="performance"
+                element={<FeatureGuard feature="performance"><Performance /></FeatureGuard>}
               />
               <Route
                 path="chat"
@@ -238,17 +238,17 @@ function App() {
                   </FeatureGuard>
                 }
               />
-              <Route 
-                path="tickets" 
-                element={<FeatureGuard feature="tickets"><TicketList /></FeatureGuard>} 
+              <Route
+                path="tickets"
+                element={<FeatureGuard feature="tickets"><TicketList /></FeatureGuard>}
               />
-              <Route 
-                path="tickets/new" 
-                element={<FeatureGuard feature="tickets"><SubmitTicket /></FeatureGuard>} 
+              <Route
+                path="tickets/new"
+                element={<FeatureGuard feature="tickets"><SubmitTicket /></FeatureGuard>}
               />
-              <Route 
-                path="tickets/:id" 
-                element={<FeatureGuard feature="tickets"><TicketDetail /></FeatureGuard>} 
+              <Route
+                path="tickets/:id"
+                element={<FeatureGuard feature="tickets"><TicketDetail /></FeatureGuard>}
               />
 
               {/* Organisation settings — ADMIN only */}

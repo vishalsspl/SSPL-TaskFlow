@@ -32,7 +32,7 @@ const OrgCreateDialog = ({ open, onOpenChange, newOrg, setNewOrg, onProvision, s
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label className="text-[10px] font-bold uppercase tracking-widest ml-1 opacity-50 leading-none">Organization Name *</Label>
-              <Input placeholder="Cyberdyne Systems" className="h-10 rounded-xl bg-background/50 border-border/40 px-4 font-bold text-sm"
+              <Input placeholder="Cyberdyne Systems" className="h-10 rounded-xl bg-background/50 border-border/40 px-4 font-bold text-sm placeholder:font-medium placeholder:text-muted-foreground/30"
                 value={newOrg.name} onChange={e => setNewOrg(p => ({ ...p, name: e.target.value }))} />
             </div>
             <div className="space-y-1.5">
@@ -72,19 +72,19 @@ const OrgCreateDialog = ({ open, onOpenChange, newOrg, setNewOrg, onProvision, s
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label className="text-[10px] font-bold uppercase tracking-widest ml-1 opacity-40 leading-none">Admin Name</Label>
-                <Input placeholder="Sarah Connor" className="h-10 rounded-xl border-border/20 bg-background/80 px-4 font-bold text-sm"
+                <Input placeholder="Sarah Connor" className="h-10 rounded-xl border-border/20 bg-background/80 px-4 font-bold text-sm placeholder:font-medium placeholder:text-muted-foreground/30"
                   value={newOrg.adminName} onChange={e => setNewOrg(p => ({ ...p, adminName: e.target.value }))} />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-[10px] font-bold uppercase tracking-widest ml-1 opacity-40 leading-none">Admin Email</Label>
-                <Input placeholder="sarah@resistance.io" type="email" className="h-10 rounded-xl border-border/20 bg-background/80 px-4 font-bold text-sm"
+                <Input placeholder="sarah@resistance.io" type="email" className="h-10 rounded-xl border-border/20 bg-background/80 px-4 font-bold text-sm placeholder:font-medium placeholder:text-muted-foreground/30"
                   value={newOrg.adminEmail} onChange={e => setNewOrg(p => ({ ...p, adminEmail: e.target.value }))} />
               </div>
             </div>
 
             <div className="space-y-1.5">
               <Label className="text-[10px] font-bold uppercase tracking-widest ml-1 opacity-40 leading-none">Password</Label>
-              <Input placeholder="••••••••" type="password" className="h-10 rounded-xl border-border/20 bg-background/80 px-4 font-bold text-sm font-mono"
+              <Input placeholder="••••••••" type="password" className="h-10 rounded-xl border-border/20 bg-background/80 px-4 font-bold text-sm font-mono placeholder:font-medium placeholder:text-muted-foreground/30"
                 value={newOrg.adminPassword} onChange={e => setNewOrg(p => ({ ...p, adminPassword: e.target.value }))} />
             </div>
           </div>

@@ -1,42 +1,63 @@
 import { Card } from '@/components/ui/card';
-import { Building2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+
+const safeJson = (v) => {
+  try {
+    if (!v) return '';
+    return JSON.stringify(v);
+  } catch {
+    return String(v);
+  }
+};
 
 const AuditCards = ({ logs, getActionIcon, getStatusBadge, getSeverity }) => {
- return (
-  <div className="sm:hidden grid grid-cols-1 md:grid-cols-2 gap-6">
- {logs.map((log, i) => (
- <Card key={log.id || i} className="rounded-xl border-border/40 shadow-xl bg-white/50 dark:bg-black/40 backdrop-blur-xl p-6 relative overflow-hidden group">
- <div className="flex justify-between items-start mb-6">
- <div className="flex items-center gap-4">
- <div className="w-12 h-12 rounded-lg bg-primary/5 border border-primary/10 flex items-center justify-center shadow-inner">
- {getActionIcon(log.action)}
- </div>
- <div className="min-w-0">
- <h4 className="font-semibold text-sm truncate pr-4">{log.action?.replace(/_/g, ' ')}</h4>
- <p className="text-xs font-medium text-muted-foreground/60">{log.entity || 'System'}</p>
- </div>
- </div>
- {getStatusBadge(getSeverity(log.action))}
- </div>
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 lg:hidden">
+      {logs.map((log) => {
+        const severity = getSeverity(log.action);
+        return (
+          <Card key={log.id} className="p-5 rounded-2xl border-border/10 bg-background/40 hover:bg-primary/[0.02] transition-colors">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="shrink-0">{getActionIcon(log.action)}</div>
+                <div className="min-w-0">
+                  <div className="text-sm font-bold truncate">{log.action}</div>
+                  <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                    {log.createdAt ? new Date(log.createdAt).toLocaleString() : '-'}
+                  </div>
+                </div>
+              </div>
+              {getStatusBadge(severity)}
+            </div>
 
- <div className="space-y-4 pt-6 mt-6 border-t border-border/10">
- <div className="flex items-center justify-between text-sm">
- <span className="font-medium text-muted-foreground opacity-50">Done By</span>
- <span className="font-bold ">{log.user?.name || 'System'}</span>
- </div>
- <div className="flex items-center justify-between text-sm">
- <span className="font-medium text-muted-foreground opacity-50">Organization</span>
- <span className="font-bold flex items-center gap-1.5"><Building2 className="w-3 h-3" /> {log.organization?.name || 'Platform'}</span>
- </div>
- <div className="flex items-center justify-between text-sm">
- <span className="font-medium text-muted-foreground opacity-50">Date & Time</span>
- <span className="font-mono text-xs opacity-60">{log.createdAt ? new Date(log.createdAt).toLocaleDateString() : 'N/A'}</span>
- </div>
- </div>
- </Card>
- ))}
- </div>
- );
+            <div className="mt-4 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">User</span>
+                <span className="text-xs font-semibold truncate">{log.user?.name || 'System'}</span>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Org</span>
+                <span className="text-xs font-semibold truncate">{log.organization?.name || 'Global'}</span>
+              </div>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Entity</span>
+                <Badge variant="secondary" className="text-[10px] font-bold uppercase tracking-widest">
+                  {log.entity || 'N/A'}
+                </Badge>
+              </div>
+              <div className="pt-2 border-t border-border/10">
+                <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-1">Details</div>
+                <div className="text-xs text-muted-foreground line-clamp-3">
+                  {safeJson(log.details)}
+                </div>
+              </div>
+            </div>
+          </Card>
+        );
+      })}
+    </div>
+  );
 };
 
 export default AuditCards;
+

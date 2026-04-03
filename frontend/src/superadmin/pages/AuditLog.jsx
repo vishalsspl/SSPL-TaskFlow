@@ -74,7 +74,6 @@ const AuditLog = () => {
     }
   };
 
-  const handleSearch = (e) => { e.preventDefault(); setPage(1); fetchLogs(); };
   const handleOrgFilter = (orgId) => { setSelectedOrgId(orgId); setPage(1); };
 
   const handleExportCSV = async () => {
@@ -201,51 +200,55 @@ const AuditLog = () => {
     <div className="flex-1 flex flex-col min-h-screen lg:min-h-0 p-0 pt-0 gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
       <Card className="flex-1 flex flex-col min-h-0 border-none sm:border shadow-none sm:shadow-sm">
         <CardContent className="flex-1 flex flex-col min-h-0 pt-2 sm:pt-4 px-2 sm:px-4">
-          <div className="flex items-center gap-4 mb-4 mt-4">
+          <div className="flex items-center gap-4 mb-10 mt-6 px-1">
             <Button
               variant="ghost"
               onClick={() => { setSelectedOrgId(''); setPage(1); setLogs([]); }}
-              className="h-10 rounded-xl px-4 font-bold text-[10px] tracking-widest uppercase border border-border/40 hover:bg-primary/10 transition-all"
+              className="h-10 rounded-xl px-5 font-black text-[10px] tracking-widest uppercase border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-all flex items-center gap-3 group shadow-xl"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Organizations
+              <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
+              BACK TO ORGANIZATIONS
             </Button>
-            <div className="h-4 w-px bg-border/40" />
-            <h2 className="text-xl font-bold flex items-center gap-3 tracking-tight">
-              <Building2 className="w-5 h-5 text-primary" />
-              {orgs.find(o => o.id === selectedOrgId)?.name}
-            </h2>
+            
+            <div className="flex items-center gap-3 ml-4">
+              <Building2 className="w-6 h-6 text-[#48A111]" />
+              <h1 className="text-3xl font-black tracking-tight text-foreground dark:text-white Montserrat">
+                {orgs.find(o => o.id === selectedOrgId)?.name}
+              </h1>
+            </div>
           </div>
 
-          <div className="bg-secondary/40 p-2 rounded-2xl mb-6 shadow-inner backdrop-blur-sm" style={{ border: '1px solid var(--table-border)' }}>
+          <div className="bg-secondary/10 p-2 rounded-2xl mb-8 border border-border/5 shadow-inner">
             <AuditFilters
               action={action}
               setAction={setAction}
               setPage={setPage}
-              onSubmit={handleSearch}
               onExport={handleExportCSV}
             />
           </div>
 
-          <div className="flex-1 overflow-y-auto min-h-0 space-y-4 pr-1">
+          <div className="flex-1 overflow-y-auto min-h-0 space-y-4 pr-1 scrollbar-thin scrollbar-thumb-primary/10">
             {loading ? (
-              <div className="h-96 rounded-xl bg-muted/20 animate-pulse border border-border/10 flex flex-col items-center justify-center gap-4">
-                <Activity className="w-12 h-12 text-primary/20 animate-spin" />
-                <p className="font-semibold tracking-widest text-primary/20">Loading...</p>
+              <div className="h-96 rounded-2xl bg-muted/5 border border-dashed border-border/20 flex flex-col items-center justify-center gap-4">
+                <div className="relative">
+                  <Activity className="w-12 h-12 text-primary animate-pulse" />
+                  <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full scale-150 animate-pulse" />
+                </div>
+                <p className="font-bold tracking-widest text-xs uppercase opacity-40 Montserrat animate-pulse">Synchronizing Activity...</p>
               </div>
             ) : logs.length === 0 ? (
-              <Card className="p-32 text-center rounded-xl border-dashed border-2 border-border/20 bg-muted/5">
+              <Card className="p-32 text-center rounded-3xl border-dashed border-2 border-border/10 bg-muted/5">
                 <div className="max-w-xs mx-auto space-y-4">
-                  <div className="w-16 h-16 bg-muted/20 rounded-xl mx-auto flex items-center justify-center">
-                    <History className="w-8 h-8 text-muted-foreground/40" />
+                  <div className="w-20 h-20 bg-primary/5 rounded-3xl mx-auto flex items-center justify-center border border-primary/10">
+                    <History className="w-10 h-10 text-primary/40" />
                   </div>
-                  <h3 className="font-medium text-muted-foreground">No Activity Found</h3>
-                  <p className="text-sm text-muted-foreground/60">No actions have been recorded for this organization yet.</p>
+                  <h3 className="font-bold text-lg text-foreground/70 uppercase tracking-widest Montserrat">No Events Found</h3>
+                  <p className="text-xs text-muted-foreground/60 leading-relaxed font-medium">We couldn't find any activity logs matching your current filters.</p>
                 </div>
               </Card>
             ) : (
               <>
-                <AuditTable logs={logs} getActionIcon={getActionIcon} getStatusBadge={getStatusBadge} getSeverity={getSeverity} onOrgFilter={handleOrgFilter} />
+                <AuditTable logs={logs} getActionIcon={getActionIcon} />
                 <AuditCards logs={logs} getActionIcon={getActionIcon} getStatusBadge={getStatusBadge} getSeverity={getSeverity} />
               </>
             )}

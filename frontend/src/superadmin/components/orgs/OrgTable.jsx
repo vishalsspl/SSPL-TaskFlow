@@ -25,95 +25,99 @@ const OrgTable = ({
   return (
     <div className="hidden sm:block overflow-x-auto w-full">
       <Table>
-        <TableHeader>
+        <TableHeader className="bg-secondary/10 border-border/10">
           <TableRow>
-            <TableHead className="w-[300px] text-xs font-medium py-5 px-8">Organization</TableHead>
-            <TableHead className="text-xs font-medium">Plan</TableHead>
-            <TableHead className="text-xs font-medium">Status</TableHead>
-            <TableHead className="text-xs font-medium text-center">Users / Limit</TableHead>
-            <TableHead className="text-xs font-medium">Joined</TableHead>
-            <TableHead className="text-right text-xs font-medium pr-8">Actions</TableHead>
+            <TableHead className="text-[10px] font-black uppercase tracking-widest text-center py-4">Organization</TableHead>
+            <TableHead className="text-[10px] font-black uppercase tracking-widest text-center">Plan</TableHead>
+            <TableHead className="text-[10px] font-black uppercase tracking-widest text-center">Status</TableHead>
+            <TableHead className="text-[10px] font-black uppercase tracking-widest text-center">Users / Limit</TableHead>
+            <TableHead className="text-[10px] font-black uppercase tracking-widest text-center">Joined</TableHead>
+            <TableHead className="text-[10px] font-black uppercase tracking-widest text-center pr-8">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {orgs.map((org, idx) => {
             const rowColor = PROJECT_COLORS[idx % PROJECT_COLORS.length];
             return (
-              <TableRow key={org.id} className="cursor-pointer transition-all hover:scale-[1.002] border-b border-border/10" style={{ borderLeft: `4px solid ${rowColor}`, background: `${rowColor}0d` }}>
-                <TableCell className="py-5 px-8">
-                  <div className="flex items-center gap-4">
+              <TableRow key={org.id} className="cursor-pointer transition-all hover:bg-white/[0.02] border-b border-border/5" style={{ borderLeft: `4px solid ${rowColor}`, background: `${rowColor}0d` }}>
+                <TableCell className="py-5">
+                  <div className="flex items-center justify-center gap-4">
                     <div
-                      className="w-12 h-12 rounded-lg flex items-center justify-center shrink-0 border border-primary/10 shadow-inner group-hover:scale-110 transition-transform duration-500"
+                      className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border border-primary/10 shadow-inner group-hover:scale-110 transition-transform duration-500"
                       style={{ background: `linear-gradient(135deg, ${org.themeColor || '#15803d'}22, ${org.themeColor || '#15803d'}44)` }}
                     >
                       <Building2 className="w-6 h-6 text-primary/80" />
                     </div>
-                    <div className="min-w-0">
-                      <p className="font-semibold text-sm text-foreground break-words">{org.name}</p>
-                      <p className="text-xs text-muted-foreground font-bold flex items-center gap-1.5 mt-1">
+                    <div className="min-w-0 text-left w-[180px]">
+                      <p className="font-bold text-sm text-foreground truncate">{org.name}</p>
+                      <p className="text-[10px] text-muted-foreground font-bold flex items-center gap-1.5 mt-1 truncate">
                         <Globe className="w-3 h-3 text-primary" />
                         {org.industry || 'General'}
                       </p>
                     </div>
                   </div>
                 </TableCell>
-                <TableCell>{getPlanBadge(org.plan)}</TableCell>
-                <TableCell>{getStatusBadge(org.status)}</TableCell>
+                <TableCell className="text-center">{getPlanBadge(org.plan)}</TableCell>
+                <TableCell className="text-center">{getStatusBadge(org.status)}</TableCell>
                 <TableCell className="text-center">
                   <div className="flex flex-col items-center">
-                    <span className="text-xs font-semibold text-foreground">{org._count?.users ?? 0} <span className="text-muted-foreground font-normal">/</span> {org.maxUsers}</span>
+                    <span className="text-[10px] font-black text-foreground">{org._count?.users ?? 0} <span className="text-muted-foreground font-normal opacity-40">/</span> {org.maxUsers}</span>
                     <div className="w-16 h-1 bg-muted rounded-full mt-1.5 overflow-hidden">
                       <div className="h-full bg-primary" style={{ width: `${Math.min(((org._count?.users ?? 0) / (org.maxUsers || 1)) * 100, 100)}%` }} />
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="text-muted-foreground text-xs font-bold font-mono">
-                  {org.createdAt ? new Date(org.createdAt).toLocaleDateString() : '—'}
+                <TableCell className="text-center">
+                  <span className="text-[10px] font-black font-mono text-muted-foreground uppercase tracking-widest">
+                    {org.createdAt ? new Date(org.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
+                  </span>
                 </TableCell>
-                <TableCell className="text-right pr-8">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-primary/10 hover:text-primary transition-all">
-                        <MoreHorizontal className="h-5 w-5" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56 rounded-lg shadow-2xl border-border/40 bg-black/90 backdrop-blur-xl p-2">
-                      <DropdownMenuLabel className="text-xs font-medium text-primary/60 px-3 py-2">
-                        Actions
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator className="bg-primary/10" />
-                      {org.status === 'PENDING' ? (
-                        <>
-                          <DropdownMenuItem className="text-green-500 hover:text-white hover:bg-green-500 rounded-xl cursor-pointer font-semibold text-xs py-3 mb-1" onClick={() => onApprove(org)}>
-                            <ShieldAlert className="w-4 h-4 mr-3" /> Approve
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-500 hover:text-white hover:bg-red-500 rounded-xl cursor-pointer font-semibold text-xs py-3" onClick={() => onDelete(org)}>
-                            <Trash2 className="w-4 h-4 mr-3" /> Reject & Delete
-                          </DropdownMenuItem>
-                        </>
-                      ) : (
-                        <>
-                          <DropdownMenuItem className="rounded-xl cursor-pointer font-semibold text-xs py-3 mb-1 transition-all" onClick={() => onEdit(org)}>
-                            <Edit2 className="w-4 h-4 mr-3 text-primary" /> Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-orange-500 hover:text-white hover:bg-orange-500 rounded-xl cursor-pointer font-semibold text-xs py-3 mb-1 transition-all"
-                            onClick={() => onSuspend(org)}
-                          >
-                            <ShieldAlert className="w-4 h-4 mr-3" />
-                            {org.status === 'SUSPENDED' ? 'Reactivate' : 'Suspend'}
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator className="bg-primary/10" />
-                          <DropdownMenuItem
-                            className="text-red-500 hover:text-white hover:bg-red-500 rounded-xl cursor-pointer font-semibold text-xs py-3 transition-all"
-                            onClick={() => onDelete(org)}
-                          >
-                            <Trash2 className="w-4 h-4 mr-3" /> Delete
-                          </DropdownMenuItem>
-                        </>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                <TableCell className="text-center pr-8">
+                  <div className="flex items-center justify-center gap-2">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-primary/10 hover:text-primary transition-all">
+                          <MoreHorizontal className="h-5 w-5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56 rounded-2xl shadow-2xl border-border/40 bg-black/90 backdrop-blur-xl p-2">
+                        <DropdownMenuLabel className="text-[10px] font-black tracking-widest uppercase text-primary/60 px-3 py-2">
+                          Actions
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator className="bg-primary/10" />
+                        {org.status === 'PENDING' ? (
+                          <>
+                            <DropdownMenuItem className="text-green-500 hover:text-white hover:bg-green-500 rounded-xl cursor-pointer font-bold text-[10px] tracking-widest uppercase py-3 mb-1" onClick={() => onApprove(org)}>
+                              <ShieldAlert className="w-4 h-4 mr-3" /> Approve
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-red-500 hover:text-white hover:bg-red-500 rounded-xl cursor-pointer font-bold text-[10px] tracking-widest uppercase py-3" onClick={() => onDelete(org)}>
+                              <Trash2 className="w-4 h-4 mr-3" /> Reject & Delete
+                            </DropdownMenuItem>
+                          </>
+                        ) : (
+                          <>
+                            <DropdownMenuItem className="rounded-xl cursor-pointer font-bold text-[10px] tracking-widest uppercase py-3 mb-1 transition-all" onClick={() => onEdit(org)}>
+                              <Edit2 className="w-4 h-4 mr-3 text-primary" /> Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              className="text-orange-500 hover:text-white hover:bg-orange-500 rounded-xl cursor-pointer font-bold text-[10px] tracking-widest uppercase py-3 mb-1 transition-all"
+                              onClick={() => onSuspend(org)}
+                            >
+                              <ShieldAlert className="w-4 h-4 mr-3" />
+                              {org.status === 'SUSPENDED' ? 'Reactivate' : 'Suspend'}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator className="bg-primary/10" />
+                            <DropdownMenuItem
+                              className="text-red-500 hover:text-white hover:bg-red-500 rounded-xl cursor-pointer font-bold text-[10px] tracking-widest uppercase py-3 transition-all"
+                              onClick={() => onDelete(org)}
+                            >
+                              <Trash2 className="w-4 h-4 mr-3" /> Delete
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </TableCell>
               </TableRow>
             );

@@ -156,6 +156,23 @@ export const updateOrganization = async (req, res) => {
                 ...(status === 'SUSPENDED' ? { suspendedAt: new Date() } : (status === 'ACTIVE' ? { suspendedAt: null } : {})),
             }
         });
+
+        // Notify connected org users to refresh their permissions/features immediately.
+        // Clients join `org-${organizationId}` via the existing Socket.IO join-room flow.
+        try {
+            if (req.io) {
+                req.io.to(`org-${id}`).emit('org-permissions-updated', {
+                    organizationId: id,
+                    customFeatures: updated.customFeatures || {},
+                    plan: updated.plan,
+                    status: updated.status,
+                    updatedAt: updated.updatedAt,
+                });
+            }
+        } catch (err) {
+            console.error('[SuperAdmin] Failed to emit org-permissions-updated:', err?.message || err);
+        }
+
         res.json(updated);
     } catch (error) {
         console.error('Error updating organization:', error);
@@ -287,9 +304,14 @@ export const getGlobalAuditLogs = async (req, res) => {
             ...(organizationId && { organizationId }),
             ...(search && {
                 OR: [
+                    { action: { contains: search, mode: 'insensitive' } },
                     { entity: { contains: search, mode: 'insensitive' } },
                     { user: { name: { contains: search, mode: 'insensitive' } } },
-                    { organization: { name: { contains: search, mode: 'insensitive' } } }
+                    { organization: { name: { contains: search, mode: 'insensitive' } } },
+                    // Simple search by month or year (common strings)
+                    ...(search.length >= 3 ? [
+                        { details: { string_contains: search } } // Search in details as string if needed
+                    ] : [])
                 ]
             })
         };
@@ -300,8 +322,10 @@ export const getGlobalAuditLogs = async (req, res) => {
                 include: {
                     user: {
                         select: {
+                            id: true,
                             name: true,
                             role: true,
+                            avatar: true,
                             organization: { select: { name: true } }
                         }
                     },

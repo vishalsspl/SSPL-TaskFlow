@@ -56,6 +56,8 @@ export function getTenantClient(dbUrl) {
   }
 }
 
+
+
 /**
  * Wrapper for our middleware to easily pass the organization object
  * 

@@ -10,10 +10,12 @@ import {
 } from '../controllers/projectController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import attachTenantDb from '../middleware/tenantMiddleware.js';
+import { requireFeature } from '../middleware/featureGate.js';
 
 const router = express.Router();
 
 router.use(authenticate);
+router.use(requireFeature('projects'));
 router.use(attachTenantDb);
 
 router.get('/', getAllProjects);

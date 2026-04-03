@@ -597,6 +597,7 @@
         TicketDetail.jsx
       organization/
         OrganizationSettings.jsx
+      RestrictedAccess.jsx                   — Premium 'Feature Restricted' block page
 
     superadmin/
       components/
@@ -684,6 +685,13 @@
       Refactored the **Signup page** to use premium Shadcn `Select` components for a better UX.
       Removed redundant Organisation sidebar links; consolidated into the Account dropdown. 
       Updated `SuperAdminLayout` for theme-aware dropdown visibility (bg-background/95).
+    </update>
+    <update date="2026-04-02" component="3-Layer Feature Access Control">
+      Implemented a robust end-to-end feature restriction system. 
+      1. **Backend**: `featureGate.js` blocks restricted API calls returning a 403.
+      2. **Frontend App**: `FeatureGuard` intercepts restricted pages and renders the new premium `RestrictedAccess.jsx` component instead of failing silently or redirecting to dashboard.
+      3. **Frontend Sidebar**: Hiding nav items.
+      Also implemented a 5-minute background polling `setInterval` in `App.jsx` to trigger `syncUser()` so that SuperAdmin feature access changes take effect without requiring manual logouts. Fixed Free plan inclusion in Superadmin `PlansAndLimits.jsx` to allow custom access overrides.
     </update>
   </recent_updates>
 

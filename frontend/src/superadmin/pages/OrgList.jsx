@@ -65,13 +65,14 @@ const OrgList = () => {
   const saveOrg = async () => {
     setSaving(true);
     try {
-      await api.patch(`/organizations/${editOrg.id}`, {
+      await api.put(`/superadmin/orgs/${editOrg.id}`, {
         plan: editOrg.plan,
         status: editOrg.status,
         maxUsers: Number(editOrg.maxUsers),
         maxProjects: Number(editOrg.maxProjects),
         suspendedReason: editOrg.suspendedReason || null,
         trialEndsAt: editOrg.trialEndsAt || null,
+        customFeatures: editOrg.customFeatures || {},
         adminId: editOrg.adminId || undefined,
         adminName: editOrg.adminName || undefined,
         adminEmail: editOrg.adminEmail || undefined,
@@ -191,6 +192,7 @@ const OrgList = () => {
     const admin = org.users?.[0] || {};
     setEditOrg({
       ...org,
+      customFeatures: org.customFeatures || {},
       adminId: admin.id || '',
       adminName: admin.name || '',
       adminEmail: admin.email || '',
@@ -282,7 +284,7 @@ const OrgList = () => {
       {/* Dialogs */}
       <OrgEditDialog editOrg={editOrg} setEditOrg={setEditOrg} onSave={saveOrg} saving={saving} />
       <OrgCreateDialog open={createOpen} onOpenChange={setCreateOpen} newOrg={newOrg} setNewOrg={setNewOrg} onProvision={provisionOrg} saving={saving} />
-      <DeleteConfirmDialog 
+      <DeleteConfirmDialog
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
         onConfirm={confirmDelete}

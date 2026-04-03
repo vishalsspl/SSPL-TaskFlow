@@ -7,7 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
   CreditCard,
-  Search,
   Filter,
   Download,
   ExternalLink,
@@ -28,19 +27,26 @@ import api from '@/lib/api';
 import { format } from 'date-fns';
 
 const SuperAdminBilling = () => {
-  const { setHeader } = useHeaderStore();
+  const { setHeader, searchTerm: globalSearch } = useHeaderStore();
   const { toast } = useToast();
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [page, setPage] = useState(1);
 
   const [settings, setSettings] = useState(null);
 
   useEffect(() => {
-    setHeader('Billing', 'Manage payments and invoices for all organizations');
+    setHeader('Billing', 'Manage payments and invoices for all organizations', {
+      showSearch: true,
+      searchPlaceholder: 'Search org or description...'
+    });
     fetchData();
   }, [setHeader]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [globalSearch, statusFilter]);
 
   const fetchData = async () => {
     try {
@@ -90,8 +96,8 @@ const SuperAdminBilling = () => {
   };
 
   const filteredInvoices = invoices.filter(inv => {
-    const matchesSearch = inv.organization.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      inv.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = inv.organization.name.toLowerCase().includes(globalSearch.toLowerCase()) ||
+      inv.description?.toLowerCase().includes(globalSearch.toLowerCase());
     const matchesStatus = statusFilter === 'ALL' || inv.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -151,15 +157,6 @@ const SuperAdminBilling = () => {
               <CardDescription className="text-[10px] font-bold tracking-widest uppercase opacity-60">Payment records for all organizations</CardDescription>
             </div>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <div className="relative group flex-1 sm:flex-initial">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50 transition-colors group-focus-within:text-primary" />
-                <Input
-                  placeholder="Search org or description..."
-                  className="pl-10 h-11 w-full sm:w-64 rounded-xl border-border/40 bg-background/50 focus:ring-4 focus:ring-primary/10 transition-all font-bold text-xs"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
               <Button className="h-11 px-6 rounded-xl bg-primary text-white font-bold text-[10px] tracking-widest uppercase shadow-lg shadow-primary/20 gap-2 w-full sm:w-auto">
                 <Plus className="w-4 h-4" /> Generate Invoice
               </Button>
@@ -185,12 +182,12 @@ const SuperAdminBilling = () => {
             <Table>
               <TableHeader>
                 <TableRow className="border-border/60 hover:bg-transparent bg-muted/30">
-                  <TableHead className="hidden lg:table-cell px-8 h-14 text-[10px] font-black tracking-widest uppercase text-foreground/70">Invoice ID</TableHead>
-                  <TableHead className="h-14 text-[10px] font-black tracking-widest uppercase text-foreground/70">Source & Organization</TableHead>
-                  <TableHead className="h-14 text-[10px] font-black tracking-widest uppercase text-foreground/70">Billing Details</TableHead>
-                  <TableHead className="hidden sm:table-cell h-14 text-[10px] font-black tracking-widest uppercase text-foreground/70">Billing Date</TableHead>
-                  <TableHead className="h-14 text-[10px] font-black tracking-widest uppercase text-foreground/70">Payment Status</TableHead>
-                  <TableHead className="text-right px-8 h-14 text-[10px] font-black tracking-widest uppercase text-foreground/70">Actions</TableHead>
+                  <TableHead className="hidden lg:table-cell px-8 h-14 text-[10px] font-black tracking-widest uppercase text-foreground/70 text-center">Invoice ID</TableHead>
+                  <TableHead className="h-14 text-[10px] font-black tracking-widest uppercase text-foreground/70 text-center">Source & Organization</TableHead>
+                  <TableHead className="h-14 text-[10px] font-black tracking-widest uppercase text-foreground/70 text-center">Billing Details</TableHead>
+                  <TableHead className="hidden sm:table-cell h-14 text-[10px] font-black tracking-widest uppercase text-foreground/70 text-center">Billing Date</TableHead>
+                  <TableHead className="h-14 text-[10px] font-black tracking-widest uppercase text-foreground/70 text-center">Payment Status</TableHead>
+                  <TableHead className="text-center px-8 h-14 text-[10px] font-black tracking-widest uppercase text-foreground/70">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -213,30 +210,30 @@ const SuperAdminBilling = () => {
                   filteredInvoices.slice((page - 1) * 10, page * 10).map((invoice) => (
                     <TableRow key={invoice.id} className="border-b border-border/20 hover:bg-primary/[0.04] transition-all group duration-300">
                       <TableCell className="hidden lg:table-cell px-8 py-6">
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col items-center gap-1">
                           <span className="font-mono text-[10px] font-black text-primary/70 tracking-tighter bg-primary/5 px-2 py-1 rounded-md w-fit">
                             #{invoice.id.slice(0, 8).toUpperCase()}
                           </span>
                         </div>
                       </TableCell>
                       <TableCell className="py-6">
-                        <div className="flex flex-col">
+                        <div className="flex flex-col items-center">
                           <span className="text-sm font-black text-foreground">{invoice.organization.name}</span>
                           <span className="text-[10px] text-muted-foreground/60 font-bold tracking-tight truncate max-w-[120px]">{invoice.organization.billingEmail || 'No Email'}</span>
                         </div>
                       </TableCell>
                       <TableCell className="py-6">
-                        <div className="flex flex-col gap-1.5">
+                        <div className="flex flex-col items-center gap-1.5">
                           <span className="text-base font-black text-foreground [text-shadow:0_1px_1px_rgba(0,0,0,0.05)]">
                             {getUnitPrice(invoice) !== null ? `₹${getUnitPrice(invoice).toLocaleString('en-IN')}` : 'Custom'}
                           </span>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center justify-center gap-2">
                              <Badge variant="outline" className="text-[8px] font-black tracking-wider uppercase px-1.5 py-0 border-primary/20 text-primary/70 bg-primary/5">{invoice.plan || 'Custom'}</Badge>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell className="hidden sm:table-cell py-6">
-                        <div className="flex flex-col gap-0.5">
+                        <div className="flex flex-col items-center gap-0.5">
                           <span className="text-[10px] font-black text-foreground uppercase tracking-wider">{format(new Date(invoice.invoiceDate), 'MMM dd, yyyy')}</span>
                           {invoice.dueDate && (
                             <span className="text-[9px] text-rose-500/80 font-bold uppercase tracking-[0.1em] mt-0.5">Expires: {format(new Date(invoice.dueDate), 'MMM dd')}</span>
@@ -244,12 +241,12 @@ const SuperAdminBilling = () => {
                         </div>
                       </TableCell>
                       <TableCell className="py-6">
-                        <div className="flex items-center">
+                        <div className="flex items-center justify-center">
                           {getStatusBadge(invoice.status)}
                         </div>
                       </TableCell>
-                      <TableCell className="px-8 text-right">
-                        <div className="flex items-center justify-end gap-2 transition-all">
+                      <TableCell className="px-8 text-center">
+                        <div className="flex items-center justify-center gap-2 transition-all">
                           <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-primary/10 hover:text-primary transition-all">
                             <Download className="w-4 h-4" />
                           </Button>

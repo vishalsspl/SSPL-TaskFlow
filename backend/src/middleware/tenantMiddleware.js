@@ -33,8 +33,28 @@ export const attachTenantDb = async (req, res, next) => {
     });
 
     // 3. Attach appropriate client
-    if (organization && organization.dbStrategy === 'DEDICATED') {
+    if (organization) {
+      // With the new architecture, all orgs have dbUrl and dbStrategy = DEDICATED
       req.db = getTenantPrismaClient(organization);
+      
+      // 4. Upgrade req.user with local tenant-specific properties
+      if (req.user && req.user.id) {
+        try {
+          const localUser = await req.db.user.findUnique({
+            where: { id: req.user.id }
+          });
+          if (localUser) {
+            req.user = {
+              ...req.user,
+              ...localUser,
+              // maintain the organization object injected by global DB
+              organization: req.user.organization
+            };
+          }
+        } catch (err) {
+          console.error('[TenantMiddleware] Could not resolve local user profile in tenant DB', err.message);
+        }
+      }
     } else {
       req.db = prisma;
     }
@@ -42,7 +62,7 @@ export const attachTenantDb = async (req, res, next) => {
     next();
   } catch (error) {
     console.error('[TenantMiddleware] Error resolving tenant DB:', error.message);
-    // Fallback to shared DB to avoid breaking existing functionality
+    // Fallback to shared DB to avoid breaking existing functionality immediately
     req.db = prisma;
     next();
   }

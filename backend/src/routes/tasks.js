@@ -11,10 +11,12 @@ import {
 } from '../controllers/taskController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import attachTenantDb from '../middleware/tenantMiddleware.js';
+import { requireFeature } from '../middleware/featureGate.js';
 
 const router = express.Router();
 
 router.use(authenticate);
+router.use(requireFeature('tasks'));
 router.use(attachTenantDb);
 
 router.get('/my-tasks', getMyTasks);

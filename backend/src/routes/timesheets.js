@@ -13,10 +13,12 @@ import {
 } from '../controllers/timesheetController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import attachTenantDb from '../middleware/tenantMiddleware.js';
+import { requireFeature } from '../middleware/featureGate.js';
 
 const router = express.Router();
 
 router.use(authenticate);
+router.use(requireFeature('timesheets'));
 router.use(attachTenantDb);
 
 // Time entries

@@ -8,10 +8,12 @@ import {
 } from '../controllers/ticketController.js';
 import { authenticate } from '../middleware/auth.js';
 import attachTenantDb from '../middleware/tenantMiddleware.js';
+import { requireFeature } from '../middleware/featureGate.js';
 
 const router = express.Router();
 
 router.use(authenticate);
+router.use(requireFeature('tickets'));
 router.use(attachTenantDb);
 
 router.get('/', getAllTickets);

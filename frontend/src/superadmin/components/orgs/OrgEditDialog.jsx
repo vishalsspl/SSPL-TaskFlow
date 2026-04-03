@@ -131,6 +131,61 @@ const OrgEditDialog = ({ editOrg, setEditOrg, onSave, saving }) => {
               </div>
             </div>
 
+
+            {/* Feature Access */}
+            <div className="pt-6 border-t border-border/10">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Zap className="w-4 h-4 text-primary" />
+                </div>
+                <h3 className="text-xs font-medium text-primary">Feature Access Control</h3>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {[
+                  { key: 'projects', label: 'Projects' },
+                  { key: 'kanban', label: 'Kanban Board' },
+                  { key: 'tasks', label: 'Tasks' },
+                  { key: 'tickets', label: 'Tickets' },
+                  { key: 'team', label: 'Team' },
+                  { key: 'chat', label: 'Chat' },
+                  { key: 'performance', label: 'Performance' },
+                  { key: 'timesheets', label: 'Timesheets' },
+                ].map(({ key, label }) => {
+                  const isEnabled = editOrg?.customFeatures?.[key] !== false;
+                  return (
+                    <div
+                      key={key}
+                      className={cn(
+                        'flex items-center justify-between px-4 py-3 rounded-xl border transition-all cursor-pointer select-none',
+                        isEnabled
+                          ? 'border-primary/20 bg-primary/5'
+                          : 'border-border/30 bg-muted/30 opacity-60'
+                      )}
+                      onClick={() =>
+                        setEditOrg((prev) => ({
+                          ...prev,
+                          customFeatures: {
+                            ...(prev.customFeatures || {}),
+                            [key]: !isEnabled,
+                          },
+                        }))
+                      }
+                    >
+                      <span className="text-xs font-semibold">{label}</span>
+                      <div
+                        className={cn(
+                          'w-9 h-5 rounded-full flex items-center transition-colors duration-200 px-0.5',
+                          isEnabled ? 'bg-primary justify-end' : 'bg-border justify-start'
+                        )}
+                      >
+                        <div className="w-4 h-4 rounded-full bg-white shadow-sm" />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* Admin Section */}
             {editOrg?.adminId && (
               <div className="pt-6 border-t border-border/10">

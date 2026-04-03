@@ -77,6 +77,14 @@
       Works with express-async-errors (no try/catch needed in controllers).
     </file>
 
+    <file name="featureGate.js" path="src/middleware/featureGate.js">
+      requireFeature(featureKey):
+        - Blocks API access if the requested feature is disabled for the user's organization.
+        - Reuses the `getActiveFeatures()` logic (checking customFeatures over plan defaults).
+        - Returns 403 { error: 'Feature not available' } if explicitly disabled.
+        - SUPERADMIN role bypasses all feature gates automatically.
+    </file>
+
   </middleware>
 
   <!-- ─────────────────────────────────────────────────────────────── -->

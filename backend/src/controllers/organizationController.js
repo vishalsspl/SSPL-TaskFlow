@@ -210,6 +210,21 @@ export const updateOrgByAdmin = async (req, res) => {
             .catch(err => console.error('Failed to send credentials email:', err));
     }
 
+    // Notify connected org users to refresh permissions/features immediately.
+    try {
+        if (req.io) {
+            req.io.to(`org-${id}`).emit('org-permissions-updated', {
+                organizationId: id,
+                customFeatures: org.customFeatures || {},
+                plan: org.plan,
+                status: org.status,
+                updatedAt: org.updatedAt,
+            });
+        }
+    } catch (err) {
+        console.error('[Organizations] Failed to emit org-permissions-updated:', err?.message || err);
+    }
+
     res.json(org);
 };
 
