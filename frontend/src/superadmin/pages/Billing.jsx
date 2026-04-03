@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useHeaderStore } from '@/store/headerStore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,7 +28,8 @@ import api from '@/lib/api';
 import { format } from 'date-fns';
 
 const SuperAdminBilling = () => {
-  const { setHeader, searchTerm: globalSearch } = useHeaderStore();
+  const { setHeader, searchTerm: globalSearch, setSearchTerm } = useHeaderStore();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -256,17 +258,24 @@ const SuperAdminBilling = () => {
                                 <MoreVertical className="w-4 h-4" />
                               </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48 rounded-xl border-border/40 bg-black/90 backdrop-blur-xl p-1">
+                            <DropdownMenuContent align="end" className="w-52 rounded-2xl border-border/40 bg-background dark:bg-black/95 backdrop-blur-xl shadow-2xl p-2 font-montserrat">
                               {invoice.status === 'PENDING' && (
                                 <DropdownMenuItem
                                   onClick={() => handleUpdateStatus(invoice.id, 'PAID')}
-                                  className="flex items-center gap-3 px-3 py-2 text-emerald-500 focus:text-white focus:bg-emerald-500 rounded-lg cursor-pointer text-[10px] font-bold tracking-widest uppercase"
+                                  className="flex items-center gap-3 px-4 py-3 text-emerald-500 focus:text-white focus:bg-emerald-500 rounded-xl cursor-pointer text-[10px] font-black tracking-widest uppercase transition-all"
                                 >
                                   <CheckCircle2 className="w-4 h-4" /> Mark as Paid
                                 </DropdownMenuItem>
                               )}
-                              <DropdownMenuItem className="flex items-center gap-3 px-3 py-2 text-white focus:bg-primary/20 rounded-lg cursor-pointer text-[10px] font-black tracking-widest uppercase">
-                                <ExternalLink className="w-4 h-4" /> View Organization
+                              <DropdownMenuItem 
+                                onClick={() => {
+                                  setSearchTerm(invoice.organization.name);
+                                  navigate('/superadmin/orgs');
+                                }}
+                                className="flex items-center gap-3 px-4 py-3 text-foreground dark:text-white focus:bg-primary/10 rounded-xl cursor-pointer text-[10px] font-black tracking-widest uppercase transition-all"
+                              >
+                                <ExternalLink className="w-4 h-4 text-primary" />
+                                <span>View Organization</span>
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>

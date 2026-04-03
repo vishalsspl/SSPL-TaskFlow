@@ -78,16 +78,16 @@ const UserTable = ({ users, getRoleBadge, onForceReset, onDelete }) => {
                           <MoreVertical className="h-5 w-5" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-56 rounded-2xl shadow-2xl bg-black/90 dark:bg-black/95 backdrop-blur-xl border-border/40 p-2">
+                      <DropdownMenuContent align="end" className="w-56 rounded-2xl shadow-2xl bg-background dark:bg-black/95 backdrop-blur-xl border-border/40 p-2 font-montserrat">
                         <DropdownMenuItem
-                          className="rounded-xl py-3 font-bold text-[10px] tracking-widest uppercase cursor-pointer focus:bg-primary/20 focus:text-white"
+                          className="rounded-xl py-3 font-bold text-[10px] tracking-widest uppercase cursor-pointer text-foreground dark:text-white focus:bg-primary/10 transition-all"
                           onClick={() => onForceReset(u)}
                         >
                           <Key className="w-4 h-4 mr-3 text-primary" /> Reset Password
                         </DropdownMenuItem>
-                        <DropdownMenuSeparator className="bg-white/5 opacity-50" />
+                        <DropdownMenuSeparator className="bg-border/10 dark:bg-white/5" />
                         <DropdownMenuItem
-                          className="text-red-500 rounded-xl py-3 font-bold text-[10px] tracking-widest uppercase cursor-pointer focus:bg-red-500 focus:text-white"
+                          className="text-red-500 rounded-xl py-3 font-bold text-[10px] tracking-widest uppercase cursor-pointer focus:bg-red-500 focus:text-white transition-all"
                           onClick={() => onDelete(u)}
                         >
                           <UserX className="w-4 h-4 mr-3" /> Delete User

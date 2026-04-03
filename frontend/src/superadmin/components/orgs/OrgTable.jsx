@@ -43,10 +43,14 @@ const OrgTable = ({
                 <TableCell className="py-5">
                   <div className="flex items-center justify-center gap-4">
                     <div
-                      className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border border-primary/10 shadow-inner group-hover:scale-110 transition-transform duration-500"
-                      style={{ background: `linear-gradient(135deg, ${org.themeColor || '#15803d'}22, ${org.themeColor || '#15803d'}44)` }}
+                      className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 border border-primary/10 shadow-inner group-hover:scale-110 transition-transform duration-500 overflow-hidden"
+                      style={{ background: org.logoUrl ? 'transparent' : `linear-gradient(135deg, ${org.themeColor || '#15803d'}22, ${org.themeColor || '#15803d'}44)` }}
                     >
-                      <Building2 className="w-6 h-6 text-primary/80" />
+                      {org.logoUrl ? (
+                        <img src={org.logoUrl} alt={org.name} className="w-full h-full object-contain p-1" />
+                      ) : (
+                        <Building2 className="w-6 h-6 text-primary/80" />
+                      )}
                     </div>
                     <div className="min-w-0 text-left w-[180px]">
                       <p className="font-bold text-sm text-foreground truncate">{org.name}</p>
@@ -80,23 +84,23 @@ const OrgTable = ({
                           <MoreHorizontal className="h-5 w-5" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-56 rounded-2xl shadow-2xl border-border/40 bg-black/90 backdrop-blur-xl p-2">
+                      <DropdownMenuContent align="end" className="w-56 rounded-2xl shadow-2xl border-border/40 bg-background dark:bg-black/95 backdrop-blur-xl p-2 font-montserrat">
                         <DropdownMenuLabel className="text-[10px] font-black tracking-widest uppercase text-primary/60 px-3 py-2">
                           Actions
                         </DropdownMenuLabel>
-                        <DropdownMenuSeparator className="bg-primary/10" />
+                        <DropdownMenuSeparator className="bg-border/10 dark:bg-white/5" />
                         {org.status === 'PENDING' ? (
                           <>
-                            <DropdownMenuItem className="text-green-500 hover:text-white hover:bg-green-500 rounded-xl cursor-pointer font-bold text-[10px] tracking-widest uppercase py-3 mb-1" onClick={() => onApprove(org)}>
+                            <DropdownMenuItem className="text-green-500 hover:text-white hover:bg-green-500 rounded-xl cursor-pointer font-bold text-[10px] tracking-widest uppercase py-3 mb-1 transition-all" onClick={() => onApprove(org)}>
                               <ShieldAlert className="w-4 h-4 mr-3" /> Approve
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-500 hover:text-white hover:bg-red-500 rounded-xl cursor-pointer font-bold text-[10px] tracking-widest uppercase py-3" onClick={() => onDelete(org)}>
+                            <DropdownMenuItem className="text-red-500 hover:text-white hover:bg-red-500 rounded-xl cursor-pointer font-bold text-[10px] tracking-widest uppercase py-3 transition-all" onClick={() => onDelete(org)}>
                               <Trash2 className="w-4 h-4 mr-3" /> Reject & Delete
                             </DropdownMenuItem>
                           </>
                         ) : (
                           <>
-                            <DropdownMenuItem className="rounded-xl cursor-pointer font-bold text-[10px] tracking-widest uppercase py-3 mb-1 transition-all" onClick={() => onEdit(org)}>
+                            <DropdownMenuItem className="text-foreground dark:text-white rounded-xl cursor-pointer font-bold text-[10px] tracking-widest uppercase py-3 mb-1 transition-all focus:bg-primary/10" onClick={() => onEdit(org)}>
                               <Edit2 className="w-4 h-4 mr-3 text-primary" /> Edit
                             </DropdownMenuItem>
                             <DropdownMenuItem
@@ -106,7 +110,7 @@ const OrgTable = ({
                               <ShieldAlert className="w-4 h-4 mr-3" />
                               {org.status === 'SUSPENDED' ? 'Reactivate' : 'Suspend'}
                             </DropdownMenuItem>
-                            <DropdownMenuSeparator className="bg-primary/10" />
+                            <DropdownMenuSeparator className="bg-border/10 dark:bg-white/5" />
                             <DropdownMenuItem
                               className="text-red-500 hover:text-white hover:bg-red-500 rounded-xl cursor-pointer font-bold text-[10px] tracking-widest uppercase py-3 transition-all"
                               onClick={() => onDelete(org)}

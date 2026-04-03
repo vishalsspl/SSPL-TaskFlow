@@ -14,8 +14,12 @@ const OrgCards = ({ orgs, getStatusBadge, getPlanBadge, onEdit, onSuspend, onApp
           style={{ borderTopColor: org.themeColor || 'hsl(var(--primary))' }}>
           <div className="flex justify-between items-start mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0">
-                <Building2 className="w-6 h-6 text-primary" />
+              <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0 overflow-hidden">
+                {org.logoUrl ? (
+                  <img src={org.logoUrl} alt={org.name} className="w-full h-full object-contain p-1" />
+                ) : (
+                  <Building2 className="w-6 h-6 text-primary" />
+                )}
               </div>
               <div className="min-w-0">
                 <h4 className="font-semibold text-sm break-words pr-8">{org.name}</h4>
@@ -32,29 +36,29 @@ const OrgCards = ({ orgs, getStatusBadge, getPlanBadge, onEdit, onSuspend, onApp
                     <MoreHorizontal className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 rounded-lg shadow-2xl bg-black/90 backdrop-blur-xl border-white/10 p-2">
+                <DropdownMenuContent align="end" className="w-56 rounded-2xl shadow-2xl bg-background dark:bg-black/95 backdrop-blur-xl border-border/40 p-2 font-montserrat">
                   {org.status === 'PENDING' ? (
                     <>
-                      <DropdownMenuItem className="text-green-500 rounded-xl py-3 font-semibold text-xs cursor-pointer" onClick={() => onApprove(org)}>
+                      <DropdownMenuItem className="text-green-500 rounded-xl py-3 font-bold text-[10px] tracking-widest uppercase cursor-pointer focus:bg-green-500 focus:text-white transition-all" onClick={() => onApprove(org)}>
                         <ShieldAlert className="w-4 h-4 mr-3" /> Approve
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-500 rounded-xl py-3 font-semibold text-xs cursor-pointer" onClick={() => onDelete(org)}>
+                      <DropdownMenuItem className="text-red-500 rounded-xl py-3 font-bold text-[10px] tracking-widest uppercase cursor-pointer focus:bg-red-500 focus:text-white transition-all" onClick={() => onDelete(org)}>
                         <Trash2 className="w-4 h-4 mr-3" /> Reject & Delete
                       </DropdownMenuItem>
                     </>
                   ) : (
                     <>
-                      <DropdownMenuItem className="rounded-xl py-3 font-semibold text-xs cursor-pointer" onClick={() => onEdit(org)}>
+                      <DropdownMenuItem className="rounded-xl py-3 font-bold text-[10px] tracking-widest uppercase cursor-pointer text-foreground dark:text-white focus:bg-primary/10 transition-all font-black" onClick={() => onEdit(org)}>
                         <Edit2 className="w-4 h-4 mr-3 text-primary" /> Edit
                       </DropdownMenuItem>
                       <DropdownMenuItem 
-                        className="text-orange-500 rounded-xl py-3 font-semibold text-xs cursor-pointer" 
+                        className="text-orange-500 rounded-xl py-3 font-bold text-[10px] tracking-widest uppercase cursor-pointer focus:bg-orange-500 focus:text-white transition-all" 
                         onClick={() => onSuspend(org)}
                       >
                         <ShieldAlert className="w-4 h-4 mr-3" /> 
                         {org.status === 'SUSPENDED' ? 'Reactivate' : 'Suspend'}
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="text-red-500 rounded-xl py-3 font-semibold text-xs cursor-pointer" onClick={() => onDelete(org)}>
+                      <DropdownMenuItem className="text-red-500 rounded-xl py-3 font-bold text-[10px] tracking-widest uppercase cursor-pointer focus:bg-red-500 focus:text-white transition-all" onClick={() => onDelete(org)}>
                         <Trash2 className="w-4 h-4 mr-3" /> Delete
                       </DropdownMenuItem>
                     </>
