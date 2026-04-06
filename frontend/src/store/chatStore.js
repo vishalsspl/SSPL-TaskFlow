@@ -15,6 +15,12 @@ export const useChatStore = create((set, get) => ({
 
     // NEW: Fetch initial unread counts from server
     fetchInitialUnread: async () => {
+        const user = useAuthStore.getState().user;
+        const chatEnabled = user?.organization?.activeFeatures?.chat !== false;
+        if (!chatEnabled) {
+            console.log('[Chat Store] Chat feature disabled, skipping initial counts.');
+            return;
+        }
         try {
             console.log('[Chat Store] Fetching initial unread counts...');
             const response = await api.get('/chat/rooms');
@@ -140,8 +146,18 @@ export const useChatStore = create((set, get) => ({
         const { socket, joinRoom, organizationId } = get();
         if (!socket) return;
 
+        const user = useAuthStore.getState().user;
+        const chatEnabled = user?.organization?.activeFeatures?.chat !== false;
+
         console.log('Rejoining all rooms...');
-        joinRoom('global');
+        if (chatEnabled) {
+            joinRoom('global');
+        }
+
+        if (!chatEnabled) {
+             console.log('[Chat Store] Chat feature disabled, skipping room rejoins.');
+             return;
+        }
 
         try {
             const response = await apiInstance.get('/chat/rooms');

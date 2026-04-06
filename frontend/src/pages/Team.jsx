@@ -451,22 +451,24 @@ const Team = () => {
       {/* ─── Header Section (Fixed) ─── */}
       <div className="flex-none px-2 sm:px-2 space-y-4">
         <Dialog open={showDialog} onOpenChange={setShowDialog}>
-          <DialogContent className="sm:max-w-[600px] max-h-[95vh] overflow-y-auto p-4 sm:p-6">
-            <DialogHeader className="mb-2 sm:mb-4">
-              <DialogTitle>{editingUser ? 'Edit Team Member' : 'Add New Member'}</DialogTitle>
-              <DialogDescription className="text-xs sm:text-sm">
-                {editingUser
-                  ? "Update the user's role and details. Changing the role will affect their permissions immediately."
-                  : "Enter the member's details and set a password. They will receive an email with their credentials."}
-              </DialogDescription>
-            </DialogHeader>
-            <UserForm
-              formData={formData}
-              setFormData={setFormData}
-              editingUser={editingUser}
-              onSubmit={handleSubmit}
-              onCancel={handleCancel}
-            />
+          <DialogContent className="sm:max-w-[600px] max-h-[95vh] p-0 overflow-hidden flex flex-col">
+            <div className="overflow-y-auto p-4 sm:p-6 flex-1 w-full relative">
+              <DialogHeader className="mb-2 sm:mb-4">
+                <DialogTitle>{editingUser ? 'Edit Team Member' : 'Add New Member'}</DialogTitle>
+                <DialogDescription className="text-xs sm:text-sm">
+                  {editingUser
+                    ? "Update the user's role and details. Changing the role will affect their permissions immediately."
+                    : "Enter the member's details and set a password. They will receive an email with their credentials."}
+                </DialogDescription>
+              </DialogHeader>
+              <UserForm
+                formData={formData}
+                setFormData={setFormData}
+                editingUser={editingUser}
+                onSubmit={handleSubmit}
+                onCancel={handleCancel}
+              />
+            </div>
           </DialogContent>
         </Dialog>
 

@@ -40,7 +40,7 @@ export const getStats = async (req, res) => {
 
 // POST /api/superadmin/orgs
 export const createOrganization = async (req, res) => {
-    const { name, industry, adminName, adminEmail, adminPassword, plan = 'TRIAL' } = req.body;
+    const { name, industry, size, website, country, timezone, adminName, adminEmail, adminPassword, plan = 'TRIAL' } = req.body;
 
     if (!name || !adminName || !adminEmail || !adminPassword) {
         return res.status(400).json({ error: 'Name, admin name, admin email, and admin password are required' });
@@ -59,36 +59,59 @@ export const createOrganization = async (req, res) => {
         const passwordHash = await bcrypt.hash(adminPassword, 10);
 
         const result = await prisma.$transaction(async (tx) => {
-            // 1. Fetch platform settings for limits
+            // 1. Fetch platform settings for limits and features
             const settings = await tx.platformSetting.findMany();
             const s = settings.reduce((acc, curr) => ({ ...acc, [curr.key]: curr.value }), {});
 
-            const getLimit = (plan, type, hardcoded) => {
-                const key = `${plan.toLowerCase()}_max_${type}`;
+            const getLimit = (planVal, type, hardcoded) => {
+                const key = `${planVal.toLowerCase()}_max_${type}`;
                 return s[key] ? Number(s[key]) : hardcoded;
+            };
+
+            const getFeatures = (planVal) => {
+                const key = `${planVal.toLowerCase()}_features`;
+                if (!s[key]) return { 
+                    projects: true, kanban: true, tasks: true, tickets: true, 
+                    team: true, chat: true, performance: true, timesheets: true 
+                };
+                try {
+                    return typeof s[key] === 'string' ? JSON.parse(s[key]) : s[key];
+                } catch (e) {
+                    return { 
+                        projects: true, kanban: true, tasks: true, tickets: true, 
+                        team: true, chat: true, performance: true, timesheets: true 
+                    };
+                }
             };
 
             const maxUsers = plan === 'ENTERPRISE' ? getLimit('ENTERPRISE', 'users', 1000) 
                            : (plan === 'PRO' ? getLimit('PRO', 'users', 100) 
-                           : (plan === 'STARTER' ? getLimit('STARTER', 'users', 30) : 10));
+                           : (plan === 'STARTER' ? getLimit('STARTER', 'users', 30) : getLimit('FREE', 'users', 10)));
 
             const maxProjects = plan === 'ENTERPRISE' ? getLimit('ENTERPRISE', 'projects', 500) 
-                              : (plan === 'PRO' ? getLimit('PRO', 'projects', 50) 
-                              : (plan === 'STARTER' ? getLimit('STARTER', 'projects', 5) : 3));
+                               : (plan === 'PRO' ? getLimit('PRO', 'projects', 50) 
+                               : (plan === 'STARTER' ? getLimit('STARTER', 'projects', 5) : getLimit('FREE', 'projects', 3)));
+
+            const customFeatures = getFeatures(plan);
 
             // 2. Create Organization
             const org = await tx.organization.create({
                 data: {
                     name,
-                    industry,
-                    plan,
+                    industry: industry || null,
+                    size: size || null,
+                    website: website || null,
+                    country: country || null,
+                    timezone: timezone || 'Asia/Kolkata',
+                    plan: plan || 'FREE',
                     status: 'ACTIVE',
                     maxUsers,
                     maxProjects,
+                    customFeatures,
                 }
             });
 
-            // 2. Create Admin User
+            // 3. Create Admin User
             const user = await tx.user.create({
                 data: {
                     name: adminName,
@@ -130,7 +153,6 @@ export const getOrganizations = async (req, res) => {
             orderBy: { createdAt: 'desc' }
         });
         
-        // Ensure every org has customFeatures returned correctly
         res.json(orgs);
     } catch (error) {
         console.error('Error fetching organizations:', error);
@@ -158,7 +180,6 @@ export const updateOrganization = async (req, res) => {
         });
 
         // Notify connected org users to refresh their permissions/features immediately.
-        // Clients join `org-${organizationId}` via the existing Socket.IO join-room flow.
         try {
             if (req.io) {
                 req.io.to(`org-${id}`).emit('org-permissions-updated', {
@@ -254,8 +275,6 @@ export const getGlobalUsers = async (req, res) => {
 export const forceResetPassword = async (req, res) => {
     const { id } = req.params;
     try {
-        // In a real app, you'd send an email here. 
-        // For now, we'll just set mustChangePassword to true.
         await prisma.user.update({
             where: { id },
             data: { mustChangePassword: true }
@@ -308,9 +327,8 @@ export const getGlobalAuditLogs = async (req, res) => {
                     { entity: { contains: search, mode: 'insensitive' } },
                     { user: { name: { contains: search, mode: 'insensitive' } } },
                     { organization: { name: { contains: search, mode: 'insensitive' } } },
-                    // Simple search by month or year (common strings)
                     ...(search.length >= 3 ? [
-                        { details: { string_contains: search } } // Search in details as string if needed
+                        { details: { string_contains: search } }
                     ] : [])
                 ]
             })

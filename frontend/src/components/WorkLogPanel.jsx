@@ -8,8 +8,10 @@ import { toast } from '../hooks/use-toast';
 import api from '../lib/api';
 import { format } from 'date-fns';
 import DeleteConfirmDialog from './ui/delete-confirm-dialog';
+import { useAuthStore } from '../store/authStore';
 
 const WorkLogPanel = ({ taskId, projectId }) => {
+  const { user } = useAuthStore();
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hours, setHours] = useState('');
@@ -99,50 +101,52 @@ const WorkLogPanel = ({ taskId, projectId }) => {
 
   return (
     <div className="space-y-6">
-      <Card className="border-primary/10 shadow-sm">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-md flex items-center gap-2">
-            <Plus className="w-4 h-4 text-primary" />
-            Add Work Log
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleAddLog} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-            <div className="space-y-2">
-              <Label className="text-xs">Date</Label>
-              <Input 
-                type="date" 
-                value={date} 
-                onChange={(e) => setDate(e.target.value)} 
-                className="h-9"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">Hours</Label>
-              <Input 
-                type="number" 
-                step="0.1" 
-                placeholder="e.g. 1.5"
-                value={hours} 
-                onChange={(e) => setHours(e.target.value)}
-                className="h-9"
-              />
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <Label className="text-xs">Description</Label>
-              <Input 
-                placeholder="What did you do?" 
-                value={description} 
-                onChange={(e) => setDescription(e.target.value)}
-                className="h-9"
-              />
-            </div>
-            <Button type="submit" className="h-9 w-full">
-              Save Log
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+      {!['ADMIN', 'SUPERADMIN'].includes(user?.role) && (
+        <Card className="border-primary/10 shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-md flex items-center gap-2">
+              <Plus className="w-4 h-4 text-primary" />
+              Add Work Log
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleAddLog} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+              <div className="space-y-2">
+                <Label className="text-xs">Date</Label>
+                <Input 
+                  type="date" 
+                  value={date} 
+                  onChange={(e) => setDate(e.target.value)} 
+                  className="h-9"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Hours</Label>
+                <Input 
+                  type="number" 
+                  step="0.1" 
+                  placeholder="e.g. 1.5"
+                  value={hours} 
+                  onChange={(e) => setHours(e.target.value)}
+                  className="h-9"
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label className="text-xs">Description</Label>
+                <Input 
+                  placeholder="What did you do?" 
+                  value={description} 
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="h-9"
+                />
+              </div>
+              <Button type="submit" className="h-9 w-full">
+                Save Log
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="space-y-3">
         <h3 className="text-sm font-semibold flex items-center gap-2 text-muted-foreground">

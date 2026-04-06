@@ -245,7 +245,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                     <div className="relative">
                         <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70 z-10" />
                         <MultiSearchableSelect
-                            options={users.map(u => ({ value: u.id, label: `${u.name} (${u.role})` }))}
+                            options={Array.from(new Map(users.map(u => [u.id, { value: u.id, label: `${u.name} (${u.role})` }])).values())}
                             value={formData.assigneeIds}
                             onChange={(ids) => setFormData({ ...formData, assigneeIds: ids })}
                             placeholder="Select assignees..."

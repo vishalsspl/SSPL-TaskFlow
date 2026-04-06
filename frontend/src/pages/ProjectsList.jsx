@@ -313,15 +313,16 @@ const ProjectsList = () => {
   return (
     <div className="flex-1 flex flex-col min-h-screen lg:min-h-0 p-0 pt-0 gap-4">
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="w-[95vw] sm:max-w-[600px] max-h-[85vh] overflow-y-auto p-4 sm:p-6">
-          <DialogHeader>
-            <DialogTitle>Edit Project</DialogTitle>
-            <DialogDescription>
-              Update project details.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4 mobile-reduce-spacing">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mobile-reduce-grid">
+        <DialogContent className="w-[95vw] sm:max-w-[600px] max-h-[85vh] p-0 overflow-hidden flex flex-col">
+          <div className="overflow-y-auto p-4 sm:p-6 flex-1 w-full relative">
+            <DialogHeader className="mb-4">
+              <DialogTitle>Edit Project</DialogTitle>
+              <DialogDescription>
+                Update project details.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-4 mobile-reduce-spacing">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mobile-reduce-grid">
 
               {/* Project Name - Full Width */}
               <div className="md:col-span-2 space-y-2">
@@ -442,15 +443,16 @@ const ProjectsList = () => {
                   placeholder="Project description..."
                 />
               </div>
-            </div>
+              </div>
 
-            <div className="flex justify-end gap-2 sm:gap-3 pt-4 sm:pt-6 border-t mt-1">
-              <Button type="button" variant="outline" onClick={() => setShowEditDialog(false)} className="hover:bg-gray-50 h-8 sm:h-10 text-xs sm:text-sm">
-                Cancel
-              </Button>
-              <Button type="submit" className="bg-primary hover:bg-primary/90 shadow-md h-8 sm:h-10 text-xs sm:text-sm px-6">Update Project</Button>
-            </div>
-          </form>
+              <div className="flex justify-end gap-2 sm:gap-3 pt-4 sm:pt-6 border-t mt-1">
+                <Button type="button" variant="outline" onClick={() => setShowEditDialog(false)} className="hover:bg-gray-50 h-8 sm:h-10 text-xs sm:text-sm">
+                  Cancel
+                </Button>
+                <Button type="submit" className="bg-primary hover:bg-primary/90 shadow-md h-8 sm:h-10 text-xs sm:text-sm px-6">Update Project</Button>
+              </div>
+            </form>
+          </div>
         </DialogContent>
       </Dialog>
 
@@ -525,17 +527,19 @@ const ProjectsList = () => {
                           <span>New Project</span>
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="w-[95vw] sm:max-w-[600px] max-h-[85vh] overflow-y-auto p-4 sm:p-6">
-                        <DialogHeader>
-                          <DialogTitle>Create New Project</DialogTitle>
-                          <DialogDescription>
-                            Add a new project to your workspace. Click save when you're done.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <CreateProjectForm
-                          onSuccess={handleCreateSuccess}
-                          onCancel={() => setShowCreateDialog(false)}
-                        />
+                      <DialogContent className="w-[95vw] sm:max-w-[600px] max-h-[85vh] p-0 overflow-hidden flex flex-col">
+                        <div className="overflow-y-auto p-4 sm:p-6 flex-1 w-full relative">
+                          <DialogHeader className="mb-4">
+                            <DialogTitle>Create New Project</DialogTitle>
+                            <DialogDescription>
+                              Add a new project to your workspace. Click save when you're done.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <CreateProjectForm
+                            onSuccess={handleCreateSuccess}
+                            onCancel={() => setShowCreateDialog(false)}
+                          />
+                        </div>
                       </DialogContent>
                     </Dialog>
                   </div>
@@ -744,29 +748,31 @@ const ProjectsList = () => {
       />
 
       <Dialog open={showOverviewDialog} onOpenChange={setShowOverviewDialog}>
-        <DialogContent className="sm:max-w-[900px] max-h-[95vh] overflow-y-auto p-4 sm:p-6">
-          <DialogHeader className="mb-2 sm:mb-4">
-            <div className="flex items-center justify-between pr-8">
-              <div>
-                <DialogTitle>Project Quick Overview</DialogTitle>
-                <DialogDescription>
-                  Real-time snapshot of mission progress and team workload.
-                </DialogDescription>
+        <DialogContent className="sm:max-w-[900px] max-h-[95vh] p-0 overflow-hidden flex flex-col">
+          <div className="overflow-y-auto p-4 sm:p-6 flex-1 w-full relative">
+            <DialogHeader className="mb-2 sm:mb-4">
+              <div className="flex items-center justify-between pr-8">
+                <div>
+                  <DialogTitle>Project Quick Overview</DialogTitle>
+                  <DialogDescription>
+                    Real-time snapshot of mission progress and team workload.
+                  </DialogDescription>
+                </div>
+                <Button
+                  onClick={() => navigate(`/projects/${selectedOverviewProject?.id}`)}
+                  className="bg-primary hover:bg-primary/90 text-white font-bold rounded-xl px-3 sm:px-4"
+                  size="sm"
+                >
+                  <Eye className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">View Full Details</span>
+                </Button>
               </div>
-              <Button
-                onClick={() => navigate(`/projects/${selectedOverviewProject?.id}`)}
-                className="bg-primary hover:bg-primary/90 text-white font-bold rounded-xl px-3 sm:px-4"
-                size="sm"
-              >
-                <Eye className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">View Full Details</span>
-              </Button>
+            </DialogHeader>
+            <div className="py-4">
+              {selectedOverviewProject && (
+                <ProjectOverview projectId={selectedOverviewProject.id} />
+              )}
             </div>
-          </DialogHeader>
-          <div className="py-4">
-            {selectedOverviewProject && (
-              <ProjectOverview projectId={selectedOverviewProject.id} />
-            )}
           </div>
         </DialogContent>
       </Dialog>

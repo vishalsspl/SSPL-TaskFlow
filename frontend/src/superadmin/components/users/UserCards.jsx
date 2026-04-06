@@ -33,11 +33,11 @@ const UserCards = ({ users, getRoleBadge, onForceReset, onDelete }) => {
                   <MoreVertical className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 rounded-lg shadow-2xl bg-black/90 p-2 border-white/10">
-                <DropdownMenuItem className="rounded-xl py-3 font-semibold text-xs " onClick={() => onForceReset(u)}>
-                  <Key className="w-4 h-4 mr-3" /> Reset Password
+              <DropdownMenuContent align="end" className="w-56 rounded-2xl shadow-2xl bg-background dark:bg-black/95 backdrop-blur-xl border-border/40 p-2">
+                <DropdownMenuItem className="rounded-xl py-3 font-semibold text-xs cursor-pointer text-foreground dark:text-white focus:bg-primary/10 transition-all" onClick={() => onForceReset(u)}>
+                  <Key className="w-4 h-4 mr-3 text-primary" /> Reset Password
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-red-500 rounded-xl py-3 font-semibold text-xs " onClick={() => onDelete(u)}>
+                <DropdownMenuItem className="text-red-500 rounded-xl py-3 font-semibold text-xs cursor-pointer focus:bg-red-500 focus:text-white transition-all" onClick={() => onDelete(u)}>
                   <UserX className="w-4 h-4 mr-3" /> Delete User
                 </DropdownMenuItem>
               </DropdownMenuContent>

@@ -32,7 +32,7 @@ const OrgList = () => {
   const itemsPerPage = 10;
 
   const [newOrg, setNewOrg] = useState({
-    name: '', industry: '', plan: 'FREE',
+    name: '', industry: '', size: '', website: '', country: '', timezone: 'Asia/Kolkata', plan: 'FREE',
     adminName: '', adminEmail: '', adminPassword: '',
   });
 
@@ -101,6 +101,10 @@ const OrgList = () => {
         password: newOrg.adminPassword,
         organizationName: newOrg.name,
         industry: newOrg.industry || undefined,
+        size: newOrg.size || undefined,
+        website: newOrg.website || undefined,
+        country: newOrg.country || undefined,
+        timezone: newOrg.timezone || 'Asia/Kolkata',
       });
       if (newOrg.plan !== 'FREE') {
         const res = await api.get('/organizations');
@@ -111,7 +115,7 @@ const OrgList = () => {
       }
       toast({ title: 'Organisation provisioned', description: `Created ${newOrg.name} with admin ${newOrg.adminEmail}` });
       setCreateOpen(false);
-      setNewOrg({ name: '', industry: '', plan: 'FREE', adminName: '', adminEmail: '', adminPassword: '' });
+      setNewOrg({ name: '', industry: '', size: '', website: '', country: '', timezone: 'Asia/Kolkata', plan: 'FREE', adminName: '', adminEmail: '', adminPassword: '' });
       fetchOrgs();
     } catch (err) {
       toast({ title: 'Provisioning failed', description: err.response?.data?.error, variant: 'destructive' });

@@ -327,8 +327,8 @@ const TaskKanban = () => {
             </div>
 
             <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-                <DialogContent className="sm:max-w-[700px] max-h-[95vh] overflow-y-auto bg-card border-border text-foreground rounded-xl sm:rounded-3xl p-0 no-scrollbar">
-                    <div className="p-4 sm:p-8">
+                <DialogContent className="sm:max-w-[700px] max-h-[95vh] bg-card border-border text-foreground rounded-xl sm:rounded-3xl p-0 overflow-hidden flex flex-col">
+                    <div className="overflow-y-auto p-4 sm:p-8 flex-1 w-full relative no-scrollbar">
                         <DialogHeader className="mb-2 sm:mb-6">
                             <DialogTitle className="text-xl font-black Montserrat">Edit Task</DialogTitle>
                             <DialogDescription className="text-gray-500 font-bold Montserrat">
@@ -350,8 +350,8 @@ const TaskKanban = () => {
             </Dialog>
 
             <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-                <DialogContent className="sm:max-w-[700px] max-h-[95vh] overflow-y-auto bg-card border-border text-foreground rounded-xl sm:rounded-3xl p-0 no-scrollbar">
-                    <div className="p-4 sm:p-8">
+                <DialogContent className="sm:max-w-[700px] max-h-[95vh] bg-card border-border text-foreground rounded-xl sm:rounded-3xl p-0 overflow-hidden flex flex-col">
+                    <div className="overflow-y-auto p-4 sm:p-8 flex-1 w-full relative no-scrollbar">
                         <DialogHeader className="mb-2 sm:mb-6">
                             <DialogTitle className="text-xl font-black Montserrat">Initiate Task</DialogTitle>
                             <DialogDescription className="text-gray-500 font-bold Montserrat">

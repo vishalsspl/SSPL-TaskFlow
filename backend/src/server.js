@@ -25,7 +25,6 @@ import billingRoutes from './routes/billing.js';
 import { getPublicSettings } from './controllers/settingsController.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import prisma from './lib/prisma.js';
-import { getTenantPrismaClient, disconnectAllTenants } from './lib/tenantManager.js';
 import { attachIo } from './middleware/socketMiddleware.js';
 
 
@@ -88,16 +87,8 @@ io.on('connection', (socket) => {
   socket.on('send-message', async (data) => {
     const { content, userId, projectId, organizationId, snippet } = data;
     try {
-      let tenantDb = prisma;
-      if (organizationId) {
-        // Fetch org to determine if it has a dedicated DB
-        const org = await prisma.organization.findUnique({
-          where: { id: organizationId }
-        });
-        if (org) {
-          tenantDb = getTenantPrismaClient(org);
-        }
-      }
+      // Use the standard prisma client for all chat messages
+      const tenantDb = prisma;
 
       const message = await tenantDb.chatMessage.create({
         data: { 
@@ -202,7 +193,6 @@ httpServer.listen(PORT, () => {
 const shutdown = async () => {
   console.log('\nGracefully shutting down server...');
   try {
-    await disconnectAllTenants();
     await prisma.$disconnect();
   } catch (err) {
     console.error('Error during disconnect:', err);
@@ -217,7 +207,6 @@ const shutdown = async () => {
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 process.once('SIGUSR2', async () => {
-  await disconnectAllTenants();
   await prisma.$disconnect();
   httpServer.close(() => {
     process.kill(process.pid, 'SIGUSR2');

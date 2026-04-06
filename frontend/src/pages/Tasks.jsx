@@ -289,40 +289,44 @@ const Tasks = () => {
     <div className="flex-1 flex flex-col min-h-screen lg:min-h-0 p-0 pt-0 gap-4">
 
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="sm:max-w-[700px] max-h-[95vh] overflow-y-auto p-4 sm:p-6">
-          <DialogHeader className="mb-2 sm:mb-4">
-            <DialogTitle>Create New Task</DialogTitle>
-            <DialogDescription>
-              Add a new task to a project.
-            </DialogDescription>
-          </DialogHeader>
-          <CreateTaskForm
-            projects={projects}
-            users={users}
-            onSuccess={handleTaskCreated}
-            onCancel={() => setShowCreateDialog(false)}
-          />
+        <DialogContent className="sm:max-w-[700px] max-h-[95vh] p-0 overflow-hidden flex flex-col">
+          <div className="overflow-y-auto p-4 sm:p-6 flex-1 w-full relative">
+            <DialogHeader className="mb-2 sm:mb-4">
+              <DialogTitle>Create New Task</DialogTitle>
+              <DialogDescription>
+                Add a new task to a project.
+              </DialogDescription>
+            </DialogHeader>
+            <CreateTaskForm
+              projects={projects}
+              users={users}
+              onSuccess={handleTaskCreated}
+              onCancel={() => setShowCreateDialog(false)}
+            />
+          </div>
         </DialogContent>
       </Dialog>
 
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="sm:max-w-[700px] max-h-[95vh] overflow-y-auto p-4 sm:p-6">
-          <DialogHeader className="mb-2 sm:mb-4">
-            <DialogTitle>Edit Task</DialogTitle>
-            <DialogDescription>
-              Update task details, assignments, or story points.
-            </DialogDescription>
-          </DialogHeader>
-          <CreateTaskForm
-            projects={projects}
-            users={users}
-            task={selectedTask}
-            onSuccess={handleTaskUpdated}
-            onCancel={() => {
-              setShowEditDialog(false);
-              setSelectedTask(null);
-            }}
-          />
+        <DialogContent className="sm:max-w-[700px] max-h-[95vh] p-0 overflow-hidden flex flex-col">
+          <div className="overflow-y-auto p-4 sm:p-6 flex-1 w-full relative">
+            <DialogHeader className="mb-2 sm:mb-4">
+              <DialogTitle>Edit Task</DialogTitle>
+              <DialogDescription>
+                Update task details, assignments, or story points.
+              </DialogDescription>
+            </DialogHeader>
+            <CreateTaskForm
+              projects={projects}
+              users={users}
+              task={selectedTask}
+              onSuccess={handleTaskUpdated}
+              onCancel={() => {
+                setShowEditDialog(false);
+                setSelectedTask(null);
+              }}
+            />
+          </div>
         </DialogContent>
       </Dialog>
 

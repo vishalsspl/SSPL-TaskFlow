@@ -54,7 +54,8 @@ export const getPublicSettings = async (req, res) => {
             'starter_max_users', 'starter_max_projects', 'starter_price', 'starter_per_user_price',
             'pro_max_users', 'pro_max_projects', 'pro_price', 'pro_per_user_price',
             'enterprise_max_users', 'enterprise_max_projects', 'enterprise_price',
-            'annual_discount_percent'
+            'annual_discount_percent',
+            'global_plan_tiers'
         ];
 
         const settings = await prisma.platformSetting.findMany({
