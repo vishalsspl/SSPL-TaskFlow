@@ -1,0 +1,210 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/tenant-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role
+
+  // Self relation (manager)
+  managerId String?
+  manager   User?   @relation("ManagerRelation", fields: [managerId], references: [id])
+  members   User[]  @relation("ManagerRelation")
+
+  // ✅ FIXED RELATIONS
+  managedProjects Project[] @relation("ProjectManager")
+  workloads       Workload[]
+
+  tasks       TaskAssignee[]
+  workLogs    WorkLog[]
+  timeEntries TimeEntry[]
+
+  tickets     Ticket[]        @relation("UserTickets")
+  comments    TicketComment[]
+
+  createdAt DateTime @default(now())
+}
+
+model Project {
+  id        String   @id @default(uuid())
+  name      String
+
+  managerId String
+  manager   User @relation("ProjectManager", fields: [managerId], references: [id])
+
+  phases    Phase[]
+  tasks     Task[]
+  workloads Workload[]
+
+  createdAt DateTime @default(now())
+}
+
+model Phase {
+  id        String   @id @default(uuid())
+  name      String
+  order     Int
+
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id])
+
+  tasks     Task[]
+}
+
+model Task {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+
+  status      TaskStatus @default(TODO)
+  priority    Priority   @default(MEDIUM)
+
+  projectId   String
+  phaseId     String?
+
+  project     Project @relation(fields: [projectId], references: [id])
+  phase       Phase?  @relation(fields: [phaseId], references: [id])
+
+  assignees   TaskAssignee[]
+  workLogs    WorkLog[]
+  timeEntries TimeEntry[]
+
+  dueDate     DateTime?
+  createdAt   DateTime @default(now())
+}
+
+model TaskAssignee {
+  id     String @id @default(uuid())
+
+  taskId String
+  userId String
+
+  task   Task @relation(fields: [taskId], references: [id])
+  user   User @relation(fields: [userId], references: [id])
+
+  @@unique([taskId, userId])
+}
+
+model WorkLog {
+  id        String   @id @default(uuid())
+
+  userId    String
+  taskId    String
+
+  minutes   Int
+  comment   String?
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  task Task @relation(fields: [taskId], references: [id])
+}
+
+model TimeEntry {
+  id        String   @id @default(uuid())
+
+  userId    String
+  taskId    String
+
+  date      DateTime
+  hours     Float
+  description String?
+
+  status    TimeEntryStatus @default(PENDING)
+
+  user User @relation(fields: [userId], references: [id])
+  task Task @relation(fields: [taskId], references: [id])
+}
+
+model Workload {
+  id        String   @id @default(uuid())
+
+  userId    String
+  projectId String
+
+  workloadPercentage Int
+
+  user    User    @relation(fields: [userId], references: [id])
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@unique([userId, projectId])
+}
+
+model Ticket {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+
+  status      TicketStatus @default(OPEN)
+  priority    Priority     @default(MEDIUM)
+
+  clientId    String
+  client      User @relation("UserTickets", fields: [clientId], references: [id])
+
+  comments    TicketComment[]
+
+  createdAt   DateTime @default(now())
+}
+
+model TicketComment {
+  id        String   @id @default(uuid())
+
+  ticketId  String
+  userId    String
+
+  message   String
+
+  ticket Ticket @relation(fields: [ticketId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  MEMBER
+  CLIENT
+}
+
+enum ProjectStatus {
+  PLANNING
+  ACTIVE
+  COMPLETED
+  ON_HOLD
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  COMPLETED
+  BLOCKED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+}
+
+enum TimeEntryStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}

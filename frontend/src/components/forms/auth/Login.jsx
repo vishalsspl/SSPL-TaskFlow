@@ -6,11 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Eye, EyeOff, AlertCircle, CheckCircle, Mail, Lock, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, CheckCircle, Mail, Lock, ArrowLeft, Sun, Moon } from 'lucide-react';
+import { useTheme } from '@/components/ThemeProvider';
 import { cn } from '@/lib/utils';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { theme } = useTheme();
+  const isDarkMode = theme !== 'light';
   const [searchParams] = useSearchParams();
   const { login } = useAuthStore();
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -73,12 +76,15 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0A0A0A] relative overflow-hidden p-4">
+    <div className={cn("min-h-screen flex flex-col items-center justify-start relative overflow-y-auto pt-32 pb-20 px-4 transition-colors duration-500", isDarkMode ? "bg-[#0A0A0A]" : "bg-[#F8FCF6]")}>
       {/* Back to Landing Page Button */}
       <Button
         variant="ghost"
         size="icon"
-        className="fixed top-8 left-8 z-50 text-white/50 hover:text-white hover:bg-white/10 rounded-full border border-white/5 backdrop-blur-md transition-all group w-12 h-12"
+        className={cn(
+          "fixed top-8 left-8 z-50 rounded-full border backdrop-blur-md transition-all group w-12 h-12",
+          isDarkMode ? "text-white/50 hover:text-white hover:bg-white/10 border-white/5" : "text-slate-400 hover:text-slate-900 bg-white border-slate-200 shadow-sm"
+        )}
         onClick={() => navigate('/')}
         title="Back to Home"
       >
@@ -86,18 +92,22 @@ const Login = () => {
       </Button>
 
       {/* Background Gradient */}
-      <div className="fixed inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#102A04] via-[#050505] to-[#0A0A0A]" />
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#48A111]/10 blur-[150px] rounded-full" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#48A111]/5 blur-[150px] rounded-full" />
+      <div className="fixed inset-0 z-0 pointer-events-none">
+          <div className={`absolute inset-0 transition-opacity duration-500 ${!isDarkMode ? 'bg-[url("data:image/svg+xml,%3Csvg width=%2720%27 height=%2720%27 viewBox=%270 0 20%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cg fill=%27%2348a111%27 fill-opacity=%270.05%27 fill-rule=%27evenodd%27%3E%3Ccircle cx=%273%27 cy=%273%27 r=%273%27/%3E%3Ccircle cx=%2713%27 cy=%2713%27 r=%273%27/%3E%3C/g%3E%3C/svg%3E")]' : ''}`} />
+          <div className={`absolute inset-0 bg-gradient-to-br transition-all duration-500 ${isDarkMode ? 'from-[#102A04] via-[#050505] to-[#0A0A0A]' : 'from-[#DDF2D1]/80 via-[#F8FCF6]/90 to-[#E9F7E1]/80'}`} />
+          <div className={`absolute top-[-10%] left-[-10%] w-[50%] h-[50%] blur-[150px] rounded-full transition-all duration-500 ${isDarkMode ? 'bg-primary/20' : 'bg-[#48A111]/15'}`} />
+          <div className={`absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] blur-[150px] rounded-full transition-all duration-500 ${isDarkMode ? 'bg-primary/5' : 'bg-[#48A111]/10'}`} />
       </div>
 
-      <Card className="w-full max-w-md relative z-10 border-white/10 bg-black/40 backdrop-blur-xl shadow-2xl">
+      <Card className={cn(
+        "w-full max-w-md relative z-10 backdrop-blur-xl shadow-2xl transition-all duration-500",
+        isDarkMode ? "bg-black/40 border-white/10" : "bg-white/80 border-[#48A111]/10 shadow-xl"
+      )}>
         <CardHeader className="text-center pb-4">
-          <CardTitle className="text-2xl font-bold tracking-tight text-white/90">
+          <CardTitle className={cn("text-2xl font-bold tracking-tight transition-colors", isDarkMode ? "text-white" : "text-slate-900")}>
             Welcome back to <span className="bg-gradient-to-r from-[#48A111] to-[#A3E635] bg-clip-text text-transparent">TaskFlow</span>
           </CardTitle>
-          <CardDescription className="text-sm text-white/60">Sign in to your account to continue</CardDescription>
+          <CardDescription className={cn("text-sm transition-colors", isDarkMode ? "text-white/60" : "text-slate-700")}>Sign in to your account to continue</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -121,9 +131,9 @@ const Login = () => {
 
             {/* Email */}
             <div className="space-y-2">
-              <Label htmlFor="email" className={cn("text-white/90 font-semibold", fieldErrors.email && "text-[#FF0000]")}>Email</Label>
+              <Label htmlFor="email" className={cn("font-semibold transition-colors", isDarkMode ? "text-white/90" : "text-slate-700", fieldErrors.email && "text-red-500")}>Email</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/70" />
+                <Mail className={cn("absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors", isDarkMode ? "text-white/70" : "text-slate-400")} />
                 <Input
                   id="email"
                   type="email"
@@ -135,8 +145,10 @@ const Login = () => {
                   }}
                   required
                   className={cn(
-                    "!pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/30 focus-visible:ring-[#48A111]/30 focus-visible:border-[#48A111]/50 transition-all",
-                    fieldErrors.email && "border-[#FF0000]/50 ring-[#FF0000]/10 focus-visible:ring-[#FF0000]/20"
+                    "!pl-10 transition-all duration-300",
+                    isDarkMode ? "bg-white/5 border-white/10 text-white placeholder:text-white/30" : "bg-white border-slate-200 text-slate-900 placeholder:text-slate-500",
+                    "focus-visible:ring-[#48A111]/30 focus-visible:border-[#48A111]/50",
+                    fieldErrors.email && "border-red-500/50 ring-red-500/10"
                   )}
                 />
               </div>
@@ -144,9 +156,9 @@ const Login = () => {
 
             {/* Password */}
             <div className="space-y-2">
-              <Label htmlFor="password" className={cn("text-white/90 font-semibold", fieldErrors.password && "text-[#FF0000]")}>Password</Label>
+              <Label htmlFor="password" className={cn("font-semibold transition-colors", isDarkMode ? "text-white/90" : "text-slate-700", fieldErrors.password && "text-red-500")}>Password</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/70" />
+                <Lock className={cn("absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors", isDarkMode ? "text-white/70" : "text-slate-400")} />
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
@@ -158,20 +170,22 @@ const Login = () => {
                   }}
                   required
                   className={cn(
-                    "!pl-10 pr-10 bg-white/5 border-white/10 text-white placeholder:text-white/30 focus-visible:ring-[#48A111]/30 focus-visible:border-[#48A111]/50 transition-all",
-                    fieldErrors.password && "border-[#FF0000]/50 ring-[#FF0000]/10 focus-visible:ring-[#FF0000]/20"
+                    "!pl-10 pr-10 transition-all duration-300",
+                    isDarkMode ? "bg-white/5 border-white/10 text-white placeholder:text-white/30" : "bg-white border-slate-200 text-slate-900 placeholder:text-slate-500",
+                    "focus-visible:ring-[#48A111]/30 focus-visible:border-[#48A111]/50",
+                    fieldErrors.password && "border-red-500/50 ring-red-500/10"
                   )}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors"
+                  className={cn("absolute right-3 top-1/2 -translate-y-1/2 transition-colors", isDarkMode ? "text-white/50 hover:text-white" : "text-slate-400 hover:text-slate-900")}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
               <div className="flex justify-end pt-1">
-                <Link to="/forgot-password" className="text-xs font-semibold text-primary/80 hover:text-primary transition-colors">
+                <Link to="/forgot-password" className={cn("text-xs font-semibold hover:underline transition-colors", isDarkMode ? "text-[#48A111]" : "text-[#48A111]")}>
                   Forgot password?
                 </Link>
               </div>
@@ -181,7 +195,7 @@ const Login = () => {
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
 
-            <p className="text-center text-sm text-white/60 font-medium">
+            <p className={cn("text-center text-sm font-medium transition-colors", isDarkMode ? "text-white/60" : "text-slate-600")}>
               Don't have an account?{' '}
               <Link to="/signup" className="text-[#48A111] hover:underline font-bold transition-all">Sign up</Link>
             </p>

@@ -8,288 +8,69 @@ datasource db {
 }
 
 model Organization {
-  id                    String    @id @default(uuid())
-  name                  String
-  logoUrl               String?   @map("logo_url")
-  themeColor            String?   @default("#3B82F6") @map("theme_color")
-  createdAt             DateTime  @default(now()) @map("created_at")
-  updatedAt             DateTime  @updatedAt @map("updated_at")
-  address               String?
-  allowClientSignup     Boolean   @default(false) @map("allow_client_signup")
-  billingEmail          String?   @map("billing_email")
-  country               String?
-  industry              String?
-  maxProjects           Int       @default(5) @map("max_projects")
-  maxUsers              Int       @default(10) @map("max_users")
-  plan                  OrgPlan   @default(FREE)
-  primaryContactName    String?   @map("primary_contact_name")
-  primaryContactPhone   String?   @map("primary_contact_phone")
-  requireApproval       Boolean   @default(true) @map("require_approval")
-  sessionTimeoutMinutes Int       @default(60) @map("session_timeout_minutes")
-  size                  String?
-  status                OrgStatus @default(TRIAL)
-  suspendedAt           DateTime? @map("suspended_at")
-  suspendedReason       String?   @map("suspended_reason")
-  timezone              String?   @default("Asia/Kolkata")
-  trialEndsAt           DateTime? @map("trial_ends_at")
-  website               String?
-  dbUrl                 String?     @map("db_url")
-  dbStrategy            DbStrategy  @default(SHARED) @map("db_strategy")
-  customFeatures        Json?       @map("custom_features")
-  projects              Project[]
-  tickets               Ticket[]
-  users                 User[]
-  chatMessages          ChatMessage[]
-  chatRoomLastSeen      ChatRoomLastSeen[]
-  activityLogs          ActivityLog[]
-  notifications         Notification[]
-  invoices              Invoice[]
+  id   String @id @default(uuid())
+  name String
 
-  @@map("organizations")
+  // 🔥 tenant connection
+  dbUrl      String
+  dbStrategy DbStrategy @default(DEDICATED)
+
+  // plan & limits
+  plan        OrgPlan   @default(FREE)
+  status      OrgStatus @default(TRIAL)
+  maxUsers    Int       @default(10)
+  maxProjects Int       @default(5)
+
+  // billing
+  billingEmail String?
+  trialEndsAt  DateTime?
+
+  // metadata
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  invoices Invoice[]
+
+  // 🔥 ADD THIS LINE
+  users User[]
 }
 
 model User {
-  id                 String             @id @default(uuid())
-  organizationId     String?            @map("organization_id")
-  name               String
-  email              String
-  passwordHash       String             @map("password_hash")
-  role               Role               @default(MEMBER)
-  avatar             String?
-  createdAt          DateTime           @default(now()) @map("created_at")
-  updatedAt          DateTime           @updatedAt @map("updated_at")
-  isApproved         Boolean            @default(false) @map("is_approved")
-  managerId          String?            @map("manager_id")
-  mustChangePassword Boolean            @default(false) @map("must_change_password")
-  resetToken         String?            @map("reset_token")
-  resetTokenExpiry   DateTime?          @map("reset_token_expiry")
-  activityLogs       ActivityLog[]
-  chatMessages       ChatMessage[]
-  chatRoomLastSeen   ChatRoomLastSeen[]
-  clientProjects     Project[]          @relation("ClientProjects")
-  managedProjects    Project[]
-  taskAssignments    TaskAssignee[]
-  ticketComments     TicketComment[]
-  createdTickets     Ticket[]           @relation("ClientTickets")
-  timeEntries        TimeEntry[]
-  manager            User?              @relation("ManagerSubordinates", fields: [managerId], references: [id])
-  subordinates       User[]             @relation("ManagerSubordinates")
-  organization       Organization?      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  workLogs           WorkLog[]
-  workloads          Workload[]
-  notifications      Notification[]
+  id           String @id @default(uuid())
+  email        String @unique
+  passwordHash String
+  role         Role
 
-  @@unique([email, organizationId])
-  @@map("users")
+  // optional org link (for admin mapping)
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
 }
 
-model Project {
-  id               String             @id @default(uuid())
-  organizationId   String             @map("organization_id")
-  name             String
-  description      String?
-  clientId         String?            @map("client_id")
-  startDate        DateTime?          @map("start_date")
-  endDate          DateTime?          @map("end_date")
-  totalBudget      Decimal?           @map("total_budget") @db.Decimal(12, 2)
-  usedBudget       Decimal            @default(0) @map("used_budget") @db.Decimal(12, 2)
-  status           ProjectStatus      @default(PLANNING)
-  managerId        String?            @map("manager_id")
-  createdAt        DateTime           @default(now()) @map("created_at")
-  updatedAt        DateTime           @updatedAt @map("updated_at")
-  category         ProjectCategory    @default(INTERNAL)
-  activityLogs     ActivityLog[]
-  chatMessages     ChatMessage[]
-  chatRoomLastSeen ChatRoomLastSeen[]
-  phases           Phase[]
-  client           User?              @relation("ClientProjects", fields: [clientId], references: [id])
-  manager          User?              @relation(fields: [managerId], references: [id])
-  organization     Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  tasks            Task[]
-  timeEntries      TimeEntry[]
-  workLogs         WorkLog[]
-  workloads        Workload[]
+model Invoice {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
 
-  @@map("projects")
+  amount Float
+  status InvoiceStatus
+  plan   OrgPlan
+
+  dueDate DateTime?
+  paidAt  DateTime?
+
+  createdAt DateTime @default(now())
 }
 
-model Phase {
-  id                   String      @id @default(uuid())
-  projectId            String      @map("project_id")
-  name                 String
-  status               PhaseStatus @default(WAITING)
-  completionPercentage Int         @default(0) @map("completion_percentage")
-  order                Int
-  startDate            DateTime?   @map("start_date")
-  endDate              DateTime?   @map("end_date")
-  createdAt            DateTime    @default(now()) @map("created_at")
-  updatedAt            DateTime    @updatedAt @map("updated_at")
-  project              Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  tasks                Task[]
-
-  @@map("phases")
+model PlatformSetting {
+  id    String @id @default(uuid())
+  key   String @unique
+  value String
 }
 
-model Task {
-  id                   String         @id @default(uuid())
-  projectId            String         @map("project_id")
-  phaseId              String?        @map("phase_id")
-  title                String
-  description          String?
-  status               TaskStatus     @default(TODO)
-  priority             TaskPriority   @default(MEDIUM)
-  completionPercentage Int            @default(0) @map("completion_percentage")
-  dueDate              DateTime?      @map("due_date")
-  tags                 String[]       @default([])
-  createdAt            DateTime       @default(now()) @map("created_at")
-  updatedAt            DateTime       @updatedAt @map("updated_at")
-  storyPoints          Int?           @default(0) @map("story_points")
-  type                 TaskType       @default(TASK)
-  assignees            TaskAssignee[]
-  phase                Phase?         @relation(fields: [phaseId], references: [id])
-  project              Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  timeEntries          TimeEntry[]
-  workLogs             WorkLog[]
-
-  @@map("tasks")
-}
-
-model TaskAssignee {
-  taskId String @map("task_id")
-  userId String @map("user_id")
-  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@id([taskId, userId])
-  @@map("task_assignees")
-}
-
-model Workload {
-  userId             String   @map("user_id")
-  projectId          String   @map("project_id")
-  workloadPercentage Int      @default(0) @map("workload_percentage")
-  calculatedAt       DateTime @default(now()) @map("calculated_at")
-  project            Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@id([userId, projectId])
-  @@map("workloads")
-}
-
-model ActivityLog {
-  id        String   @id @default(uuid())
-  userId    String   @map("user_id")
-  projectId String?  @map("project_id")
-  action    String
-  entity    String
-  entityId  String?  @map("entity_id")
-  details   Json?
-  organizationId String?   @map("organization_id")
-  createdAt      DateTime  @default(now()) @map("created_at")
-  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  project        Project?  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("activity_logs")
-}
-
-model Ticket {
-  id             String          @id @default(uuid())
-  organizationId String?          @map("organization_id")
-  clientId       String          @map("client_id")
-  title          String
-  description    String
-  status         TicketStatus    @default(OPEN)
-  priority       TicketPriority  @default(MEDIUM)
-  createdAt      DateTime        @default(now()) @map("created_at")
-  updatedAt      DateTime        @updatedAt @map("updated_at")
-  comments       TicketComment[]
-  client         User            @relation("ClientTickets", fields: [clientId], references: [id], onDelete: Cascade)
-  organization   Organization?    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-
-  @@map("tickets")
-}
-
-model TicketComment {
-  id        String   @id @default(uuid())
-  ticketId  String   @map("ticket_id")
-  userId    String   @map("user_id")
-  message   String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("ticket_comments")
-}
-
-model ChatMessage {
-  id             String        @id @default(uuid())
-  content        String
-  userId         String        @map("user_id")
-  projectId      String?       @map("project_id")
-  organizationId String?       @map("organization_id")
-  createdAt      DateTime      @default(now()) @map("created_at")
-  organization   Organization?  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  project        Project?      @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("chat_messages")
-}
-
-model ChatRoomLastSeen {
-  id             String        @id @default(uuid())
-  userId         String        @map("user_id")
-  projectId      String?       @map("project_id")
-  organizationId String?       @map("organization_id")
-  lastSeen       DateTime      @default(now()) @map("last_seen")
-  organization   Organization?  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  project        Project?      @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, projectId, organizationId])
-  @@map("chat_room_last_seen")
-}
-
-model TimeEntry {
-  id          String          @id @default(uuid())
-  userId      String          @map("user_id")
-  projectId   String          @map("project_id")
-  taskId      String?         @map("task_id")
-  date        DateTime
-  hours       Decimal         @db.Decimal(5, 2)
-  description String?
-  status      TimeEntryStatus @default(PENDING)
-  createdAt   DateTime        @default(now()) @map("created_at")
-  updatedAt   DateTime        @updatedAt @map("updated_at")
-  billable    Boolean         @default(true)
-  isManual    Boolean         @default(true) @map("is_manual")
-  project     Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  task        Task?           @relation(fields: [taskId], references: [id])
-  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("time_entries")
-}
-
-model WorkLog {
-  id        String   @id @default(uuid())
-  userId    String   @map("user_id")
-  taskId    String   @map("task_id")
-  projectId String   @map("project_id")
-  minutes   Int
-  comment   String?
-  loggedAt  DateTime @default(now()) @map("logged_at")
-  createdAt DateTime @default(now()) @map("created_at")
-  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("work_logs")
-}
-
-enum DbStrategy {
-  SHARED
-  DEDICATED
+enum Role {
+  SUPERADMIN
 }
 
 enum OrgPlan {
@@ -303,125 +84,15 @@ enum OrgStatus {
   TRIAL
   ACTIVE
   SUSPENDED
-  CANCELLED
-  PENDING
-}
-
-enum Role {
-  ADMIN
-  MANAGER
-  MEMBER
-  CLIENT
-  SUPERADMIN
-}
-
-enum TimeEntryStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
-enum ProjectStatus {
-  PLANNING
-  ACTIVE
-  ON_HOLD
-  COMPLETED
-  CANCELLED
-}
-
-enum ProjectCategory {
-  INTERNAL
-  CLIENT
-}
-
-enum PhaseStatus {
-  WAITING
-  IN_PROGRESS
-  COMPLETED
-}
-
-enum TaskStatus {
-  TODO
-  IN_PROGRESS
-  IN_REVIEW
-  COMPLETED
-  BLOCKED
-}
-
-enum TaskPriority {
-  LOW
-  MEDIUM
-  HIGH
-  URGENT
-}
-
-enum TaskType {
-  TASK
-  BUG
-  STORY
-  EPIC
-  SUBTASK
-}
-
-enum TicketStatus {
-  OPEN
-  IN_PROGRESS
-  RESOLVED
-  CLOSED
-}
-
-enum TicketPriority {
-  LOW
-  MEDIUM
-  HIGH
-  URGENT
-}
-
-model Notification {
-  id             String   @id @default(uuid())
-  userId         String   @map("user_id")
-  title          String
-  message        String
-  type           String   // PROJECT_ASSIGNED, TASK_ASSIGNED, etc.
-  link           String?  // Navigation link for click-to-redirect
-  isRead         Boolean  @default(false) @map("is_read")
-  createdAt      DateTime @default(now()) @map("created_at")
-  organizationId String   @map("organization_id")
-  
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-
-  @@map("notifications")
-}
-
-model PlatformSetting {
-  id    String @id @default(uuid())
-  key   String @unique
-  value String
-  @@map("platform_settings")
-}
-
-model Invoice {
-  id              String      @id @default(uuid())
-  organizationId  String      @map("organization_id")
-  amount          Decimal     @db.Decimal(10, 2)
-  currency        String      @default("USD")
-  status          InvoiceStatus @default(PENDING)
-  description     String?
-  invoiceDate     DateTime    @default(now()) @map("invoice_date")
-  dueDate         DateTime?   @map("due_date")
-  paidAt          DateTime?   @map("paid_at")
-  plan            OrgPlan?
-  
-  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-
-  @@map("invoices")
 }
 
 enum InvoiceStatus {
   PENDING
   PAID
-  OVERDUE
-  CANCELLED
-  VOID
+  FAILED
+}
+
+enum DbStrategy {
+  SHARED
+  DEDICATED
 }

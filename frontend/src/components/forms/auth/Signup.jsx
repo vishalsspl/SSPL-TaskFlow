@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTheme } from '@/components/ThemeProvider';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
@@ -14,7 +15,7 @@ import { cn } from '@/lib/utils';
 // ── Step indicators ────────────────────────────────────────────────────────
 const steps = ['Your account', 'Your organisation'];
 
-const StepDots = ({ current }) => (
+const StepDots = ({ current, isDarkMode }) => (
   <div className="flex items-center justify-center gap-3 mb-6">
     {steps.map((label, i) => (
       <div key={i} className="flex items-center gap-2">
@@ -22,16 +23,16 @@ const StepDots = ({ current }) => (
           'w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-black transition-all',
           i < current && 'bg-[#48A111] text-white',
           i === current && 'bg-[#48A111] text-white ring-4 ring-[#48A111]/30',
-          i > current && 'bg-white/10 text-white/40',
+          i > current && (isDarkMode ? 'bg-white/10 text-white/40' : 'bg-slate-200 text-slate-500'),
         )}>
           {i < current ? '✓' : i + 1}
         </div>
         <span className={cn(
-          'text-[11px] font-bold hidden sm:block',
-          i === current ? 'text-white/90' : 'text-white/30',
+          'text-[11px] font-bold hidden sm:block transition-colors',
+          i === current ? (isDarkMode ? 'text-white/90' : 'text-slate-900') : (isDarkMode ? 'text-white/30' : 'text-slate-500'),
         )}>{label}</span>
         {i < steps.length - 1 && (
-          <ChevronRight className="w-3 h-3 text-white/20 ml-1" />
+          <ChevronRight className={cn("w-3 h-3 ml-1 transition-colors", isDarkMode ? "text-white/20" : "text-slate-300")} />
         )}
       </div>
     ))}
@@ -39,9 +40,9 @@ const StepDots = ({ current }) => (
 );
 
 // ── Field component ────────────────────────────────────────────────────────
-const Field = ({ label, id, error, children }) => (
+const Field = ({ label, id, error, children, isDarkMode }) => (
   <div className="space-y-2">
-    <Label htmlFor={id} className={cn('text-white/90 font-semibold text-sm', error && 'text-red-300')}>
+    <Label htmlFor={id} className={cn('font-semibold text-sm transition-colors', isDarkMode ? 'text-white/90' : 'text-slate-700', error && 'text-red-500')}>
       {label}
     </Label>
     {children}
@@ -50,6 +51,8 @@ const Field = ({ label, id, error, children }) => (
 
 const Signup = () => {
   const navigate = useNavigate();
+  const { theme } = useTheme();
+  const isDarkMode = theme !== 'light';
   const { login: storeLogin } = useAuthStore();
   const { toast } = useToast();
 
@@ -191,18 +194,24 @@ const Signup = () => {
 
   // ── shared input style ─────────────────────────────────────────────────
   const inputClass = (key) => cn(
-    'bg-white/5 border-white/10 text-white placeholder:text-white/30',
+    isDarkMode ? 'bg-white/5 border-white/10 text-white placeholder:text-white/30' : 'bg-white border-slate-200 text-slate-900 placeholder:text-slate-500',
     'focus-visible:ring-[#48A111]/30 focus-visible:border-[#48A111]/50 transition-all',
     fieldErrors[key] && 'border-red-500/50',
   );
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#0A0A0A] relative overflow-y-auto py-12 px-4 selection:bg-primary/30">
+    <div className={cn(
+      "min-h-screen flex flex-col items-center justify-start relative overflow-y-auto pt-32 pb-20 px-4 selection:bg-primary/30 transition-colors duration-500",
+      isDarkMode ? "bg-[#0A0A0A] text-white" : "bg-[#F8FCF6] text-slate-900"
+    )}>
       {/* Back button */}
       <Button
         variant="ghost"
         size="icon"
-        className="fixed top-8 left-8 z-50 text-white/50 hover:text-white hover:bg-white/10 rounded-full border border-white/5 backdrop-blur-md transition-all group w-12 h-12"
+        className={cn(
+          "fixed top-8 left-8 z-50 rounded-full border backdrop-blur-md transition-all group w-12 h-12",
+          isDarkMode ? "text-white/50 hover:text-white hover:bg-white/10 border-white/5" : "text-slate-400 hover:text-slate-900 bg-white border-slate-200 shadow-sm"
+        )}
         onClick={() => (step === 0 ? navigate('/') : setStep(0))}
         title={step === 0 ? 'Back to Home' : 'Back'}
       >
@@ -211,17 +220,21 @@ const Signup = () => {
 
       {/* Background */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#102A04] via-[#050505] to-[#0A0A0A]" />
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#48A111]/10 blur-[150px] rounded-full" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#48A111]/5 blur-[150px] rounded-full" />
+          <div className={`absolute inset-0 transition-opacity duration-500 ${!isDarkMode ? 'bg-[url("data:image/svg+xml,%3Csvg width=%2720%27 height=%2720%27 viewBox=%270 0 20%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cg fill=%27%2348a111%27 fill-opacity=%270.05%27 fill-rule=%27evenodd%27%3E%3Ccircle cx=%273%27 cy=%273%27 r=%273%27/%3E%3Ccircle cx=%2713%27 cy=%2713%27 r=%273%27/%3E%3C/g%3E%3C/svg%3E")]' : ''}`} />
+          <div className={`absolute inset-0 bg-gradient-to-br transition-all duration-500 ${isDarkMode ? 'from-[#102A04] via-[#050505] to-[#0A0A0A]' : 'from-[#DDF2D1]/80 via-[#F8FCF6]/90 to-[#E9F7E1]/80'}`} />
+          <div className={`absolute top-[-10%] left-[-10%] w-[50%] h-[50%] blur-[150px] rounded-full transition-all duration-500 ${isDarkMode ? 'bg-primary/20' : 'bg-[#48A111]/15'}`} />
+          <div className={`absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] blur-[150px] rounded-full transition-all duration-500 ${isDarkMode ? 'bg-primary/5' : 'bg-[#48A111]/10'}`} />
       </div>
 
-      <Card className="w-full max-w-xl relative z-10 border-white/10 bg-black/40 backdrop-blur-xl shadow-2xl">
+      <Card className={cn(
+        "w-full max-w-xl relative z-10 backdrop-blur-xl shadow-2xl transition-all duration-500",
+        isDarkMode ? "bg-black/40 border-white/10" : "bg-white/90 border-[#48A111]/10 shadow-xl"
+      )}>
         <CardHeader className="text-center pb-2">
-          <CardTitle className="text-2xl font-bold tracking-tight text-white">
+          <CardTitle className={cn("text-2xl font-bold tracking-tight transition-colors", isDarkMode ? "text-white" : "text-slate-900")}>
             {step === 0 ? 'Create your account' : (form.role === 'ADMIN' ? 'Set up your organisation' : 'Join your organisation')}
           </CardTitle>
-          <CardDescription className="text-sm text-white/60">
+          <CardDescription className={cn("text-sm transition-colors", isDarkMode ? "text-white/60" : "text-slate-700")}>
             {step === 0
               ? 'Start your 14-day free trial — no credit card needed'
               : (form.role === 'ADMIN' ? 'Tell us about your company' : 'Find the company you belong to')}
@@ -229,7 +242,7 @@ const Signup = () => {
         </CardHeader>
 
         <CardContent className="pt-2">
-          <StepDots current={step} />
+          <StepDots current={step} isDarkMode={isDarkMode} />
 
           {error && (
             <div className="mb-4 p-4 text-sm font-medium rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300 bg-red-500/10 border border-red-500/20 text-red-200">
@@ -243,7 +256,7 @@ const Signup = () => {
             <div className="space-y-6">
               {/* Role Selector */}
               <div className="space-y-3">
-                <Label className="text-white/90 font-bold text-xs uppercase tracking-widest tracking-tight font-black">Select your role</Label>
+                <Label className={cn("font-bold text-xs uppercase tracking-widest tracking-tight font-black transition-colors", isDarkMode ? "text-white/90" : "text-slate-600")}>Select your role</Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {roles.map((r) => (
                     <button
@@ -254,19 +267,19 @@ const Signup = () => {
                         'flex flex-col items-start p-4 rounded-xl border transition-all text-left group relative backdrop-blur-md',
                         form.role === r.id 
                           ? 'bg-[#48A111]/10 border-[#48A111] shadow-lg shadow-[#48A111]/5' 
-                          : 'bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/10'
+                          : (isDarkMode ? 'bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/10' : 'bg-white border-slate-200 hover:border-[#48A111]/30 hover:bg-[#48A111]/5 shadow-sm')
                       )}
                     >
                       <div className={cn(
                         'w-10 h-10 rounded-lg flex items-center justify-center mb-3 transition-colors',
-                        form.role === r.id ? 'bg-[#48A111] text-white' : 'bg-white/10 text-white/60'
+                        form.role === r.id ? 'bg-[#48A111] text-white' : (isDarkMode ? 'bg-white/10 text-white/60' : 'bg-slate-200 text-slate-500')
                       )}>
                         {r.icon}
                       </div>
-                      <p className={cn('font-bold text-sm mb-1', form.role === r.id ? 'text-[#48A111]' : 'text-white')}>
+                      <p className={cn('font-bold text-sm mb-1 transition-colors', form.role === r.id ? 'text-[#48A111]' : (isDarkMode ? 'text-white' : 'text-slate-700'))}>
                         {r.title}
                       </p>
-                      <p className="text-[10px] leading-tight text-white/40 font-medium group-hover:text-white/60 transition-colors">
+                      <p className={cn("text-[10px] leading-tight font-medium transition-colors", isDarkMode ? "text-white/40 group-hover:text-white/60" : "text-slate-500 group-hover:text-slate-700")}>
                         {r.desc}
                       </p>
                     </button>
@@ -276,43 +289,43 @@ const Signup = () => {
 
               <div className="space-y-4 pt-4 border-t border-white/5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Field label="Your name" id="name" error={fieldErrors.name}>
+                  <Field label="Your name" id="name" error={fieldErrors.name} isDarkMode={isDarkMode}>
                     <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+                      <User className={cn("absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors", isDarkMode ? "text-white/40" : "text-slate-400")} />
                       <Input id="name" placeholder="John Doe" value={form.name} onChange={set('name')}
                         className={cn('!pl-10', inputClass('name'))} />
                     </div>
                   </Field>
 
-                  <Field label="Work email" id="email" error={fieldErrors.email}>
+                  <Field label="Work email" id="email" error={fieldErrors.email} isDarkMode={isDarkMode}>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+                      <Mail className={cn("absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors", isDarkMode ? "text-white/40" : "text-slate-400")} />
                       <Input id="email" type="email" placeholder="you@company.com" value={form.email} onChange={set('email')}
                         className={cn('!pl-10', inputClass('email'))} />
                     </div>
                   </Field>
 
-                  <Field label="Password" id="password" error={fieldErrors.password}>
+                  <Field label="Password" id="password" error={fieldErrors.password} isDarkMode={isDarkMode}>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+                      <Lock className={cn("absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors", isDarkMode ? "text-white/40" : "text-slate-400")} />
                       <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="Min 6 characters"
                         value={form.password} onChange={set('password')}
                         className={cn('!pl-10 pr-10', inputClass('password'))} />
                       <button type="button" onClick={() => setShowPassword(p => !p)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white">
+                        className={cn("absolute right-3 top-1/2 -translate-y-1/2 transition-colors", isDarkMode ? "text-white/40 hover:text-white" : "text-slate-400 hover:text-slate-600")}>
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
                   </Field>
 
-                  <Field label="Confirm password" id="confirmPassword" error={fieldErrors.confirmPassword}>
+                  <Field label="Confirm password" id="confirmPassword" error={fieldErrors.confirmPassword} isDarkMode={isDarkMode}>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+                      <Lock className={cn("absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors", isDarkMode ? "text-white/40" : "text-slate-400")} />
                       <Input id="confirmPassword" type={showConfirm ? 'text' : 'password'} placeholder="Repeat password"
                         value={form.confirmPassword} onChange={set('confirmPassword')}
                         className={cn('!pl-10 pr-10', inputClass('confirmPassword'))} />
                       <button type="button" onClick={() => setShowConfirm(p => !p)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white">
+                        className={cn("absolute right-3 top-1/2 -translate-y-1/2 transition-colors", isDarkMode ? "text-white/40 hover:text-white" : "text-slate-400 hover:text-slate-600")}>
                         {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
@@ -324,7 +337,7 @@ const Signup = () => {
                   Continue <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
 
-                <p className="text-center text-sm text-white/60 font-medium">
+                <p className={cn("text-center text-sm font-medium transition-colors", isDarkMode ? "text-white/60" : "text-slate-600")}>
                   Already have an account?{' '}
                   <Link to="/login" className="text-[#48A111] hover:underline font-bold">Sign in</Link>
                 </p>
@@ -338,9 +351,9 @@ const Signup = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* org name — full width */}
                 <div className="md:col-span-2">
-                  <Field label={form.role === 'ADMIN' ? 'Organisation name *' : 'Organisation name to join *'} id="organizationName" error={fieldErrors.organizationName}>
+                  <Field label={form.role === 'ADMIN' ? 'Organisation name *' : 'Organisation name to join *'} id="organizationName" error={fieldErrors.organizationName} isDarkMode={isDarkMode}>
                     <div className="relative">
-                      <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+                      <Building2 className={cn("absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors", isDarkMode ? "text-white/40" : "text-slate-400")} />
                       <Input id="organizationName" placeholder={form.role === 'ADMIN' ? 'Acme Corp' : 'Enter company name to join'} value={form.organizationName}
                         onChange={set('organizationName')}
                         className={cn('!pl-10', inputClass('organizationName'))} />
@@ -350,58 +363,61 @@ const Signup = () => {
 
                 {form.role === 'ADMIN' && (
                   <>
-                    <Field label="Industry *" id="industry" error={fieldErrors.industry}>
+                    <Field label="Industry *" id="industry" error={fieldErrors.industry} isDarkMode={isDarkMode}>
                       <Select value={form.industry} onValueChange={setSelect('industry')}>
                         <SelectTrigger className={cn(
-                          "w-full h-10 rounded-md border border-white/10 bg-white/5 text-white/80 text-sm px-3 outline-none focus:ring-2 focus:ring-[#48A111]/30 transition-all",
+                          "w-full h-10 rounded-md border text-sm px-3 outline-none focus:ring-2 focus:ring-[#48A111]/30 transition-all",
+                          isDarkMode ? "border-white/10 bg-white/5 text-white/80" : "border-slate-200 bg-white text-slate-700",
                           fieldErrors.industry && "border-red-500/50"
                         )}>
                           <SelectValue placeholder="Select industry" />
                         </SelectTrigger>
-                        <SelectContent className="bg-[#1a1a1a] border-white/10 text-white">
+                        <SelectContent className={cn("border-white/10", isDarkMode ? "bg-[#1a1a1a] text-white" : "bg-white text-slate-900")}>
                           {['Technology', 'Healthcare', 'Finance', 'Education', 'Retail', 'Manufacturing', 'Real Estate', 'Media', 'Other'].map(i => (
-                            <SelectItem key={i} value={i} className="focus:bg-white/10 focus:text-white cursor-pointer">{i}</SelectItem>
+                            <SelectItem key={i} value={i} className="focus:bg-[#48A111]/10 focus:text-inherit cursor-pointer">{i}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </Field>
 
-                    <Field label="Company size *" id="size" error={fieldErrors.size}>
+                    <Field label="Company size *" id="size" error={fieldErrors.size} isDarkMode={isDarkMode}>
                       <Select value={form.size} onValueChange={setSelect('size')}>
                         <SelectTrigger className={cn(
-                          "w-full h-10 rounded-md border border-white/10 bg-white/5 text-white/80 text-sm px-3 outline-none focus:ring-2 focus:ring-[#48A111]/30 transition-all",
+                          "w-full h-10 rounded-md border text-sm px-3 outline-none focus:ring-2 focus:ring-[#48A111]/30 transition-all",
+                          isDarkMode ? "border-white/10 bg-white/5 text-white/80" : "border-slate-200 bg-white text-slate-700",
                           fieldErrors.size && "border-red-500/50"
                         )}>
                           <SelectValue placeholder="Select size" />
                         </SelectTrigger>
-                        <SelectContent className="bg-[#1a1a1a] border-white/10 text-white">
+                        <SelectContent className={cn("border-white/10", isDarkMode ? "bg-[#1a1a1a] text-white" : "bg-white text-slate-900")}>
                           {['1-10', '11-50', '51-200', '201-500', '500+'].map(s => (
-                            <SelectItem key={s} value={s} className="focus:bg-white/10 focus:text-white cursor-pointer">{s} employees</SelectItem>
+                            <SelectItem key={s} value={s} className="focus:bg-[#48A111]/10 focus:text-inherit cursor-pointer">{s} employees</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </Field>
 
-                    <Field label="Website *" id="website" error={fieldErrors.website}>
+                    <Field label="Website *" id="website" error={fieldErrors.website} isDarkMode={isDarkMode}>
                       <div className="relative">
-                        <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+                        <Globe className={cn("absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors", isDarkMode ? "text-white/40" : "text-slate-400")} />
                         <Input id="website" placeholder="https://yourcompany.com" value={form.website}
                           onChange={set('website')}
                           className={cn('!pl-10', inputClass('website'))} />
                       </div>
                     </Field>
 
-                    <Field label="Country *" id="country" error={fieldErrors.country}>
+                    <Field label="Country *" id="country" error={fieldErrors.country} isDarkMode={isDarkMode}>
                       <Select value={form.country} onValueChange={setSelect('country')}>
                         <SelectTrigger className={cn(
-                          "w-full h-10 rounded-md border border-white/10 bg-white/5 text-white/80 text-sm px-3 outline-none focus:ring-2 focus:ring-[#48A111]/30 transition-all",
+                          "w-full h-10 rounded-md border text-sm px-3 outline-none focus:ring-2 focus:ring-[#48A111]/30 transition-all",
+                          isDarkMode ? "border-white/10 bg-white/5 text-white/80" : "border-slate-200 bg-white text-slate-700",
                           fieldErrors.country && "border-red-500/50"
                         )}>
                           <SelectValue placeholder="Select country" />
                         </SelectTrigger>
-                        <SelectContent className="bg-[#1a1a1a] border-white/10 text-white">
+                        <SelectContent className={cn("border-white/10", isDarkMode ? "bg-[#1a1a1a] text-white" : "bg-white text-slate-900")}>
                           {['India', 'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 'Singapore', 'UAE', 'Other'].map(c => (
-                            <SelectItem key={c} value={c} className="focus:bg-white/10 focus:text-white cursor-pointer">{c}</SelectItem>
+                            <SelectItem key={c} value={c} className="focus:bg-[#48A111]/10 focus:text-inherit cursor-pointer">{c}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
