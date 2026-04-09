@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import MarketingNavbar from '@/components/layout/MarketingNavbar';
 
+import { Slider } from '@/components/ui/slider';
 import api from '@/lib/api';
 
 const Pricing = () => {
@@ -156,58 +157,69 @@ const Pricing = () => {
             </p>
           </div>
 
-          {/* Pricing Controls */}
-          <div className={cn(
-            "p-6 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border backdrop-blur-xl mb-12 md:mb-20 animate-in fade-in zoom-in duration-700",
-            isDarkMode ? "bg-white/5 border-white/10 shadow-2xl shadow-[#48A111]/5" : "bg-white border-[#48A111]/20 shadow-xl"
-          )}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
-              <div className="space-y-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#48A111]/10 flex items-center justify-center border border-[#48A111]/20">
-                    <Users className="size-5 text-[#48A111]" />
+          {/* Advanced Pricing Controls */}
+          <div className="flex justify-center mb-16 md:mb-24 animate-in fade-in zoom-in duration-1000">
+            <div className={cn(
+              "p-1.5 md:p-2 rounded-[2rem] md:rounded-full border backdrop-blur-3xl flex flex-col md:flex-row items-center gap-1 shadow-2xl transition-all duration-500",
+              isDarkMode ? "bg-white/5 border-white/10 shadow-[#48A111]/10" : "bg-white/80 border-[#48A111]/20 shadow-xl"
+            )}>
+              {/* User Selector Block */}
+              <div className={cn(
+                "flex items-center gap-6 px-6 py-4 md:py-3 rounded-[1.5rem] md:rounded-full transition-all duration-500 min-w-[300px] md:min-w-[400px]",
+                isDarkMode ? "bg-white/5" : "bg-slate-50/50"
+              )}>
+                <div className="flex items-center gap-3 shrink-0">
+                  <div className="size-9 rounded-xl bg-gradient-to-br from-[#48A111] to-[#A3E635] flex items-center justify-center text-white shadow-lg shadow-[#48A111]/25">
+                    <Users className="size-4.5" />
                   </div>
-                  <h3 className={cn("text-xl font-black tracking-tight", isDarkMode ? "text-white" : "text-slate-900")}>Team Size Estimation</h3>
-                </div>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center px-1">
-                    <Label className={cn("font-bold text-[10px] md:text-xs uppercase tracking-widest", isDarkMode ? "text-white/40" : "text-slate-400")}>Number of Users</Label>
-                    <span className="text-2xl font-black text-[#48A111] tabular-nums">{teamSize}</span>
+                  <div className="flex flex-col">
+                    <span className={cn("text-[9px] font-black uppercase tracking-[0.2em] leading-none", isDarkMode ? "text-white/40" : "text-slate-400")}>Team Size</span>
+                    <span className="text-sm font-black text-primary mt-0.5">{teamSize} Users</span>
                   </div>
-                  <Input 
-                    type="range" 
-                    min="1" 
-                    max="500" 
-                    value={teamSize} 
-                    onChange={(e) => setTeamSize(parseInt(e.target.value))}
-                    className="h-2 bg-[#48A111]/10 rounded-lg appearance-none cursor-pointer accent-[#48A111] focus:ring-0"
-                  />
                 </div>
+                
+                <Slider 
+                  value={teamSize}
+                  onChange={(e) => setTeamSize(parseInt(e.target.value))}
+                  max={500}
+                  className="flex-1"
+                />
               </div>
-              
-              <div className="flex flex-col md:items-end gap-6">
-                <div className="flex items-center justify-between md:justify-end w-full gap-4">
-                  <span className={cn("text-[10px] md:text-xs font-bold tracking-widest transition-colors", billingCycle === 'monthly' ? (isDarkMode ? "text-white" : "text-slate-900") : (isDarkMode ? "text-white/40" : "text-slate-400"))}>MONTHLY</span>
+
+              {/* Billing Toggle Block */}
+              <div className="flex items-center gap-2 px-2 py-4 md:py-0 w-full md:w-auto">
+                <div 
+                  className={cn(
+                    "flex-1 md:flex-none flex items-center gap-4 px-6 md:px-8 py-4 md:py-3 rounded-[1.5rem] md:rounded-full transition-all duration-500 cursor-pointer",
+                    billingCycle === 'monthly' ? (isDarkMode ? "bg-white/10 shadow-lg" : "bg-white shadow-md") : ""
+                  )}
+                  onClick={() => setBillingCycle('monthly')}
+                >
+                  <span className={cn("text-[10px] font-black tracking-[0.15em] whitespace-nowrap", billingCycle === 'monthly' ? "text-primary" : "opacity-40")}>MONTHLY</span>
+                </div>
+
+                <div className="px-2 py-3">
                   <Switch 
                     checked={billingCycle === 'annually'} 
                     onCheckedChange={(checked) => setBillingCycle(checked ? 'annually' : 'monthly')}
-                    className="bg-[#48A111]/20 data-[state=checked]:bg-[#48A111]"
+                    className="data-[state=checked]:bg-[#48A111] scale-110"
                   />
-                  <div className="flex items-center gap-2">
-                    <span className={cn("text-[10px] md:text-xs font-bold tracking-widest transition-colors", billingCycle === 'annually' ? (isDarkMode ? "text-white" : "text-slate-900") : (isDarkMode ? "text-white/40" : "text-slate-400"))}>ANNUALLY</span>
-                    <Badge variant="secondary" className="bg-[#48A111] text-white border-0 font-black text-[10px] py-0">-{settings?.annual_discount_percent || '17'}%</Badge>
-                  </div>
                 </div>
-                <div className={cn("px-4 md:px-6 py-2 md:py-3 rounded-2xl border flex items-center justify-center md:justify-start gap-3 w-full md:w-auto", isDarkMode ? "bg-white/5 border-white/10" : "bg-slate-50 border-slate-200")}>
-                  <Calendar className="size-4 text-[#48A111]" />
-                  <span className={cn("text-xs md:text-sm font-black", isDarkMode ? "text-white/60" : "text-slate-600")}>
-                    Billed {billingCycle === 'monthly' ? 'every month' : 'at once each year'}
-                  </span>
+
+                <div 
+                  className={cn(
+                    "flex-1 md:flex-none flex items-center gap-3 px-6 md:px-8 py-4 md:py-3 rounded-[1.5rem] md:rounded-full transition-all duration-500 cursor-pointer",
+                    billingCycle === 'annually' ? (isDarkMode ? "bg-white/10 shadow-lg" : "bg-white shadow-md") : ""
+                  )}
+                  onClick={() => setBillingCycle('annually')}
+                >
+                  <span className={cn("text-[10px] font-black tracking-[0.15em] whitespace-nowrap", billingCycle === 'annually' ? "text-primary" : "opacity-40")}>ANNUALLY</span>
                 </div>
               </div>
             </div>
           </div>
 
+          {/* Pricing Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto relative z-10">
             {plans.map((plan, idx) => (
               <Card
