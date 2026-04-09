@@ -19,15 +19,16 @@ export const getActiveFeatures = async (org) => {
       branding: true,
       kanban: true,
       timesheets: true,
-      performance: true
+      performance: true,
+      emailSupport: true
     };
   }
 
   const baselines = {
-    free: { projects: true, tasks: true, team: false, chat: false, tickets: false, branding: false, kanban: false, timesheets: false, performance: false },
-    starter: { projects: true, tasks: true, team: true, chat: false, tickets: false, branding: false, kanban: true, timesheets: false, performance: false },
-    pro: { projects: true, tasks: true, team: true, chat: true, tickets: false, branding: true, kanban: true, timesheets: true, performance: true },
-    enterprise: { projects: true, tasks: true, team: true, chat: true, tickets: true, branding: true, kanban: true, timesheets: true, performance: true }
+    free: { projects: true, tasks: true, team: false, chat: false, tickets: false, branding: false, kanban: false, timesheets: false, performance: false, emailSupport: true },
+    starter: { projects: true, tasks: true, team: true, chat: false, tickets: false, branding: false, kanban: true, timesheets: false, performance: false, emailSupport: true },
+    pro: { projects: true, tasks: true, team: true, chat: true, tickets: false, branding: true, kanban: true, timesheets: true, performance: true, emailSupport: true },
+    enterprise: { projects: true, tasks: true, team: true, chat: true, tickets: true, branding: true, kanban: true, timesheets: true, performance: true, emailSupport: true }
   };
 
   const planKey = org.plan.toLowerCase();
@@ -397,7 +398,7 @@ export const signup = async (req, res) => {
 
 // ── invite ─────────────────────────────────────────────────────────────────
 export const invite = async (req, res) => {
-  const { email, name, role, password } = req.body;
+  const { email, name, role, password, sendEmail = true } = req.body;
   const organizationId = req.user.organizationId;
 
   if (!email || !name || !role) return res.status(400).json({ error: 'Email, name, and role required' });
@@ -489,7 +490,11 @@ export const invite = async (req, res) => {
     console.error('[Invite] Failed to log activity:', logErr.message);
   }
 
-  sendMemberInvitationEmail(email, name, finalPassword, role).catch(err => console.error(err));
+  const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
+
+  if (hasEmailSupport && sendEmail) {
+    sendMemberInvitationEmail(email, name, finalPassword, role).catch(err => console.error(err));
+  }
 
   const { passwordHash: _, ...userWithoutPassword } = mainUser;
   res.status(201).json({ user: userWithoutPassword, message: 'User invited.' });

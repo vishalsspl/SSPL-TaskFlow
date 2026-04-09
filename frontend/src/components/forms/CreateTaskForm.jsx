@@ -16,15 +16,19 @@ import {
     Bug,
     BookOpen,
     GitBranch,
+    Mail,
 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { MultiSearchableSelect } from '@/components/ui/multi-searchable-select';
 import RichTextEditor from '@/components/ui/RichTextEditor';
 import { DatePicker } from '@/components/ui/date-picker';
 import api from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
+import { useAuthStore } from '@/store/authStore';
 
 const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initialProjectId = '', task = null }) => {
     const { toast } = useToast();
+    const { user } = useAuthStore();
     const isEdit = !!task;
     const [formData, setFormData] = useState({
         projectId: task?.projectId || initialProjectId,
@@ -39,6 +43,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
         tags: task?.tags?.join(', ') || '',
         storyPoints: task?.storyPoints || 0,
         type: task?.type || 'TASK',
+        sendEmail: true,
     });
 
     const [phases, setPhases] = useState([]);
@@ -353,6 +358,26 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                     </div>
                 </div>
             </div>
+
+            {/* Email Notification Toggle */}
+            {user?.activeFeatures?.emailsupport !== false && (
+                <div className="flex items-center justify-between p-4 bg-secondary/20 rounded-xl border border-border/50">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                            <Mail className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                            <Label htmlFor="sendEmail" className="text-sm font-semibold cursor-pointer">Email Notifications</Label>
+                            <p className="text-xs text-muted-foreground">Notify assignees about this task</p>
+                        </div>
+                    </div>
+                    <Switch
+                        id="sendEmail"
+                        checked={formData.sendEmail}
+                        onCheckedChange={(checked) => setFormData({ ...formData, sendEmail: checked })}
+                    />
+                </div>
+            )}
 
             <div className="flex justify-end gap-2 sm:gap-3 pt-4 sm:pt-6 border-t mt-1 sm:mt-2">
                 <Button type="button" variant="outline" onClick={onCancel} disabled={loading} className="hover:bg-gray-50 h-8 sm:h-10 text-xs sm:text-sm">

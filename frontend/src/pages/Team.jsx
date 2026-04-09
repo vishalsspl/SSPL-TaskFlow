@@ -87,6 +87,7 @@ const Team = () => {
     email: '',
     role: 'MEMBER',
     password: generatePassword(),
+    sendEmail: true,
   });
   const [roleCounts, setRoleCounts] = useState({ ALL: 0, MANAGER: 0, CLIENT: 0, MEMBER: 0 });
 
@@ -262,6 +263,7 @@ const Team = () => {
           email: formData.email,
           role: formData.role,
           password: formData.password,
+          sendEmail: formData.sendEmail,
         });
       }
 
@@ -272,6 +274,7 @@ const Team = () => {
         email: '',
         role: 'MEMBER',
         password: generatePassword(),
+        sendEmail: true,
       });
       fetchUsers();
       fetchAllMembers();
@@ -342,6 +345,7 @@ const Team = () => {
       role: user.role,
       password: '',
       isApproved: user.isApproved,
+      sendEmail: true,
     });
     setShowDialog(true);
   };
@@ -383,6 +387,7 @@ const Team = () => {
       email: '',
       role: 'MEMBER',
       password: generatePassword(),
+      sendEmail: true,
     });
   };
 
@@ -495,6 +500,7 @@ const Team = () => {
                             email: '',
                             role: 'MEMBER',
                             password: generatePassword(),
+                            sendEmail: true,
                         });
                         setShowDialog(true);
                   }}
@@ -588,6 +594,7 @@ const Team = () => {
                             email: '',
                             role: 'MEMBER',
                             password: generatePassword(),
+                            sendEmail: true,
                         });
                         setShowDialog(true);
                     }}

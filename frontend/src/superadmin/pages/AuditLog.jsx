@@ -218,19 +218,19 @@ const AuditLog = () => {
     <div className="flex-1 flex flex-col min-h-screen lg:min-h-0 p-0 pt-0 gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
       <Card className="flex-1 flex flex-col min-h-0 border-none sm:border shadow-none sm:shadow-sm">
         <CardContent className="flex-1 flex flex-col min-h-0 pt-2 sm:pt-4 px-2 sm:px-4">
-          <div className="flex items-center gap-4 mb-10 mt-6 px-1">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-8 sm:mb-10 mt-4 sm:mt-6 px-1">
             <Button
               variant="ghost"
               onClick={() => { setSelectedOrgId(''); setPage(1); setLogs([]); }}
-              className="h-10 rounded-xl px-5 font-black text-[10px] tracking-widest uppercase border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-all flex items-center gap-3 group shadow-xl"
+              className="h-10 rounded-xl px-4 sm:px-5 font-black text-[9px] sm:text-[10px] tracking-widest uppercase border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-all flex items-center gap-2 sm:gap-3 group shadow-xl shrink-0"
             >
               <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
-              CHANGE ORGANIZATION
+              CHANGE ORG
             </Button>
             
-            <div className="flex items-center gap-3 ml-4">
-              <Building2 className="w-6 h-6 text-[#48A111]" />
-              <h1 className="text-3xl font-black tracking-tight text-foreground dark:text-white Montserrat">
+            <div className="flex items-center gap-2 sm:gap-3 ml-0 sm:ml-4 min-w-0 flex-1">
+              <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-[#48A111] shrink-0" />
+              <h1 className="text-xl sm:text-3xl font-black tracking-tight text-foreground dark:text-white Montserrat truncate">
                 {selectedOrgId === 'ALL'
                   ? 'All Organizations'
                   : orgs.find(o => o.id === selectedOrgId)?.name}
@@ -238,7 +238,7 @@ const AuditLog = () => {
             </div>
           </div>
 
-          <div className="bg-secondary/10 p-2 rounded-2xl mb-8 border border-border/5 shadow-inner">
+          <div className="bg-secondary/10 p-2 rounded-2xl mb-6 sm:mb-8 border border-border/5 shadow-inner">
             <AuditFilters
               action={action}
               setAction={setAction}

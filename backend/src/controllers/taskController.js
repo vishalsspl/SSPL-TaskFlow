@@ -135,6 +135,7 @@ export const createTask = async (req, res) => {
     tags,
     storyPoints,
     type,
+    sendEmail = true,
   } = req.body;
 
   if (!projectId || !title) {
@@ -248,24 +249,28 @@ export const createTask = async (req, res) => {
   }
 
   // Send email to all assignees
-  const senderName = req.user.name;
-  for (const { user } of task.assignees) {
-    if (user?.email) {
-      sendTaskAssignmentEmail(
-        user.email,
-        task.title,
-        task.project.name,
-        senderName,
-        { priority: task.priority, dueDate: task.dueDate, status: task.status, description: task.description }
-      ).catch(err => console.error('Failed to send task assignment email:', err));
-    }
+  const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
 
-    createNotification(req, {
-      userId: user.id,
-      title: 'New Task Assigned',
-      message: `You have been assigned to task: ${task.title} in project: ${task.project.name}`,
-      type: 'TASK_ASSIGNED',
-    });
+  if (hasEmailSupport && sendEmail) {
+    const senderName = req.user.name;
+    for (const { user } of task.assignees) {
+      if (user?.email) {
+        sendTaskAssignmentEmail(
+          user.email,
+          task.title,
+          task.project.name,
+          senderName,
+          { priority: task.priority, dueDate: task.dueDate, status: task.status, description: task.description }
+        ).catch(err => console.error('Failed to send task assignment email:', err));
+      }
+
+      createNotification(req, {
+        userId: user.id,
+        title: 'New Task Assigned',
+        message: `You have been assigned to task: ${task.title} in project: ${task.project.name}`,
+        type: 'TASK_ASSIGNED',
+      });
+    }
   }
 
   if (task.phaseId) {
@@ -289,6 +294,7 @@ export const updateTask = async (req, res) => {
     phaseId,
     storyPoints,
     type,
+    sendEmail = true,
   } = req.body;
 
   if (title !== undefined && !/^[a-zA-Z0-9\s]+$/.test(title)) {
@@ -391,7 +397,9 @@ export const updateTask = async (req, res) => {
   }
 
   // Email newly added assignees
-  if (addedIds.length > 0) {
+  const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
+
+  if (hasEmailSupport && sendEmail && addedIds.length > 0) {
     const senderName = req.user.name;
     for (const { user } of task.assignees.filter((a) => addedIds.includes(a.userId))) {
       if (user?.email) {
@@ -414,7 +422,7 @@ export const updateTask = async (req, res) => {
   }
 
   // Email assignees if status changed by Manager or Admin
-  if (status && status !== existingTask.status && (req.user.role === 'ADMIN' || req.user.role === 'MANAGER')) {
+  if (hasEmailSupport && sendEmail && status && status !== existingTask.status && (req.user.role === 'ADMIN' || req.user.role === 'MANAGER')) {
     const updatedBy = req.user.name;
     for (const { user } of task.assignees) {
       if (user?.email) {
@@ -659,7 +667,7 @@ export const updateTaskProgress = async (req, res) => {
 
 export const updateTaskStatus = async (req, res) => {
   const { id } = req.params;
-  const { status } = req.body;
+  const { status, sendEmail = true } = req.body;
 
   try {
     // Verify task belongs to user's organization
@@ -719,7 +727,9 @@ export const updateTaskStatus = async (req, res) => {
     }
 
     // Email assignees if status changed by Manager or Admin
-    if (req.user.role === 'ADMIN' || req.user.role === 'MANAGER') {
+    const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
+
+    if (hasEmailSupport && sendEmail && (req.user.role === 'ADMIN' || req.user.role === 'MANAGER')) {
       const updatedBy = req.user.name;
       for (const { user } of task.assignees) {
         if (user?.email) {

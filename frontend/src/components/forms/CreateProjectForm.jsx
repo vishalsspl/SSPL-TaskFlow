@@ -11,7 +11,9 @@ import {
     Calendar,
     Briefcase,
     Target,
+    Mail,
 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import { DatePicker } from '@/components/ui/date-picker';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import RichTextEditor from '@/components/ui/RichTextEditor';
@@ -35,6 +37,7 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
         totalBudget: '',
         status: 'PLANNING',
         category: 'INTERNAL',
+        sendEmail: true,
     });
     const [loading, setLoading] = useState(false);
     const [existingProjectNames, setExistingProjectNames] = useState([]);
@@ -312,6 +315,26 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
                     </div>
                 </div>
             </div>
+
+            {/* Email Notification Toggle */}
+            {user?.activeFeatures?.emailsupport !== false && (
+                <div className="flex items-center justify-between p-4 bg-secondary/20 rounded-xl border border-border/50">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                            <Mail className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                            <Label htmlFor="sendEmail" className="text-sm font-semibold cursor-pointer">Email Notifications</Label>
+                            <p className="text-xs text-muted-foreground">Notify manager and client about this project</p>
+                        </div>
+                    </div>
+                    <Switch
+                        id="sendEmail"
+                        checked={formData.sendEmail}
+                        onCheckedChange={(checked) => setFormData({ ...formData, sendEmail: checked })}
+                    />
+                </div>
+            )}
 
             <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 sm:pt-6 border-t mt-2">
                 <Button

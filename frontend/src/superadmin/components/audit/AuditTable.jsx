@@ -10,7 +10,16 @@ import {
   TableRow 
 } from '@/components/ui/table';
 
-const AuditTable = ({ logs, getActionIcon, showOrganization = true }) => {
+const safeJson = (v) => {
+  try {
+    if (!v) return '-';
+    return JSON.stringify(v, null, 2);
+  } catch {
+    return String(v);
+  }
+};
+
+const AuditTable = ({ logs, getActionIcon, getStatusBadge, getSeverity, showOrganization = true }) => {
   const getSeverityStyle = (action) => {
     const act = action.toUpperCase();
     if (act.includes('DELETE') || act.includes('SUSPEND') || act.includes('REMOVE')) return 'border-red-500 bg-red-500/10';
@@ -42,6 +51,7 @@ const AuditTable = ({ logs, getActionIcon, showOrganization = true }) => {
               {showOrganization ? 'Organization' : 'Project'}
             </TableHead>
             <TableHead className="text-[10px] font-black uppercase tracking-widest text-center">Date & Time</TableHead>
+            <TableHead className="text-[10px] font-black uppercase tracking-widest text-left hidden xl:table-cell">Details</TableHead>
             <TableHead className="text-[10px] font-black uppercase tracking-widest text-center">Status</TableHead>
           </TableRow>
         </TableHeader>
@@ -118,14 +128,16 @@ const AuditTable = ({ logs, getActionIcon, showOrganization = true }) => {
                   </div>
                 </TableCell>
 
+                {/* Details Column */}
+                <TableCell className="text-left max-w-[300px] hidden xl:table-cell align-top py-3">
+                  <div className="text-[10px] font-mono text-muted-foreground/70 whitespace-pre-wrap break-all max-h-20 overflow-y-auto custom-scrollbar bg-secondary/5 p-2 rounded-lg">
+                    {safeJson(log.details)}
+                  </div>
+                </TableCell>
+
                 {/* Status Column */}
                 <TableCell className="text-center">
-                  <Badge 
-                    variant="outline" 
-                    className="rounded-full px-4 py-0.5 text-[10px] font-bold border-emerald-500/50 text-emerald-500 bg-emerald-500/5"
-                  >
-                    Success
-                  </Badge>
+                  {getStatusBadge(getSeverity(log.action))}
                 </TableCell>
               </TableRow>
             );

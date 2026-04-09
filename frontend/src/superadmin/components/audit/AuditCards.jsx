@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 const safeJson = (v) => {
   try {
     if (!v) return '';
-    return JSON.stringify(v);
+    return JSON.stringify(v, null, 2);
   } catch {
     return String(v);
   }
@@ -53,8 +53,8 @@ const AuditCards = ({ logs, getActionIcon, getStatusBadge, getSeverity, showOrga
                 </Badge>
               </div>
               <div className="pt-2 border-t border-border/10">
-                <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-1">Details</div>
-                <div className="text-xs text-muted-foreground line-clamp-3">
+                <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-2">Details</div>
+                <div className="text-[10px] text-muted-foreground font-mono bg-secondary/10 p-2 rounded-lg max-h-32 overflow-y-auto whitespace-pre-wrap break-all custom-scrollbar">
                   {safeJson(log.details)}
                 </div>
               </div>

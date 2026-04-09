@@ -316,6 +316,7 @@ export const createProject = async (req, res) => {
     managerId,
     status,
     category,
+    sendEmail = true,
   } = req.body;
 
   if (!name || name.trim().length < 3 || name.trim().length > 100) {
@@ -472,7 +473,9 @@ export const createProject = async (req, res) => {
   }
 
   // Send rich email notification to manager
-  if (project.manager?.email) {
+  const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
+
+  if (hasEmailSupport && sendEmail && project.manager?.email) {
     sendProjectManagerEmail(
       project.manager.email,
       project,
@@ -490,7 +493,7 @@ export const createProject = async (req, res) => {
   }
 
   // Send rich email notification to client
-  if (project.client?.email) {
+  if (hasEmailSupport && sendEmail && project.client?.email) {
     sendProjectClientEmail(
       project.client.email,
       project,
@@ -515,6 +518,7 @@ export const updateProject = async (req, res) => {
     managerId,
     status,
     category,
+    sendEmail = true,
   } = req.body;
 
   // Verify project belongs to user's organization
@@ -643,7 +647,9 @@ export const updateProject = async (req, res) => {
   }
 
   // Send rich emails if manager or client changed
-  if (isManagerChanged || isClientChanged) {
+  const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
+
+  if (hasEmailSupport && sendEmail && (isManagerChanged || isClientChanged)) {
 
     if (project.manager?.email) {
       sendProjectManagerEmail(

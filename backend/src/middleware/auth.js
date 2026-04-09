@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import prisma from '../lib/prisma.js';
+import { getActiveFeatures } from '../controllers/authController.js';
 
 /**
  * Authentication middleware
@@ -29,6 +30,10 @@ export const authenticate = async (req, res, next) => {
     if (!user) {
       return res.status(401).json({ error: 'User not found' });
     }
+
+    // Resolve active features for the organization
+    const activeFeatures = await getActiveFeatures(user.organization);
+    user.activeFeatures = activeFeatures;
 
     req.user = user;
     next();

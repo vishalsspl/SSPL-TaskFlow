@@ -22,7 +22,8 @@ import {
   Flag,
   Globe,
   Settings2,
-  ListFilter
+  ListFilter,
+  Mail
 } from 'lucide-react';
 import api from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
@@ -182,6 +183,7 @@ const PlansAndLimits = () => {
     { key: 'chat', label: 'Chat', icon: MessageSquare },
     { key: 'performance', label: 'Performance', icon: Activity },
     { key: 'timesheets', label: 'Timesheets', icon: ShieldCheck },
+    { key: 'emailSupport', label: 'Email Support', icon: Mail },
   ];
 
   const PLANS = [
@@ -213,8 +215,8 @@ const PlansAndLimits = () => {
 
         {/* ── COMPANY LIST & DETAIL VIEW ─────────────────────────────────── */}
         <TabsContent value="companies" className="m-0 p-0 outline-none ring-0">
-          <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-200px)] overflow-hidden">
-            <Card className="w-full lg:w-80 h-full flex flex-col rounded-[2.5rem] border-border/40 bg-background/50 backdrop-blur-xl shrink-0 border overflow-hidden">
+          <div className="flex flex-col lg:flex-row gap-6 lg:h-[calc(100vh-200px)] lg:overflow-hidden">
+            <Card className="w-full lg:w-80 h-[350px] lg:h-full flex flex-col rounded-[2.5rem] border-border/40 bg-background/50 backdrop-blur-xl shrink-0 border lg:overflow-hidden shadow-lg">
               <CardHeader className="p-6 border-b border-border/10">
                 <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mb-4 flex items-center justify-between">
                   Companies
@@ -260,29 +262,31 @@ const PlansAndLimits = () => {
               {currentOrg ? (
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 animate-in slide-in-from-right-4 duration-500 pb-10">
                   <Card className="xl:col-span-3 rounded-[2.5rem] border-border/40 shadow-xl bg-background/50 backdrop-blur-xl border border-primary/5">
-                    <CardContent className="p-8 flex items-center justify-between">
-                      <div className="flex items-center gap-6 font-montserrat">
-                        <div className="w-20 h-20 rounded-[2rem] bg-primary/10 flex items-center justify-center text-primary border border-primary/5 shadow-inner">
-                          <Building2 className="w-10 h-10" />
+                    <CardContent className="p-5 sm:p-8 flex items-center justify-between">
+                      <div className="flex items-center gap-4 sm:gap-6 font-montserrat">
+                        <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-[1.5rem] sm:rounded-[2rem] bg-primary/10 flex items-center justify-center text-primary border border-primary/5 shadow-inner">
+                          <Building2 className="w-7 h-7 sm:w-10 sm:h-10" />
                         </div>
                         <div className="space-y-1">
-                          <h2 className="text-3xl font-black tracking-tighter uppercase">{currentOrg.name}</h2>
-                          <div className="flex gap-4 text-[10px] font-black text-muted-foreground uppercase opacity-40 tracking-widest">
-                             <span><Flag className="w-3 h-3 inline mr-1" /> {currentOrg.country || 'N/A'}</span>
-                             <span><Briefcase className="w-3 h-3 inline mr-1" /> {currentOrg.industry}</span>
-                          </div>
+                          <h2 className="text-xl sm:text-3xl font-black tracking-tighter uppercase">{currentOrg.name}</h2>
+                          {(currentOrg.country || currentOrg.industry) && (
+                            <div className="flex gap-4 text-[10px] font-black text-muted-foreground uppercase opacity-40 tracking-widest mt-1">
+                               {currentOrg.country && <span><Flag className="w-3 h-3 inline mr-1" /> {currentOrg.country}</span>}
+                               {currentOrg.industry && <span><Briefcase className="w-3 h-3 inline mr-1" /> {currentOrg.industry}</span>}
+                            </div>
+                          )}
                         </div>
                       </div>
-                      <Badge className={cn("px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest", currentOrg.status === 'ACTIVE' ? 'bg-[#48A111] text-white shadow-lg shadow-green-500/20' : 'bg-orange-500 text-white shadow-lg shadow-orange-500/20')}>{currentOrg.status}</Badge>
+                      <Badge className={cn("px-4 sm:px-8 py-2 sm:py-3 rounded-xl sm:rounded-2xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest", currentOrg.status === 'ACTIVE' ? 'bg-[#48A111] text-white shadow-lg shadow-green-500/20' : 'bg-orange-500 text-white shadow-lg shadow-orange-500/20')}>{currentOrg.status}</Badge>
                     </CardContent>
                   </Card>
 
                   <div className="space-y-6">
                     <Card className="rounded-[2.5rem] border-border/40 bg-background/50 backdrop-blur-xl border border-secondary">
-                      <CardHeader className="p-8 pb-4 border-b border-border/5">
+                      <CardHeader className="p-5 sm:p-8 pb-3 sm:pb-4 border-b border-border/5">
                         <CardTitle className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2"><Zap className="w-4 h-4" /> Subscription Payload</CardTitle>
                       </CardHeader>
-                      <CardContent className="p-8 space-y-3">
+                      <CardContent className="p-5 sm:p-8 space-y-3">
                         {PLANS.map(p => (
                           <div key={p.id} onClick={() => setCurrentOrg(prev => ({ ...prev, plan: p.id }))} className={cn("p-4 rounded-2xl border-2 cursor-pointer transition-all", currentOrg.plan === p.id ? "border-primary bg-primary/5 shadow-lg" : "border-border/10 bg-muted/5")}>
                             <span className={cn("text-[9px] font-black px-3 py-1 rounded-full text-white uppercase", p.color)}>{p.name} tier</span>
@@ -293,34 +297,34 @@ const PlansAndLimits = () => {
                     </Card>
                     
                     <Card className="rounded-[2.5rem] border-border/40 bg-background/50 border overflow-hidden">
-                      <CardContent className="p-8 space-y-6">
+                      <CardContent className="p-5 sm:p-8 space-y-4 sm:space-y-6">
                         <div className="space-y-2">
-                          <Label className="text-[10px] font-black uppercase text-primary/70 ml-2 tracking-widest">Access Ceiling (Users)</Label>
-                          <Input type="number" value={currentOrg.maxUsers} onChange={e => setCurrentOrg(p => ({ ...p, maxUsers: e.target.value }))} className="h-14 rounded-[1.5rem] border-border/40 bg-background px-6 font-black text-lg focus:ring-4 focus:ring-primary/10 shadow-inner" />
+                          <Label className="text-[9px] sm:text-[10px] font-black uppercase text-primary/70 ml-1 sm:ml-2 tracking-widest">Access Ceiling (Users)</Label>
+                          <Input type="number" value={currentOrg.maxUsers} onChange={e => setCurrentOrg(p => ({ ...p, maxUsers: e.target.value }))} className="h-12 sm:h-14 rounded-[1.25rem] sm:rounded-[1.5rem] border-border/40 bg-background px-4 sm:px-6 font-black text-base sm:text-lg focus:ring-4 focus:ring-primary/10 shadow-inner" />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-[10px] font-black uppercase text-primary/70 ml-2 tracking-widest">Access Ceiling (Projects)</Label>
-                          <Input type="number" value={currentOrg.maxProjects} onChange={e => setCurrentOrg(p => ({ ...p, maxProjects: e.target.value }))} className="h-14 rounded-[1.5rem] border-border/40 bg-background px-6 font-black text-lg focus:ring-4 focus:ring-primary/10 shadow-inner" />
+                          <Label className="text-[9px] sm:text-[10px] font-black uppercase text-primary/70 ml-1 sm:ml-2 tracking-widest">Access Ceiling (Projects)</Label>
+                          <Input type="number" value={currentOrg.maxProjects} onChange={e => setCurrentOrg(p => ({ ...p, maxProjects: e.target.value }))} className="h-12 sm:h-14 rounded-[1.25rem] sm:rounded-[1.5rem] border-border/40 bg-background px-4 sm:px-6 font-black text-base sm:text-lg focus:ring-4 focus:ring-primary/10 shadow-inner" />
                         </div>
-                        <Button onClick={handleUpdateOrg} disabled={savingOrg} className="w-full h-15 py-7 rounded-[1.5rem] font-black text-[11px] uppercase tracking-widest bg-primary shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">{savingOrg ? 'Synchronizing Pipeline...' : 'Deploy Access Overrides'}</Button>
+                        <Button onClick={handleUpdateOrg} disabled={savingOrg} className="w-full h-12 sm:h-15 py-4 sm:py-7 rounded-[1.25rem] sm:rounded-[1.5rem] font-black text-[9px] sm:text-[11px] uppercase tracking-widest bg-primary shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">{savingOrg ? 'Synchronizing Pipeline...' : 'Deploy Access Overrides'}</Button>
                       </CardContent>
                     </Card>
                   </div>
 
-                  <Card className="xl:col-span-2 rounded-[3rem] border-border/40 bg-background shadow-2xl border overflow-hidden">
-                    <CardHeader className="p-8 border-b border-border/5 bg-secondary/5">
+                  <Card className="xl:col-span-2 rounded-[2.5rem] sm:rounded-[3rem] border-border/40 bg-background shadow-2xl border overflow-hidden">
+                    <CardHeader className="p-5 sm:p-8 border-b border-border/5 bg-secondary/5">
                       <CardTitle className="text-[10px] font-black uppercase tracking-[0.3em] text-primary flex items-center gap-2"><Settings2 className="w-5 h-5" /> Feature Gate Matrix</CardTitle>
                     </CardHeader>
-                    <CardContent className="p-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <CardContent className="p-4 sm:p-8 grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                       {FEATURES.map(f => {
                         const isEnabled = currentOrg.customFeatures?.[f.key] !== false;
                         return (
-                          <div key={f.key} onClick={() => toggleOrgFeature(f.key)} className={cn("p-6 rounded-[2rem] border-2 cursor-pointer transition-all flex items-center justify-between", isEnabled ? "border-primary/20 bg-background shadow-md" : "border-border/10 opacity-30 grayscale")}>
-                            <div className="flex items-center gap-5">
-                              <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner", isEnabled ? "bg-primary/10 text-primary" : "bg-muted")}>
-                                <f.icon className="w-5 h-5" />
+                          <div key={f.key} onClick={() => toggleOrgFeature(f.key)} className={cn("p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] border-2 cursor-pointer transition-all flex items-center justify-between", isEnabled ? "border-primary/20 bg-background shadow-md" : "border-border/10 opacity-30 grayscale")}>
+                            <div className="flex items-center gap-3 sm:gap-5">
+                              <div className={cn("w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-inner", isEnabled ? "bg-primary/10 text-primary" : "bg-muted")}>
+                                <f.icon className="w-4 h-4 sm:w-5 sm:h-5" />
                               </div>
-                              <span className="text-[11px] font-black uppercase tracking-tight">{f.label}</span>
+                              <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-tight">{f.label}</span>
                             </div>
                             <div className={cn("w-10 h-6 rounded-full flex items-center transition-all px-1", isEnabled ? "bg-[#48A111] justify-end shadow-inner" : "bg-muted justify-start")}>
                               <div className="w-4 h-4 rounded-full bg-white shadow-xl" />
@@ -383,19 +387,19 @@ const PlansAndLimits = () => {
                         <h4 className="text-xs font-semibold text-primary whitespace-nowrap bg-primary/5 px-4 py-1 rounded-full border border-primary/10">Default Permissions</h4>
                         <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-border/50 to-transparent" />
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {FEATURES.map(f => {
                           const isEnabled = globalTiers[p.id].features[f.key] !== false;
                           return (
-                            <div key={f.key} onClick={() => toggleGlobalFeature(p.id, f.key)} className={cn("p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between", isEnabled ? "border-primary/20 bg-background shadow-sm" : "border-border/10 opacity-40 grayscale")}>
-                               <div className="flex items-center gap-3">
-                                  <div className={cn("w-7 h-7 rounded-md flex items-center justify-center", isEnabled ? "bg-primary/10 text-primary" : "bg-muted")}>
+                            <div key={f.key} onClick={() => toggleGlobalFeature(p.id, f.key)} className={cn("p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between gap-2", isEnabled ? "border-primary/20 bg-background shadow-sm" : "border-border/10 opacity-40 grayscale")}>
+                               <div className="flex items-center gap-2 min-w-0">
+                                  <div className={cn("w-7 h-7 rounded-md flex items-center justify-center shrink-0", isEnabled ? "bg-primary/10 text-primary" : "bg-muted")}>
                                      <f.icon className="w-3.5 h-3.5" />
                                   </div>
-                                  <span className="text-xs font-medium">{f.label}</span>
+                                  <span className="text-xs font-medium truncate">{f.label}</span>
                                </div>
-                               <div className={cn("w-7 h-4 rounded-full flex items-center transition-all px-0.5", isEnabled ? "bg-[#48A111] justify-end shadow-inner" : "bg-muted")}>
-                                  <div className="w-3 h-3 rounded-full bg-white shadow-sm" />
+                               <div className={cn("w-7 h-4 rounded-full flex items-center transition-all px-0.5 shrink-0", isEnabled ? "bg-[#48A111] justify-end shadow-inner" : "bg-muted")}>
+                                  <div className="w-3 h-3 rounded-full bg-white shadow-sm shrink-0" />
                                </div>
                             </div>
                           );
