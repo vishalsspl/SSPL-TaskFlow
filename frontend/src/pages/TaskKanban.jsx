@@ -45,7 +45,7 @@ const TaskKanban = () => {
 
     const [managerFilter, setManagerFilter] = useState('all');
 
-    const isReadOnly = user?.role === 'CLIENT' || user?.role === 'MEMBER';
+    const isReadOnly = user?.role === 'CLIENT';
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -85,7 +85,7 @@ const TaskKanban = () => {
     };
 
     const handleTaskClick = (task) => {
-        if (user?.role === 'CLIENT' || user?.role === 'MEMBER') return;
+        if (user?.role === 'CLIENT') return;
         setSelectedTask(task);
         setShowEditDialog(true);
     };

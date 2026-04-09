@@ -1,9 +1,8 @@
 import { PrismaClient } from '@prisma/client';
-import { execSync } from 'child_process';
-import pg from 'pg';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { provisionTenantDatabase } from '../src/services/tenantProvisioner.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -11,70 +10,79 @@ const __dirname = path.dirname(__filename);
 dotenv.config({ path: path.join(__dirname, '../.env') });
 
 const prisma = new PrismaClient();
-const { Client } = pg;
 
+/**
+ * CLI Tool for manual tenant database provisioning.
+ * Usage: node scripts/provision-tenant-db.js --orgId=<id>
+ */
 async function provisionTenantDb() {
   const args = process.argv.slice(2);
   const orgIdArg = args.find((a) => a.startsWith('--orgId='));
 
   if (!orgIdArg) {
-    console.error('Usage: node provision-tenant-db.js --orgId=<id>');
+    console.log('\n❌ Usage: node scripts/provision-tenant-db.js --orgId=<id>\n');
     process.exit(1);
   }
 
   const orgId = orgIdArg.split('=')[1];
-  
-  // Generate unique DB name valid for PostgreSQL (letters, numbers, underscores)
-  const escapedOrgId = orgId.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
-  const dbName = `org_${escapedOrgId}`;
 
-  console.log(`\n🚀 Provisioning dedicated database '${dbName}' for Organization ${orgId}...\n`);
+  console.log(`\n🚀 [CLI] Initiating manual provisioning for Organization: ${orgId}...\n`);
 
   try {
-    // 1. Verify organization exists
-    const org = await prisma.organization.findUnique({ where: { id: orgId } });
-    if (!org) {
-      throw new Error(`Organization ${orgId} not found.`);
-    }
-    if (org.dbStrategy === 'DEDICATED') {
-      console.warn(`⚠️ Organization ${orgId} is already set to DEDICATED (URL: ${org.dbUrl})`);
-    }
-
-    // 2. Parse main DB URL to get credentials for PostgreSQL client
-    const mainDbUrl = process.env.DATABASE_URL;
-    if (!mainDbUrl) throw new Error('DATABASE_URL not found in .env');
-
-    const pgClient = new Client({ connectionString: mainDbUrl });
-    await pgClient.connect();
-
-    // 3. Create the new database
-    console.log(`⏳ Creating PostgreSQL database: ${dbName}...`);
-    // Check if db exists
-    const dbExists = await pgClient.query(`SELECT 1 FROM pg_database WHERE datname='${dbName}'`);
-    if (dbExists.rowCount === 0) {
-      await pgClient.query(`CREATE DATABASE ${dbName}`);
-      console.log(`✅ Database ${dbName} created successfully.`);
-    } else {
-      console.log(`ℹ️ Database ${dbName} already exists. Skipping creation.`);
-    }
-    await pgClient.end();
-
-    // 4. Construct the new DB URL
-    const urlParts = new URL(mainDbUrl);
-    urlParts.pathname = `/${dbName}`;
-    const tenantDbUrl = urlParts.toString();
-
-    // 5. Run Prisma Migrations on the new database
-    console.log(`\n⏳ Running Prisma migrations on ${dbName}...`);
-    execSync(`npx prisma migrate deploy`, {
-      env: { ...process.env, DATABASE_URL: tenantDbUrl },
-      stdio: 'inherit',
-      cwd: path.join(__dirname, '..'),
+    // 1. Verify organization exists in MAIN DB
+    const org = await prisma.organization.findUnique({ 
+        where: { id: orgId },
+        include: { 
+            users: { where: { role: 'ADMIN' }, take: 1 }
+        }
     });
-    console.log('✅ Migrations applied successfully.\n');
 
-    // 6. Update Organization record
-    console.log(`⏳ Updating Organization ${orgId} with new DB strategy...`);
+    if (!org) {
+      throw new Error(`Organization ${orgId} not found in MAIN database.`);
+    }
+
+    if (org.dbUrl && org.dbStrategy === 'DEDICATED') {
+      console.warn(`⚠️  Organization ${orgId} is already set to DEDICATED (URL: ${org.dbUrl})`);
+      // We continue anyway in case they want to re-provision/fix it
+    }
+
+    const admin = org.users[0];
+    if (!admin) {
+        throw new Error(`No ADMIN user found for organization ${orgId}. Cannot seed initial tenant data.`);
+    }
+
+    // 2. Call the central provisioner service
+    const tenantDbUrl = await provisionTenantDatabase({
+        orgId: org.id,
+        orgName: org.name,
+        orgData: {
+            id: org.id,
+            name: org.name,
+            industry: org.industry,
+            size: org.size,
+            website: org.website,
+            country: org.country,
+            timezone: org.timezone,
+            plan: org.plan,
+            status: org.status,
+            maxUsers: org.maxUsers,
+            maxProjects: org.maxProjects,
+            customFeatures: org.customFeatures
+        },
+        adminData: {
+            id: admin.id,
+            organizationId: org.id,
+            name: admin.name,
+            email: admin.email,
+            passwordHash: admin.passwordHash,
+            role: admin.role,
+            isApproved: true,
+            mustChangePassword: false
+        }
+    });
+
+    // 3. Update Organization record in MAIN DB
+    console.log(`⏳ [CLI] Finalizing organization record...`);
     await prisma.organization.update({
       where: { id: orgId },
       data: {
@@ -83,9 +91,9 @@ async function provisionTenantDb() {
       },
     });
 
-    console.log(`🎉 Success! Organization ${org.name} is now using a dedicated database.`);
+    console.log(`\n🎉 Success! Organization "${org.name}" is now fully provisioned on a dedicated database.\n`);
   } catch (error) {
-    console.error('\n❌ Error provisioning tenant DB:', error);
+    console.error('\n❌ [CLI] Manual provisioning failed:', error.message);
   } finally {
     await prisma.$disconnect();
   }

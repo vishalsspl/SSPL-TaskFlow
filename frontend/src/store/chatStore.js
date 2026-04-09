@@ -37,10 +37,22 @@ export const useChatStore = create((set, get) => ({
     },
 
     initSocket: (userId, organizationId) => {
-        console.log('initSocket called with:', { userId, organizationId });
-        set({ userId, organizationId });
+        const state = get();
+        const orgIdChanged = String(state.organizationId) !== String(organizationId);
+        const userIdChanged = String(state.userId) !== String(userId);
+
+        if (orgIdChanged || userIdChanged) {
+            console.log(`[Socket] Context update: Org:${state.organizationId}->${organizationId}, User:${state.userId}->${userId}`);
+            set({ userId, organizationId });
+            
+            // If already connected, we must rejoin rooms with the new organizationId
+            if (state.socket && state.isConnected) {
+                console.log('[Socket] Organization changed while connected. Rejoining rooms...');
+                get().rejoinRooms(api);
+            }
+        }
+
         if (get().socket) {
-            console.log('Socket already exists, skipping initialization');
             return;
         }
 

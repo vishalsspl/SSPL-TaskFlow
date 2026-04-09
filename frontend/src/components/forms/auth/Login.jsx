@@ -105,7 +105,7 @@ const Login = () => {
       )}>
         <CardHeader className="text-center pb-4">
           <CardTitle className={cn("text-2xl font-bold tracking-tight transition-colors", isDarkMode ? "text-white" : "text-slate-900")}>
-            Welcome back to <span className="bg-gradient-to-r from-[#48A111] to-[#A3E635] bg-clip-text text-transparent">TaskFlow</span>
+            Welcome to <span className="bg-gradient-to-r from-[#48A111] to-[#A3E635] bg-clip-text text-transparent">TaskFlow</span>
           </CardTitle>
           <CardDescription className={cn("text-sm transition-colors", isDarkMode ? "text-white/60" : "text-slate-700")}>Sign in to your account to continue</CardDescription>
         </CardHeader>

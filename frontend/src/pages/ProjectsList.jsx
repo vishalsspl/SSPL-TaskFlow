@@ -31,7 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, FolderKanban, Eye, Edit2, Trash2, Search, Filter, Layers, FileText, Users, Briefcase, DollarSign, Target, Calendar } from 'lucide-react';
+import { Plus, FolderKanban, Eye, Edit2, Trash2, Search, Filter, Layers, FileText, Users, Briefcase, Target, Calendar } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { SearchableSelect } from '@/components/ui/searchable-select';
@@ -420,16 +420,16 @@ const ProjectsList = () => {
 
               {/* Budget */}
               <div className="space-y-2">
-                <Label htmlFor="totalBudget" className="text-foreground/90 font-semibold mobile-reduce-label">Budget</Label>
+                <Label htmlFor="totalBudget" className="text-foreground/90 font-semibold mobile-reduce-label">Budget (₹)</Label>
                 <div className="relative">
-                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70" />
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-foreground/70">₹</span>
                   <Input
                     id="totalBudget"
                     type="number"
                     value={formData.totalBudget}
                     onChange={(e) => setFormData({ ...formData, totalBudget: e.target.value })}
                     placeholder="0.00"
-                    className="!pl-10 mobile-reduce-input"
+                    className="!pl-8 mobile-reduce-input"
                   />
                 </div>
               </div>

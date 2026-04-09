@@ -7,9 +7,17 @@ export const useAuthStore = create((set) => ({
     set({ token, user });
     localStorage.setItem('auth-storage', JSON.stringify({ state: { token, user } }));
   },
-  logout: () => {
-    set({ token: null, user: null });
-    localStorage.removeItem('auth-storage');
+  logout: async (apiInstance) => {
+    try {
+      if (apiInstance) {
+        await apiInstance.post('/auth/logout');
+      }
+    } catch (error) {
+      console.error('Failed to log out on server:', error);
+    } finally {
+      set({ token: null, user: null });
+      localStorage.removeItem('auth-storage');
+    }
   },
   updateUser: (user) => {
     set((state) => {

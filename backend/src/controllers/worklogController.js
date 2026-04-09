@@ -101,8 +101,8 @@ export const addWorklog = async (req, res) => {
         });
 
         // Audit Log Entry
-        await req.db.activityLog.create({
-            data: {
+        try {
+            const logData = {
                 userId: req.user.id,
                 organizationId: req.user.organizationId,
                 projectId,
@@ -115,8 +115,16 @@ export const addWorklog = async (req, res) => {
                     method: 'timer',
                     taskTitle: task.title
                 },
-            },
-        });
+            };
+
+            // 1. Log to tenant DB
+            await req.db.activityLog.create({ data: logData });
+
+            // 2. Log to main DB for SuperAdmin visibility
+            await prisma.activityLog.create({ data: logData });
+        } catch (logErr) {
+            console.error('[AddWorklog] Failed to log activity:', logErr.message);
+        }
 
         // Notify project manager if someone else logs time
         if (project.managerId && project.managerId !== req.user.id) {

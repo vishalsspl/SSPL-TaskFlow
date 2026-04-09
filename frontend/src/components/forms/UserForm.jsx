@@ -8,7 +8,7 @@ import { useAuthStore } from '@/store/authStore';
 
 const UserForm = ({ formData, setFormData, editingUser, onSubmit, onCancel }) => {
   const { user: currentUser } = useAuthStore();
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(!editingUser);
 
   return (
     <form onSubmit={onSubmit} className="space-y-4 mobile-reduce-spacing">

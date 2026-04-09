@@ -11,10 +11,15 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "db:migrate": "prisma migrate dev",
+    "db:migrate:tenant": "prisma migrate dev --schema=prisma/tenant/schema.prisma",
     "db:seed": "node prisma/seed.js",
     "db:studio": "prisma studio",
+    "db:studio:tenant": "prisma studio --schema=prisma/tenant/schema.prisma",
     "db:generate": "prisma generate",
-    "db:seed_random": "node prisma/seed_random.js"
+    "db:generate:tenant": "prisma generate --schema=prisma/tenant/schema.prisma",
+    "db:generate:all": "prisma generate && prisma generate --schema=prisma/tenant/schema.prisma",
+    "db:seed_random": "node prisma/seed_random.js",
+    "db:provision": "node scripts/provision-tenant-db.js"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

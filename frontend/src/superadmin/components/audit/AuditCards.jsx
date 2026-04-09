@@ -10,7 +10,7 @@ const safeJson = (v) => {
   }
 };
 
-const AuditCards = ({ logs, getActionIcon, getStatusBadge, getSeverity }) => {
+const AuditCards = ({ logs, getActionIcon, getStatusBadge, getSeverity, showOrganization = true }) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 lg:hidden">
       {logs.map((log) => {
@@ -36,8 +36,15 @@ const AuditCards = ({ logs, getActionIcon, getStatusBadge, getSeverity }) => {
                 <span className="text-xs font-semibold truncate">{log.user?.name || 'System'}</span>
               </div>
               <div className="flex items-center justify-between gap-2">
-                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Org</span>
-                <span className="text-xs font-semibold truncate">{log.organization?.name || 'Global'}</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+                  {showOrganization ? 'Org' : 'Project'}
+                </span>
+                <span className="text-xs font-semibold truncate">
+                  {showOrganization 
+                    ? (log.organization?.name || 'Global')
+                    : (log.project?.name || 'Platform')
+                  }
+                </span>
               </div>
               <div className="flex items-center justify-between gap-2">
                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Entity</span>

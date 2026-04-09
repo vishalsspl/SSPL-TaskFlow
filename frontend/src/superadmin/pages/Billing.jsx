@@ -236,7 +236,7 @@ const SuperAdminBilling = () => {
                       </TableCell>
                       <TableCell className="hidden sm:table-cell py-6">
                         <div className="flex flex-col items-center gap-0.5">
-                          <span className="text-[10px] font-black text-foreground uppercase tracking-wider">{format(new Date(invoice.invoiceDate), 'MMM dd, yyyy')}</span>
+                          <span className="text-[10px] font-black text-foreground uppercase tracking-wider">{format(new Date(invoice.createdAt), 'MMM dd, yyyy')}</span>
                           {invoice.dueDate && (
                             <span className="text-[9px] text-rose-500/80 font-bold uppercase tracking-[0.1em] mt-0.5">Expires: {format(new Date(invoice.dueDate), 'MMM dd')}</span>
                           )}

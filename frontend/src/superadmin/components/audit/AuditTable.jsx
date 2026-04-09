@@ -10,7 +10,7 @@ import {
   TableRow 
 } from '@/components/ui/table';
 
-const AuditTable = ({ logs, getActionIcon }) => {
+const AuditTable = ({ logs, getActionIcon, showOrganization = true }) => {
   const getSeverityStyle = (action) => {
     const act = action.toUpperCase();
     if (act.includes('DELETE') || act.includes('SUSPEND') || act.includes('REMOVE')) return 'border-red-500 bg-red-500/10';
@@ -38,7 +38,9 @@ const AuditTable = ({ logs, getActionIcon }) => {
           <TableRow className="hover:bg-transparent border-border/10">
             <TableHead className="text-[10px] font-black uppercase tracking-widest py-4 text-center">Action</TableHead>
             <TableHead className="text-[10px] font-black uppercase tracking-widest text-center">Done By</TableHead>
-            <TableHead className="text-[10px] font-black uppercase tracking-widest text-center">Organization</TableHead>
+            <TableHead className="text-[10px] font-black uppercase tracking-widest text-center">
+              {showOrganization ? 'Organization' : 'Project'}
+            </TableHead>
             <TableHead className="text-[10px] font-black uppercase tracking-widest text-center">Date & Time</TableHead>
             <TableHead className="text-[10px] font-black uppercase tracking-widest text-center">Status</TableHead>
           </TableRow>
@@ -91,14 +93,20 @@ const AuditTable = ({ logs, getActionIcon }) => {
                   </div>
                 </TableCell>
 
-                {/* Organization Column */}
+                {/* Organization or Project Column */}
                 <TableCell>
                   <div className="text-center flex flex-col items-center">
                     <div className="text-sm font-bold tracking-tight text-foreground/80 truncate max-w-[150px]">
-                      {log.organization?.name || 'Global'}
+                      {showOrganization 
+                        ? (log.organization?.name || 'Global')
+                        : (log.project?.name || 'Platform')
+                      }
                     </div>
                     <div className="text-[10px] font-medium text-muted-foreground/50 mt-0.5 truncate max-w-[150px]">
-                      {log.project ? `Project: ${log.project.name}` : (log.organization?.industry || 'Platform Action')}
+                      {showOrganization 
+                        ? (log.project ? `Project: ${log.project.name}` : (log.organization?.industry || 'Platform Action'))
+                        : (log.entity === 'project' ? 'Project Action' : (log.project ? 'Activity Detail' : 'Platform Action'))
+                      }
                     </div>
                   </div>
                 </TableCell>

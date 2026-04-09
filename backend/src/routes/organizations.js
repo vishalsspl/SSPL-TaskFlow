@@ -1,5 +1,5 @@
 import express from 'express';
-import { getMyOrganization, updateMyOrganization, getPublicOrganization, getAllOrganizations, updateOrgByAdmin, deleteOrganization } from '../controllers/organizationController.js';
+import { getMyOrganization, updateMyOrganization, getPublicOrganization, getAllOrganizations, updateOrgByAdmin, deleteOrganization, getOrgActivityLogs } from '../controllers/organizationController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import attachTenantDb from '../middleware/tenantMiddleware.js';
 
@@ -36,6 +36,7 @@ router.use(attachTenantDb);
  *         description: Organisation not found
  */
 router.get('/me', getMyOrganization);
+router.get('/activity-logs', authorize('ADMIN'), getOrgActivityLogs);
 
 /**
  * @swagger

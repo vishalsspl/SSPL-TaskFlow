@@ -1,5 +1,7 @@
 import prisma from '../lib/prisma.js';
 import bcrypt from 'bcryptjs';
+import { provisionTenantDatabase, dropTenantDatabase } from '../services/tenantProvisioner.js';
+import tenantDbManager from '../lib/tenantDbManager.js';
 
 // GET /api/superadmin/stats
 export const getStats = async (req, res) => {
@@ -47,7 +49,7 @@ export const createOrganization = async (req, res) => {
     }
 
     try {
-        // Check if user already exists
+        // Check if user already exists in MAIN DB
         const existingUser = await prisma.user.findFirst({
             where: { email: adminEmail }
         });
@@ -58,81 +60,121 @@ export const createOrganization = async (req, res) => {
 
         const passwordHash = await bcrypt.hash(adminPassword, 10);
 
-        const result = await prisma.$transaction(async (tx) => {
-            // 1. Fetch platform settings for limits and features
-            const settings = await tx.platformSetting.findMany();
-            const s = settings.reduce((acc, curr) => ({ ...acc, [curr.key]: curr.value }), {});
+        // 1. Fetch platform settings for limits and features
+        const settings = await prisma.platformSetting.findMany();
+        const s = settings.reduce((acc, curr) => ({ ...acc, [curr.key]: curr.value }), {});
 
-            const getLimit = (planVal, type, hardcoded) => {
-                const key = `${planVal.toLowerCase()}_max_${type}`;
-                return s[key] ? Number(s[key]) : hardcoded;
+        const getLimit = (planVal, type, hardcoded) => {
+            const key = `${planVal.toLowerCase()}_max_${type}`;
+            return s[key] ? Number(s[key]) : hardcoded;
+        };
+
+        const getFeatures = (planVal) => {
+            const key = `${planVal.toLowerCase()}_features`;
+            if (!s[key]) return { 
+                projects: true, kanban: true, tasks: true, tickets: true, 
+                team: true, chat: true, performance: true, timesheets: true 
             };
-
-            const getFeatures = (planVal) => {
-                const key = `${planVal.toLowerCase()}_features`;
-                if (!s[key]) return { 
+            try {
+                return typeof s[key] === 'string' ? JSON.parse(s[key]) : s[key];
+            } catch (e) {
+                return { 
                     projects: true, kanban: true, tasks: true, tickets: true, 
                     team: true, chat: true, performance: true, timesheets: true 
                 };
-                try {
-                    return typeof s[key] === 'string' ? JSON.parse(s[key]) : s[key];
-                } catch (e) {
-                    return { 
-                        projects: true, kanban: true, tasks: true, tickets: true, 
-                        team: true, chat: true, performance: true, timesheets: true 
-                    };
-                }
-            };
+            }
+        };
 
-            const maxUsers = plan === 'ENTERPRISE' ? getLimit('ENTERPRISE', 'users', 1000) 
-                           : (plan === 'PRO' ? getLimit('PRO', 'users', 100) 
-                           : (plan === 'STARTER' ? getLimit('STARTER', 'users', 30) : getLimit('FREE', 'users', 10)));
+        const maxUsers = plan === 'ENTERPRISE' ? getLimit('ENTERPRISE', 'users', 1000) 
+                       : (plan === 'PRO' ? getLimit('PRO', 'users', 100) 
+                       : (plan === 'STARTER' ? getLimit('STARTER', 'users', 30) : getLimit('FREE', 'users', 10)));
 
-            const maxProjects = plan === 'ENTERPRISE' ? getLimit('ENTERPRISE', 'projects', 500) 
-                               : (plan === 'PRO' ? getLimit('PRO', 'projects', 50) 
-                               : (plan === 'STARTER' ? getLimit('STARTER', 'projects', 5) : getLimit('FREE', 'projects', 3)));
+        const maxProjects = plan === 'ENTERPRISE' ? getLimit('ENTERPRISE', 'projects', 500) 
+                           : (plan === 'PRO' ? getLimit('PRO', 'projects', 50) 
+                           : (plan === 'STARTER' ? getLimit('STARTER', 'projects', 5) : getLimit('FREE', 'projects', 3)));
 
-            const customFeatures = getFeatures(plan);
+        const customFeatures = getFeatures(plan);
 
-            // 2. Create Organization
-            const org = await tx.organization.create({
-                data: {
-                    name,
-                    industry: industry || null,
-                    size: size || null,
-                    website: website || null,
-                    country: country || null,
-                    timezone: timezone || 'Asia/Kolkata',
-                    plan: plan || 'FREE',
-                    status: 'ACTIVE',
-                    maxUsers,
-                    maxProjects,
-                    customFeatures,
-                }
-            });
-
-            // 3. Create Admin User
-            const user = await tx.user.create({
-                data: {
-                    name: adminName,
-                    email: adminEmail,
-                    passwordHash,
-                    role: 'ADMIN',
-                    organizationId: org.id,
-                    isApproved: true,
-                }
-            });
-
-            return { org, user };
+        // 2. Create Organization in MAIN DB
+        const org = await prisma.organization.create({
+            data: {
+                name,
+                industry: industry || null,
+                size: size || null,
+                website: website || null,
+                country: country || null,
+                timezone: timezone || 'Asia/Kolkata',
+                plan: plan || 'FREE',
+                status: 'ACTIVE',
+                maxUsers,
+                maxProjects,
+                customFeatures,
+                dbStrategy: 'DEDICATED'
+            }
         });
 
+        // 3. Create Admin User in MAIN DB
+        const user = await prisma.user.create({
+            data: {
+                name: adminName,
+                email: adminEmail,
+                passwordHash,
+                role: 'ADMIN',
+                organizationId: org.id,
+                isApproved: true,
+            }
+        });
+
+        // 4. Provision Tenant Database (Dynamically)
+        let tenantDbUrl = null;
+        try {
+            tenantDbUrl = await provisionTenantDatabase({
+                orgId: org.id,
+                orgName: org.name,
+                orgData: {
+                    id: org.id,
+                    name: org.name,
+                    industry: org.industry,
+                    size: org.size,
+                    website: org.website,
+                    country: org.country,
+                    timezone: org.timezone,
+                    plan: org.plan,
+                    status: org.status,
+                    maxUsers: org.maxUsers,
+                    maxProjects: org.maxProjects,
+                    customFeatures: org.customFeatures
+                },
+                adminData: {
+                    id: user.id,
+                    organizationId: org.id,
+                    name: user.name,
+                    email: user.email,
+                    passwordHash: user.passwordHash,
+                    role: user.role,
+                    isApproved: true,
+                    mustChangePassword: false
+                }
+            });
+
+            // Update org with the confirmed DB URL in MAIN DB
+            await prisma.organization.update({
+                where: { id: org.id },
+                data: { dbUrl: tenantDbUrl }
+            });
+        } catch (provisionErr) {
+            console.error('[SuperAdmin] Tenant provisioning failed:', provisionErr.message);
+            // We keep the org record but it won't have a dbUrl yet. 
+            // SuperAdmin can retry or manually set it.
+        }
+
         res.status(201).json({
-            message: 'Organization and administrator created successfully',
-            organization: result.org,
+            message: 'Organization created and database provisioning initiated',
+            organization: { ...org, dbUrl: tenantDbUrl },
             admin: {
-                id: result.user.id,
-                name: result.user.name,
-                email: result.user.email
+                id: user.id,
+                name: user.name,
+                email: user.email
             }
         });
     } catch (error) {
@@ -147,7 +189,7 @@ export const getOrganizations = async (req, res) => {
         const orgs = await prisma.organization.findMany({
             include: {
                 _count: {
-                    select: { users: true, projects: true }
+                    select: { users: true }
                 }
             },
             orderBy: { createdAt: 'desc' }
@@ -275,10 +317,41 @@ export const getGlobalUsers = async (req, res) => {
 export const forceResetPassword = async (req, res) => {
     const { id } = req.params;
     try {
-        await prisma.user.update({
+        const user = await prisma.user.update({
             where: { id },
-            data: { mustChangePassword: true }
+            data: { mustChangePassword: true },
+            include: { organization: true }
         });
+
+        // Sync to Tenant DB if available
+        if (user.organization?.dbUrl) {
+            try {
+                const tenantClient = await tenantDbManager.getClient(user.organization.dbUrl);
+                await tenantClient.user.update({
+                    where: { id },
+                    data: { mustChangePassword: true }
+                });
+            } catch (tErr) {
+                console.error('[SuperAdmin] Failed to sync force-reset to tenant:', tErr.message);
+            }
+        }
+
+        // ✅ NEW: Activity Log (SAFE)
+        try {
+            await prisma.activityLog.create({
+                data: {
+                    userId: req.user.id,
+                    organizationId: user.organizationId,
+                    action: 'FORCE_PASSWORD_RESET',
+                    entity: 'user',
+                    entityId: id,
+                    details: { name: user.name, email: user.email, triggeredBy: 'SUPERADMIN' }
+                }
+            });
+        } catch (e) {
+            console.error('[ForceResetPassword] Log failed:', e.message);
+        }
+
         res.json({ message: 'User password reset flags updated' });
     } catch (error) {
         console.error('Error resetting user password:', error);
@@ -290,8 +363,13 @@ export const forceResetPassword = async (req, res) => {
 export const deleteGlobalUser = async (req, res) => {
     const { id } = req.params;
     try {
-        const existingUser = await prisma.user.findUnique({ where: { id } });
+        const existingUser = await prisma.user.findUnique({ 
+            where: { id },
+            include: { organization: true }
+        });
+
         if (existingUser) {
+            // Log in MAIN DB Audit
             await prisma.activityLog.create({
                 data: {
                     userId: req.user.id,
@@ -299,16 +377,57 @@ export const deleteGlobalUser = async (req, res) => {
                     action: 'DELETED',
                     entity: 'user',
                     entityId: id,
-                    details: { name: existingUser.name, email: existingUser.email },
+                    details: { name: existingUser.name, email: existingUser.email, deletedBy: 'SUPERADMIN' },
                 },
             });
+
+            // Delete from Tenant DB if available
+            if (existingUser.organization?.dbUrl) {
+                try {
+                    const tenantClient = await tenantDbManager.getClient(existingUser.organization.dbUrl);
+                    await tenantClient.user.delete({ where: { id } }).catch(e => console.log('User already gone from tenant'));
+                } catch (tErr) {
+                    console.error('[SuperAdmin] Failed to delete user from tenant:', tErr.message);
+                }
+            }
         }
 
+        // Delete from MAIN DB
         await prisma.user.delete({ where: { id } });
         res.json({ message: 'User deleted successfully' });
     } catch (error) {
         console.error('Error deleting user:', error);
         res.status(500).json({ error: 'Failed to delete user' });
+    }
+};
+
+// DELETE /api/superadmin/orgs/:id
+export const deleteOrganization = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const org = await prisma.organization.findUnique({ where: { id } });
+        if (!org) return res.status(404).json({ error: 'Organization not found' });
+
+        // 1. Drop Tenant Database if exists
+        if (org.dbUrl) {
+            try {
+                await dropTenantDatabase(org.id);
+            } catch (dropErr) {
+                console.error('[SuperAdmin] Failed to drop tenant database:', dropErr.message);
+                // We proceed with deleting metadata even if DB drop fails (maybe it was manually deleted)
+            }
+        }
+
+        // 2. Delete all users associated with this org from MAIN DB
+        await prisma.user.deleteMany({ where: { organizationId: id } });
+
+        // 3. Delete organization metadata
+        await prisma.organization.delete({ where: { id } });
+
+        res.json({ message: 'Organization and all associated data deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting organization:', error);
+        res.status(500).json({ error: 'Failed to delete organization' });
     }
 };
 
@@ -319,7 +438,10 @@ export const getGlobalAuditLogs = async (req, res) => {
 
     try {
         const where = {
-            ...(action && { action }),
+            action: {
+                ...(action && { contains: action, mode: 'insensitive' }),
+                notIn: ['SUSPENDED', 'ACTIVATED']
+            },
             ...(organizationId && { organizationId }),
             ...(search && {
                 OR: [
@@ -327,9 +449,6 @@ export const getGlobalAuditLogs = async (req, res) => {
                     { entity: { contains: search, mode: 'insensitive' } },
                     { user: { name: { contains: search, mode: 'insensitive' } } },
                     { organization: { name: { contains: search, mode: 'insensitive' } } },
-                    ...(search.length >= 3 ? [
-                        { details: { string_contains: search } }
-                    ] : [])
                 ]
             })
         };
@@ -343,11 +462,9 @@ export const getGlobalAuditLogs = async (req, res) => {
                             id: true,
                             name: true,
                             role: true,
-                            avatar: true,
                             organization: { select: { name: true } }
                         }
                     },
-                    project: { select: { name: true } },
                     organization: { select: { name: true } }
                 },
                 skip,
@@ -357,8 +474,31 @@ export const getGlobalAuditLogs = async (req, res) => {
             prisma.activityLog.count({ where })
         ]);
 
+        // Map logs to include project/entity info from details if available (since entities aren't in MAIN DB)
+        const mappedLogs = logs.map(log => {
+            const l = { ...log };
+            if (!l.project && l.details && typeof l.details === 'object') {
+                const details = l.details;
+                
+                // Priority 1: Direct name or projectName in details
+                const nameSnippet = details.name || details.projectName || details.title || details.taskTitle;
+                
+                if (nameSnippet) {
+                    l.project = { name: nameSnippet };
+                } 
+                // Priority 2: Entity specific context
+                else if (l.entity === 'chat') {
+                    l.project = { name: details.room === 'global' ? 'General Channel' : 'Project Chat' };
+                }
+                else if (l.entity === 'time_entry' || l.entity === 'worklog') {
+                    l.project = { name: `${details.hours || details.minutes || ''} ${details.hours ? 'hours' : 'minutes'} logged` };
+                }
+            }
+            return l;
+        });
+
         res.json({
-            data: logs,
+            data: mappedLogs,
             pagination: {
                 totalCount,
                 totalPages: Math.ceil(totalCount / Number(limit)),

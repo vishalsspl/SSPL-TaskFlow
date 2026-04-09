@@ -28,7 +28,7 @@ export const getGlobalInvoices = async (req, res) => {
                 },
                 skip,
                 take: Number(limit),
-                orderBy: { invoiceDate: 'desc' }
+                orderBy: { createdAt: 'desc' }
             }),
             prisma.invoice.count({ where })
         ]);

@@ -23,8 +23,7 @@ const ACTIONS = [
   { value: 'APPROVED', label: 'APPROVED' },
   { value: 'PASSWORD_RESET', label: 'PASSWORD_RESET' },
   { value: 'LOGGED_TIME', label: 'LOGGED_TIME' },
-  { value: 'SUSPENDED', label: 'SUSPENDED' },
-  { value: 'ACTIVATED', label: 'ACTIVATED' },
+  { value: 'MESSAGE_SENT', label: 'MESSAGE_SENT' },
 ];
 
 const AuditFilters = ({ action, setAction, setPage, onExport, onSubmit }) => {
@@ -33,14 +32,14 @@ const AuditFilters = ({ action, setAction, setPage, onExport, onSubmit }) => {
     : 'All Operations';
 
   return (
-    <div className="flex flex-col sm:flex-row items-center gap-6 p-4 px-6 rounded-[2rem] border border-border/10 dark:border-white/5 bg-background/50 dark:bg-white/[0.02] shadow-2xl backdrop-blur-md">
-      <div className="flex items-center gap-4">
+    <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
+      <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
         <Popover>
           <PopoverTrigger asChild>
             <Button
               variant="ghost"
               role="combobox"
-              className="h-14 min-w-[210px] rounded-2xl bg-secondary/20 dark:bg-black/80 border border-border/10 dark:border-white/5 hover:bg-secondary/30 dark:hover:bg-black text-foreground dark:text-white flex items-center justify-between px-6 group transition-all"
+              className="h-14 w-full sm:min-w-[210px] sm:w-auto rounded-2xl bg-secondary/20 dark:bg-black/80 border border-border/10 dark:border-white/5 hover:bg-secondary/30 dark:hover:bg-black text-foreground dark:text-white flex items-center justify-between px-6 group transition-all"
             >
               <span className="text-sm font-bold tracking-tight opacity-70 group-hover:opacity-100 transition-opacity">
                 {currentLabel}
@@ -103,7 +102,7 @@ const AuditFilters = ({ action, setAction, setPage, onExport, onSubmit }) => {
           type="button"
           variant="ghost"
           onClick={onExport}
-          className="h-14 rounded-2xl px-8 font-black text-xs tracking-tight bg-secondary/10 dark:bg-black border border-border/10 dark:border-white/5 hover:bg-secondary/20 dark:hover:bg-black/80 text-foreground dark:text-white flex items-center gap-4 transition-all active:scale-[0.98] group"
+          className="h-14 w-full sm:w-auto rounded-2xl px-8 font-black text-xs tracking-tight bg-secondary/10 dark:bg-black border border-border/10 dark:border-white/5 hover:bg-secondary/20 dark:hover:bg-black/80 text-foreground dark:text-white flex items-center justify-center sm:justify-start gap-4 transition-all active:scale-[0.98] group"
         >
           <div className="w-6 h-6 rounded-lg bg-emerald-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
             <Download className="w-3.5 h-3.5 text-emerald-500" />

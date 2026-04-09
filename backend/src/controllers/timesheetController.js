@@ -48,8 +48,25 @@ export const getTimeEntries = async (req, res) => {
         });
     }
 
-    const entries = await req.db.timeEntry.findMany({ where, include, orderBy: { date: 'desc' } });
-    res.json(entries);
+    const [entries, attendanceSummary] = await Promise.all([
+        req.db.timeEntry.findMany({ where, include, orderBy: { date: 'desc' } }),
+        req.db.attendance.findMany({
+            where: {
+                userId: where.userId || (req.user.role === 'MEMBER' ? req.user.id : undefined),
+                organizationId: req.user.organizationId,
+                clockIn: where.date
+            },
+            select: { clockIn: true, durationMinutes: true }
+        })
+    ]);
+
+    res.json({
+        entries,
+        attendanceSummary: attendanceSummary.map(a => ({
+            date: a.clockIn,
+            hours: (a.durationMinutes || 0) / 60
+        }))
+    });
 };
 
 export const createTimeEntry = async (req, res) => {
@@ -87,8 +104,9 @@ export const createTimeEntry = async (req, res) => {
         include,
     });
 
-    await req.db.activityLog.create({
-        data: {
+    // Log activity
+    try {
+        const logData = {
             userId: req.user.id,
             organizationId: req.user.organizationId,
             projectId,
@@ -96,8 +114,16 @@ export const createTimeEntry = async (req, res) => {
             entity: 'time_entry',
             entityId: entry.id,
             details: { hours, date },
-        },
-    });
+        };
+
+        // 1. Log to tenant DB
+        await req.db.activityLog.create({ data: logData });
+
+        // 2. Log to main DB for SuperAdmin visibility
+        await prisma.activityLog.create({ data: logData });
+    } catch (logErr) {
+        console.error('[CreateTimeEntry] Failed to log activity:', logErr.message);
+    }
 
     if (project.managerId && project.managerId !== req.user.id) {
         const manager = await req.db.user.findUnique({
@@ -144,6 +170,28 @@ export const updateTimeEntry = async (req, res) => {
     if (billable !== undefined) data.billable = billable;
 
     const entry = await req.db.timeEntry.update({ where: { id }, data, include });
+    
+    // Log activity
+    try {
+        const logData = {
+            userId: req.user.id,
+            organizationId: req.user.organizationId,
+            projectId: existingEntry.projectId,
+            action: 'UPDATED',
+            entity: 'time_entry',
+            entityId: entry.id,
+            details: { previousHours: existingEntry.hours, newHours: entry.hours, changes: req.body },
+        };
+
+        // 1. Log to tenant DB
+        await req.db.activityLog.create({ data: logData });
+
+        // 2. Log to main DB for SuperAdmin visibility
+        await prisma.activityLog.create({ data: logData });
+    } catch (logErr) {
+        console.error('[UpdateTimeEntry] Failed to log activity:', logErr.message);
+    }
+
     res.json(entry);
 };
 
@@ -189,12 +237,13 @@ export const updateTimeEntryStatus = async (req, res) => {
         );
     }
 
-    await req.db.activityLog.create({
-        data: {
+    // Log activity
+    try {
+        const logData = {
             userId: req.user.id,
             organizationId: req.user.organizationId,
             projectId: existingEntry.projectId,
-            action: status === 'APPROVED' ? 'APPROVED' : 'REJECTED',
+            action: status === 'APPROVED' ? 'APPROVED' : (status === 'REJECTED' ? 'REJECTED' : 'UPDATED_STATUS'),
             entity: 'time_entry',
             entityId: entry.id,
             details: { 
@@ -203,8 +252,16 @@ export const updateTimeEntryStatus = async (req, res) => {
                 hours: existingEntry.hours,
                 userName: existingEntry.user.name
             },
-        },
-    });
+        };
+
+        // 1. Log to tenant DB
+        await req.db.activityLog.create({ data: logData });
+
+        // 2. Log to main DB for SuperAdmin visibility
+        await prisma.activityLog.create({ data: logData });
+    } catch (logErr) {
+        console.error('[UpdateTimeEntryStatus] Failed to sync activity:', logErr.message);
+    }
 
     res.json(entry);
 };
@@ -223,6 +280,27 @@ export const deleteTimeEntry = async (req, res) => {
 
     if (existingEntry.userId !== req.user.id && req.user.role !== 'ADMIN') {
         return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    // Log deletion BEFORE deleting from database
+    try {
+        const logData = {
+            userId: req.user.id,
+            organizationId: req.user.organizationId,
+            projectId: existingEntry.projectId,
+            action: 'DELETED',
+            entity: 'time_entry',
+            entityId: id,
+            details: { hours: existingEntry.hours, date: existingEntry.date },
+        };
+
+        // 1. Log to tenant DB
+        await req.db.activityLog.create({ data: logData });
+
+        // 2. Log to main DB for SuperAdmin visibility
+        await prisma.activityLog.create({ data: logData });
+    } catch (logErr) {
+        console.error('[DeleteTimeEntry] Failed to log activity:', logErr.message);
     }
 
     await req.db.timeEntry.delete({ where: { id } });
@@ -286,8 +364,9 @@ export const createWorkLog = async (req, res) => {
         },
     });
 
-    await req.db.activityLog.create({
-        data: {
+    // Log activity
+    try {
+        const logData = {
             userId: req.user.id,
             organizationId: req.user.organizationId,
             projectId,
@@ -295,8 +374,16 @@ export const createWorkLog = async (req, res) => {
             entity: 'worklog',
             entityId: log.id,
             details: { minutes, comment, method: 'manual' },
-        },
-    });
+        };
+
+        // 1. Log to tenant DB
+        await req.db.activityLog.create({ data: logData });
+
+        // 2. Log to main DB for SuperAdmin visibility
+        await prisma.activityLog.create({ data: logData });
+    } catch (logErr) {
+        console.error('[CreateWorkLog] Failed to log activity:', logErr.message);
+    }
 
     res.status(201).json(log);
 };
@@ -340,7 +427,7 @@ export const getUserPerformance = async (req, res) => {
     if (projectId) timeWhere.projectId = projectId;
     if (dateFrom || dateTo) timeWhere.date = dateFilter;
 
-    const [tasks, timeEntries, workLogs] = await Promise.all([
+    const [tasks, timeEntries, workLogs, attendanceLogs] = await Promise.all([
         req.db.task.findMany({
             where: taskWhere,
             select: {
@@ -358,7 +445,17 @@ export const getUserPerformance = async (req, res) => {
             where: { userId, project: { organizationId: orgId } },
             select: { minutes: true, loggedAt: true, task: { select: { id: true, title: true } } },
         }),
+        req.db.attendance.findMany({
+            where: { 
+                userId, 
+                organizationId: orgId,
+                clockIn: { gte: dateFrom ? new Date(dateFrom) : undefined, lte: dateTo ? new Date(dateTo) : undefined }
+            },
+            select: { durationMinutes: true }
+        }),
     ]);
+
+    const attendanceHours = attendanceLogs.reduce((sum, log) => sum + ((log.durationMinutes || 0) / 60), 0);
 
     const totalTasks = tasks.length;
     const completedTasks = tasks.filter(t => t.status === 'COMPLETED').length;
@@ -394,7 +491,8 @@ export const getUserPerformance = async (req, res) => {
         summary: {
             totalTasks, completedTasks, inProgressTasks, overdueTasks,
             completionRate, onTimeRate,
-            totalHours: parseFloat(totalHours.toFixed(2)),
+            totalHours: parseFloat(attendanceHours.toFixed(2)), // Use attendance duration
+            taskLoggedHours: parseFloat(totalHours.toFixed(2)), // Keep original as separate field
             billableHours: parseFloat(billableHours.toFixed(2)),
             approvedHours: parseFloat(approvedHours.toFixed(2)),
             totalStoryPoints, completedStoryPoints,
@@ -431,14 +529,24 @@ export const getTeamPerformance = async (req, res) => {
         if (projectId) timeWhere.projectId = projectId;
         if (dateFrom || dateTo) timeWhere.date = dateFilter;
 
-        const [tasks, timeEntries] = await Promise.all([
+        const [tasks, timeEntries, attendanceLogs] = await Promise.all([
             req.db.task.findMany({ where: taskWhere, select: { status: true, dueDate: true, storyPoints: true, updatedAt: true } }),
             req.db.timeEntry.findMany({ where: timeWhere, select: { hours: true, billable: true } }),
+            req.db.attendance.findMany({
+                where: { 
+                    userId: u.id, 
+                    organizationId: orgId,
+                    clockIn: { gte: dateFrom ? new Date(dateFrom) : undefined, lte: dateTo ? new Date(dateTo) : undefined }
+                },
+                select: { durationMinutes: true }
+            })
         ]);
 
+        const attendanceHours = attendanceLogs.reduce((sum, log) => sum + ((log.durationMinutes || 0) / 60), 0);
         const completed = tasks.filter(t => t.status === 'COMPLETED').length;
         const overdue = tasks.filter(t => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'COMPLETED').length;
-        const totalHours = timeEntries.reduce((sum, e) => sum + parseFloat(e.hours), 0);
+        // Previously: const totalHours = timeEntries.reduce((sum, e) => sum + parseFloat(e.hours), 0);
+        const totalHours = attendanceHours; 
         const velocity = tasks.filter(t => t.status === 'COMPLETED').reduce((sum, t) => sum + (t.storyPoints || 0), 0);
         const completionRate = tasks.length > 0 ? Math.round((completed / tasks.length) * 100) : 0;
 

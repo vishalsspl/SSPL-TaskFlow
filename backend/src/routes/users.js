@@ -2,6 +2,7 @@ import express from 'express';
 import { getUsers, updateUser, deleteUser, approveUser, getManagedUsers, updateProfile, getMemberProgress } from '../controllers/userController.js';
 
 import { authenticate } from '../middleware/auth.js';
+import attachTenantDb from '../middleware/tenantMiddleware.js';
 
 const router = express.Router();
 
@@ -13,6 +14,7 @@ const router = express.Router();
  */
 
 router.use(authenticate);
+router.use(attachTenantDb);
 
 /**
  * @swagger

@@ -1,6 +1,7 @@
 import express from 'express';
-import { login, signup, invite, me, changePassword, forgotPassword, resetPassword } from '../controllers/authController.js';
+import { login, signup, invite, me, logout, changePassword, forgotPassword, resetPassword } from '../controllers/authController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
+import { attachTenantDb } from '../middleware/tenantMiddleware.js';
 
 const router = express.Router();
 
@@ -127,7 +128,23 @@ router.post('/signup', signup);
  *       403:
  *         description: Forbidden — role not allowed or user limit reached
  */
-router.post('/invite', authenticate, authorize('ADMIN', 'MANAGER'), invite);
+router.post('/invite', authenticate, authorize('ADMIN', 'MANAGER'), attachTenantDb, invite);
+
+/**
+ * @swagger
+ * /api/auth/logout:
+ *   post:
+ *     summary: Log out the current user and clock out
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully logged out
+ *       401:
+ *         description: Unauthorized
+ */
+router.post('/logout', authenticate, logout);
 
 /**
  * @swagger

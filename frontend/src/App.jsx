@@ -38,6 +38,7 @@ const ChatPage = lazy(() => import('./pages/ChatPage'));
 const Timesheets = lazy(() => import('./pages/Timesheets'));
 const Performance = lazy(() => import('./pages/Performance'));
 const OrganizationSettings = lazy(() => import('./pages/organization/OrganizationSettings'));
+const ActivityLog = lazy(() => import('./pages/organization/ActivityLog'));
 const RestrictedAccess = lazy(() => import('./pages/RestrictedAccess'));
 
 // ── Lazy-loaded: Ticket pages ──────────────────────────────────────────────
@@ -129,11 +130,12 @@ function App() {
 
   useEffect(() => {
     if (token && user?.id) {
+      // For SuperAdmins, organizationId will be null, which is now handled in server.js
       initSocket(user.id, user.organizationId);
     } else if (!token && isConnected) {
       disconnectSocket();
     }
-  }, [token, user?.id, user?.role, initSocket, disconnectSocket]);
+  }, [token, user?.id, user?.organizationId, initSocket, disconnectSocket]);
 
   useEffect(() => {
     if (socket && isConnected && token && user?.role !== 'SUPERADMIN') {
@@ -251,12 +253,19 @@ function App() {
                 element={<FeatureGuard feature="tickets"><TicketDetail /></FeatureGuard>}
               />
 
-              {/* Organisation settings — ADMIN only */}
               <Route
                 path="organization"
                 element={
                   user?.role === 'ADMIN'
                     ? <OrganizationSettings />
+                    : <Navigate to="/dashboard" replace />
+                }
+              />
+              <Route
+                path="organization/activity-log"
+                element={
+                  user?.role === 'ADMIN'
+                    ? <ActivityLog />
                     : <Navigate to="/dashboard" replace />
                 }
               />

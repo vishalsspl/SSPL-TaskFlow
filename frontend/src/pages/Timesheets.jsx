@@ -53,6 +53,7 @@ const Timesheets = () => {
 
     const [currentDate, setCurrentDate] = useState(new Date());
     const [entries, setEntries] = useState([]);
+    const [attendanceSummary, setAttendanceSummary] = useState([]);
     const [projects, setProjects] = useState([]);
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -78,7 +79,8 @@ const Timesheets = () => {
             const startDate = format(weekStart, 'yyyy-MM-dd');
             const endDate = format(weekDays[6], 'yyyy-MM-dd');
             const response = await api.get(`/timesheets?startDate=${startDate}&endDate=${endDate}`);
-            setEntries(response.data);
+            setEntries(response.data.entries || response.data);
+            setAttendanceSummary(response.data.attendanceSummary || []);
         } catch (error) {
             console.error('Failed to fetch entries:', error);
         } finally {
@@ -233,7 +235,12 @@ const Timesheets = () => {
             <div className="grid grid-cols-7 gap-1 sm:gap-3">
                 {weekDays.map((day) => {
                     const dayEntries = entries.filter(e => isSameDay(parseISO(e.date), day));
-                    const totalHours = dayEntries.reduce((sum, e) => sum + parseFloat(e.hours), 0);
+                    // Calculate hours from attendance summary if available, otherwise fallback to task logs
+                    const dayAttendance = attendanceSummary.filter(a => isSameDay(parseISO(a.date), day));
+                    const totalHours = dayAttendance.length > 0 
+                        ? dayAttendance.reduce((sum, a) => sum + (a.hours || 0), 0)
+                        : dayEntries.reduce((sum, e) => sum + parseFloat(e.hours), 0);
+                    
                     const isToday = isSameDay(day, new Date());
 
                     return (

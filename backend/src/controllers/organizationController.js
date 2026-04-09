@@ -14,7 +14,7 @@ export const getMyOrganization = async (req, res) => {
     const org = await req.db.organization.findUnique({
         where: { id: organizationId },
         include: {
-            _count: { select: { users: true, projects: true } },
+            _count: { select: { users: true } },
         },
     });
 
@@ -84,7 +84,7 @@ export const updateMyOrganization = async (req, res) => {
             ...(sessionTimeoutMinutes !== undefined && { sessionTimeoutMinutes: parseInt(sessionTimeoutMinutes) }),
         },
         include: {
-            _count: { select: { users: true, projects: true } },
+            _count: { select: { users: true } },
         },
     });
 
@@ -110,7 +110,7 @@ export const getAllOrganizations = async (req, res) => {
             take: parseInt(limit),
             orderBy: { createdAt: 'desc' },
             include: {
-                _count: { select: { users: true, projects: true } },
+                _count: { select: { users: true } },
                 users: {
                     where: { role: 'ADMIN' },
                     orderBy: { createdAt: 'asc' },
@@ -171,7 +171,7 @@ export const updateOrgByAdmin = async (req, res) => {
             ...(status === 'ACTIVE' && { suspendedAt: null, suspendedReason: null }),
         },
         include: {
-            _count: { select: { users: true, projects: true } },
+            _count: { select: { users: true } },
         },
     });
 
@@ -247,7 +247,86 @@ export const deleteOrganization = async (req, res) => {
         },
     });
 
-    await req.db.organization.delete({ where: { id } });
-    
-    res.json({ message: 'Organisation deleted successfully' });
+    try {
+        await req.db.organization.delete({ where: { id } });
+        res.json({ message: 'Organisation deleted successfully' });
+    } catch (error) {
+        console.error('[OrganizationDelete] Error:', error.message);
+        res.status(500).json({ error: 'Failed to delete organization. It may have associated records that cannot be removed automatically.' });
+    }
+};
+
+// ── GET /api/organizations/activity-logs ────────────────────────────────────
+// ADMIN only — fetch log history for the current organisation
+export const getOrgActivityLogs = async (req, res) => {
+    const { page = 1, limit = 25, action, search } = req.query;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const { organizationId } = req.user;
+
+    try {
+        const where = {
+            organizationId,
+            ...(action && { action: { contains: action, mode: 'insensitive' } }),
+            ...(search && {
+                OR: [
+                    { action: { contains: search, mode: 'insensitive' } },
+                    { entity: { contains: search, mode: 'insensitive' } },
+                    { user: { name: { contains: search, mode: 'insensitive' } } },
+                ]
+            })
+        };
+
+        const [logs, total] = await Promise.all([
+            req.db.activityLog.findMany({
+                where,
+                skip,
+                take: parseInt(limit),
+                orderBy: { createdAt: 'desc' },
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            avatar: true,
+                            role: true
+                        }
+                    },
+                    project: {
+                        select: { name: true }
+                    }
+                }
+            }),
+            req.db.activityLog.count({ where })
+        ]);
+
+        // Map logs for consistent metadata display
+        const mappedLogs = logs.map(log => {
+            const l = { ...log };
+            if (!l.project && l.details && typeof l.details === 'object') {
+                const details = l.details;
+                const nameSnippet = details.name || details.projectName || details.title || details.taskTitle;
+                if (nameSnippet) {
+                    l.project = { name: nameSnippet };
+                } else if (l.entity === 'chat') {
+                    l.project = { name: details.room === 'global' ? 'General Channel' : 'Project Chat' };
+                } else if (l.entity === 'time_entry' || l.entity === 'worklog') {
+                    l.project = { name: `${details.hours || details.minutes || ''} ${details.hours ? 'hours' : 'minutes'} logged` };
+                }
+            }
+            return l;
+        });
+
+        res.json({
+            data: mappedLogs,
+            pagination: {
+                total,
+                page: parseInt(page),
+                limit: parseInt(limit),
+                totalPages: Math.ceil(total / parseInt(limit)),
+            }
+        });
+    } catch (error) {
+        console.error('[OrgActivityLogs] Error:', error);
+        res.status(500).json({ error: 'Failed to fetch activity logs' });
+    }
 };

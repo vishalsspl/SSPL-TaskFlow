@@ -7,12 +7,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ─── MAIN DB: Organizations, Billing, SuperAdmin ────────────────────────────
+
 model Organization {
   id   String @id @default(uuid())
   name String
 
-  // 🔥 tenant connection
-  dbUrl      String
+  // tenant connection
+  dbUrl      String?
   dbStrategy DbStrategy @default(DEDICATED)
 
   // plan & limits
@@ -21,29 +23,61 @@ model Organization {
   maxUsers    Int       @default(10)
   maxProjects Int       @default(5)
 
-  // billing
-  billingEmail String?
-  trialEndsAt  DateTime?
+  // profile
+  logoUrl    String?
+  themeColor String?  @default("#3B82F6")
+  industry   String?
+  size       String?
+  website    String?
+  country    String?
+  timezone   String?  @default("Asia/Kolkata")
+
+  // contact & billing
+  billingEmail        String?
+  primaryContactName  String?
+  primaryContactPhone String?
+  address             String?
+
+  // org-level settings
+  requireApproval      Boolean @default(false)
+  allowClientSignup    Boolean @default(false)
+  sessionTimeoutMinutes Int?
+
+  customFeatures Json?
+
+  // trial/suspension
+  trialEndsAt     DateTime?
+  suspendedAt     DateTime?
+  suspendedReason String?
 
   // metadata
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   invoices Invoice[]
-
-  // 🔥 ADD THIS LINE
-  users User[]
+  users    User[]
+  activityLogs ActivityLog[]
 }
 
+// Auth lookup table — keeps email + passwordHash for all users across all tenants
 model User {
-  id           String @id @default(uuid())
-  email        String @unique
-  passwordHash String
-  role         Role
+  id             String  @id @default(uuid())
+  email          String  @unique
+  name           String
+  passwordHash   String
+  role           Role
 
-  // optional org link (for admin mapping)
+  isApproved         Boolean  @default(false)
+  mustChangePassword Boolean  @default(true)
+
+  resetToken       String?
+  resetTokenExpiry DateTime?
+
+  // link to organization in MAIN DB
   organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  activityLogs ActivityLog[]
 
   createdAt DateTime @default(now())
 }
@@ -51,11 +85,13 @@ model User {
 model Invoice {
   id             String       @id @default(uuid())
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  amount Float
-  status InvoiceStatus
-  plan   OrgPlan
+  amount      Decimal      @db.Decimal(10, 2)
+  currency    String       @default("USD")
+  status      InvoiceStatus @default(PENDING)
+  description String?
+  plan        OrgPlan?
 
   dueDate DateTime?
   paidAt  DateTime?
@@ -69,8 +105,14 @@ model PlatformSetting {
   value String
 }
 
+// ─── Enums ──────────────────────────────────────────────────────────────────
+
 enum Role {
   SUPERADMIN
+  ADMIN
+  MANAGER
+  MEMBER
+  CLIENT
 }
 
 enum OrgPlan {
@@ -84,15 +126,35 @@ enum OrgStatus {
   TRIAL
   ACTIVE
   SUSPENDED
+  PENDING
 }
 
 enum InvoiceStatus {
   PENDING
   PAID
-  FAILED
+  OVERDUE
+  CANCELLED
+  VOID
 }
 
 enum DbStrategy {
   SHARED
   DEDICATED
+}
+
+model ActivityLog {
+  id             String  @id @default(uuid())
+  userId         String
+  organizationId String?
+  action         String
+  entity         String
+  entityId       String?
+  details        Json?
+  // New optional link to a project for project‑related actions
+  projectId      String?
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
 }

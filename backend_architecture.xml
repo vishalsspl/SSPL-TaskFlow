@@ -363,7 +363,7 @@
       <endpoint method="POST" path="/reset-password"  auth="none"
         body="{ token, password }"
         controller="resetPassword"
-        notes="Validates resetToken + expiry, updates passwordHash, clears token." />
+        notes="Validates resetToken + expiry, updates passwordHash, clears token. Logs PASSWORD_RESET activity." />
     </group>
 
     <!-- PROJECTS (/api/projects) — src/routes/projects.js → src/controllers/projectController.js -->
@@ -596,7 +596,7 @@
       <endpoint method="PUT"    path="/orgs/:id"       auth="SUPERADMIN" controller="updateOrganization" />
       <endpoint method="PATCH"  path="/orgs/:id/status" auth="SUPERADMIN" controller="updateOrganizationStatus" />
       <endpoint method="GET"    path="/users"          auth="SUPERADMIN" controller="getGlobalUsers" />
-      <endpoint method="POST"   path="/users/:id/force-reset" auth="SUPERADMIN" controller="forceResetPassword" />
+      <endpoint method="POST" path="/users/:id/force-reset" auth="SUPERADMIN" controller="forceResetPassword" notes="Triggers mustChangePassword flag. Logs FORCE_PASSWORD_RESET activity." />
       <endpoint method="DELETE" path="/users/:id"      auth="SUPERADMIN" controller="deleteGlobalUser" />
       <endpoint method="GET"    path="/audit"          auth="SUPERADMIN" controller="getGlobalAuditLogs" />
     </group>
@@ -911,9 +911,10 @@
       Enforced organization-level quotas (maxProjects, maxUsers) in controllers (`createProject`, `authController` invites).
       Returns 403 Forbidden with custom message prompting premium upgrade when limits are reached.
     </update>
-    <update date="2026-03-24" component="Audit Logs (System Ledger)">
-      Normalized `activity_logs` in database (stripped newlines, UPPER() casing).
-      Re-introduced `INVITED`, `APPROVED`, and `MEMBER_ADDED` to accurate front-end filtering.
+      <update date="2026-04-08" component="Audit Logs (Password Operations)">
+      Added end-to-end activity logging for password operations: `PASSWORD_RESET_REQUEST`, 
+      `PASSWORD_RESET`, `PASSWORD_CHANGED`, and `FORCE_PASSWORD_RESET`. 
+      Ensures full system ledger visibility for security-sensitive operations.
     </update>
   </recent_updates>
 

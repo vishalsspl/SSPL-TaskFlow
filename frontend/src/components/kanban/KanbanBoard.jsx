@@ -65,7 +65,7 @@ const KanbanBoard = ({ tasks, onTaskUpdate, isReadOnly, onEdit, onDelete, onStat
 
         let newStatus = null;
 
-        if (['TODO', 'IN_PROGRESS', 'IN_REVIEW', 'COMPLETED', 'BLOCKED'].includes(overId)) {
+        if (['TODO', 'IN_PROGRESS', 'IN_REVIEW', 'COMPLETED'].includes(overId)) {
             newStatus = overId;
         } else {
             const overTask = tasks.find(t => t.id === overId);
@@ -88,7 +88,6 @@ const KanbanBoard = ({ tasks, onTaskUpdate, isReadOnly, onEdit, onDelete, onStat
         IN_PROGRESS: sortByPriority(tasks.filter(t => t.status === 'IN_PROGRESS')),
         IN_REVIEW: sortByPriority(tasks.filter(t => t.status === 'IN_REVIEW')),
         COMPLETED: sortByPriority(tasks.filter(t => t.status === 'COMPLETED')),
-        BLOCKED: sortByPriority(tasks.filter(t => t.status === 'BLOCKED')),
     };
 
     return (
@@ -103,7 +102,6 @@ const KanbanBoard = ({ tasks, onTaskUpdate, isReadOnly, onEdit, onDelete, onStat
                 <KanbanColumn id="IN_PROGRESS" title="In Progress" tasks={columns.IN_PROGRESS} isReadOnly={isReadOnly} onEdit={onEdit} onDelete={onDelete} onStatusChange={onStatusChange} recentlyMovedId={recentlyMovedId} />
                 <KanbanColumn id="IN_REVIEW" title="In Review" tasks={columns.IN_REVIEW} isReadOnly={isReadOnly} onEdit={onEdit} onDelete={onDelete} onStatusChange={onStatusChange} recentlyMovedId={recentlyMovedId} />
                 <KanbanColumn id="COMPLETED" title="Completed" tasks={columns.COMPLETED} isReadOnly={isReadOnly} onEdit={onEdit} onDelete={onDelete} onStatusChange={onStatusChange} recentlyMovedId={recentlyMovedId} />
-                <KanbanColumn id="BLOCKED" title="Blocked" tasks={columns.BLOCKED} isReadOnly={isReadOnly} onEdit={onEdit} onDelete={onDelete} onStatusChange={onStatusChange} recentlyMovedId={recentlyMovedId} />
             </div>
 
             {createPortal(

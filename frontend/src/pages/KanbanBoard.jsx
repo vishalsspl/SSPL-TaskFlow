@@ -380,7 +380,7 @@ const KanbanBoard = () => {
                                         <div className="flex-1 flex flex-col justify-end group">
                                             <div className="relative mb-2 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <span className="absolute bottom-full mb-2 px-2 py-1 bg-white text-black text-[9px] font-black rounded Montserrat whitespace-nowrap">
-                                                    ${budgetData.totalBudget.toLocaleString()}
+                                                    ₹{budgetData.totalBudget.toLocaleString('en-IN')}
                                                 </span>
                                             </div>
                                             <div className="bg-white/10 rounded-2xl w-full h-[100%] ring-1 ring-white/10 group-hover:bg-white/20 transition-all" />
@@ -389,7 +389,7 @@ const KanbanBoard = () => {
                                         <div className="flex-1 flex flex-col justify-end group">
                                             <div className="relative mb-2 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <span className="absolute bottom-full mb-2 px-2 py-1 bg-[#00A3FF] text-white text-[9px] font-black rounded Montserrat whitespace-nowrap">
-                                                    ${budgetData.budgetUsed.toLocaleString()}
+                                                    ₹{budgetData.budgetUsed.toLocaleString('en-IN')}
                                                 </span>
                                             </div>
                                             <div
@@ -405,7 +405,7 @@ const KanbanBoard = () => {
                                         <div className="flex-1 flex flex-col justify-end group">
                                             <div className="relative mb-2 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <span className="absolute bottom-full mb-2 px-2 py-1 bg-amber-500 text-white text-[9px] font-black rounded Montserrat whitespace-nowrap">
-                                                    ${budgetData.targetBudget.toLocaleString()}
+                                                    ₹{budgetData.targetBudget.toLocaleString('en-IN')}
                                                 </span>
                                             </div>
                                             <div
@@ -424,13 +424,13 @@ const KanbanBoard = () => {
                                     <div className="space-y-1">
                                         <div className="text-[10px] font-black text-gray-600 uppercase tracking-widest Montserrat">Total committed</div>
                                         <div className="text-3xl font-black text-foreground Montserrat tracking-tighter">
-                                            ${budgetData.totalBudget.toLocaleString()}
+                                            ₹{budgetData.totalBudget.toLocaleString('en-IN')}
                                         </div>
                                     </div>
                                     <div className="space-y-1">
                                         <div className="text-[10px] font-black text-gray-600 uppercase tracking-widest Montserrat">Remaining bandwidth</div>
                                         <div className="text-3xl font-black text-primary Montserrat tracking-tighter">
-                                            ${budgetData.remaining.toLocaleString()}
+                                            ₹{budgetData.remaining.toLocaleString('en-IN')}
                                         </div>
                                     </div>
                                     {budgetData.overTargetPercentage > 0 && (

@@ -7,11 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Lock, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Lock, ShieldCheck, ArrowRight, Eye, EyeOff } from 'lucide-react';
 
 const ChangePassword = () => {
     const { user, updateUser } = useAuthStore();
     const [loading, setLoading] = useState(false);
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [formData, setFormData] = useState({
         currentPassword: '',
         newPassword: '',
@@ -79,12 +82,19 @@ const ChangePassword = () => {
                                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70" />
                                         <Input
                                             id="currentPassword"
-                                            type="password"
+                                            type={showCurrentPassword ? "text" : "password"}
                                             required
                                             value={formData.currentPassword}
                                             onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
-                                            className="!pl-10 bg-background/50 border-input text-foreground"
+                                            className="!pl-10 !pr-10 bg-background/50 border-input text-foreground"
                                         />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/70 hover:text-foreground transition-colors"
+                                        >
+                                            {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                        </button>
                                     </div>
                                 </div>
 
@@ -95,12 +105,19 @@ const ChangePassword = () => {
                                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70" />
                                         <Input
                                             id="newPassword"
-                                            type="password"
+                                            type={showNewPassword ? "text" : "password"}
                                             required
                                             value={formData.newPassword}
                                             onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
-                                            className="!pl-10 bg-card border-border text-foreground"
+                                            className="!pl-10 !pr-10 bg-card border-border text-foreground"
                                         />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowNewPassword(!showNewPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/70 hover:text-foreground transition-colors"
+                                        >
+                                            {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                        </button>
                                     </div>
                                 </div>
 
@@ -111,12 +128,19 @@ const ChangePassword = () => {
                                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70" />
                                         <Input
                                             id="confirmPassword"
-                                            type="password"
+                                            type={showConfirmPassword ? "text" : "password"}
                                             required
                                             value={formData.confirmPassword}
                                             onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                                            className="!pl-10 bg-background/50 border-input text-foreground"
+                                            className="!pl-10 !pr-10 bg-background/50 border-input text-foreground"
                                         />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/70 hover:text-foreground transition-colors"
+                                        >
+                                            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                        </button>
                                     </div>
                                 </div>
                             </div>

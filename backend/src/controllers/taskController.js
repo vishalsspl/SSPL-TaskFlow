@@ -1,5 +1,6 @@
 import { sendTaskAssignmentEmail, sendTaskStatusUpdateEmail } from '../services/emailService.js';
 import { createNotification } from '../utils/notifications.js';
+import prisma from '../lib/prisma.js';
 
 
 export const getAllTasks = async (req, res) => {
@@ -225,8 +226,9 @@ export const createTask = async (req, res) => {
     },
   });
 
-  await req.db.activityLog.create({
-    data: {
+  // Log activity
+  try {
+    const logData = {
       userId: req.user.id,
       organizationId: req.user.organizationId,
       projectId,
@@ -234,8 +236,16 @@ export const createTask = async (req, res) => {
       entity: 'task',
       entityId: task.id,
       details: { title: task.title },
-    },
-  });
+    };
+
+    // 1. Log to tenant DB
+    await req.db.activityLog.create({ data: logData });
+
+    // 2. Log to main DB for SuperAdmin visibility
+    await prisma.activityLog.create({ data: logData });
+  } catch (logErr) {
+    console.error('[CreateTask] Failed to log activity:', logErr.message);
+  }
 
   // Send email to all assignees
   const senderName = req.user.name;
@@ -359,17 +369,26 @@ export const updateTask = async (req, res) => {
     },
   });
 
-  await req.db.activityLog.create({
-    data: {
+  // Log activity
+  try {
+    const logData = {
       userId: req.user.id,
       organizationId: req.user.organizationId,
       projectId: task.projectId,
       action: 'UPDATED',
       entity: 'task',
       entityId: task.id,
-      details: { changes: req.body },
-    },
-  });
+      details: { title: task.title, changes: req.body },
+    };
+
+    // 1. Log to tenant DB
+    await req.db.activityLog.create({ data: logData });
+
+    // 2. Log to main DB for SuperAdmin visibility
+    await prisma.activityLog.create({ data: logData });
+  } catch (logErr) {
+    console.error('[UpdateTask] Failed to log activity:', logErr.message);
+  }
 
   // Email newly added assignees
   if (addedIds.length > 0) {
@@ -460,8 +479,9 @@ export const deleteTask = async (req, res) => {
     return res.status(404).json({ error: 'Task not found' });
   }
 
-  await req.db.activityLog.create({
-    data: {
+  // Log deletion BEFORE deleting from database
+  try {
+    const logData = {
       userId: req.user.id,
       organizationId: req.user.organizationId,
       projectId: existingTask.projectId,
@@ -469,8 +489,16 @@ export const deleteTask = async (req, res) => {
       entity: 'task',
       entityId: id,
       details: { title: existingTask.title },
-    },
-  });
+    };
+
+    // 1. Log to tenant DB
+    await req.db.activityLog.create({ data: logData });
+
+    // 2. Log to main DB for SuperAdmin visibility
+    await prisma.activityLog.create({ data: logData });
+  } catch (logErr) {
+    console.error('[DeleteTask] Failed to log activity:', logErr.message);
+  }
 
   await req.db.task.delete({
     where: { id },
@@ -597,6 +625,31 @@ export const updateTaskProgress = async (req, res) => {
       await recalculatePhaseProgress(req.db, task.phaseId);
     }
 
+    // Log activity
+    try {
+      const logData = {
+        userId: req.user.id,
+        organizationId: req.user.organizationId,
+        projectId: task.projectId,
+        action: 'UPDATED',
+        entity: 'task',
+        entityId: task.id,
+        details: { 
+          title: task.title, 
+          action: 'Progress Updated',
+          completionPercentage: Number(completionPercentage) 
+        },
+      };
+
+      // 1. Log to tenant DB
+      await req.db.activityLog.create({ data: logData });
+
+      // 2. Log to main DB for SuperAdmin visibility
+      await prisma.activityLog.create({ data: logData });
+    } catch (logErr) {
+      console.error('[UpdateTaskProgress] Failed to log activity:', logErr.message);
+    }
+
     res.json(task);
   } catch (error) {
     console.error('Error updating task progress:', error);
@@ -637,6 +690,32 @@ export const updateTaskStatus = async (req, res) => {
 
     if (task.phaseId) {
       await recalculatePhaseProgress(req.db, task.phaseId);
+    }
+
+    // Log activity
+    try {
+      const logData = {
+        userId: req.user.id,
+        organizationId: req.user.organizationId,
+        projectId: task.projectId,
+        action: 'UPDATED',
+        entity: 'task',
+        entityId: task.id,
+        details: { 
+          title: task.title, 
+          action: 'Status Updated',
+          status,
+          oldStatus: existingTask.status
+        },
+      };
+
+      // 1. Log to tenant DB
+      await req.db.activityLog.create({ data: logData });
+
+      // 2. Log to main DB for SuperAdmin visibility
+      await prisma.activityLog.create({ data: logData });
+    } catch (logErr) {
+      console.error('[UpdateTaskStatus] Failed to log activity:', logErr.message);
     }
 
     // Email assignees if status changed by Manager or Admin

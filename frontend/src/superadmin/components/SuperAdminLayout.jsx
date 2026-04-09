@@ -33,6 +33,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { useHeaderStore } from '@/store/headerStore';
+import api from '@/lib/api';
 
 const SuperAdminLayout = () => {
   const { user, logout } = useAuthStore();
@@ -47,7 +48,7 @@ const SuperAdminLayout = () => {
   }
 
   const handleLogout = () => {
-    logout();
+    logout(api);
     navigate('/login');
   };
 
@@ -75,9 +76,13 @@ const SuperAdminLayout = () => {
           <ShieldCheck className="w-6 h-6" />
         </div>
         {(isMobile || isSidebarOpen) && (
-          <div className="flex flex-col min-w-0 animate-in fade-in slide-in-from-left-2 duration-300">
+          <div className="flex flex-col items-center text-center min-w-0 animate-in fade-in slide-in-from-left-2 duration-300">
             <span className="text-base font-extrabold text-foreground leading-tight ">TaskFlow</span>
-            <span className="text-[10px] font-semibold text-primary opacity-80 ">Platform Admin</span>
+            <div className="flex items-center gap-1.5 -mt-0.5">
+              <span className="text-[9px] font-bold text-primary tracking-widest uppercase opacity-80 ">Platform Admin</span>
+              <span className="text-[9px] text-muted-foreground">•</span>
+              <span className="text-[8px] text-muted-foreground font-bold uppercase tracking-[0.2em] opacity-60">Sveltoz</span>
+            </div>
           </div>
         )}
       </div>

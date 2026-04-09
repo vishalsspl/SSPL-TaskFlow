@@ -25,6 +25,7 @@ import billingRoutes from './routes/billing.js';
 import { getPublicSettings } from './controllers/settingsController.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import prisma from './lib/prisma.js';
+import tenantDbManager from './lib/tenantDbManager.js';
 import { attachIo } from './middleware/socketMiddleware.js';
 
 
@@ -87,14 +88,34 @@ io.on('connection', (socket) => {
   socket.on('send-message', async (data) => {
     const { content, userId, projectId, organizationId, snippet } = data;
     try {
-      // Use the standard prisma client for all chat messages
-      const tenantDb = prisma;
+      // 1. Resolve organization for DB connection
+      if (!organizationId) {
+        console.warn(`[Socket] Message from User ${userId} blocked: No organizationId provided.`);
+        return;
+      }
 
+      const org = await prisma.organization.findUnique({
+        where: { id: organizationId },
+        select: { dbUrl: true, dbStrategy: true }
+      });
+
+      if (!org) {
+        console.warn(`[Socket] Message blocked: Organization ${organizationId} not found in Main DB.`);
+        return;
+      }
+
+      // 2. Get the correct tenant DB client
+      let tenantDb = prisma; 
+      if (org.dbUrl && org.dbStrategy === 'DEDICATED') {
+        tenantDb = await tenantDbManager.getClient(org.dbUrl);
+      }
+
+      // 3. Save message in tenant DB
       const message = await tenantDb.chatMessage.create({
         data: { 
           content, 
           userId, 
-          projectId, 
+          projectId: projectId || null, 
           organizationId 
         },
         include: {
@@ -107,6 +128,42 @@ io.on('connection', (socket) => {
       // Deliver message to users IN the room
       io.to(targetRoom).emit('new-message', message);
 
+      // 4. Create persistent Notifications in bulk (in tenant DB)
+      const project = projectId ? await tenantDb.project.findUnique({
+        where: { id: projectId },
+        include: { 
+          tasks: { include: { assignees: true } },
+          manager: true,
+          client: true,
+          workloads: true
+        }
+      }) : null;
+
+      // ✅ NEW: Log this action for global audit
+      try {
+        const logData = {
+          userId,
+          organizationId,
+          projectId: projectId || null,
+          action: 'MESSAGE_SENT',
+          entity: 'chat',
+          entityId: message.id,
+          details: { 
+            room: projectId ? 'project' : 'global',
+            projectName: projectId ? (project?.name || 'Unknown') : 'General Channel',
+            snippet: snippet || 'encrypted message'
+          }
+        };
+
+        // 1. Log to tenant DB
+        await tenantDb.activityLog.create({ data: logData });
+
+        // 2. Log to main DB for SuperAdmin visibility
+        await prisma.activityLog.create({ data: logData });
+      } catch (logErr) {
+          console.error('[Socket Message] Failed to log activity:', logErr.message);
+      }
+
       // Broadcast lightweight notification
       const notificationChannel = organizationId ? io.to(`org-${organizationId}`) : io;
       
@@ -117,27 +174,14 @@ io.on('connection', (socket) => {
         senderName: message.user.name,
       });
 
-      // Create persistent Notifications for users not in the current room
-      // To keep it efficient, we only notify project members or all org members for global
-      const project = projectId ? await tenantDb.project.findUnique({
-        where: { id: projectId },
-        include: { 
-          tasks: { include: { assignees: true } },
-          manager: true,
-          client: true
-        }
-      }) : null;
-
       let targetUserIds = [];
       if (projectId && project) {
-        // Collect all project members
         const assignees = new Set();
         project.tasks.forEach(t => t.assignees.forEach(a => assignees.add(a.userId)));
         targetUserIds = Array.from(assignees);
         if (project.managerId) targetUserIds.push(project.managerId);
         if (project.clientId) targetUserIds.push(project.clientId);
       } else {
-        // Global chat: Notify everyone in the organization
         const orgUsers = await tenantDb.user.findMany({
           where: { organizationId },
           select: { id: true }
@@ -145,10 +189,8 @@ io.on('connection', (socket) => {
         targetUserIds = orgUsers.map(u => u.id);
       }
 
-      // Filter out the sender and duplicates
       const finalTargets = [...new Set(targetUserIds)].filter(id => id !== userId);
 
-      // Create persistent notifications in bulk (or sequential if Prisma doesn't support bulk well on all setups)
       for (const targetId of finalTargets) {
         const notif = await tenantDb.notification.create({
           data: {
@@ -159,12 +201,108 @@ io.on('connection', (socket) => {
             message: `${message.user.name}: ${snippet || 'sent an encrypted message'}`,
           }
         });
-        // Emit specifically to the user's room if they are connected
         io.to(`org-${organizationId}`).emit('new-notification', notif);
       }
 
     } catch (error) {
       console.error('Error saving message:', error);
+    }
+  });
+
+  socket.on('edit-message', async (data) => {
+    const { messageId, content, organizationId, projectId } = data;
+    try {
+      const org = await prisma.organization.findUnique({
+        where: { id: organizationId },
+        select: { dbUrl: true, dbStrategy: true }
+      });
+
+      let tenantDb = prisma;
+      if (org?.dbUrl && org?.dbStrategy === 'DEDICATED') {
+        tenantDb = await tenantDbManager.getClient(org.dbUrl);
+      }
+
+      const updatedMessage = await tenantDb.chatMessage.update({
+        where: { id: messageId },
+        data: { content, isEdited: true },
+        include: { user: { select: { id: true, name: true, avatar: true } } }
+      });
+
+      // ✅ Log Edit Action
+      try {
+        await tenantDb.activityLog.create({
+          data: {
+            userId: updatedMessage.userId,
+            organizationId,
+            projectId: projectId || null,
+            action: 'MESSAGE_EDITED',
+            entity: 'chat',
+            entityId: messageId,
+            details: { 
+                room: projectId ? 'project' : 'global',
+                snippet: data.snippet || 'message updated'
+            }
+          }
+        });
+      } catch (logErr) {
+        console.error('[Socket Edit] Failed to log activity:', logErr.message);
+      }
+
+      const targetRoom = projectId || `global-${organizationId}`;
+      io.to(targetRoom).emit('message-updated', updatedMessage);
+    } catch (error) {
+      console.error('Error editing message:', error);
+    }
+  });
+
+  socket.on('delete-message', async (data) => {
+    const { messageId, organizationId, projectId } = data;
+    try {
+      const org = await prisma.organization.findUnique({
+        where: { id: organizationId },
+        select: { dbUrl: true, dbStrategy: true }
+      });
+
+      let tenantDb = prisma;
+      if (org?.dbUrl && org?.dbStrategy === 'DEDICATED') {
+        tenantDb = await tenantDbManager.getClient(org.dbUrl);
+      }
+
+      const messageToDelete = await tenantDb.chatMessage.findUnique({
+        where: { id: messageId },
+        include: { user: { select: { name: true } } }
+      });
+
+      if (messageToDelete) {
+          // ✅ Log Delete Action
+          try {
+            await tenantDb.activityLog.create({
+              data: {
+                userId: messageToDelete.userId,
+                organizationId,
+                projectId: projectId || null,
+                action: 'MESSAGE_DELETED',
+                entity: 'chat',
+                entityId: messageId,
+                details: { 
+                    room: projectId ? 'project' : 'global',
+                    sender: messageToDelete.user.name
+                }
+              }
+            });
+          } catch (logErr) {
+            console.error('[Socket Delete] Failed to log activity:', logErr.message);
+          }
+
+          await tenantDb.chatMessage.delete({
+            where: { id: messageId }
+          });
+      }
+
+      const targetRoom = projectId || `global-${organizationId}`;
+      io.to(targetRoom).emit('message-deleted', { messageId });
+    } catch (error) {
+      console.error('Error deleting message:', error);
     }
   });
 
@@ -175,7 +313,7 @@ io.on('connection', (socket) => {
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+  res.json({ status: 'OK', timestamp: new Date().toISOString(), tenantPoolSize: tenantDbManager.getPoolSize() });
 });
 
 // Swagger UI Documentation
@@ -194,6 +332,8 @@ const shutdown = async () => {
   console.log('\nGracefully shutting down server...');
   try {
     await prisma.$disconnect();
+    await tenantDbManager.shutdown();
+    console.log('Database connections closed.');
   } catch (err) {
     console.error('Error during disconnect:', err);
   }
@@ -208,6 +348,7 @@ process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 process.once('SIGUSR2', async () => {
   await prisma.$disconnect();
+  await tenantDbManager.shutdown();
   httpServer.close(() => {
     process.kill(process.pid, 'SIGUSR2');
   });

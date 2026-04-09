@@ -372,8 +372,7 @@ const Tasks = () => {
                       { label: 'To Do', value: 'TODO' },
                       { label: 'In Progress', value: 'IN_PROGRESS' },
                       { label: 'In Review', value: 'IN_REVIEW' },
-                      { label: 'Completed', value: 'COMPLETED' },
-                      { label: 'Blocked', value: 'BLOCKED' }
+                      { label: 'Completed', value: 'COMPLETED' }
                     ]}
                     placeholder="Status"
                     className="w-[120px] h-10 rounded-xl bg-background/50 border-border/40 hover:bg-background transition-all"
@@ -442,8 +441,7 @@ const Tasks = () => {
                                 backgroundColor: task.status === 'TODO' ? '#F59E0B' :
                                   task.status === 'IN_PROGRESS' ? '#00A3FF' :
                                     task.status === 'IN_REVIEW' ? '#D946EF' :
-                                      task.status === 'COMPLETED' ? '#48A111' : 
-                                      task.status === 'BLOCKED' ? '#EF4444' : '#EF4444'
+                                      task.status === 'COMPLETED' ? '#48A111' : '#EF4444'
                               }}
                             />
                             <div>
@@ -575,8 +573,7 @@ const Tasks = () => {
                             backgroundColor: task.status === 'TODO' ? '#F59E0B' :
                               task.status === 'IN_PROGRESS' ? '#00A3FF' :
                                 task.status === 'IN_REVIEW' ? '#D946EF' :
-                                  task.status === 'COMPLETED' ? '#48A111' : 
-                                  task.status === 'BLOCKED' ? '#EF4444' : '#EF4444'
+                                  task.status === 'COMPLETED' ? '#48A111' : '#EF4444'
                           }}
                         />
                         <p className="font-bold text-sm text-foreground leading-tight truncate">{task.title}</p>

@@ -4,8 +4,8 @@ import bcrypt from 'bcryptjs';
 import { sendUserApprovalEmail, sendTeamAssignmentEmail } from '../services/emailService.js';
 
 // Helper to get project IDs managed by a user
-const getManagerProjectIds = async (managerId, organizationId) => {
-  const projects = await prisma.project.findMany({
+const getManagerProjectIds = async (db, managerId, organizationId) => {
+  const projects = await db.project.findMany({
     where: {
       managerId,
       organizationId,
@@ -17,6 +17,7 @@ const getManagerProjectIds = async (managerId, organizationId) => {
 
 export const getUsers = async (req, res) => {
   const { pending, teamOnly, search, page, limit: rawLimit, roleFilter } = req.query;
+  const db = req.db;
 
   const where = {
     organizationId: req.user.organizationId,
@@ -41,11 +42,9 @@ export const getUsers = async (req, res) => {
 
   // If the requester is a MANAGER, restrict visibility
   if (req.user.role === 'MANAGER' && pending !== 'true') {
-    const managerProjectIds = await getManagerProjectIds(req.user.id, req.user.organizationId);
+    const managerProjectIds = await getManagerProjectIds(db, req.user.id, req.user.organizationId);
 
     if (teamOnly === 'true') {
-      // Return ONLY the manager's own team members (MEMBERs assigned to their projects)
-      // This is used for the task assignee dropdown
       where.AND = [
         { role: 'MEMBER' },
         {
@@ -69,13 +68,13 @@ export const getUsers = async (req, res) => {
         }
       ];
     } else {
-      // General visibility: themselves, other managers, admins, clients, and their team members
       where.OR = [
-        { id: req.user.id }, // Themselves
-        { role: 'MANAGER' }, // Other managers (visible as colleagues)
-        { role: 'ADMIN' },   // Admins (visible)
-        { role: 'CLIENT' },  // Clients (visible for project assignment)
-        // Members part of their projects
+        { id: req.user.id },
+        { role: 'MANAGER' },
+        { role: 'ADMIN' },
+        { role: 'CLIENT' },
+        { role: 'MEMBER' }, // Managers should see all members in the org
+        { managerId: req.user.id }, // And specifically their own team
         {
           taskAssignments: {
             some: {
@@ -96,13 +95,7 @@ export const getUsers = async (req, res) => {
 
   // If the requester is a CLIENT, restrict visibility
   if (req.user.role === 'CLIENT') {
-    // Clients should see:
-    // 1. Themselves
-    // 2. Managers of their projects
-    // 3. Team members assigned to their projects
-
-    // Find projects belonging to this client
-    const clientProjects = await prisma.project.findMany({
+    const clientProjects = await db.project.findMany({
       where: {
         clientId: req.user.id,
         organizationId: req.user.organizationId,
@@ -117,9 +110,8 @@ export const getUsers = async (req, res) => {
     const managerIds = clientProjects.map(p => p.managerId).filter(id => id !== null);
 
     where.OR = [
-      { id: req.user.id }, // Themselves
-      { id: { in: managerIds } }, // Managers of their projects
-      // Members working on their projects
+      { id: req.user.id },
+      { id: { in: managerIds } },
       {
         taskAssignments: {
           some: {
@@ -139,13 +131,7 @@ export const getUsers = async (req, res) => {
 
   // If the requester is a MEMBER, restrict visibility
   if (req.user.role === 'MEMBER') {
-    // Members should see:
-    // 1. Themselves
-    // 2. Managers of their projects
-    // 3. Clients of their projects
-
-    // Find projects where the member is assigned
-    const memberProjects = await prisma.project.findMany({
+    const memberProjects = await db.project.findMany({
       where: {
         organizationId: req.user.organizationId,
         OR: [
@@ -175,9 +161,9 @@ export const getUsers = async (req, res) => {
     const clientIds = memberProjects.map(p => p.clientId).filter(id => id !== null);
 
     where.OR = [
-      { id: req.user.id }, // Themselves
-      { id: { in: managerIds } }, // Managers
-      { id: { in: clientIds } }   // Clients
+      { id: req.user.id },
+      { id: { in: managerIds } },
+      { id: { in: clientIds } }
     ];
   }
 
@@ -203,7 +189,6 @@ export const getUsers = async (req, res) => {
     avatar: true,
     createdAt: true,
     managerId: true,
-    // Include assignments to find managers
     taskAssignments: {
       select: {
         task: {
@@ -266,15 +251,15 @@ export const getUsers = async (req, res) => {
     delete countsWhere.role;
 
     const [users, total, roleCounts] = await Promise.all([
-      prisma.user.findMany({
+      db.user.findMany({
         where,
         select: selectFields,
         orderBy: { name: 'asc' },
         skip,
         take: limit,
       }),
-      prisma.user.count({ where }),
-      prisma.user.groupBy({
+      db.user.count({ where }),
+      db.user.groupBy({
         by: ['role'],
         where: { ...countsWhere, isApproved: true },
         _count: { _all: true },
@@ -301,7 +286,7 @@ export const getUsers = async (req, res) => {
   }
 
   // No pagination - return all (backward compat for dropdowns)
-  const users = await prisma.user.findMany({
+  const users = await db.user.findMany({
     where,
     select: selectFields,
     orderBy: {
@@ -316,13 +301,14 @@ export const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, email, role, password, managerId } = req.body;
+    const db = req.db;
 
     if (name !== undefined && !/^[a-zA-Z0-9\s]+$/.test(name)) {
       return res.status(400).json({ error: 'Name cannot contain special characters. Only alphanumeric characters and spaces are allowed.' });
     }
 
-    // Check if user exists and belongs to same organization
-    const existingUser = await prisma.user.findUnique({
+    // Check if user exists in tenant DB
+    const existingUser = await db.user.findUnique({
       where: { id },
     });
 
@@ -334,17 +320,17 @@ export const updateUser = async (req, res) => {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
-    // Build update payload - only include fields that are explicitly provided
+    // Build update payload
     const updateData = {};
     let isManagerAssigned = false;
     let newManager = null;
 
     if (name !== undefined) updateData.name = name;
     if (role !== undefined) updateData.role = role;
+
     if (managerId !== undefined) {
       if (managerId) {
-        // Verify manager belongs to the same organization
-        newManager = await prisma.user.findFirst({
+        newManager = await db.user.findFirst({
           where: { id: managerId, organizationId: req.user.organizationId, role: 'MANAGER' }
         });
         if (!newManager) return res.status(400).json({ error: 'Invalid manager for this organization' });
@@ -361,7 +347,8 @@ export const updateUser = async (req, res) => {
       updateData.passwordHash = await bcrypt.hash(password, 10);
     }
 
-    const updatedUser = await prisma.user.update({
+    // Update in tenant DB
+    const updatedUser = await db.user.update({
       where: { id },
       data: updateData,
       select: {
@@ -374,11 +361,53 @@ export const updateUser = async (req, res) => {
       },
     });
 
+    // Sync core fields to MAIN DB (name, role, password)
+    try {
+      const mainUpdate = {};
+      if (name !== undefined) mainUpdate.name = name;
+      if (role !== undefined) mainUpdate.role = role;
+      if (updateData.passwordHash) mainUpdate.passwordHash = updateData.passwordHash;
+
+      if (Object.keys(mainUpdate).length > 0) {
+        await prisma.user.update({
+          where: { id },
+          data: mainUpdate,
+        });
+      }
+    } catch (syncErr) {
+      console.error('[UpdateUser] Failed to sync to MAIN DB:', syncErr.message);
+      return res.status(500).json({ error: 'Failed to synchronize account changes to the auth database. User may need to re-login.' });
+    }
+
+    // ✅ NEW: Activity Log (Sync to Main DB)
+    try {
+      const logData = {
+        userId: req.user.id,
+        organizationId: req.user.organizationId,
+        action: 'UPDATED',
+        entity: 'user',
+        entityId: id,
+        details: {
+          name: updatedUser.name,
+          email: updatedUser.email,
+        },
+      };
+
+      // 1. Log to tenant DB
+      await db.activityLog.create({ data: logData });
+
+      // 2. Log to main DB for SuperAdmin visibility
+      await prisma.activityLog.create({ data: logData });
+    } catch (logErr) {
+      console.error('[UpdateUser] Activity log failed:', logErr.message);
+    }
+
     if (isManagerAssigned && newManager && updatedUser.email) {
-      const teamMembers = await prisma.user.findMany({
+      const teamMembers = await db.user.findMany({
         where: { managerId: newManager.id, role: 'MEMBER' },
         select: { name: true, email: true }
       });
+
       sendTeamAssignmentEmail(updatedUser.email, updatedUser.name, newManager.name, teamMembers)
         .catch(err => console.error('Failed to send team assignment email:', err));
     }
@@ -393,9 +422,9 @@ export const updateUser = async (req, res) => {
 export const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
+    const db = req.db;
 
-    // Check if user exists and belongs to same organization
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await db.user.findUnique({
       where: { id },
     });
 
@@ -407,12 +436,11 @@ export const deleteUser = async (req, res) => {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
-    // Prevent self-deletion
     if (existingUser.id === req.user.id) {
       return res.status(400).json({ error: 'Cannot delete your own account' });
     }
 
-    await prisma.activityLog.create({
+    await db.activityLog.create({
       data: {
         userId: req.user.id,
         organizationId: req.user.organizationId,
@@ -423,9 +451,15 @@ export const deleteUser = async (req, res) => {
       },
     });
 
-    await prisma.user.delete({
-      where: { id },
-    });
+    // Delete from tenant DB
+    await db.user.delete({ where: { id } });
+
+    // Delete from MAIN DB
+    try {
+      await prisma.user.delete({ where: { id } });
+    } catch (mainErr) {
+      console.error('[DeleteUser] Failed to delete from MAIN DB:', mainErr.message);
+    }
 
     res.json({ message: 'User deleted successfully' });
   } catch (error) {
@@ -437,14 +471,13 @@ export const deleteUser = async (req, res) => {
 export const approveUser = async (req, res) => {
   try {
     const { id } = req.params;
+    const db = req.db;
 
-    // Only admins can approve users
     if (req.user.role !== 'ADMIN') {
       return res.status(403).json({ error: 'Only admins can approve users' });
     }
 
-    // Check if user exists and belongs to same organization
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await db.user.findUnique({
       where: { id },
     });
 
@@ -456,8 +489,8 @@ export const approveUser = async (req, res) => {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
-    // Approve the user
-    const approvedUser = await prisma.user.update({
+    // Approve in tenant DB
+    const approvedUser = await db.user.update({
       where: { id },
       data: { isApproved: true },
       select: {
@@ -471,18 +504,36 @@ export const approveUser = async (req, res) => {
       },
     });
 
-    await prisma.activityLog.create({
-      data: {
+    // Sync approval to MAIN DB
+    try {
+      await prisma.user.update({
+        where: { id },
+        data: { isApproved: true },
+      });
+    } catch (syncErr) {
+      console.error('[ApproveUser] Failed to sync to MAIN DB:', syncErr.message);
+    }
+
+    // Activity Log (Sync to Main DB)
+    try {
+      const logData = {
         userId: req.user.id,
         organizationId: req.user.organizationId,
         action: 'APPROVED',
         entity: 'user',
         entityId: id,
         details: { name: approvedUser.name, email: approvedUser.email },
-      },
-    });
+      };
 
-    // Send approval email
+      // 1. Log to tenant DB
+      await db.activityLog.create({ data: logData });
+
+      // 2. Log to main DB for SuperAdmin visibility
+      await prisma.activityLog.create({ data: logData });
+    } catch (logErr) {
+      console.error('[ApproveUser] Log failed:', logErr.message);
+    }
+
     if (approvedUser.email) {
       sendUserApprovalEmail(approvedUser.email, approvedUser.name)
         .catch(err => console.error('Failed to send approval email:', err));
@@ -498,14 +549,13 @@ export const approveUser = async (req, res) => {
 export const getManagedUsers = async (req, res) => {
   try {
     const { id } = req.params;
+    const db = req.db;
 
-    // Authorization check: Managers can only view their own team
     if (req.user.role === 'MANAGER' && req.user.id !== id) {
       return res.status(403).json({ error: 'Unauthorized: Managers can only view their own team' });
     }
 
-    // Check if user exists and belongs to same organization
-    const manager = await prisma.user.findUnique({
+    const manager = await db.user.findUnique({
       where: { id },
     });
 
@@ -517,23 +567,15 @@ export const getManagedUsers = async (req, res) => {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
-    // Find all projects managed by this user
-    const projects = await prisma.project.findMany({
+    const projects = await db.project.findMany({
       where: {
         managerId: id,
         organizationId: req.user.organizationId,
       },
-      select: {
-        id: true,
-      },
+      select: { id: true },
     });
 
     const projectIds = projects.map((p) => p.id);
-
-    // Find all users who are assigned to tasks in these projects
-    // We can also check Workloads if that's a better source of truth, 
-    // but typically team members are those working on tasks.
-    // Let's get users who have workloads or tasks in these projects.
 
     const { search } = req.query;
 
@@ -544,24 +586,21 @@ export const getManagedUsers = async (req, res) => {
         {
           taskAssignments: {
             some: {
-              task: { projectId: { in: projectIds } }
+              task: { projectId: { in: projectIds } },
             },
           },
         },
         {
           workloads: {
             some: {
-              projectId: {
-                in: projectIds,
-              },
+              projectId: { in: projectIds },
             },
           },
         },
-        { managerId: id } // Directly managed users
+        { managerId: id }
       ],
     };
 
-    // Apply search filter if provided (case-insensitive name or email)
     if (search) {
       where.AND = [
         {
@@ -573,9 +612,7 @@ export const getManagedUsers = async (req, res) => {
       ];
     }
 
-    // Using distinct to avoid duplicates
-    // Using distinct to avoid duplicates (though we'll process for clients below)
-    const teamMembers = await prisma.user.findMany({
+    const teamMembers = await db.user.findMany({
       where,
       select: {
         id: true,
@@ -583,7 +620,6 @@ export const getManagedUsers = async (req, res) => {
         email: true,
         role: true,
         avatar: true,
-        // Include tasks/workloads to find clients for THIS manager's projects
         taskAssignments: {
           where: {
             task: { projectId: { in: projectIds } }
@@ -619,7 +655,6 @@ export const getManagedUsers = async (req, res) => {
       distinct: ['id'],
     });
 
-    // Process to extract unique clients
     const membersWithClients = teamMembers.map(member => {
       const clientsSet = new Set();
 
@@ -635,7 +670,6 @@ export const getManagedUsers = async (req, res) => {
         }
       });
 
-      // Remove relation data
       const { taskAssignments, workloads, ...memberData } = member;
 
       return {
@@ -655,6 +689,7 @@ export const updateProfile = async (req, res) => {
   try {
     const { name, avatar } = req.body;
     const userId = req.user.id;
+    const db = req.db;
 
     if (name !== undefined && !/^[a-zA-Z0-9\s]+$/.test(name)) {
       return res.status(400).json({ error: 'Name cannot contain special characters. Only alphanumeric characters and spaces are allowed.' });
@@ -664,7 +699,8 @@ export const updateProfile = async (req, res) => {
     if (name !== undefined) updateData.name = name;
     if (avatar !== undefined) updateData.avatar = avatar;
 
-    const updatedUser = await prisma.user.update({
+    // Update in tenant DB
+    const updatedUser = await db.user.update({
       where: { id: userId },
       data: updateData,
       select: {
@@ -684,6 +720,18 @@ export const updateProfile = async (req, res) => {
       },
     });
 
+    // Sync name to MAIN DB
+    if (name !== undefined) {
+      try {
+        await prisma.user.update({
+          where: { id: userId },
+          data: { name },
+        });
+      } catch (syncErr) {
+        console.error('[UpdateProfile] Failed to sync to MAIN DB:', syncErr.message);
+      }
+    }
+
     res.json(updatedUser);
   } catch (error) {
     console.error('Error updating profile:', error);
@@ -694,22 +742,21 @@ export const updateProfile = async (req, res) => {
 export const getMemberProgress = async (req, res) => {
   try {
     const { id } = req.params;
+    const db = req.db;
 
     // Authorization: managers can only view their subordinates, members can view themselves
     if (req.user.role === 'MEMBER' && req.user.id !== id) {
       return res.status(403).json({ error: 'Unauthorized' });
     }
     if (req.user.role === 'MANAGER') {
-      // Managers can view their own team members only
-      const targetUser = await prisma.user.findUnique({ where: { id }, select: { managerId: true, organizationId: true } });
+      const targetUser = await db.user.findUnique({ where: { id }, select: { managerId: true, organizationId: true } });
       if (!targetUser || (targetUser.managerId !== req.user.id && id !== req.user.id)) {
-        // Allow if the member is assigned to this manager's project tasks
-        const managerProjects = await prisma.project.findMany({
+        const managerProjects = await db.project.findMany({
           where: { managerId: req.user.id, organizationId: req.user.organizationId },
           select: { id: true }
         });
         const projectIds = managerProjects.map(p => p.id);
-        const isTeamMember = await prisma.taskAssignee.findFirst({
+        const isTeamMember = await db.taskAssignee.findFirst({
           where: { userId: id, task: { projectId: { in: projectIds } } }
         });
         if (!isTeamMember) {
@@ -719,7 +766,7 @@ export const getMemberProgress = async (req, res) => {
     }
 
     // Verify user exists in same org
-    const targetUser = await prisma.user.findFirst({
+    const targetUser = await db.user.findFirst({
       where: { id, organizationId: req.user.organizationId },
       select: { id: true, name: true, email: true, avatar: true, role: true }
     });
@@ -728,7 +775,7 @@ export const getMemberProgress = async (req, res) => {
     const now = new Date();
 
     // Fetch all tasks assigned to this user
-    const tasks = await prisma.task.findMany({
+    const tasks = await db.task.findMany({
       where: {
         assignees: { some: { userId: id } },
         project: { organizationId: req.user.organizationId }
@@ -745,7 +792,6 @@ export const getMemberProgress = async (req, res) => {
       }
     });
 
-    // Status breakdown
     const statusCounts = { TODO: 0, IN_PROGRESS: 0, IN_REVIEW: 0, COMPLETED: 0, BLOCKED: 0 };
     const priorityCounts = { LOW: 0, MEDIUM: 0, HIGH: 0, URGENT: 0 };
     let overdueCount = 0;
@@ -753,7 +799,6 @@ export const getMemberProgress = async (req, res) => {
     let totalStoryPoints = 0;
     let completedStoryPoints = 0;
 
-    // Per-project map
     const projectMap = {};
 
     for (const task of tasks) {
@@ -789,8 +834,7 @@ export const getMemberProgress = async (req, res) => {
     let managementData = null;
 
     if (targetUser.role === 'MANAGER' || targetUser.role === 'ADMIN') {
-      // Fetch all projects managed by this user
-      const managedProjects = await prisma.project.findMany({
+      const managedProjects = await db.project.findMany({
         where: { managerId: id, organizationId: req.user.organizationId },
         include: {
           tasks: {

@@ -54,6 +54,7 @@ import {
   Target, Zap, BarChart2, DollarSign, User as UserIcon,
   BarChart3,
   Building2,
+  History,
 } from 'lucide-react';
 import { useChatStore } from '@/store/chatStore';
 import { useHeaderStore } from '@/store/headerStore';
@@ -61,6 +62,7 @@ import { cn } from '@/lib/utils';
 import NotificationBell from '@/components/NotificationBell';
 import GlobalTimer from '@/components/GlobalTimer';
 import { useTimerStore } from '@/store/timerStore';
+import api from '@/lib/api';
 import { Timer as TimerIcon } from 'lucide-react';
 
 const Layout = () => {
@@ -124,14 +126,14 @@ const Layout = () => {
       setShowLogoutConfirm(true);
       return;
     }
-    logout();
+    logout(api);
     navigate('/login');
   };
 
   const confirmLogoutAndSave = async () => {
     await saveWorklog('Logout');
     setShowLogoutConfirm(false);
-    logout();
+    logout(api);
     navigate('/login');
   };
   const navigation = [
@@ -174,6 +176,12 @@ const Layout = () => {
       allowedRoles: ['ADMIN', 'MANAGER', 'MEMBER'],
       featureKey: 'timesheets'
     },
+    {
+      name: 'Activity Logs',
+      href: '/organization/activity-log',
+      icon: History,
+      allowedRoles: ['ADMIN'],
+    },
 
   ];
 
@@ -196,12 +204,17 @@ const Layout = () => {
           </div>
         )}
         {(isMobile || isSidebarOpen) && (
-          <span
-            className="text-base font-extrabold bg-gradient-to-r from-[#48A111] via-[#A3E635] to-[#48A111] bg-clip-text text-transparent tracking-tight whitespace-normal line-clamp-2 overflow-hidden"
-            title={user?.organization?.name || 'TaskFlow'}
-          >
-            {user?.organization?.name || 'TaskFlow'}
-          </span>
+          <div className="flex flex-col items-center text-center">
+            <span
+              className="text-base font-extrabold bg-gradient-to-r from-[#48A111] via-[#A3E635] to-[#48A111] bg-clip-text text-transparent tracking-tight whitespace-normal line-clamp-2 overflow-hidden"
+              title={user?.organization?.name || 'TaskFlow'}
+            >
+              {user?.organization?.name || 'TaskFlow'}
+            </span>
+            <span className="text-[8px] text-muted-foreground font-bold uppercase tracking-[0.2em] -mt-1 opacity-70">
+              Sveltoz
+            </span>
+          </div>
         )}
       </div>
 

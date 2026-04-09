@@ -13,7 +13,7 @@ import AuditTable from '@/superadmin/components/audit/AuditTable';
 import AuditCards from '@/superadmin/components/audit/AuditCards';
 
 const AuditLog = () => {
-  const { setHeader, searchTerm: globalSearch } = useHeaderStore();
+  const { setHeader, setSearchTerm, searchTerm: globalSearch } = useHeaderStore();
   const { toast } = useToast();
 
   const [logs, setLogs] = useState([]);
@@ -22,15 +22,19 @@ const AuditLog = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotal] = useState(1);
   const [orgs, setOrgs] = useState([]);
-  const [selectedOrgId, setSelectedOrgId] = useState('');
+  // 'ALL' means global audit logs (no organizationId filter)
+  // '' means "pick an organization" screen
+  const [selectedOrgId, setSelectedOrgId] = useState('ALL');
 
   useEffect(() => {
     setHeader('Activity Log', 'Track all admin actions and changes across the platform', {
       showSearch: true,
       searchPlaceholder: 'Search by action, user, or date...'
     });
+    // Avoid stale searchTerm from other pages hiding logs.
+    setSearchTerm('');
     fetchOrgs();
-  }, [setHeader]);
+  }, [setHeader, setSearchTerm]);
 
   useEffect(() => {
     setPage(1);
@@ -61,7 +65,7 @@ const AuditLog = () => {
           page, limit: 10,
           action: action || undefined,
           search: globalSearch || undefined,
-          organizationId: selectedOrgId || undefined
+          organizationId: selectedOrgId && selectedOrgId !== 'ALL' ? selectedOrgId : undefined
         },
       });
       const data = res.data;
@@ -82,7 +86,7 @@ const AuditLog = () => {
         params: {
           action: action || undefined,
           search: globalSearch || undefined,
-          organizationId: selectedOrgId || undefined,
+          organizationId: selectedOrgId && selectedOrgId !== 'ALL' ? selectedOrgId : undefined,
           limit: 1000 // Fetch a larger set for export
         },
       });
@@ -156,7 +160,7 @@ const AuditLog = () => {
 
   // ── Render ────────────────────────────────────────────────────────────
 
-  if (!selectedOrgId) {
+  if (selectedOrgId === '') {
     return (
       <div className="flex-1 flex flex-col min-h-screen lg:min-h-0 p-0 pt-0 gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
         <Card className="flex-1 flex flex-col min-h-0 border-none sm:border shadow-none sm:shadow-sm">
@@ -173,6 +177,20 @@ const AuditLog = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
+                <Card
+                  key="__all_orgs__"
+                  className="p-6 cursor-pointer hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all group flex flex-col gap-4"
+                  onClick={() => { setSelectedOrgId('ALL'); setPage(1); }}
+                >
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Building2 className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg leading-tight mb-1">All Organizations</h3>
+                    <p className="text-[10px] font-bold opacity-50">Global</p>
+                  </div>
+                </Card>
+
                 {orgs.map((org) => (
                   <Card
                     key={org.id}
@@ -207,13 +225,15 @@ const AuditLog = () => {
               className="h-10 rounded-xl px-5 font-black text-[10px] tracking-widest uppercase border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-all flex items-center gap-3 group shadow-xl"
             >
               <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
-              BACK TO ORGANIZATIONS
+              CHANGE ORGANIZATION
             </Button>
             
             <div className="flex items-center gap-3 ml-4">
               <Building2 className="w-6 h-6 text-[#48A111]" />
               <h1 className="text-3xl font-black tracking-tight text-foreground dark:text-white Montserrat">
-                {orgs.find(o => o.id === selectedOrgId)?.name}
+                {selectedOrgId === 'ALL'
+                  ? 'All Organizations'
+                  : orgs.find(o => o.id === selectedOrgId)?.name}
               </h1>
             </div>
           </div>
@@ -248,7 +268,13 @@ const AuditLog = () => {
               </Card>
             ) : (
               <>
-                <AuditTable logs={logs} getActionIcon={getActionIcon} />
+                <AuditTable
+                  logs={logs}
+                  getActionIcon={getActionIcon}
+                  getStatusBadge={getStatusBadge}
+                  getSeverity={getSeverity}
+                  onOrgFilter={handleOrgFilter}
+                />
                 <AuditCards logs={logs} getActionIcon={getActionIcon} getStatusBadge={getStatusBadge} getSeverity={getSeverity} />
               </>
             )}

@@ -39,6 +39,15 @@ import UserForm from '@/components/forms/UserForm';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import UpgradePlanModal from '@/components/ui/UpgradePlanModal';
 
+const generatePassword = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
+    let password = "";
+    for (let i = 0; i < 10; i++) {
+        password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+};
+
 const Team = () => {
   const { toast } = useToast();
   const { user: currentUser } = useAuthStore();
@@ -77,7 +86,7 @@ const Team = () => {
     name: '',
     email: '',
     role: 'MEMBER',
-    password: '',
+    password: generatePassword(),
   });
   const [roleCounts, setRoleCounts] = useState({ ALL: 0, MANAGER: 0, CLIENT: 0, MEMBER: 0 });
 
@@ -262,7 +271,7 @@ const Team = () => {
         name: '',
         email: '',
         role: 'MEMBER',
-        password: '',
+        password: generatePassword(),
       });
       fetchUsers();
       fetchAllMembers();
@@ -373,7 +382,7 @@ const Team = () => {
       name: '',
       email: '',
       role: 'MEMBER',
-      password: '',
+      password: generatePassword(),
     });
   };
 
@@ -479,7 +488,16 @@ const Team = () => {
               {/* Mobile Add Member Button */}
               {currentUser?.role === 'ADMIN' && (
                 <Button
-                  onClick={() => setShowDialog(true)}
+                  onClick={() => {
+                        setEditingUser(null);
+                        setFormData({
+                            name: '',
+                            email: '',
+                            role: 'MEMBER',
+                            password: generatePassword(),
+                        });
+                        setShowDialog(true);
+                  }}
                   className="w-11 h-11 p-0 shrink-0 sm:hidden rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
                   <Plus className="w-4 h-4" />
@@ -563,7 +581,16 @@ const Team = () => {
               {currentUser?.role === 'ADMIN' && (
                 <div className="hidden sm:block">
                   <Button
-                    onClick={() => setShowDialog(true)}
+                    onClick={() => {
+                        setEditingUser(null);
+                        setFormData({
+                            name: '',
+                            email: '',
+                            role: 'MEMBER',
+                            password: generatePassword(),
+                        });
+                        setShowDialog(true);
+                    }}
                     className="h-11 px-6 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2"
                   >
                     <Plus className="w-4 h-4" />

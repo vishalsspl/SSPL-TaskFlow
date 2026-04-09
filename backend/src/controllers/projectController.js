@@ -325,14 +325,14 @@ export const createProject = async (req, res) => {
   const organizationId = req.user.organizationId;
 
   // ── Resource Limit Check ──────────────────────────────────────────────────
-  const org = await req.db.organization.findUnique({
-    where: { id: organizationId },
-    include: { _count: { select: { projects: true } } }
-  });
+  const [org, currentProjectCount] = await Promise.all([
+    req.db.organization.findUnique({ where: { id: organizationId } }),
+    req.db.project.count({ where: { organizationId } })
+  ]);
 
-  if (org && org._count.projects >= org.maxProjects) {
-    return res.status(403).json({ 
-      error: `Project limit reached. Your plan allows a maximum of ${org.maxProjects} projects. Please upgrade your plan.` 
+  if (org && currentProjectCount >= org.maxProjects) {
+    return res.status(403).json({
+      error: `Project limit reached. Your plan allows a maximum of ${org.maxProjects} projects. Please upgrade your plan.`
     });
   }
 
@@ -375,16 +375,21 @@ export const createProject = async (req, res) => {
     return res.status(400).json({ error: 'Project status is required' });
   }
 
-  if (!startDate || !endDate) {
-    return res.status(400).json({ error: 'Start Date and End Date are required' });
+  if (!startDate) {
+    return res.status(400).json({
+      error: "Start Date is required"
+    });
   }
 
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-
-  if (end <= start) {
-    return res.status(400).json({ error: 'End Date must be strictly after Start Date' });
+  // Optional: validate only if endDate exists
+  if (endDate && new Date(endDate) <= new Date(startDate)) {
+    return res.status(400).json({
+      error: "End Date must be after Start Date"
+    });
   }
+
+  // Removed redundant endDate validation that was causing errors when endDate was optional.
+
 
   if (totalBudget !== undefined && totalBudget !== null && Number(totalBudget) < 0) {
     return res.status(400).json({ error: 'Budget cannot be negative' });
@@ -446,17 +451,25 @@ export const createProject = async (req, res) => {
   });
 
   // Log activity
-  await req.db.activityLog.create({
-    data: {
+  try {
+    const logData = {
       userId: req.user.id,
       organizationId: req.user.organizationId,
       projectId: project.id,
-      action: 'CREATED',
+      action: 'PROJECT_CREATED',
       entity: 'project',
       entityId: project.id,
       details: { name: project.name },
-    },
-  });
+    };
+
+    // 1. Log to tenant DB
+    await req.db.activityLog.create({ data: logData });
+
+    // 2. Log to main DB for SuperAdmin visibility
+    await prisma.activityLog.create({ data: logData });
+  } catch (logErr) {
+    console.error('[CreateProject] Failed to log activity:', logErr.message);
+  }
 
   // Send rich email notification to manager
   if (project.manager?.email) {
@@ -609,16 +622,25 @@ export const updateProject = async (req, res) => {
   });
 
   // Log activity
-  await req.db.activityLog.create({
-    data: {
+  try {
+    const logData = {
       userId: req.user.id,
       organizationId: req.user.organizationId,
       projectId: project.id,
       action: 'UPDATED',
       entity: 'project',
       entityId: project.id,
-    },
-  });
+      details: { name: project.name },
+    };
+
+    // 1. Log to tenant DB
+    await req.db.activityLog.create({ data: logData });
+
+    // 2. Log to main DB for SuperAdmin visibility
+    await prisma.activityLog.create({ data: logData });
+  } catch (logErr) {
+    console.error('[UpdateProject] Failed to log activity:', logErr.message);
+  }
 
   // Send rich emails if manager or client changed
   if (isManagerChanged || isClientChanged) {
@@ -669,16 +691,24 @@ export const deleteProject = async (req, res) => {
   }
 
   // Log deletion BEFORE deleting from database
-  await req.db.activityLog.create({
-    data: {
+  try {
+    const logData = {
       userId: req.user.id,
       organizationId: req.user.organizationId,
       action: 'DELETED',
       entity: 'project',
       entityId: id,
       details: { name: existingProject.name },
-    },
-  });
+    };
+
+    // 1. Log to tenant DB
+    await req.db.activityLog.create({ data: logData });
+
+    // 2. Log to main DB for SuperAdmin visibility
+    await prisma.activityLog.create({ data: logData });
+  } catch (logErr) {
+    console.error('[DeleteProject] Failed to log activity:', logErr.message);
+  }
 
   await req.db.project.delete({
     where: { id },

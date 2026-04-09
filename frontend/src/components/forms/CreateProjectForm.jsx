@@ -9,9 +9,7 @@ import {
     FileText,
     Users,
     Calendar,
-    DollarSign,
     Briefcase,
-
     Target,
 } from 'lucide-react';
 import { DatePicker } from '@/components/ui/date-picker';
@@ -114,15 +112,8 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
             });
             return;
         }
-        if (!formData.endDate) {
-            toast({
-                variant: "destructive",
-                title: "Validation Error",
-                description: "End Date is required",
-            });
-            return;
-        }
-        if (new Date(formData.endDate) <= new Date(formData.startDate)) {
+
+        if (formData.endDate && new Date(formData.endDate) <= new Date(formData.startDate)) {
             toast({
                 variant: "destructive",
                 title: "Validation Error",
@@ -178,7 +169,7 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
             });
         } catch (error) {
             console.error('Failed to create project:', error);
-            
+
             if (error.response?.status === 403 && error.response?.data?.error?.includes('limit reached')) {
                 setShowUpgradeModal(true);
             } else {
@@ -281,7 +272,7 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="endDate" className="text-foreground/90 font-semibold">End Date <span className="text-red-500">*</span></Label>
+                    <Label htmlFor="endDate" className="text-foreground/90 font-semibold">End Date</Label>
                     <div className="relative">
                         <DatePicker
                             date={formData.endDate}
@@ -293,9 +284,9 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="totalBudget" className="text-foreground/90 font-semibold">Total Budget</Label>
+                    <Label htmlFor="totalBudget" className="text-foreground/90 font-semibold">Total Budget (₹)</Label>
                     <div className="relative">
-                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70" />
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-foreground/70">₹</span>
                         <Input
                             id="totalBudget"
                             type="number"
@@ -304,7 +295,7 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
                             value={formData.totalBudget}
                             onChange={(e) => setFormData({ ...formData, totalBudget: e.target.value })}
                             placeholder="0.00"
-                            className="!pl-10 transition-all focus:ring-2 focus:ring-primary/20"
+                            className="!pl-8 transition-all focus:ring-2 focus:ring-primary/20"
                         />
                     </div>
                 </div>
@@ -335,9 +326,9 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
                     {loading ? 'Creating...' : 'Create Project'}
                 </Button>
             </div>
-            <UpgradePlanModal 
-                isOpen={showUpgradeModal} 
-                onClose={() => setShowUpgradeModal(false)} 
+            <UpgradePlanModal
+                isOpen={showUpgradeModal}
+                onClose={() => setShowUpgradeModal(false)}
                 limitType="projects"
             />
         </form>

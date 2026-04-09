@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Send, User, UserPlus, Search, Loader2, ChevronLeft } from 'lucide-react';
+import { Send, User, UserPlus, Search, Loader2, ChevronLeft, Pencil, Trash2, Check, X } from 'lucide-react';
 import { formatChatTimestamp } from '@/lib/utils';
 import {
     Dialog,
@@ -33,12 +33,16 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
     const [invitingId, setInvitingId] = useState(null);
     const [projectMembers, setProjectMembers] = useState([]);
 
+    // Edit/Delete state
+    const [editingMsgId, setEditingMsgId] = useState(null);
+    const [editContent, setEditContent] = useState('');
+
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
     useEffect(() => {
-        const roomId = projectId || 'global';
+        const roomId = projectId || `global-${user.organizationId}`;
 
         // Join room and set as active
         joinRoom(roomId);
@@ -64,7 +68,7 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
         // Listen for new messages
         if (socket) {
             const handleNewMessage = async (message) => {
-                const msgRoomId = message.projectId || 'global';
+                const msgRoomId = message.projectId || `global-${message.organizationId}`;
                 if (msgRoomId === roomId) {
                     // Decrypt new incoming message
                     const decryptedMessage = {
@@ -77,8 +81,22 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
 
             socket.on('new-message', handleNewMessage);
 
+            socket.on('message-updated', async (updatedMsg) => {
+                const msgRoomId = updatedMsg.projectId || `global-${updatedMsg.organizationId}`;
+                if (msgRoomId === roomId) {
+                    const decryptedContent = await decrypt(updatedMsg.content);
+                    setMessages((prev) => prev.map(m => m.id === updatedMsg.id ? { ...updatedMsg, content: decryptedContent } : m));
+                }
+            });
+
+            socket.on('message-deleted', ({ messageId }) => {
+                setMessages((prev) => prev.filter(m => m.id !== messageId));
+            });
+
             return () => {
-                socket.off('new-message', handleNewMessage);
+                socket.off('new-message');
+                socket.off('message-updated');
+                socket.off('message-deleted');
                 setActiveRoom(null);
             };
         }
@@ -165,7 +183,6 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
         e.preventDefault();
         if (!newMessage.trim() || !socket) return;
 
-        // Encrypt message content before sending to server
         const encryptedContent = await encrypt(newMessage);
 
         socket.emit('send-message', {
@@ -173,10 +190,38 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
             userId: user.id,
             projectId: projectId,
             organizationId: user.organizationId,
-            snippet: newMessage.substring(0, 100) // Plaintext for notifications
+            snippet: newMessage.substring(0, 100)
         });
 
         setNewMessage('');
+    };
+
+    const handleUpdateMessage = async (e) => {
+        e.preventDefault();
+        if (!editContent.trim() || !socket || !editingMsgId) return;
+
+        const encryptedContent = await encrypt(editContent);
+        socket.emit('edit-message', {
+            messageId: editingMsgId,
+            content: encryptedContent,
+            projectId,
+            organizationId: user.organizationId,
+            snippet: editContent.substring(0, 100)
+        });
+
+        setEditingMsgId(null);
+        setEditContent('');
+    };
+
+    const handleDeleteMessage = (messageId) => {
+        if (!window.confirm('Are you sure you want to delete this message?')) return;
+        if (!socket) return;
+
+        socket.emit('delete-message', {
+            messageId,
+            projectId,
+            organizationId: user.organizationId
+        });
     };
 
     const filteredUsers = availableUsers.filter(u =>
@@ -239,19 +284,69 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
                                         {msg.user?.name?.charAt(0) || <User className="w-4 h-4" />}
                                     </AvatarFallback>
                                 </Avatar>
-                                <div className={`flex flex-col max-w-[80%] ${msg.userId === user.id ? 'items-end' : 'items-start'}`}>
+                                <div className={`flex flex-col max-w-[80%] group ${msg.userId === user.id ? 'items-end' : 'items-start'}`}>
                                     <div className="flex items-center gap-2 mb-1">
                                         <span className="text-[10px] font-bold text-gray-400 Montserrat">{msg.user?.name}</span>
-                                        <span className="text-[10px] text-gray-500 Montserrat">{formatChatTimestamp(msg.createdAt)}</span>
+                                        <span className="text-[10px] text-gray-500 Montserrat">
+                                            {formatChatTimestamp(msg.createdAt)}
+                                            {msg.isEdited && <span className="ml-1 opacity-70">(edited)</span>}
+                                        </span>
+                                        
+                                        {/* Action Buttons */}
+                                        <div className={`flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-2 ${msg.userId === user.id ? 'flex-row-reverse' : 'flex-row'}`}>
+                                            {msg.userId === user.id && (
+                                                <button 
+                                                    onClick={() => {
+                                                        setEditingMsgId(msg.id);
+                                                        setEditContent(msg.content);
+                                                    }}
+                                                    className="p-1 hover:bg-white/10 rounded transition-colors text-gray-400 hover:text-primary"
+                                                >
+                                                    <Pencil className="w-3 h-3" />
+                                                </button>
+                                            )}
+                                            {(msg.userId === user.id || isManagerOrAdmin) && (
+                                                <button 
+                                                    onClick={() => handleDeleteMessage(msg.id)}
+                                                    className="p-1 hover:bg-white/10 rounded transition-colors text-gray-400 hover:text-red-500"
+                                                >
+                                                    <Trash2 className="w-3 h-3" />
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
-                                    <div
-                                        className={`p-3 rounded-2xl text-sm Montserrat ${msg.userId === user.id
-                                            ? 'bg-primary text-primary-foreground rounded-tr-none shadow-lg'
-                                            : 'bg-secondary/50 text-foreground rounded-tl-none'
-                                            }`}
-                                    >
-                                        {msg.content}
-                                    </div>
+
+                                    {editingMsgId === msg.id ? (
+                                        <div className="flex flex-col gap-2 w-full min-w-[200px]">
+                                            <Input
+                                                value={editContent}
+                                                onChange={(e) => setEditContent(e.target.value)}
+                                                className="bg-background border-primary/50 text-sm h-9 Montserrat"
+                                                autoFocus
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') handleUpdateMessage(e);
+                                                    if (e.key === 'Escape') setEditingMsgId(null);
+                                                }}
+                                            />
+                                            <div className="flex items-center gap-2 justify-end">
+                                                <Button size="sm" variant="ghost" className="h-7 text-[10px] uppercase font-bold" onClick={() => setEditingMsgId(null)}>
+                                                    <X className="w-3 h-3 mr-1" /> Cancel
+                                                </Button>
+                                                <Button size="sm" className="h-7 text-[10px] uppercase font-bold" onClick={handleUpdateMessage}>
+                                                    <Check className="w-3 h-3 mr-1" /> Save
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div
+                                            className={`p-3 rounded-2xl text-sm Montserrat ${msg.userId === user.id
+                                                ? 'bg-primary text-primary-foreground rounded-tr-none shadow-lg'
+                                                : 'bg-secondary/50 text-foreground rounded-tl-none'
+                                                }`}
+                                        >
+                                            {msg.content}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ))

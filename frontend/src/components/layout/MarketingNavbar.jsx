@@ -24,7 +24,10 @@ const MarketingNavbar = () => {
         <>
             <nav className="relative z-[100] w-full max-w-7xl mx-auto px-6 py-6 md:py-8 flex items-center justify-between shrink-0">
                 <Link to="/" className="flex items-center gap-2">
-                    <span className={cn("text-2xl font-black tracking-tight", isDarkMode ? "text-white" : "text-slate-900")}>TaskFlow</span>
+                    <div className="flex flex-col items-center text-center">
+                        <span className={cn("text-2xl font-black tracking-tight leading-none", isDarkMode ? "text-white" : "text-slate-900")}>TaskFlow</span>
+                        <span className="text-[8px] text-primary font-bold tracking-[0.2em] uppercase mt-0.5 opacity-60">Sveltoz</span>
+                    </div>
                 </Link>
 
                 {/* Desktop Nav */}
