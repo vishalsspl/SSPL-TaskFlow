@@ -31,12 +31,14 @@ async function setupTenantDB(dbName) {
 
   try {
     console.log("⚙️ Running tenant migration...");
-    execSync(`npx prisma migrate deploy --schema=prisma/tenant/schema.prisma`, {
+    // Try to find prisma locally first, fallback to npx
+    const prismaCmd = process.platform === "win32" ? "npx prisma" : "./node_modules/.bin/prisma";
+    execSync(`${prismaCmd} migrate deploy --schema=prisma/tenant/schema.prisma`, {
       stdio: "inherit",
       env: { ...process.env, TENANT_DATABASE_URL: dbUrl }
     });
   } catch (err) {
-    console.error("❌ Migration failed");
+    console.error("❌ Migration failed:", err.message);
     throw err;
   }
 
@@ -174,14 +176,16 @@ async function main() {
       update: { 
         role: "SUPERADMIN",
         isApproved: true,
-        passwordHash: await bcrypt.hash("superadmin123", 10)
+        passwordHash: await bcrypt.hash("superadmin123", 10),
+        mustChangePassword: false
       },
       create: {
         name: "Super Admin",
         email: "superadmin@taskflow.com",
         passwordHash: await bcrypt.hash("superadmin123", 10),
         role: "SUPERADMIN",
-        isApproved: true
+        isApproved: true,
+        mustChangePassword: false
       }
     });
 

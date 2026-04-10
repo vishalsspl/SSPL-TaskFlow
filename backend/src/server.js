@@ -71,17 +71,17 @@ io.on('connection', (socket) => {
 
   socket.on('join-room', (data) => {
     const { roomId, organizationId } = typeof data === 'string' ? { roomId: data } : data;
-    
+
     // Scoped room for global chat, or direct projectId for project chat
     const targetRoom = roomId === 'global' ? `global-${organizationId}` : roomId;
-    
+
     socket.join(targetRoom);
-    
+
     // Also join an organization-wide room for general notifications
     if (organizationId) {
       socket.join(`org-${organizationId}`);
     }
-    
+
     console.log(`User ${socket.id} joined room: ${targetRoom} (Org: ${organizationId})`);
   });
 
@@ -105,18 +105,18 @@ io.on('connection', (socket) => {
       }
 
       // 2. Get the correct tenant DB client
-      let tenantDb = prisma; 
+      let tenantDb = prisma;
       if (org.dbUrl && org.dbStrategy === 'DEDICATED') {
         tenantDb = await tenantDbManager.getClient(org.dbUrl);
       }
 
       // 3. Save message in tenant DB
       const message = await tenantDb.chatMessage.create({
-        data: { 
-          content, 
-          userId, 
-          projectId: projectId || null, 
-          organizationId 
+        data: {
+          content,
+          userId,
+          projectId: projectId || null,
+          organizationId
         },
         include: {
           user: { select: { id: true, name: true, avatar: true } },
@@ -131,7 +131,7 @@ io.on('connection', (socket) => {
       // 4. Create persistent Notifications in bulk (in tenant DB)
       const project = projectId ? await tenantDb.project.findUnique({
         where: { id: projectId },
-        include: { 
+        include: {
           tasks: { include: { assignees: true } },
           manager: true,
           client: true,
@@ -148,7 +148,7 @@ io.on('connection', (socket) => {
           action: 'MESSAGE_SENT',
           entity: 'chat',
           entityId: message.id,
-          details: { 
+          details: {
             room: projectId ? 'project' : 'global',
             projectName: projectId ? (project?.name || 'Unknown') : 'General Channel',
             snippet: snippet || 'encrypted message'
@@ -161,12 +161,12 @@ io.on('connection', (socket) => {
         // 2. Log to main DB for SuperAdmin visibility
         await prisma.activityLog.create({ data: logData });
       } catch (logErr) {
-          console.error('[Socket Message] Failed to log activity:', logErr.message);
+        console.error('[Socket Message] Failed to log activity:', logErr.message);
       }
 
       // Broadcast lightweight notification
       const notificationChannel = organizationId ? io.to(`org-${organizationId}`) : io;
-      
+
       notificationChannel.emit('message-notification', {
         roomId: projectId || 'global',
         senderId: userId,
@@ -238,9 +238,9 @@ io.on('connection', (socket) => {
             action: 'MESSAGE_EDITED',
             entity: 'chat',
             entityId: messageId,
-            details: { 
-                room: projectId ? 'project' : 'global',
-                snippet: data.snippet || 'message updated'
+            details: {
+              room: projectId ? 'project' : 'global',
+              snippet: data.snippet || 'message updated'
             }
           }
         });
@@ -274,29 +274,29 @@ io.on('connection', (socket) => {
       });
 
       if (messageToDelete) {
-          // ✅ Log Delete Action
-          try {
-            await tenantDb.activityLog.create({
-              data: {
-                userId: messageToDelete.userId,
-                organizationId,
-                projectId: projectId || null,
-                action: 'MESSAGE_DELETED',
-                entity: 'chat',
-                entityId: messageId,
-                details: { 
-                    room: projectId ? 'project' : 'global',
-                    sender: messageToDelete.user.name
-                }
+        // ✅ Log Delete Action
+        try {
+          await tenantDb.activityLog.create({
+            data: {
+              userId: messageToDelete.userId,
+              organizationId,
+              projectId: projectId || null,
+              action: 'MESSAGE_DELETED',
+              entity: 'chat',
+              entityId: messageId,
+              details: {
+                room: projectId ? 'project' : 'global',
+                sender: messageToDelete.user.name
               }
-            });
-          } catch (logErr) {
-            console.error('[Socket Delete] Failed to log activity:', logErr.message);
-          }
-
-          await tenantDb.chatMessage.delete({
-            where: { id: messageId }
+            }
           });
+        } catch (logErr) {
+          console.error('[Socket Delete] Failed to log activity:', logErr.message);
+        }
+
+        await tenantDb.chatMessage.delete({
+          where: { id: messageId }
+        });
       }
 
       const targetRoom = projectId || `global-${organizationId}`;
@@ -337,7 +337,7 @@ const shutdown = async () => {
   } catch (err) {
     console.error('Error during disconnect:', err);
   }
-  
+
   httpServer.close(() => {
     console.log('Server closed.');
     process.exit(0);

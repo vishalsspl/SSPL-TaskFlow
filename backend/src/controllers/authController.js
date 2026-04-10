@@ -104,11 +104,11 @@ export const login = async (req, res) => {
   if (user.role !== 'SUPERADMIN' && user.organization?.dbUrl) {
     try {
       const tenantClient = await tenantDbManager.getClient(user.organization.dbUrl);
-      
+
       // Auto-close any previous active sessions for this user (cleanup)
       await tenantClient.attendance.updateMany({
         where: { userId: user.id, status: 'ACTIVE' },
-        data: { 
+        data: {
           clockOut: new Date(),
           status: 'COMPLETED',
           durationMinutes: 0 // We don't know the actual duration of the 'forgotten' session
@@ -394,6 +394,7 @@ export const signup = async (req, res) => {
 
   const { passwordHash: _ph, ...userWithoutPassword } = mainUser;
   res.status(201).json({ token, user: userWithoutPassword });
+
 };
 
 // ── invite ─────────────────────────────────────────────────────────────────
@@ -454,11 +455,11 @@ export const invite = async (req, res) => {
       });
       fs.appendFileSync('debug_trace.log', `Successfully created user in tenant DB\n`);
     } else {
-       fs.appendFileSync('debug_trace.log', `Entering else block. org.dbUrl is: ${org.dbUrl}\n`);
-       // If req.db is missing but org has a dbUrl, we have a configuration issue
-       if (org.dbUrl) {
-         throw new Error('Tenant database connection not available for this request.');
-       }
+      fs.appendFileSync('debug_trace.log', `Entering else block. org.dbUrl is: ${org.dbUrl}\n`);
+      // If req.db is missing but org has a dbUrl, we have a configuration issue
+      if (org.dbUrl) {
+        throw new Error('Tenant database connection not available for this request.');
+      }
     }
   } catch (tenantErr) {
     console.error('[Invite] Failed to create user in tenant DB:', tenantErr.message);
