@@ -1,5 +1,5 @@
 import express from 'express';
-import { login, signup, invite, me, logout, changePassword, forgotPassword, resetPassword } from '../controllers/authController.js';
+import { login, signup, invite, bulkInvite, me, logout, changePassword, forgotPassword, resetPassword } from '../controllers/authController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import { attachTenantDb } from '../middleware/tenantMiddleware.js';
 
@@ -129,6 +129,48 @@ router.post('/signup', signup);
  *         description: Forbidden — role not allowed or user limit reached
  */
 router.post('/invite', authenticate, authorize('ADMIN', 'MANAGER'), attachTenantDb, invite);
+
+/**
+ * @swagger
+ * /api/auth/bulk-invite:
+ *   post:
+ *     summary: Bulk invite users from an Excel import
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     description: Admin only — import multiple users at once from a spreadsheet
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - users
+ *             properties:
+ *               users:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     name:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *                       enum: [MANAGER, MEMBER, CLIENT]
+ *                     password:
+ *                       type: string
+ *     responses:
+ *       200:
+ *         description: Import results with per-row status
+ *       400:
+ *         description: Validation error
+ *       403:
+ *         description: User limit exceeded
+ */
+router.post('/bulk-invite', authenticate, authorize('ADMIN'), attachTenantDb, bulkInvite);
 
 /**
  * @swagger

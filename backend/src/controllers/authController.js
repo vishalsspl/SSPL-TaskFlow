@@ -553,6 +553,165 @@ export const invite = async (req, res) => {
   res.status(201).json({ user: userWithoutPassword, message: 'User invited.' });
 };
 
+// ── bulkInvite ────────────────────────────────────────────────────────────
+export const bulkInvite = async (req, res) => {
+  const { users: usersList } = req.body;
+  const organizationId = req.user.organizationId;
+
+  if (!Array.isArray(usersList) || usersList.length === 0) {
+    return res.status(400).json({ error: 'A non-empty array of users is required.' });
+  }
+
+  if (usersList.length > 100) {
+    return res.status(400).json({ error: 'Maximum 100 users can be imported at once.' });
+  }
+
+  // Check org user limit
+  const org = await prisma.organization.findUnique({
+    where: { id: organizationId },
+    include: { _count: { select: { users: true } } },
+  });
+
+  if (!org) return res.status(404).json({ error: 'Organization not found.' });
+
+  const currentUserCount = org._count.users;
+  const remainingSlots = org.maxUsers - currentUserCount;
+
+  if (remainingSlots <= 0) {
+    return res.status(403).json({ error: `User limit reached. Your plan allows ${org.maxUsers} users.` });
+  }
+
+  if (usersList.length > remainingSlots) {
+    return res.status(403).json({ 
+      error: `Cannot import ${usersList.length} users. Only ${remainingSlots} slots remaining (current: ${currentUserCount}/${org.maxUsers}).` 
+    });
+  }
+
+  const validRoles = ['MANAGER', 'MEMBER', 'CLIENT'];
+  const results = [];
+  let successCount = 0;
+  let failCount = 0;
+
+  const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
+
+  for (let i = 0; i < usersList.length; i++) {
+    const row = usersList[i];
+    const rowNum = i + 1;
+    const { name, email, role, password, sendEmail = true } = row;
+
+    // ── Validate ──
+    if (!name || !email || !role) {
+      results.push({ row: rowNum, email: email || '(empty)', status: 'FAILED', error: 'Name, email, and role are required.' });
+      failCount++;
+      continue;
+    }
+
+    if (!/^[a-zA-Z0-9\s]+$/.test(name)) {
+      results.push({ row: rowNum, email, status: 'FAILED', error: 'Name cannot contain special characters.' });
+      failCount++;
+      continue;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      results.push({ row: rowNum, email, status: 'FAILED', error: 'Invalid email format.' });
+      failCount++;
+      continue;
+    }
+
+    const normalizedRole = role.toUpperCase().trim();
+    if (!validRoles.includes(normalizedRole)) {
+      results.push({ row: rowNum, email, status: 'FAILED', error: `Invalid role "${role}". Must be one of: ${validRoles.join(', ')}` });
+      failCount++;
+      continue;
+    }
+
+    // Check duplicate in MAIN DB
+    try {
+      const existingUser = await prisma.user.findFirst({ where: { email: email.toLowerCase().trim() } });
+      if (existingUser) {
+        results.push({ row: rowNum, email, status: 'FAILED', error: 'Email already exists.' });
+        failCount++;
+        continue;
+      }
+
+      const finalPassword = password || Math.random().toString(36).slice(-8);
+      const passwordHash = await bcrypt.hash(finalPassword, 10);
+
+      // 1. Create in MAIN DB
+      const mainUser = await prisma.user.create({
+        data: {
+          organizationId,
+          name: name.trim(),
+          email: email.toLowerCase().trim(),
+          passwordHash,
+          role: normalizedRole,
+          isApproved: true,
+          mustChangePassword: true,
+        }
+      });
+
+      // 2. Create in TENANT DB
+      try {
+        if (req.db && req.db !== prisma) {
+          await req.db.user.create({
+            data: {
+              id: mainUser.id,
+              organizationId,
+              name: name.trim(),
+              email: email.toLowerCase().trim(),
+              passwordHash,
+              role: normalizedRole,
+              isApproved: true,
+              mustChangePassword: true,
+            }
+          });
+        }
+      } catch (tenantErr) {
+        // Rollback MAIN DB
+        await prisma.user.delete({ where: { id: mainUser.id } }).catch(() => {});
+        results.push({ row: rowNum, email, status: 'FAILED', error: `Tenant sync failed: ${tenantErr.message}` });
+        failCount++;
+        continue;
+      }
+
+      // 3. Send invitation email
+      if (hasEmailSupport && sendEmail) {
+        sendMemberInvitationEmail(email.toLowerCase().trim(), name.trim(), finalPassword, normalizedRole)
+          .catch(err => console.error(`[BulkInvite] Email failed for ${email}:`, err.message));
+      }
+
+      // 4. Log activity
+      try {
+        const logData = {
+          userId: req.user.id,
+          organizationId,
+          action: 'BULK_INVITED',
+          entity: 'user',
+          entityId: mainUser.id,
+          details: { email: email.toLowerCase().trim(), name: name.trim(), role: normalizedRole },
+        };
+        if (req.db && req.db !== prisma) await req.db.activityLog.create({ data: logData });
+        await prisma.activityLog.create({ data: logData });
+      } catch (logErr) {
+        console.error(`[BulkInvite] Log failed for ${email}:`, logErr.message);
+      }
+
+      results.push({ row: rowNum, email: email.toLowerCase().trim(), name: name.trim(), role: normalizedRole, status: 'SUCCESS' });
+      successCount++;
+
+    } catch (err) {
+      results.push({ row: rowNum, email, status: 'FAILED', error: err.message });
+      failCount++;
+    }
+  }
+
+  res.status(200).json({
+    message: `Import complete. ${successCount} succeeded, ${failCount} failed.`,
+    summary: { total: usersList.length, success: successCount, failed: failCount },
+    results,
+  });
+};
+
 // ── changePassword ─────────────────────────────────────────────────────────
 export const changePassword = async (req, res) => {
   const { currentPassword, newPassword } = req.body;

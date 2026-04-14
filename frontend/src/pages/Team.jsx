@@ -31,13 +31,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Users, Mail, Shield, Plus, Edit2, Trash2, UserCheck, Clock, Layers, Lock, User, Search, BarChart2 } from 'lucide-react';
+import { Users, Mail, Shield, Plus, Edit2, Trash2, UserCheck, Clock, Layers, Lock, User, Search, BarChart2, FileSpreadsheet } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import MemberProgress from '@/components/MemberProgress';
 import TablePagination from '@/components/ui/table-pagination';
 import UserForm from '@/components/forms/UserForm';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import UpgradePlanModal from '@/components/ui/UpgradePlanModal';
+import ImportUsersDialog from '@/components/ImportUsersDialog';
 
 const generatePassword = () => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
@@ -62,6 +63,7 @@ const Team = () => {
   const [editingUser, setEditingUser] = useState(null);
   const [userToDelete, setUserToDelete] = useState(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
 
   // Selection State: 'ALL' or managerId
   const [selectedManagerId, setSelectedManagerId] = useState('ALL');
@@ -509,6 +511,16 @@ const Team = () => {
                   <Plus className="w-4 h-4" />
                 </Button>
               )}
+              {currentUser?.role === 'ADMIN' && (
+                <Button
+                  onClick={() => setShowImportDialog(true)}
+                  variant="outline"
+                  className="w-11 h-11 p-0 shrink-0 sm:hidden rounded-xl border-border/40 hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-primary"
+                  title="Import from Excel"
+                >
+                  <FileSpreadsheet className="w-4 h-4" />
+                </Button>
+              )}
             </div>
 
             {/* Filter tabs and Action Button — right side */}
@@ -583,9 +595,17 @@ const Team = () => {
                 )}
               </div>
 
-              {/* Desktop Add Member Button — Far Right */}
+              {/* Desktop Add Member + Import Buttons — Far Right */}
               {currentUser?.role === 'ADMIN' && (
-                <div className="hidden sm:block">
+                <div className="hidden sm:flex items-center gap-2">
+                  <Button
+                    onClick={() => setShowImportDialog(true)}
+                    variant="outline"
+                    className="h-11 px-5 rounded-xl border-border/40 hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-primary font-medium transition-all flex items-center gap-2"
+                  >
+                    <FileSpreadsheet className="w-4 h-4" />
+                    <span>Import Excel</span>
+                  </Button>
                   <Button
                     onClick={() => {
                         setEditingUser(null);
@@ -1098,6 +1118,14 @@ const Team = () => {
         isOpen={showUpgradeModal} 
         onClose={() => setShowUpgradeModal(false)} 
         limitType="users"
+      />
+      <ImportUsersDialog
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
+        onImportComplete={() => {
+          fetchUsers();
+          fetchAllMembers();
+        }}
       />
     </div>
   );
