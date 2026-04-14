@@ -74,7 +74,7 @@ const ImportProjectsDialog = ({ open, onOpenChange, onImportComplete }) => {
     reader.onload = (e) => {
       try {
         const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
+        const workbook = XLSX.read(data, { type: 'array', cellDates: true });
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const jsonData = XLSX.utils.sheet_to_json(sheet, { defval: '' });
 
@@ -83,14 +83,23 @@ const ImportProjectsDialog = ({ open, onOpenChange, onImportComplete }) => {
           return;
         }
 
+        const formatDate = (val) => {
+          if (!val) return '';
+          const d = new Date(val);
+          if (!isNaN(d.getTime())) {
+            return d.toISOString().split('T')[0];
+          }
+          return String(val).trim();
+        };
+
         const normalizedData = jsonData.map((row) => {
           const n = {};
           Object.keys(row).forEach(key => {
             const k = key.toLowerCase().trim().replace(/\s+/g, '');
             if (k.includes('name')) n.name = String(row[key]).trim();
             else if (k.includes('description')) n.description = String(row[key]).trim();
-            else if (k.includes('startdate')) n.startDate = String(row[key]).trim();
-            else if (k.includes('enddate')) n.endDate = String(row[key]).trim();
+            else if (k.includes('startdate')) n.startDate = formatDate(row[key]);
+            else if (k.includes('enddate')) n.endDate = formatDate(row[key]);
             else if (k.includes('budget')) n.totalBudget = row[key];
             else if (k.includes('manageremail')) n.managerEmail = String(row[key]).trim();
             else if (k.includes('clientemail')) n.clientEmail = String(row[key]).trim();
@@ -100,25 +109,17 @@ const ImportProjectsDialog = ({ open, onOpenChange, onImportComplete }) => {
           return n;
         });
 
+
         const errors = [];
         const validated = normalizedData.map((item, idx) => {
           const rowErrors = [];
           if (!item.name) rowErrors.push('Missing Name');
           else if (!/^[a-zA-Z0-9\s]+$/.test(item.name)) rowErrors.push('Special characters in name');
-          
+
           if (!item.startDate) rowErrors.push('Missing Start Date');
-          else {
-            const d = new Date(item.startDate);
-            if (isNaN(d.getTime())) rowErrors.push('Invalid Start Date format');
-            else if (d.getFullYear() < 1900 || d.getFullYear() > 2100) rowErrors.push('Start Date out of range (1900-2100)');
-          }
+          else if (isNaN(new Date(item.startDate).getTime())) rowErrors.push('Invalid Start Date format');
 
-          if (item.endDate) {
-            const d = new Date(item.endDate);
-            if (isNaN(d.getTime())) rowErrors.push('Invalid End Date format');
-            else if (d.getFullYear() < 1900 || d.getFullYear() > 2100) rowErrors.push('End Date out of range (1900-2100)');
-          }
-
+          if (item.endDate && isNaN(new Date(item.endDate).getTime())) rowErrors.push('Invalid End Date format');
 
           if (rowErrors.length > 0) errors.push(`Row ${idx + 2}: ${rowErrors.join(', ')}`);
           return { ...item, _rowNum: idx + 2, _valid: rowErrors.length === 0, _errors: rowErrors };
@@ -219,7 +220,7 @@ const ImportProjectsDialog = ({ open, onOpenChange, onImportComplete }) => {
 
           {step === STEPS.PREVIEW && (
             <div className="p-6 space-y-4">
-               <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 border border-border/30">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 border border-border/30">
                 <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs font-bold gap-1"><CheckCircle2 className="w-3 h-3" /> {validCount} valid</Badge>
                 {invalidCount > 0 && <Badge className="bg-red-500/10 text-red-500 border-red-500/20 text-xs font-bold gap-1"><XCircle className="w-3 h-3" /> {invalidCount} errors</Badge>}
               </div>

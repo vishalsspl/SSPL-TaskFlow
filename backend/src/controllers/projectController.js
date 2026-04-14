@@ -532,8 +532,8 @@ export const bulkCreateProjects = async (req, res) => {
   }
 
   if (projectList.length > remainingSlots) {
-    return res.status(403).json({ 
-      error: `Cannot import ${projectList.length} projects. Only ${remainingSlots} slots remaining (current: ${currentProjectCount}/${org.maxProjects}).` 
+    return res.status(403).json({
+      error: `Cannot import ${projectList.length} projects. Only ${remainingSlots} slots remaining (current: ${currentProjectCount}/${org.maxProjects}).`
     });
   }
 
@@ -563,12 +563,12 @@ export const bulkCreateProjects = async (req, res) => {
 
     // Check duplicate name in org
     const existing = await req.db.project.findFirst({
-        where: { name: { equals: name.trim(), mode: 'insensitive' }, organizationId }
+      where: { name: { equals: name.trim(), mode: 'insensitive' }, organizationId }
     });
     if (existing) {
-        results.push({ row: rowNum, name, status: 'FAILED', error: 'A project with this name already exists in your organization.' });
-        failCount++;
-        continue;
+      results.push({ row: rowNum, name, status: 'FAILED', error: 'A project with this name already exists in your organization.' });
+      failCount++;
+      continue;
     }
 
     try {
@@ -579,9 +579,9 @@ export const bulkCreateProjects = async (req, res) => {
       if (clientEmail) {
         const client = await req.db.user.findFirst({ where: { email: clientEmail.toLowerCase().trim(), organizationId, role: 'CLIENT' } });
         if (!client) {
-            results.push({ row: rowNum, name, status: 'FAILED', error: `Client with email "${clientEmail}" not found or not a client.` });
-            failCount++;
-            continue;
+          results.push({ row: rowNum, name, status: 'FAILED', error: `Client with email "${clientEmail}" not found or not a client.` });
+          failCount++;
+          continue;
         }
         clientId = client.id;
       }
@@ -590,9 +590,9 @@ export const bulkCreateProjects = async (req, res) => {
       if (managerEmail) {
         const manager = await req.db.user.findFirst({ where: { email: managerEmail.toLowerCase().trim(), organizationId, role: 'MANAGER' } });
         if (!manager) {
-            results.push({ row: rowNum, name, status: 'FAILED', error: `Manager with email "${managerEmail}" not found or not a manager.` });
-            failCount++;
-            continue;
+          results.push({ row: rowNum, name, status: 'FAILED', error: `Manager with email "${managerEmail}" not found or not a manager.` });
+          failCount++;
+          continue;
         }
         managerId = manager.id;
       }
@@ -604,30 +604,12 @@ export const bulkCreateProjects = async (req, res) => {
         failCount++;
         continue;
       }
-      
-      // Check for reasonable range (Avoid Prisma Extended Date crash)
-      const startYear = parsedStartDate.getFullYear();
-      if (startYear < 1900 || startYear > 2100) {
-        results.push({ row: rowNum, name, status: 'FAILED', error: `Start date year (${startYear}) is out of reasonable range (1900-2100).` });
-        failCount++;
-        continue;
-      }
 
       let parsedEndDate = null;
       if (endDate) {
         const d = new Date(endDate);
-        if (!isNaN(d.getTime())) {
-            const endYear = d.getFullYear();
-            if (endYear >= 1900 && endYear <= 2100) {
-                parsedEndDate = d;
-            } else {
-                results.push({ row: rowNum, name, status: 'FAILED', error: `End date year (${endYear}) is out of reasonable range (1900-2100).` });
-                failCount++;
-                continue;
-            }
-        }
+        if (!isNaN(d.getTime())) parsedEndDate = d;
       }
-
 
       // Sanitize Budget (Handle strings with currency symbols/commas)
       let parsedBudget = 0;
@@ -658,8 +640,8 @@ export const bulkCreateProjects = async (req, res) => {
           category: (category || 'INTERNAL').toUpperCase().trim(),
         },
         include: {
-            client: { select: { id: true, name: true, email: true } },
-            manager: { select: { id: true, name: true, email: true } },
+          client: { select: { id: true, name: true, email: true } },
+          manager: { select: { id: true, name: true, email: true } },
         }
       });
 
@@ -672,7 +654,7 @@ export const bulkCreateProjects = async (req, res) => {
         { name: 'Testing', order: 4 },
         { name: 'Deployment', order: 5 },
       ];
-    
+
       await req.db.phase.createMany({
         data: defaultPhases.map((phase) => ({
           projectId: project.id,
@@ -695,22 +677,22 @@ export const bulkCreateProjects = async (req, res) => {
         };
         await req.db.activityLog.create({ data: logData });
         await prisma.activityLog.create({ data: logData });
-      } catch (logErr) {}
+      } catch (logErr) { }
 
       // Notifications
       if (hasEmailSupport && sendEmail) {
-          if (project.manager?.email) {
-              sendProjectManagerEmail(project.manager.email, project, project.manager, project.client || null, req.user.name).catch(() => {});
-              createNotification(req, {
-                userId: project.manager.id,
-                title: 'New Project Assigned (Bulk)',
-                message: `You have been assigned as manager for project: ${project.name}`,
-                type: 'PROJECT_ASSIGNED',
-              });
-          }
-          if (project.client?.email) {
-            sendProjectClientEmail(project.client.email, project, project.manager || null, req.user.name).catch(() => {});
-          }
+        if (project.manager?.email) {
+          sendProjectManagerEmail(project.manager.email, project, project.manager, project.client || null, req.user.name).catch(() => { });
+          createNotification(req, {
+            userId: project.manager.id,
+            title: 'New Project Assigned (Bulk)',
+            message: `You have been assigned as manager for project: ${project.name}`,
+            type: 'PROJECT_ASSIGNED',
+          });
+        }
+        if (project.client?.email) {
+          sendProjectClientEmail(project.client.email, project, project.manager || null, req.user.name).catch(() => { });
+        }
       }
 
       results.push({ row: rowNum, name: project.name, status: 'SUCCESS' });

@@ -302,19 +302,19 @@ export const bulkCreateTasks = async (req, res) => {
   for (let i = 0; i < taskList.length; i++) {
     const row = taskList[i];
     const rowNum = i + 1;
-    const { 
-      projectName, 
-      phaseName, 
-      title, 
-      description, 
+    const {
+      projectName,
+      phaseName,
+      title,
+      description,
       assigneeEmails, // comma string
-      status, 
-      priority, 
-      storyPoints, 
+      status,
+      priority,
+      storyPoints,
       dueDate,
       tags,
       type,
-      sendEmail = true 
+      sendEmail = true
     } = row;
 
     // ── Basic Validation ──
@@ -355,12 +355,12 @@ export const bulkCreateTasks = async (req, res) => {
       let phaseId = null;
       if (phaseName) {
         const phase = await req.db.phase.findFirst({
-            where: { name: { equals: phaseName.trim(), mode: 'insensitive' }, projectId: project.id }
+          where: { name: { equals: phaseName.trim(), mode: 'insensitive' }, projectId: project.id }
         });
         if (phase) phaseId = phase.id;
         else {
-            // Optional: fail if phase not found, or just ignore? Let's ignore it for now or log warning.
-            // For now, if provided and not found, we'll just not assign a phase.
+          // Optional: fail if phase not found, or just ignore? Let's ignore it for now or log warning.
+          // For now, if provided and not found, we'll just not assign a phase.
         }
       }
 
@@ -369,7 +369,7 @@ export const bulkCreateTasks = async (req, res) => {
       if (assigneeEmails) {
         const emails = assigneeEmails.split(',').map(e => e.trim().toLowerCase()).filter(e => e);
         const users = await req.db.user.findMany({
-            where: { email: { in: emails }, organizationId }
+          where: { email: { in: emails }, organizationId }
         });
         assigneeIds = users.map(u => u.id);
       }
@@ -378,18 +378,8 @@ export const bulkCreateTasks = async (req, res) => {
       let parsedDueDate = null;
       if (dueDate) {
         const d = new Date(dueDate);
-        if (!isNaN(d.getTime())) {
-            const year = d.getFullYear();
-            if (year >= 1900 && year <= 2100) {
-                parsedDueDate = d;
-            } else {
-                results.push({ row: rowNum, title, status: 'FAILED', error: `Due date year (${year}) is out of reasonable range (1900-2100).` });
-                failCount++;
-                continue;
-            }
-        }
+        if (!isNaN(d.getTime())) parsedDueDate = d;
       }
-
 
       // Story Points (Handle non-numeric strings)
       let parsedPoints = 0;
@@ -429,8 +419,8 @@ export const bulkCreateTasks = async (req, res) => {
           }
         },
         include: {
-            assignees: { include: { user: { select: { id: true, name: true, email: true } } } },
-            project: { select: { id: true, name: true } },
+          assignees: { include: { user: { select: { id: true, name: true, email: true } } } },
+          project: { select: { id: true, name: true } },
         }
       });
 
@@ -448,26 +438,26 @@ export const bulkCreateTasks = async (req, res) => {
         };
         await req.db.activityLog.create({ data: logData });
         await prisma.activityLog.create({ data: logData });
-      } catch (logErr) {}
+      } catch (logErr) { }
 
       // Notifications
       if (hasEmailSupport && sendEmail) {
         const senderName = req.user.name;
         for (const { user } of task.assignees) {
-            if (user?.email) {
-                sendTaskAssignmentEmail(user.email, task.title, task.project.name, senderName, { 
-                    priority: task.priority, 
-                    dueDate: task.dueDate, 
-                    status: task.status, 
-                    description: task.description 
-                }).catch(() => {});
-            }
-            createNotification(req, {
-                userId: user.id,
-                title: 'New Task Assigned (Bulk)',
-                message: `You have been assigned to task: ${task.title} in project: ${task.project.name}`,
-                type: 'TASK_ASSIGNED',
-            });
+          if (user?.email) {
+            sendTaskAssignmentEmail(user.email, task.title, task.project.name, senderName, {
+              priority: task.priority,
+              dueDate: task.dueDate,
+              status: task.status,
+              description: task.description
+            }).catch(() => { });
+          }
+          createNotification(req, {
+            userId: user.id,
+            title: 'New Task Assigned (Bulk)',
+            message: `You have been assigned to task: ${task.title} in project: ${task.project.name}`,
+            type: 'TASK_ASSIGNED',
+          });
         }
       }
 
@@ -532,7 +522,7 @@ export const updateTask = async (req, res) => {
 
   const existingAssigneeIds = existingTask.assignees.map((a) => a.userId);
   const newAssigneeIds = assigneeIds !== undefined ? assigneeIds : existingAssigneeIds;
-  
+
   // Validate new projectId or phaseId if changed
   if (phaseId && phaseId !== existingTask.phaseId) {
     const phase = await req.db.phase.findFirst({
@@ -854,10 +844,10 @@ export const updateTaskProgress = async (req, res) => {
         action: 'UPDATED',
         entity: 'task',
         entityId: task.id,
-        details: { 
-          title: task.title, 
+        details: {
+          title: task.title,
           action: 'Progress Updated',
-          completionPercentage: Number(completionPercentage) 
+          completionPercentage: Number(completionPercentage)
         },
       };
 
@@ -921,8 +911,8 @@ export const updateTaskStatus = async (req, res) => {
         action: 'UPDATED',
         entity: 'task',
         entityId: task.id,
-        details: { 
-          title: task.title, 
+        details: {
+          title: task.title,
           action: 'Status Updated',
           status,
           oldStatus: existingTask.status

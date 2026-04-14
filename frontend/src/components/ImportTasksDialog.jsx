@@ -74,7 +74,7 @@ const ImportTasksDialog = ({ open, onOpenChange, onImportComplete }) => {
     reader.onload = (e) => {
       try {
         const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
+        const workbook = XLSX.read(data, { type: 'array', cellDates: true });
         const sheet = workbook.Sheets[workbook.SheetNames[0]];
         const jsonData = XLSX.utils.sheet_to_json(sheet, { defval: '' });
 
@@ -82,6 +82,15 @@ const ImportTasksDialog = ({ open, onOpenChange, onImportComplete }) => {
           setParseErrors(['Spreadsheet is empty.']);
           return;
         }
+
+        const formatDate = (val) => {
+          if (!val) return '';
+          const d = new Date(val);
+          if (!isNaN(d.getTime())) {
+            return d.toISOString().split('T')[0];
+          }
+          return String(val).trim();
+        };
 
         const normalizedData = jsonData.map((row) => {
           const n = {};
@@ -95,27 +104,23 @@ const ImportTasksDialog = ({ open, onOpenChange, onImportComplete }) => {
             else if (k.includes('status')) n.status = String(row[key]).trim().toUpperCase();
             else if (k.includes('priority')) n.priority = String(row[key]).trim().toUpperCase();
             else if (k.includes('points') || k.includes('story')) n.storyPoints = row[key];
-            else if (k.includes('due') || k.includes('date')) n.dueDate = String(row[key]).trim();
+            else if (k.includes('due') || k.includes('date')) n.dueDate = formatDate(row[key]);
             else if (k.includes('tag')) n.tags = String(row[key]).split(',').map(t => t.trim()).filter(t => t);
             else if (k.includes('type')) n.type = String(row[key]).trim().toUpperCase();
           });
           return n;
         });
 
+
         const errors = [];
         const validated = normalizedData.map((item, idx) => {
           const rowErrors = [];
           if (!item.title) rowErrors.push('Missing Title');
           else if (!/^[a-zA-Z0-9\s]+$/.test(item.title)) rowErrors.push('Special characters in title');
-          
-          if (!item.projectName) rowErrors.push('Missing Project Name');
-          
-          if (item.dueDate) {
-            const d = new Date(item.dueDate);
-            if (isNaN(d.getTime())) rowErrors.push('Invalid Due Date format');
-            else if (d.getFullYear() < 1900 || d.getFullYear() > 2100) rowErrors.push('Due Date out of range (1900-2100)');
-          }
 
+          if (!item.projectName) rowErrors.push('Missing Project Name');
+
+          if (item.dueDate && isNaN(new Date(item.dueDate).getTime())) rowErrors.push('Invalid Due Date format');
 
           if (rowErrors.length > 0) errors.push(`Row ${idx + 2}: ${rowErrors.join(', ')}`);
           return { ...item, _rowNum: idx + 2, _valid: rowErrors.length === 0, _errors: rowErrors };
@@ -185,8 +190,8 @@ const ImportTasksDialog = ({ open, onOpenChange, onImportComplete }) => {
                 {REQUIRED_FIELDS.map(f => (
                   <div key={f.key} className="p-4 rounded-2xl border border-border/40 bg-secondary/20 space-y-1">
                     <div className="flex items-center gap-2">
-                       <span className="text-sm font-bold text-foreground">{f.label}</span>
-                       {f.required && <Badge className="text-[8px] px-1.5 py-0 bg-red-500/10 text-red-500 border-red-500/20 font-black">REQUIRED</Badge>}
+                      <span className="text-sm font-bold text-foreground">{f.label}</span>
+                      {f.required && <Badge className="text-[8px] px-1.5 py-0 bg-red-500/10 text-red-500 border-red-500/20 font-black">REQUIRED</Badge>}
                     </div>
                     <p className="text-[11px] text-muted-foreground leading-relaxed">{f.description}</p>
                     <code className="text-[10px] bg-primary/5 text-primary px-2 py-0.5 rounded-md font-bold">e.g. {f.example}</code>
@@ -257,7 +262,7 @@ const ImportTasksDialog = ({ open, onOpenChange, onImportComplete }) => {
 
           {step === STEPS.RESULTS && importResults && (
             <div className="p-6 space-y-4">
-               <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <div className="p-4 rounded-2xl border bg-secondary/20 text-center"><p className="text-2xl font-black">{importResults.summary.total}</p><p className="text-[10px] uppercase font-bold text-muted-foreground">Total</p></div>
                 <div className="p-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 text-center"><p className="text-2xl font-black text-emerald-600">{importResults.summary.success}</p><p className="text-[10px] uppercase font-bold text-emerald-600/70">Imported</p></div>
                 <div className="p-4 rounded-2xl border border-red-500/20 bg-red-500/5 text-center"><p className="text-2xl font-black text-red-500">{importResults.summary.failed}</p><p className="text-[10px] uppercase font-bold text-red-500/70">Failed</p></div>
