@@ -8,6 +8,7 @@ import {
   getMyTasks,
   updateTaskProgress,
   updateTaskStatus,
+  bulkCreateTasks,
 } from '../controllers/taskController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import attachTenantDb from '../middleware/tenantMiddleware.js';
@@ -26,6 +27,7 @@ router.get('/:id', getTask);
 // Mutating tasks is restricted to ADMIN, MANAGER, and MEMBER roles.
 // CLIENT users have read-only access.
 router.post('/', authorize('ADMIN', 'MANAGER', 'MEMBER'), createTask);
+router.post('/bulk-create', authorize('ADMIN', 'MANAGER', 'MEMBER'), bulkCreateTasks);
 router.put('/:id', authorize('ADMIN', 'MANAGER', 'MEMBER'), updateTask);
 router.patch('/:id/progress', authorize('ADMIN', 'MANAGER', 'MEMBER'), updateTaskProgress);
 router.patch('/:id/status', authorize('ADMIN', 'MANAGER', 'MEMBER'), updateTaskStatus);

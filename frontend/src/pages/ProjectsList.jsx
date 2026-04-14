@@ -31,7 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, FolderKanban, Eye, Edit2, Trash2, Search, Filter, Layers, FileText, Users, Briefcase, Target, Calendar } from 'lucide-react';
+import { Plus, FolderKanban, Eye, Edit2, Trash2, Search, Filter, Layers, FileText, Users, Briefcase, Target, Calendar, FileSpreadsheet } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { SearchableSelect } from '@/components/ui/searchable-select';
@@ -42,6 +42,7 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import ProjectOverview from '@/components/ProjectOverview';
 import TablePagination from '@/components/ui/table-pagination';
 import { DatePicker } from '@/components/ui/date-picker';
+import ImportProjectsDialog from '@/components/ImportProjectsDialog';
 
 const ProjectsList = () => {
   const { toast } = useToast();
@@ -58,6 +59,8 @@ const ProjectsList = () => {
   const [projectToDelete, setProjectToDelete] = useState(null);
   const [selectedOverviewProject, setSelectedOverviewProject] = useState(null);
   const [showOverviewDialog, setShowOverviewDialog] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
   const [users, setUsers] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
@@ -517,9 +520,17 @@ const ProjectsList = () => {
 
                 </div>
 
-                {/* Desktop Action Button */}
+                {/* Desktop Action Buttons */}
                 {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
-                  <div className="hidden sm:block">
+                  <div className="hidden sm:flex items-center gap-2">
+                    <Button
+                      onClick={() => setShowImportDialog(true)}
+                      variant="outline"
+                      className="h-11 px-5 rounded-xl border-border/40 hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-primary font-medium transition-all flex items-center gap-2"
+                    >
+                      <FileSpreadsheet className="w-4 h-4" />
+                      <span>Import Excel</span>
+                    </Button>
                     <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
                       <DialogTrigger asChild>
                         <Button className="w-[145px] px-4 h-11 rounded-xl flex items-center justify-center bg-primary hover:bg-primary/90 text-primary-foreground shrink-0 transition-all shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98]">
@@ -776,6 +787,11 @@ const ProjectsList = () => {
           </div>
         </DialogContent>
       </Dialog>
+      <ImportProjectsDialog
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
+        onImportComplete={fetchProjects}
+      />
     </div>
   );
 };

@@ -280,6 +280,180 @@ export const createTask = async (req, res) => {
   res.status(201).json(task);
 };
 
+// ── bulkCreateTasks ──────────────────────────────────────────────────────
+export const bulkCreateTasks = async (req, res) => {
+  const { tasks: taskList } = req.body;
+  const organizationId = req.user.organizationId;
+
+  if (!Array.isArray(taskList) || taskList.length === 0) {
+    return res.status(400).json({ error: 'A non-empty array of tasks is required.' });
+  }
+
+  if (taskList.length > 200) {
+    return res.status(400).json({ error: 'Maximum 200 tasks can be imported at once.' });
+  }
+
+  const results = [];
+  let successCount = 0;
+  let failCount = 0;
+
+  const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
+
+  for (let i = 0; i < taskList.length; i++) {
+    const row = taskList[i];
+    const rowNum = i + 1;
+    const { 
+      projectName, 
+      phaseName, 
+      title, 
+      description, 
+      assigneeEmails, // comma string
+      status, 
+      priority, 
+      storyPoints, 
+      dueDate,
+      tags,
+      type,
+      sendEmail = true 
+    } = row;
+
+    // ── Basic Validation ──
+    if (!projectName || !title) {
+      results.push({ row: rowNum, title: title || '(empty)', status: 'FAILED', error: 'Project name and task title are required.' });
+      failCount++;
+      continue;
+    }
+
+    if (!/^[a-zA-Z0-9\s]+$/.test(title)) {
+      results.push({ row: rowNum, title, status: 'FAILED', error: 'Title cannot contain special characters.' });
+      failCount++;
+      continue;
+    }
+
+    try {
+      // 1. Lookup Project
+      const project = await req.db.project.findFirst({
+        where: { name: { equals: projectName.trim(), mode: 'insensitive' }, organizationId }
+      });
+      if (!project) {
+        results.push({ row: rowNum, title, status: 'FAILED', error: `Project "${projectName}" not found.` });
+        failCount++;
+        continue;
+      }
+
+      // 2. Check duplicate title in same project
+      const existing = await req.db.task.findFirst({
+        where: { title: { equals: title.trim(), mode: 'insensitive' }, projectId: project.id }
+      });
+      if (existing) {
+        results.push({ row: rowNum, title, status: 'FAILED', error: `A task with this title already exists in project "${projectName}".` });
+        failCount++;
+        continue;
+      }
+
+      // 3. Lookup Phase
+      let phaseId = null;
+      if (phaseName) {
+        const phase = await req.db.phase.findFirst({
+            where: { name: { equals: phaseName.trim(), mode: 'insensitive' }, projectId: project.id }
+        });
+        if (phase) phaseId = phase.id;
+        else {
+            // Optional: fail if phase not found, or just ignore? Let's ignore it for now or log warning.
+            // For now, if provided and not found, we'll just not assign a phase.
+        }
+      }
+
+      // 4. Lookup Assignees
+      let assigneeIds = [];
+      if (assigneeEmails) {
+        const emails = assigneeEmails.split(',').map(e => e.trim().toLowerCase()).filter(e => e);
+        const users = await req.db.user.findMany({
+            where: { email: { in: emails }, organizationId }
+        });
+        assigneeIds = users.map(u => u.id);
+      }
+
+      // 5. Create Task
+      const task = await req.db.task.create({
+        data: {
+          projectId: project.id,
+          phaseId,
+          title: title.trim(),
+          description,
+          status: status || 'TODO',
+          priority: priority || 'MEDIUM',
+          storyPoints: storyPoints ? parseInt(storyPoints) : 0,
+          dueDate: dueDate ? new Date(dueDate) : null,
+          tags: Array.isArray(tags) ? tags : (tags ? [tags] : []),
+          type: type || 'TASK',
+          assignees: {
+            create: assigneeIds.map(userId => ({ userId }))
+          }
+        },
+        include: {
+            assignees: { include: { user: { select: { id: true, name: true, email: true } } } },
+            project: { select: { id: true, name: true } },
+        }
+      });
+
+      // Activity Logging
+      try {
+        const logData = {
+          userId: req.user.id,
+          organizationId,
+          projectId: project.id,
+          action: 'CREATED',
+          entity: 'task',
+          entityId: task.id,
+          details: { title: task.title, bulkImport: true },
+        };
+        await req.db.activityLog.create({ data: logData });
+        await prisma.activityLog.create({ data: logData });
+      } catch (logErr) {}
+
+      // Notifications
+      if (hasEmailSupport && sendEmail) {
+        const senderName = req.user.name;
+        for (const { user } of task.assignees) {
+            if (user?.email) {
+                sendTaskAssignmentEmail(user.email, task.title, task.project.name, senderName, { 
+                    priority: task.priority, 
+                    dueDate: task.dueDate, 
+                    status: task.status, 
+                    description: task.description 
+                }).catch(() => {});
+            }
+            createNotification(req, {
+                userId: user.id,
+                title: 'New Task Assigned (Bulk)',
+                message: `You have been assigned to task: ${task.title} in project: ${task.project.name}`,
+                type: 'TASK_ASSIGNED',
+            });
+        }
+      }
+
+      // Recalculate Phase Progress
+      if (task.phaseId) {
+        await recalculatePhaseProgress(req.db, task.phaseId);
+      }
+
+      results.push({ row: rowNum, title: task.title, status: 'SUCCESS' });
+      successCount++;
+
+    } catch (err) {
+      results.push({ row: rowNum, title, status: 'FAILED', error: err.message });
+      failCount++;
+    }
+  }
+
+  res.status(200).json({
+    message: `Import complete. ${successCount} succeeded, ${failCount} failed.`,
+    summary: { total: taskList.length, success: successCount, failed: failCount },
+    results,
+  });
+};
+
 export const updateTask = async (req, res) => {
   const { id } = req.params;
   const {

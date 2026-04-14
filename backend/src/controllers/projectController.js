@@ -505,6 +505,183 @@ export const createProject = async (req, res) => {
   res.status(201).json(project);
 };
 
+// ── bulkCreateProjects ───────────────────────────────────────────────────
+export const bulkCreateProjects = async (req, res) => {
+  const { projects: projectList } = req.body;
+  const organizationId = req.user.organizationId;
+
+  if (!Array.isArray(projectList) || projectList.length === 0) {
+    return res.status(400).json({ error: 'A non-empty array of projects is required.' });
+  }
+
+  if (projectList.length > 50) {
+    return res.status(400).json({ error: 'Maximum 50 projects can be imported at once.' });
+  }
+
+  // Check organization limits
+  const [org, currentProjectCount] = await Promise.all([
+    req.db.organization.findUnique({ where: { id: organizationId } }),
+    req.db.project.count({ where: { organizationId } })
+  ]);
+
+  if (!org) return res.status(404).json({ error: 'Organization not found.' });
+
+  const remainingSlots = org.maxProjects - currentProjectCount;
+  if (remainingSlots <= 0) {
+    return res.status(403).json({ error: `Project limit reached. Your plan allows ${org.maxProjects} projects.` });
+  }
+
+  if (projectList.length > remainingSlots) {
+    return res.status(403).json({ 
+      error: `Cannot import ${projectList.length} projects. Only ${remainingSlots} slots remaining (current: ${currentProjectCount}/${org.maxProjects}).` 
+    });
+  }
+
+  const results = [];
+  let successCount = 0;
+  let failCount = 0;
+
+  const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
+
+  for (let i = 0; i < projectList.length; i++) {
+    const row = projectList[i];
+    const rowNum = i + 1;
+    const { name, description, clientEmail, managerEmail, startDate, endDate, totalBudget, status, category, sendEmail = true } = row;
+
+    // ── Basic Validation ──
+    if (!name || !startDate) {
+      results.push({ row: rowNum, name: name || '(empty)', status: 'FAILED', error: 'Project name and start date are required.' });
+      failCount++;
+      continue;
+    }
+
+    if (!/^[a-zA-Z0-9\s]+$/.test(name)) {
+      results.push({ row: rowNum, name, status: 'FAILED', error: 'Name cannot contain special characters.' });
+      failCount++;
+      continue;
+    }
+
+    // Check duplicate name in org
+    const existing = await req.db.project.findFirst({
+        where: { name: { equals: name.trim(), mode: 'insensitive' }, organizationId }
+    });
+    if (existing) {
+        results.push({ row: rowNum, name, status: 'FAILED', error: 'A project with this name already exists in your organization.' });
+        failCount++;
+        continue;
+    }
+
+    try {
+      let clientId = null;
+      let managerId = null;
+
+      // Lookup Client
+      if (clientEmail) {
+        const client = await req.db.user.findFirst({ where: { email: clientEmail.toLowerCase().trim(), organizationId, role: 'CLIENT' } });
+        if (!client) {
+            results.push({ row: rowNum, name, status: 'FAILED', error: `Client with email "${clientEmail}" not found or not a client.` });
+            failCount++;
+            continue;
+        }
+        clientId = client.id;
+      }
+
+      // Lookup Manager
+      if (managerEmail) {
+        const manager = await req.db.user.findFirst({ where: { email: managerEmail.toLowerCase().trim(), organizationId, role: 'MANAGER' } });
+        if (!manager) {
+            results.push({ row: rowNum, name, status: 'FAILED', error: `Manager with email "${managerEmail}" not found or not a manager.` });
+            failCount++;
+            continue;
+        }
+        managerId = manager.id;
+      }
+
+      // Create Project
+      const project = await req.db.project.create({
+        data: {
+          organizationId,
+          name: name.trim(),
+          description,
+          clientId,
+          managerId,
+          startDate: new Date(startDate),
+          endDate: endDate ? new Date(endDate) : null,
+          totalBudget: totalBudget ? parseFloat(totalBudget) : 0,
+          status: status || 'PLANNING',
+          category: category || 'INTERNAL',
+        },
+        include: {
+            client: { select: { id: true, name: true, email: true } },
+            manager: { select: { id: true, name: true, email: true } },
+        }
+      });
+
+      // Create default phases
+      const defaultPhases = [
+        { name: 'Planning', order: 1 },
+        { name: 'Design', order: 2 },
+        { name: 'Development', order: 3 },
+        { name: 'Testing', order: 4 },
+        { name: 'Deployment', order: 5 },
+      ];
+    
+      await req.db.phase.createMany({
+        data: defaultPhases.map((phase) => ({
+          projectId: project.id,
+          ...phase,
+          status: 'WAITING',
+          completionPercentage: 0,
+        })),
+      });
+
+      // Activity Logging
+      try {
+        const logData = {
+          userId: req.user.id,
+          organizationId,
+          projectId: project.id,
+          action: 'PROJECT_CREATED',
+          entity: 'project',
+          entityId: project.id,
+          details: { name: project.name, bulkImport: true },
+        };
+        await req.db.activityLog.create({ data: logData });
+        await prisma.activityLog.create({ data: logData });
+      } catch (logErr) {}
+
+      // Notifications
+      if (hasEmailSupport && sendEmail) {
+          if (project.manager?.email) {
+              sendProjectManagerEmail(project.manager.email, project, project.manager, project.client || null, req.user.name).catch(() => {});
+              createNotification(req, {
+                userId: project.manager.id,
+                title: 'New Project Assigned (Bulk)',
+                message: `You have been assigned as manager for project: ${project.name}`,
+                type: 'PROJECT_ASSIGNED',
+              });
+          }
+          if (project.client?.email) {
+            sendProjectClientEmail(project.client.email, project, project.manager || null, req.user.name).catch(() => {});
+          }
+      }
+
+      results.push({ row: rowNum, name: project.name, status: 'SUCCESS' });
+      successCount++;
+
+    } catch (err) {
+      results.push({ row: rowNum, name, status: 'FAILED', error: err.message });
+      failCount++;
+    }
+  }
+
+  res.status(200).json({
+    message: `Import complete. ${successCount} succeeded, ${failCount} failed.`,
+    summary: { total: projectList.length, success: successCount, failed: failCount },
+    results,
+  });
+};
+
 export const updateProject = async (req, res) => {
   const { id } = req.params;
   const {

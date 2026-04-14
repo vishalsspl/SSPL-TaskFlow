@@ -30,23 +30,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatDate, priorityColors, statusColors, taskTypeColors } from '@/lib/utils';
 import {
-  Plus,
-  CheckSquare,
-  Layers,
-  User,
-  Activity,
-  AlertCircle,
-  Calendar,
-  Tag,
-  AlignLeft,
-  Briefcase,
-  Search,
-  Filter,
-  Trash2,
-  Bug,
-  Zap,
-  BookOpen,
   GitBranch,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { useAuthStore } from '@/store/authStore';
@@ -57,6 +42,7 @@ import TablePagination from '@/components/ui/table-pagination';
 import { useToast } from "@/hooks/use-toast";
 import { useTimerStore } from '@/store/timerStore';
 import { Clock } from 'lucide-react';
+import ImportTasksDialog from '@/components/ImportTasksDialog';
 
 const Tasks = () => {
   const { user } = useAuthStore();
@@ -71,6 +57,7 @@ const Tasks = () => {
   const [priorityFilter, setPriorityFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
   const [projects, setProjects] = useState([]);
   const [users, setUsers] = useState([]);
   const [phases, setPhases] = useState([]);
@@ -389,14 +376,24 @@ const Tasks = () => {
                   <Filter className="w-4 h-4" />
                 </Button>
                 
-                {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
-                  <Button 
-                    onClick={() => setShowCreateDialog(true)}
-                    className="h-10 px-5 rounded-xl flex items-center justify-center bg-primary hover:bg-primary/90 text-primary-foreground transition-all shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] font-bold Montserrat text-sm whitespace-nowrap"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    <span>New Task</span>
-                  </Button>
+                {user?.role !== 'CLIENT' && (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={() => setShowImportDialog(true)}
+                      variant="outline"
+                      className="h-10 px-5 rounded-xl border-border/40 hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-primary font-medium transition-all flex items-center gap-2"
+                    >
+                      <FileSpreadsheet className="w-4 h-4" />
+                      <span className="hidden lg:inline">Import Excel</span>
+                    </Button>
+                    <Button 
+                      onClick={() => setShowCreateDialog(true)}
+                      className="h-10 px-5 rounded-xl flex items-center justify-center bg-primary hover:bg-primary/90 text-primary-foreground transition-all shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] font-bold Montserrat text-sm whitespace-nowrap"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      <span>New Task</span>
+                    </Button>
+                  </div>
                 )}
               </div>
             </div>
@@ -664,6 +661,11 @@ const Tasks = () => {
         description={`Are you sure you want to delete task "${taskToDelete?.title}"? This action cannot be undone.`}
         confirmText="Delete"
         variant="destructive"
+      />
+      <ImportTasksDialog
+        open={showImportDialog}
+        onOpenChange={setShowImportDialog}
+        onImportComplete={fetchTasks}
       />
     </div>
   );
