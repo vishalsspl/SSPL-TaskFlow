@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import api from '@/lib/api';
 import { useChatStore } from './chatStore';
+import { useAuthStore } from './authStore';
 
 export const useNotificationStore = create((set, get) => ({
   notifications: [],
@@ -8,9 +9,13 @@ export const useNotificationStore = create((set, get) => ({
   loading: false,
 
   fetchNotifications: async () => {
+    const role = useAuthStore.getState().user?.role;
+    const isSuperAdmin = role === 'SUPERADMIN';
+    const baseUrl = isSuperAdmin ? '/superadmin/notifications' : '/notifications';
+
     set({ loading: true });
     try {
-      const response = await api.get('/notifications');
+      const response = await api.get(baseUrl);
       const notifications = response.data;
       const unreadCount = notifications.filter(n => !n.isRead).length;
       set({ notifications, unreadCount, loading: false });
@@ -34,8 +39,12 @@ export const useNotificationStore = create((set, get) => ({
   },
 
   markAsRead: async (id) => {
+    const role = useAuthStore.getState().user?.role;
+    const isSuperAdmin = role === 'SUPERADMIN';
+    const baseUrl = isSuperAdmin ? '/superadmin/notifications' : '/notifications';
+
     try {
-      await api.patch(`/notifications/${id}/read`);
+      await api.patch(`${baseUrl}/${id}/read`);
       set((state) => {
         const newNotifications = state.notifications.map(n => 
           n.id === id ? { ...n, isRead: true } : n
@@ -51,8 +60,12 @@ export const useNotificationStore = create((set, get) => ({
   },
 
   markAllAsRead: async () => {
+    const role = useAuthStore.getState().user?.role;
+    const isSuperAdmin = role === 'SUPERADMIN';
+    const baseUrl = isSuperAdmin ? '/superadmin/notifications' : '/notifications';
+
     try {
-      await api.patch('/notifications/read-all');
+      await api.patch(`${baseUrl}/read-all`);
       set((state) => {
         const newNotifications = state.notifications.map(n => ({ ...n, isRead: true }));
         return {
@@ -66,8 +79,12 @@ export const useNotificationStore = create((set, get) => ({
   },
 
   deleteNotification: async (id) => {
+    const role = useAuthStore.getState().user?.role;
+    const isSuperAdmin = role === 'SUPERADMIN';
+    const baseUrl = isSuperAdmin ? '/superadmin/notifications' : '/notifications';
+
     try {
-      await api.delete(`/notifications/${id}`);
+      await api.delete(`${baseUrl}/${id}`);
       set((state) => {
         const newNotifications = state.notifications.filter(n => n.id !== id);
         return {

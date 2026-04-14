@@ -732,3 +732,50 @@ export const sendTimesheetStatusEmail = async (to, userName, projectName, status
     return null;
   }
 };
+
+/**
+ * Send an email notification to SuperAdmin when a new organization signs up.
+ */
+export const sendNewOrgSignupNotificationToSuperAdmin = async (superAdminEmail, superAdminName, orgDetails, adminDetails) => {
+  try {
+    if (!superAdminEmail) return;
+
+    const info = await transporter.sendMail({
+      from: DEFAULT_FROM,
+      to: superAdminEmail,
+      subject: `New Organization Signup: ${orgDetails.name}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px;">
+          <h2 style="color: #2563eb;">🚀 New Organization Registered</h2>
+          <p>Hello <strong>${superAdminName}</strong>,</p>
+          <p>A new organization has just signed up on TaskFlow.</p>
+          
+          <div style="background: #F9FAFB; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #1f2937;">Organization Details</h3>
+            <p><strong>Name:</strong> ${orgDetails.name}</p>
+            <p><strong>Industry:</strong> ${orgDetails.industry || 'Not specified'}</p>
+            <p><strong>Size:</strong> ${orgDetails.size || 'Not specified'}</p>
+            <p><strong>Country:</strong> ${orgDetails.country || 'Not specified'}</p>
+            
+            <h3 style="margin-top: 20px; color: #1f2937;">Admin Details</h3>
+            <p><strong>Name:</strong> ${adminDetails.name}</p>
+            <p><strong>Email:</strong> ${adminDetails.email}</p>
+          </div>
+
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/superadmin/orgs" style="background-color: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">View Organization in Admin Panel</a>
+          </div>
+
+          <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+          <p style="color: #6B7280; font-size: 12px; text-align: center;">This is an automated system notification from TaskFlow.</p>
+        </div>
+      `,
+    });
+
+    console.log('SuperAdmin Notification Email sent: %s', info.messageId);
+    return info;
+  } catch (error) {
+    console.error('Error sending superadmin notification email:', error);
+    return null;
+  }
+};

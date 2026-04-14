@@ -2,7 +2,7 @@ import prisma from '../lib/prisma.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import { sendMemberInvitationEmail, sendPasswordResetEmail, sendOrgSignupEmail } from '../services/emailService.js';
+import { sendMemberInvitationEmail, sendPasswordResetEmail, sendOrgSignupEmail, sendNewOrgSignupNotificationToSuperAdmin } from '../services/emailService.js';
 import { provisionTenantDatabase } from '../services/tenantProvisioner.js';
 import tenantDbManager from '../lib/tenantDbManager.js';
 
@@ -317,6 +317,58 @@ export const signup = async (req, res) => {
       customFeatures
     }
   });
+
+  // ── Notify SuperAdmins about the new organization ────────────────────────
+  try {
+    const superAdmins = await prisma.user.findMany({
+      where: { role: 'SUPERADMIN' }
+    });
+
+    if (superAdmins.length > 0) {
+      const orgDetails = {
+        name: org.name,
+        industry: org.industry,
+        size: org.size,
+        country: org.country
+      };
+      const adminDetails = {
+        name,
+        email
+      };
+
+      await Promise.all(superAdmins.map(async (admin) => {
+        // 1. Send Email
+        await sendNewOrgSignupNotificationToSuperAdmin(admin.email, admin.name, orgDetails, adminDetails);
+        
+        // 2. Create In-App Notification in MAIN DB (Using Raw SQL for compatibility)
+        await prisma.$executeRaw`
+          INSERT INTO "Notification" ("id", "userId", "title", "message", "type", "link", "isRead", "createdAt")
+          VALUES (${crypto.randomUUID()}, ${admin.id}, 'New Organization Registered', ${`${org.name} has just signed up. Industry: ${org.industry || 'N/A'}`}, 'NEW_ORG_SIGNUP', '/superadmin/orgs', false, timezone('utc', now()))
+        `;
+      }));
+    }
+
+    // Log the signup event in MAIN DB ActivityLog
+    await prisma.activityLog.create({
+      data: {
+        userId: mainUser.id,
+        organizationId: org.id,
+        action: 'SIGNUP',
+        entity: 'ORGANIZATION',
+        entityId: org.id,
+        details: { 
+          message: `New organization "${org.name}" signed up.`,
+          industry: org.industry,
+          adminEmail: email
+        }
+      }
+    });
+
+    console.log(`[Signup] 🔔 SuperAdmins notified and ActivityLog entry created for "${org.name}"`);
+  } catch (notifyErr) {
+    console.error('[Signup] ⚠️ Failed to notify SuperAdmins or log activity:', notifyErr.message);
+    // Non-blocking error: we still want the user to get their response
+  }
 
   // 2. Create admin user in MAIN DB (auth lookup)
   const mainUser = await prisma.user.create({

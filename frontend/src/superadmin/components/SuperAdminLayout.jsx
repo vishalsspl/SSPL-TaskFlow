@@ -22,7 +22,6 @@ import {
   LogOut,
   Menu,
   User,
-  Bell,
   PanelLeftClose,
   PanelLeft,
   ShieldCheck,
@@ -34,6 +33,7 @@ import {
 } from 'lucide-react';
 import { useHeaderStore } from '@/store/headerStore';
 import api from '@/lib/api';
+import NotificationBell from '@/components/NotificationBell';
 
 const SuperAdminLayout = () => {
   const { user, logout } = useAuthStore();
@@ -80,8 +80,6 @@ const SuperAdminLayout = () => {
             <span className="text-base font-extrabold text-foreground leading-tight ">TaskFlow</span>
             <div className="flex items-center gap-1.5 -mt-0.5">
               <span className="text-[9px] font-bold text-primary tracking-widest uppercase opacity-80 ">Platform Admin</span>
-              <span className="text-[9px] text-muted-foreground">•</span>
-              <span className="text-[8px] text-muted-foreground font-bold uppercase tracking-[0.2em] opacity-60">Sveltoz</span>
             </div>
           </div>
         )}
@@ -234,10 +232,7 @@ const SuperAdminLayout = () => {
               <span className="text-[9px] font-bold text-primary/80 tracking-widest">Live</span>
             </div>
             
-            <Button variant="ghost" size="icon" className="relative hover:bg-primary/5 rounded-xl h-10 w-10 group">
-              <Bell className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-primary rounded-full ring-2 ring-background border-primary/20 shadow-[0_0_8px_rgba(var(--primary),0.4)]" />
-            </Button>
+            <NotificationBell />
           </div>
         </header>
 

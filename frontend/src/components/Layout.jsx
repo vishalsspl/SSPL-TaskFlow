@@ -211,9 +211,6 @@ const Layout = () => {
             >
               {user?.organization?.name || 'TaskFlow'}
             </span>
-            <span className="text-[8px] text-muted-foreground font-bold uppercase tracking-[0.2em] -mt-1 opacity-70">
-              Sveltoz
-            </span>
           </div>
         )}
       </div>

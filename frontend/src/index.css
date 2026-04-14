@@ -61,7 +61,7 @@
     --muted-foreground: 0 0% 60%;
     --accent: 0 0% 15%;
     --accent-foreground: 97 82% 35%;
-    --destructive: 0 62% 30%;
+    --destructive: 0 91% 55%;
     --destructive-foreground: 0 0% 100%;
     --border: 0 0% 16%;
     --input: 0 0% 16%;
@@ -324,4 +324,33 @@
   .safe-bottom {
     padding-bottom: max(env(safe-area-inset-bottom), 0.75rem);
   }
+}
+
+/* ── Custom Animations ── */
+@keyframes ring {
+  0% { transform: rotate(0); }
+  10% { transform: rotate(15deg); }
+  20% { transform: rotate(-12deg); }
+  30% { transform: rotate(12deg); }
+  40% { transform: rotate(-10deg); }
+  50% { transform: rotate(10deg); }
+  60% { transform: rotate(-8deg); }
+  70% { transform: rotate(8deg); }
+  80% { transform: rotate(-6deg); }
+  90% { transform: rotate(6deg); }
+  100% { transform: rotate(0); }
+}
+
+.animate-ring {
+  animation: ring 2s ease-in-out infinite;
+  transform-origin: top center;
+}
+
+@keyframes glow {
+  0%, 100% { opacity: 1; filter: brightness(1); }
+  50% { opacity: 0.9; filter: brightness(1.5); }
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
 }

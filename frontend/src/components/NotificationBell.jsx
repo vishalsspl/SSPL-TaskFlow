@@ -10,7 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Bell, Check, Trash2, Info, FolderKanban, ListTodo, Activity, MessageSquare, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { Bell, Check, Trash2, Info, FolderKanban, ListTodo, Activity, MessageSquare, CheckCircle2, XCircle, Clock, Building2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -58,6 +58,8 @@ const NotificationBell = () => {
         return '/projects';
       case 'CHAT_MESSAGE':
         return '/chat';
+      case 'NEW_ORG_SIGNUP':
+        return '/superadmin/orgs';
       default:
         return null;
     }
@@ -91,6 +93,8 @@ const NotificationBell = () => {
         return <div className="p-2 bg-cyan-500/10 rounded-full"><MessageSquare className="w-4 h-4 text-cyan-500" /></div>;
       case 'WORKLOG_SUBMITTED':
         return <div className="p-2 bg-amber-500/10 rounded-full"><Clock className="w-4 h-4 text-amber-500" /></div>;
+      case 'NEW_ORG_SIGNUP':
+        return <div className="p-2 bg-[#48A111]/20 rounded-full shadow-[0_0_10px_rgba(72,161,17,0.2)]"><Building2 className="w-4 h-4 text-[#48A111]" /></div>;
       default:
         return <div className="p-2 bg-gray-500/10 rounded-full"><Info className="w-4 h-4 text-gray-500" /></div>;
     }
@@ -100,8 +104,8 @@ const NotificationBell = () => {
     <div
       key={notification.id}
       className={cn(
-        "p-4 flex gap-4 hover:bg-muted transition-all group relative border-l-2 cursor-pointer",
-        !notification.isRead ? "bg-primary/[0.03] border-primary" : "border-transparent opacity-80"
+        "p-4 flex gap-4 hover:bg-muted transition-all group relative border-l-[3px] sm:border-l-4 cursor-pointer",
+        !notification.isRead ? "bg-primary/[0.08] dark:bg-primary/[0.12] border-primary shadow-sm" : "border-transparent opacity-80"
       )}
       onClick={() => handleNotificationClick(notification)}
     >
@@ -118,10 +122,17 @@ const NotificationBell = () => {
           </p>
           <div className="flex items-center gap-1.5 shrink-0 text-[10px] text-muted-foreground/60 font-medium">
             <Clock className="w-2.5 h-2.5" />
-            {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+            {(() => {
+              const date = new Date(notification.createdAt);
+              const now = new Date();
+              return formatDistanceToNow(date > now ? now : date, { addSuffix: true });
+            })()}
           </div>
         </div>
-        <p className="text-[11px] text-muted-foreground/80 line-clamp-2 leading-relaxed Montserrat">
+        <p className={cn(
+          "text-[11px] line-clamp-2 leading-relaxed Montserrat",
+          notification.isRead ? "text-muted-foreground/80" : "text-foreground font-medium"
+        )}>
           {notification.message}
         </p>
         <div className="flex items-center gap-2 mt-3 opacity-0 group-hover:opacity-100 transition-all transform translate-y-1 group-hover:translate-y-0">
@@ -157,13 +168,13 @@ const NotificationBell = () => {
           className="relative hover:bg-muted rounded-full transition-all group p-1.5 sm:p-2 h-9 w-9 sm:h-12 sm:w-12 overflow-visible"
         >
           <Bell className={cn(
-            "w-5 h-5 sm:w-8 sm:h-8 transition-all",
-            unreadCount > 0 ? "text-primary animate-ring" : "text-muted-foreground"
+            "w-5 h-5 sm:w-8 sm:h-8 transition-all duration-500",
+            unreadCount > 0 ? "text-[#48A111] drop-shadow-[0_0_12px_rgba(72,161,17,0.8)] animate-ring scale-110" : "text-muted-foreground"
           )} />
           {unreadCount > 0 && (
             <div className="absolute -top-1 -right-1 z-50">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-destructive opacity-75"></span>
-              <div className="relative min-w-[22px] h-[22px] px-1 bg-destructive text-[11px] font-black text-destructive-foreground rounded-full flex items-center justify-center ring-2 ring-background shadow-sm">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#ff0000] opacity-60"></span>
+              <div className="relative min-w-[22px] h-[22px] px-1 bg-[#ff0000] text-[11px] font-black text-white rounded-full flex items-center justify-center ring-2 ring-background shadow-[0_0_15px_rgba(255,0,0,0.8)] animate-glow border border-white/30">
                 {unreadCount > 99 ? '99+' : unreadCount}
               </div>
             </div>

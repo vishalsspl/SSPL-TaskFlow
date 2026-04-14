@@ -10,6 +10,12 @@ import {
     deleteGlobalUser,
     getGlobalAuditLogs
 } from '../controllers/superadminController.js';
+import {
+    getSuperAdminNotifications,
+    markSuperAdminAsRead,
+    markAllSuperAdminAsRead,
+    deleteSuperAdminNotification,
+} from '../controllers/superAdminNotificationController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -29,5 +35,11 @@ router.post('/users/:id/force-reset', forceResetPassword);
 router.delete('/users/:id', deleteGlobalUser);
 
 router.get('/audit', getGlobalAuditLogs);
+
+// Global Notification routes
+router.get('/notifications', getSuperAdminNotifications);
+router.patch('/notifications/:id/read', markSuperAdminAsRead);
+router.patch('/notifications/read-all', markAllSuperAdminAsRead);
+router.delete('/notifications/:id', deleteSuperAdminNotification);
 
 export default router;
