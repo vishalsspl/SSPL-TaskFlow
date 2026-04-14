@@ -318,7 +318,7 @@ const ProjectsList = () => {
             <DialogHeader className="mb-4">
               <DialogTitle>Edit Project</DialogTitle>
               <DialogDescription>
-                Update project details.
+                Update project details and settings.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4 mobile-reduce-spacing">

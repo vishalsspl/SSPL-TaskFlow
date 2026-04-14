@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
 import {
   Popover,
@@ -332,6 +332,10 @@ const Layout = () => {
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="p-0 w-64 border-r border-border bg-card">
+                <SheetHeader className="sr-only">
+                  <SheetTitle>Navigation Menu</SheetTitle>
+                  <SheetDescription>Access dashboard, projects, tasks and other workspace features.</SheetDescription>
+                </SheetHeader>
                 <NavContent isMobile={true} />
               </SheetContent>
             </Sheet>

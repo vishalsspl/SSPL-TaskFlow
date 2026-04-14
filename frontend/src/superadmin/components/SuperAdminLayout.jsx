@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
 import {
   LayoutDashboard,
@@ -192,6 +192,10 @@ const SuperAdminLayout = () => {
                   </Button>
                 </SheetTrigger>
                 <SheetContent side="left" className="p-0 w-72 border-r border-border/40 bg-background/95 backdrop-blur-xl">
+                  <SheetHeader className="sr-only">
+                    <SheetTitle>SuperAdmin Navigation</SheetTitle>
+                    <SheetDescription>Platform-level administrative controls and monitoring.</SheetDescription>
+                  </SheetHeader>
                   <NavContent isMobile={true} />
                 </SheetContent>
               </Sheet>
