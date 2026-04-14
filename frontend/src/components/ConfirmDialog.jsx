@@ -23,22 +23,22 @@ const ConfirmDialog = ({
 }) => {
     return (
         <AlertDialog open={open} onOpenChange={onOpenChange}>
-            <AlertDialogContent className="border-0 shadow-2xl bg-[#0a0a0a] ring-1 ring-white/10 max-w-[400px]">
+            <AlertDialogContent className="border-0 shadow-2xl bg-card/95 backdrop-blur-xl ring-1 ring-border/50 max-w-[400px]">
                 <AlertDialogHeader>
                     <div className="flex items-center gap-3 mb-2">
                         <div className={`p-2 rounded-full ${variant === 'destructive' ? 'bg-red-500/20' : 'bg-primary/20'}`}>
                             <AlertCircle className={`w-5 h-5 ${variant === 'destructive' ? 'text-red-500' : 'text-primary'}`} />
                         </div>
-                        <AlertDialogTitle className="text-xl font-bold text-white Montserrat">
+                        <AlertDialogTitle className="text-xl font-bold text-foreground Montserrat">
                             {title}
                         </AlertDialogTitle>
                     </div>
-                    <AlertDialogDescription className="text-gray-400 text-sm leading-relaxed Montserrat">
+                    <AlertDialogDescription className="text-muted-foreground text-sm leading-relaxed Montserrat">
                         {description}
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter className="mt-6 gap-3">
-                    <AlertDialogCancel className="rounded-xl border-white/5 bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white transition-all Montserrat">
+                    <AlertDialogCancel className="rounded-xl border border-white/5 bg-secondary/50 text-foreground/80 hover:bg-secondary hover:text-foreground transition-all Montserrat">
                         {cancelText}
                     </AlertDialogCancel>
                     <AlertDialogAction
