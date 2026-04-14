@@ -47,6 +47,23 @@ const OrganizationSettings = () => {
     fetchLatestOrg();
   }, [setHeader]);
 
+  // Handle background updates (e.g. from Socket-IO syncing authStore)
+  useEffect(() => {
+    if (user?.organization && !updating) {
+      setFormData(prev => ({
+        ...prev,
+        name: user.organization.name || prev.name,
+        industry: user.organization.industry || prev.industry,
+        website: user.organization.website || prev.website,
+        billingEmail: user.organization.billingEmail || prev.billingEmail,
+        primaryContactName: user.organization.primaryContactName || prev.primaryContactName,
+        primaryContactPhone: user.organization.primaryContactPhone || prev.primaryContactPhone,
+        address: user.organization.address || prev.address,
+      }));
+    }
+  }, [user?.organization?.id, user?.organization?.plan, user?.organization?.updatedAt, updating]);
+
+
   const fetchLatestOrg = async () => {
     try {
       setLoading(true);

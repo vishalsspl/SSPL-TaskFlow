@@ -175,6 +175,26 @@ export const updateOrgByAdmin = async (req, res) => {
         },
     });
 
+    // ── 🔄 SYNC: Propagate to Tenant DB ─────────────────────────
+    if (org.dbUrl && org.dbStrategy === 'DEDICATED') {
+        try {
+            const tenantClient = await tenantDbManager.getClient(org.dbUrl);
+            await tenantClient.organization.update({
+                where: { id },
+                data: {
+                    ...(plan !== undefined && { plan }),
+                    ...(status !== undefined && { status }),
+                    ...(maxUsers !== undefined && { maxUsers: parseInt(maxUsers) }),
+                    ...(maxProjects !== undefined && { maxProjects: parseInt(maxProjects) }),
+                    ...(customFeatures !== undefined && { customFeatures }),
+                }
+            }).catch(e => console.warn('[Admin Org Update Sync] No matching org in tenant DB:', e.message));
+        } catch (tenantErr) {
+            console.error('[Admin Org Update Sync] Failed to propagate plan change:', tenantErr.message);
+        }
+    }
+
+
     if (existing.status === 'PENDING' && (status === 'TRIAL' || status === 'ACTIVE')) {
         await req.db.user.updateMany({
             where: { organizationId: id, role: 'ADMIN' },

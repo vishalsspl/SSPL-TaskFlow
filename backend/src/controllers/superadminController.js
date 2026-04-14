@@ -221,6 +221,27 @@ export const updateOrganization = async (req, res) => {
             }
         });
 
+        // ── 🔄 SYNC: Propagate to Tenant DB ─────────────────────────
+        if (updated.dbUrl && updated.dbStrategy === 'DEDICATED') {
+            try {
+                const tenantClient = await tenantDbManager.getClient(updated.dbUrl);
+                // Check if organization record exists in tenant DB (it should)
+                await tenantClient.organization.update({
+                    where: { id },
+                    data: {
+                        ...(plan && { plan }),
+                        ...(status && { status }),
+                        ...(maxUsers !== undefined && { maxUsers: Number(maxUsers) }),
+                        ...(maxProjects !== undefined && { maxProjects: Number(maxProjects) }),
+                        ...(customFeatures !== undefined && { customFeatures }),
+                    }
+                }).catch(e => console.warn('[SuperAdmin Sync] No matching org in tenant DB:', e.message));
+            } catch (tenantErr) {
+                console.error('[SuperAdmin Sync] Failed to propagate plan change to tenant DB:', tenantErr.message);
+            }
+        }
+
+
         // Notify connected org users to refresh their permissions/features immediately.
         try {
             if (req.io) {
