@@ -374,19 +374,46 @@ export const bulkCreateTasks = async (req, res) => {
         assigneeIds = users.map(u => u.id);
       }
 
+      // ── Normalize Data ──
+      let parsedDueDate = null;
+      if (dueDate) {
+        const d = new Date(dueDate);
+        if (!isNaN(d.getTime())) parsedDueDate = d;
+      }
+
+      // Story Points (Handle non-numeric strings)
+      let parsedPoints = 0;
+      if (storyPoints !== undefined && storyPoints !== null && storyPoints !== '') {
+        const cleanPoints = String(storyPoints).replace(/[^0-9]/g, '');
+        parsedPoints = parseInt(cleanPoints) || 0;
+      }
+
+      // Validate Enums
+      const validStatuses = ['TODO', 'IN_PROGRESS', 'IN_REVIEW', 'COMPLETED', 'BLOCKED'];
+      let normalizedStatus = (status || 'TODO').toUpperCase().trim();
+      if (!validStatuses.includes(normalizedStatus)) normalizedStatus = 'TODO';
+
+      const validPriorities = ['LOW', 'MEDIUM', 'HIGH', 'URGENT'];
+      let normalizedPriority = (priority || 'MEDIUM').toUpperCase().trim();
+      if (!validPriorities.includes(normalizedPriority)) normalizedPriority = 'MEDIUM';
+
+      const validTypes = ['TASK', 'BUG', 'STORY', 'EPIC', 'SUBTASK'];
+      let normalizedType = (type || 'TASK').toUpperCase().trim();
+      if (!validTypes.includes(normalizedType)) normalizedType = 'TASK';
+
       // 5. Create Task
       const task = await req.db.task.create({
         data: {
           projectId: project.id,
           phaseId,
           title: title.trim(),
-          description,
-          status: status || 'TODO',
-          priority: priority || 'MEDIUM',
-          storyPoints: storyPoints ? parseInt(storyPoints) : 0,
-          dueDate: dueDate ? new Date(dueDate) : null,
+          description: description || null,
+          status: normalizedStatus,
+          priority: normalizedPriority,
+          storyPoints: parsedPoints,
+          dueDate: parsedDueDate,
           tags: Array.isArray(tags) ? tags : (tags ? [tags] : []),
-          type: type || 'TASK',
+          type: normalizedType,
           assignees: {
             create: assigneeIds.map(userId => ({ userId }))
           }
@@ -396,6 +423,7 @@ export const bulkCreateTasks = async (req, res) => {
             project: { select: { id: true, name: true } },
         }
       });
+
 
       // Activity Logging
       try {

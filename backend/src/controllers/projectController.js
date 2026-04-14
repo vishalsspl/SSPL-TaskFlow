@@ -597,25 +597,54 @@ export const bulkCreateProjects = async (req, res) => {
         managerId = manager.id;
       }
 
+      // ── Normalize Data ──
+      const parsedStartDate = new Date(startDate);
+      if (isNaN(parsedStartDate.getTime())) {
+        results.push({ row: rowNum, name, status: 'FAILED', error: `Invalid start date: "${startDate}". Use YYYY-MM-DD.` });
+        failCount++;
+        continue;
+      }
+
+      let parsedEndDate = null;
+      if (endDate) {
+        const d = new Date(endDate);
+        if (!isNaN(d.getTime())) parsedEndDate = d;
+      }
+
+      // Sanitize Budget (Handle strings with currency symbols/commas)
+      let parsedBudget = 0;
+      if (totalBudget !== undefined && totalBudget !== null && totalBudget !== '') {
+        const cleanBudget = String(totalBudget).replace(/[^0-9.-]/g, '');
+        parsedBudget = parseFloat(cleanBudget) || 0;
+      }
+
+      // Validate Enums
+      const validStatuses = ['PLANNING', 'ACTIVE', 'COMPLETED', 'ON_HOLD', 'CANCELLED'];
+      let normalizedStatus = (status || 'PLANNING').toUpperCase().trim();
+      if (!validStatuses.includes(normalizedStatus)) {
+        normalizedStatus = 'PLANNING';
+      }
+
       // Create Project
       const project = await req.db.project.create({
         data: {
           organizationId,
           name: name.trim(),
-          description,
+          description: description || null,
           clientId,
           managerId,
-          startDate: new Date(startDate),
-          endDate: endDate ? new Date(endDate) : null,
-          totalBudget: totalBudget ? parseFloat(totalBudget) : 0,
-          status: status || 'PLANNING',
-          category: category || 'INTERNAL',
+          startDate: parsedStartDate,
+          endDate: parsedEndDate,
+          totalBudget: parsedBudget,
+          status: normalizedStatus,
+          category: (category || 'INTERNAL').toUpperCase().trim(),
         },
         include: {
             client: { select: { id: true, name: true, email: true } },
             manager: { select: { id: true, name: true, email: true } },
         }
       });
+
 
       // Create default phases
       const defaultPhases = [

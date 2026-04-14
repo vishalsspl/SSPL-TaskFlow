@@ -265,7 +265,8 @@ const ImportProjectsDialog = ({ open, onOpenChange, onImportComplete }) => {
                         <TableCell className="text-xs font-mono">{r.row}</TableCell>
                         <TableCell className="text-xs font-bold">{r.name}</TableCell>
                         <TableCell><Badge className={r.status === 'SUCCESS' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-red-500/10 text-red-500'} variant="outline">{r.status}</Badge></TableCell>
-                        <TableCell className="text-[11px] text-muted-foreground max-w-[200px] truncate">{r.error || 'Successfully created'}</TableCell>
+                        <TableCell className="text-[11px] text-muted-foreground max-w-[250px] whitespace-pre-wrap break-words">{r.error || 'Successfully created'}</TableCell>
+
                       </TableRow>
                     ))}
                   </TableBody>
