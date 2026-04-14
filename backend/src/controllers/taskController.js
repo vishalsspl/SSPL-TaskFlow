@@ -378,8 +378,18 @@ export const bulkCreateTasks = async (req, res) => {
       let parsedDueDate = null;
       if (dueDate) {
         const d = new Date(dueDate);
-        if (!isNaN(d.getTime())) parsedDueDate = d;
+        if (!isNaN(d.getTime())) {
+            const year = d.getFullYear();
+            if (year >= 1900 && year <= 2100) {
+                parsedDueDate = d;
+            } else {
+                results.push({ row: rowNum, title, status: 'FAILED', error: `Due date year (${year}) is out of reasonable range (1900-2100).` });
+                failCount++;
+                continue;
+            }
+        }
       }
+
 
       // Story Points (Handle non-numeric strings)
       let parsedPoints = 0;

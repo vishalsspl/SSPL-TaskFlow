@@ -604,12 +604,30 @@ export const bulkCreateProjects = async (req, res) => {
         failCount++;
         continue;
       }
+      
+      // Check for reasonable range (Avoid Prisma Extended Date crash)
+      const startYear = parsedStartDate.getFullYear();
+      if (startYear < 1900 || startYear > 2100) {
+        results.push({ row: rowNum, name, status: 'FAILED', error: `Start date year (${startYear}) is out of reasonable range (1900-2100).` });
+        failCount++;
+        continue;
+      }
 
       let parsedEndDate = null;
       if (endDate) {
         const d = new Date(endDate);
-        if (!isNaN(d.getTime())) parsedEndDate = d;
+        if (!isNaN(d.getTime())) {
+            const endYear = d.getFullYear();
+            if (endYear >= 1900 && endYear <= 2100) {
+                parsedEndDate = d;
+            } else {
+                results.push({ row: rowNum, name, status: 'FAILED', error: `End date year (${endYear}) is out of reasonable range (1900-2100).` });
+                failCount++;
+                continue;
+            }
+        }
       }
+
 
       // Sanitize Budget (Handle strings with currency symbols/commas)
       let parsedBudget = 0;

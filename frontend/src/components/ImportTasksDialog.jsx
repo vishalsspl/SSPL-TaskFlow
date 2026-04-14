@@ -110,7 +110,12 @@ const ImportTasksDialog = ({ open, onOpenChange, onImportComplete }) => {
           
           if (!item.projectName) rowErrors.push('Missing Project Name');
           
-          if (item.dueDate && isNaN(new Date(item.dueDate).getTime())) rowErrors.push('Invalid Due Date format');
+          if (item.dueDate) {
+            const d = new Date(item.dueDate);
+            if (isNaN(d.getTime())) rowErrors.push('Invalid Due Date format');
+            else if (d.getFullYear() < 1900 || d.getFullYear() > 2100) rowErrors.push('Due Date out of range (1900-2100)');
+          }
+
 
           if (rowErrors.length > 0) errors.push(`Row ${idx + 2}: ${rowErrors.join(', ')}`);
           return { ...item, _rowNum: idx + 2, _valid: rowErrors.length === 0, _errors: rowErrors };

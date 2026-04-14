@@ -107,9 +107,18 @@ const ImportProjectsDialog = ({ open, onOpenChange, onImportComplete }) => {
           else if (!/^[a-zA-Z0-9\s]+$/.test(item.name)) rowErrors.push('Special characters in name');
           
           if (!item.startDate) rowErrors.push('Missing Start Date');
-          else if (isNaN(new Date(item.startDate).getTime())) rowErrors.push('Invalid Start Date format');
+          else {
+            const d = new Date(item.startDate);
+            if (isNaN(d.getTime())) rowErrors.push('Invalid Start Date format');
+            else if (d.getFullYear() < 1900 || d.getFullYear() > 2100) rowErrors.push('Start Date out of range (1900-2100)');
+          }
 
-          if (item.endDate && isNaN(new Date(item.endDate).getTime())) rowErrors.push('Invalid End Date format');
+          if (item.endDate) {
+            const d = new Date(item.endDate);
+            if (isNaN(d.getTime())) rowErrors.push('Invalid End Date format');
+            else if (d.getFullYear() < 1900 || d.getFullYear() > 2100) rowErrors.push('End Date out of range (1900-2100)');
+          }
+
 
           if (rowErrors.length > 0) errors.push(`Row ${idx + 2}: ${rowErrors.join(', ')}`);
           return { ...item, _rowNum: idx + 2, _valid: rowErrors.length === 0, _errors: rowErrors };
