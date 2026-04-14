@@ -30,6 +30,22 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatDate, priorityColors, statusColors, taskTypeColors } from '@/lib/utils';
 import {
+  Plus,
+  CheckSquare,
+  Layers,
+  User,
+  Activity,
+  AlertCircle,
+  Calendar,
+  Tag,
+  AlignLeft,
+  Briefcase,
+  Search,
+  Filter,
+  Trash2,
+  Bug,
+  Zap,
+  BookOpen,
   GitBranch,
   FileSpreadsheet,
 } from 'lucide-react';
