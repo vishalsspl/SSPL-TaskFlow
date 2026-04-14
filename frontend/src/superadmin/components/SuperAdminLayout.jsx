@@ -152,7 +152,7 @@ const SuperAdminLayout = () => {
             </DropdownMenuLabel>
             <DropdownMenuSeparator className="bg-primary/10 mx-2 my-2" />
             <DropdownMenuItem
-              onClick={() => navigate('/superadmin/settings')}
+              onClick={() => { setIsMobileOpen(false); navigate('/superadmin/settings'); }}
               className="focus:bg-primary/5 rounded-xl cursor-pointer py-3 font-bold text-[10px] tracking-widest transition-all"
             >
               <Globe className="w-4 h-4 mr-3 text-primary" />

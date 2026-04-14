@@ -288,13 +288,13 @@ const Layout = () => {
           <DropdownMenuContent align="end" className="w-56" forceMount>
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => navigate('/settings')}>
+            <DropdownMenuItem onClick={() => { setIsMobileOpen(false); navigate('/settings'); }}>
               <Settings className="w-4 h-4 mr-2" />
               Settings
             </DropdownMenuItem>
             {/* ── NEW: Organisation quick link for ADMIN ─────────────────── */}
             {user?.role === 'ADMIN' && (
-              <DropdownMenuItem onClick={() => navigate('/organization')}>
+              <DropdownMenuItem onClick={() => { setIsMobileOpen(false); navigate('/organization'); }}>
                 <Building2 className="w-4 h-4 mr-2" />
                 Organisation
               </DropdownMenuItem>

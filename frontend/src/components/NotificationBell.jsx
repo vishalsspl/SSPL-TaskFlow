@@ -13,6 +13,22 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Bell, Check, Trash2, Info, FolderKanban, ListTodo, Activity, MessageSquare, CheckCircle2, XCircle, Clock, Building2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
+import VibrantLoader from '@/components/ui/VibrantLoader';
+
+const NotificationSkeleton = () => (
+  <div className="p-4 flex gap-4 border-b border-border/50 animate-pulse">
+    <Skeleton className="w-10 h-10 rounded-full shrink-0" />
+    <div className="flex-1 space-y-2">
+      <div className="flex justify-between">
+        <Skeleton className="h-3 w-24 rounded-full" />
+        <Skeleton className="h-2 w-12 rounded-full opacity-50" />
+      </div>
+      <Skeleton className="h-2.5 w-full rounded-full" />
+      <Skeleton className="h-2.5 w-[80%] rounded-full opacity-70" />
+    </div>
+  </div>
+);
 
 const NotificationBell = () => {
   const { user } = useAuthStore();
@@ -201,9 +217,14 @@ const NotificationBell = () => {
 
         <ScrollArea className="h-[480px]">
           {loading ? (
-            <div className="p-20 text-center flex flex-col items-center gap-4">
-              <Activity className="w-8 h-8 text-primary/40 animate-spin" />
-              <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest">Synchronizing alerts...</p>
+            <div className="flex flex-col">
+              <div className="p-8 bg-muted/10 border-b border-border/50 flex flex-col items-center justify-center gap-3">
+                <VibrantLoader size="sm" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/40 Montserrat">Synchronizing feed...</span>
+              </div>
+              {[1, 2, 3, 4].map((i) => (
+                <NotificationSkeleton key={i} />
+              ))}
             </div>
           ) : notifications.length === 0 ? (
             <div className="p-20 text-center flex flex-col items-center gap-4">
