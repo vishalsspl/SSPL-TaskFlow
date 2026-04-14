@@ -121,24 +121,49 @@ const SuperAdminUserList = () => {
               <p className="text-muted-foreground text-xs font-medium">Choose an organization to manage its users.</p>
             </div>
           ) : (
-            <div className="bg-secondary/40 p-2 rounded-2xl mb-6 mt-4 shadow-inner backdrop-blur-sm" style={{ border: '1px solid var(--table-border)' }}>
-              <div className="flex flex-col xl:flex-row items-center justify-between gap-6 w-full px-4 py-2">
-                <div className="flex flex-col">
-                   <Button 
+            <div className="relative overflow-hidden bg-card/40 backdrop-blur-md rounded-3xl mb-8 mt-4 border border-border/40 shadow-xl group">
+              {/* Subtle gradient background decoration */}
+              <div className="absolute -right-20 -top-20 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none group-hover:bg-primary/10 transition-colors duration-700" />
+              
+              <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6 w-full p-6 sm:p-8">
+                <div className="flex flex-col gap-4">
+                  <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="gap-2 text-muted-foreground hover:text-primary transition-colors font-bold uppercase tracking-widest text-[10px] p-0 h-auto mb-2 justify-start"
+                    className="group/back w-fit flex items-center gap-2 text-muted-foreground/60 hover:text-primary transition-all font-bold uppercase tracking-widest text-[9px] p-0 h-auto"
                     onClick={() => setSelectedOrgId(null)}
                   >
-                    <ChevronLeft className="w-3 h-3" />
+                    <div className="p-1.5 rounded-full bg-secondary group-hover/back:bg-primary group-hover/back:text-primary-foreground transition-all duration-300">
+                      <ChevronLeft className="w-3 h-3" />
+                    </div>
                     Back to Organizations
                   </Button>
-                  <h2 className="text-xl font-bold flex items-center gap-3">
-                    {orgs.find(o => o.id === selectedOrgId)?.name || 'Loading...'}
-                  </h2>
+                  
+                  <div className="flex items-center gap-5">
+                    <div className="hidden sm:flex w-14 h-14 bg-primary/10 rounded-2xl items-center justify-center shadow-inner group-hover:scale-105 transition-transform duration-500">
+                      <Building2 className="w-7 h-7 text-primary" />
+                    </div>
+                    <div className="flex flex-col">
+                      <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground flex items-center gap-3">
+                        {orgs.find(o => o.id === selectedOrgId)?.name || 'Organization Details'}
+                      </h2>
+                      <div className="flex items-center gap-3 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground opacity-60">
+                        <span className="flex items-center gap-1.5">
+                          <div className="w-1 h-1 rounded-full bg-primary" />
+                          Managed Workspace
+                        </span>
+                        <span>•</span>
+                        <span>{users.length} Active Users</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-4 w-full xl:w-auto">
-                  <div className="relative flex-1 sm:flex-none min-w-[200px]">
+
+                <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto mt-2 md:mt-0">
+                  <div className="relative w-full sm:w-[240px]">
+                    <div className="absolute -top-6 left-1 text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">
+                      Filter by Access Role
+                    </div>
                     <SearchableSelect
                       value={roleFilter}
                       onChange={(val) => { setRole(val); setPage(1); }}
@@ -149,9 +174,9 @@ const SuperAdminUserList = () => {
                         { label: 'MEMBER', value: 'MEMBER' },
                         { label: 'CLIENT', value: 'CLIENT' }
                       ]}
-                      placeholder="All Users"
+                      placeholder="Show All Roles"
                       searchPlaceholder="Search role..."
-                      className="w-full h-14 rounded-lg bg-white/50 dark:bg-black/50 border-border/40 hover:bg-accent/20 transition-all font-semibold"
+                      className="w-full h-11 rounded-xl bg-background/50 border-border/30 hover:border-primary/30 transition-all font-bold text-xs"
                     />
                   </div>
                 </div>
