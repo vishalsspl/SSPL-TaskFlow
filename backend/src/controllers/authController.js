@@ -546,7 +546,8 @@ export const invite = async (req, res) => {
   const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
 
   if (hasEmailSupport && sendEmail) {
-    sendMemberInvitationEmail(email, name, finalPassword, role).catch(err => console.error(err));
+    const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
+    sendMemberInvitationEmail(email, name, finalPassword, role, origin).catch(err => console.error(err));
   }
 
   const { passwordHash: _, ...userWithoutPassword } = mainUser;
@@ -676,7 +677,8 @@ export const bulkInvite = async (req, res) => {
 
       // 3. Send invitation email
       if (hasEmailSupport && sendEmail) {
-        sendMemberInvitationEmail(email.toLowerCase().trim(), name.trim(), finalPassword, normalizedRole)
+        const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
+        sendMemberInvitationEmail(email.toLowerCase().trim(), name.trim(), finalPassword, normalizedRole, origin)
           .catch(err => console.error(`[BulkInvite] Email failed for ${email}:`, err.message));
       }
 
@@ -815,7 +817,8 @@ export const forgotPassword = async (req, res) => {
     data: { resetToken: resetTokenValue, resetTokenExpiry }
   });
 
-  const resetLink = `${process.env.CLIENT_URL || 'http://localhost:5173'}/reset-password/${resetTokenValue}`;
+  const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL || 'http://localhost:5173';
+  const resetLink = `${origin}/reset-password/${resetTokenValue}`;
   await sendPasswordResetEmail(user.email, user.name, resetLink);
 
   // ✅ NEW: Activity Log (SAFE)

@@ -251,7 +251,7 @@ export const createTask = async (req, res) => {
   // Send email to all assignees
   const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
 
-  if (hasEmailSupport && sendEmail) {
+    const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
     const senderName = req.user.name;
     for (const { user } of task.assignees) {
       if (user?.email) {
@@ -260,7 +260,7 @@ export const createTask = async (req, res) => {
           task.title,
           task.project.name,
           senderName,
-          { priority: task.priority, dueDate: task.dueDate, status: task.status, description: task.description }
+          { priority: task.priority, dueDate: task.dueDate, status: task.status, description: task.description, baseUrl: origin }
         ).catch(err => console.error('Failed to send task assignment email:', err));
       }
 
@@ -442,6 +442,7 @@ export const bulkCreateTasks = async (req, res) => {
 
       // Notifications
       if (hasEmailSupport && sendEmail) {
+        const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
         const senderName = req.user.name;
         for (const { user } of task.assignees) {
           if (user?.email) {
@@ -449,7 +450,8 @@ export const bulkCreateTasks = async (req, res) => {
               priority: task.priority,
               dueDate: task.dueDate,
               status: task.status,
-              description: task.description
+              description: task.description,
+              baseUrl: origin
             }).catch(() => { });
           }
           createNotification(req, {
@@ -602,6 +604,7 @@ export const updateTask = async (req, res) => {
   const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
 
   if (hasEmailSupport && sendEmail && addedIds.length > 0) {
+    const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
     const senderName = req.user.name;
     for (const { user } of task.assignees.filter((a) => addedIds.includes(a.userId))) {
       if (user?.email) {
@@ -610,7 +613,7 @@ export const updateTask = async (req, res) => {
           task.title,
           task.project.name,
           senderName,
-          { priority: task.priority, dueDate: task.dueDate, status: task.status, description: task.description }
+          { priority: task.priority, dueDate: task.dueDate, status: task.status, description: task.description, baseUrl: origin }
         ).catch(err => console.error('Failed to send task assignment email:', err));
       }
 
@@ -625,6 +628,7 @@ export const updateTask = async (req, res) => {
 
   // Email assignees if status changed by Manager or Admin
   if (hasEmailSupport && sendEmail && status && status !== existingTask.status && (req.user.role === 'ADMIN' || req.user.role === 'MANAGER')) {
+    const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
     const updatedBy = req.user.name;
     for (const { user } of task.assignees) {
       if (user?.email) {
@@ -633,7 +637,8 @@ export const updateTask = async (req, res) => {
           task.title,
           task.project.name,
           task.status,
-          updatedBy
+          updatedBy,
+          origin
         ).catch(err => console.error('Failed to send task status update email:', err));
       }
 

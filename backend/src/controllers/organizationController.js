@@ -204,8 +204,9 @@ export const updateOrgByAdmin = async (req, res) => {
         const admins = await req.db.user.findMany({
             where: { organizationId: id, role: 'ADMIN' }
         });
+        const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
         for (const admin of admins) {
-            sendUserApprovalEmail(admin.email, admin.name)
+            sendUserApprovalEmail(admin.email, admin.name, origin)
                 .catch(err => console.error('Failed to send approval email:', err));
         }
     }
@@ -226,7 +227,8 @@ export const updateOrgByAdmin = async (req, res) => {
         });
 
         // Send Email if changed
-        sendCredentialsUpdatedEmail(updatedAdmin.email, updatedAdmin.name, adminPassword)
+        const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
+        sendCredentialsUpdatedEmail(updatedAdmin.email, updatedAdmin.name, adminPassword, origin)
             .catch(err => console.error('Failed to send credentials email:', err));
     }
 

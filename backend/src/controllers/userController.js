@@ -408,7 +408,8 @@ export const updateUser = async (req, res) => {
         select: { name: true, email: true }
       });
 
-      sendTeamAssignmentEmail(updatedUser.email, updatedUser.name, newManager.name, teamMembers)
+      const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
+      sendTeamAssignmentEmail(updatedUser.email, updatedUser.name, newManager.name, teamMembers, origin)
         .catch(err => console.error('Failed to send team assignment email:', err));
     }
 
@@ -535,7 +536,8 @@ export const approveUser = async (req, res) => {
     }
 
     if (approvedUser.email) {
-      sendUserApprovalEmail(approvedUser.email, approvedUser.name)
+      const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
+      sendUserApprovalEmail(approvedUser.email, approvedUser.name, origin)
         .catch(err => console.error('Failed to send approval email:', err));
     }
 

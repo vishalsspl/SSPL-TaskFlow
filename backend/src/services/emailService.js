@@ -13,7 +13,7 @@ const transporter = nodemailer.createTransport({
 
 const DEFAULT_FROM = `"${process.env.SMTP_FROM_NAME || 'TaskFlow'}" <${process.env.SMTP_USER}>`;
 
-export const sendTaskAssignmentEmail = async (to, taskTitle, projectName, assignedByName, { priority, dueDate, status, description } = {}) => {
+export const sendTaskAssignmentEmail = async (to, taskTitle, projectName, assignedByName, { priority, dueDate, status, description, baseUrl } = {}) => {
   try {
     if (!to) return;
 
@@ -62,7 +62,7 @@ export const sendTaskAssignmentEmail = async (to, taskTitle, projectName, assign
           </div>
 
           <div style="margin: 30px 0;">
-            <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/tasks" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">View Task</a>
+            <a href="${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/tasks" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">View Task</a>
           </div>
           <hr style="border: 1px solid #eee; margin: 20px 0;">
           <p style="color: #666; font-size: 12px;">This is an automated message from TaskFlow.</p>
@@ -89,7 +89,7 @@ export const sendTaskAssignmentEmail = async (to, taskTitle, projectName, assign
  * @param {string} newStatus - The new status of the task
  * @param {string} updatedBy - Name of the person who updated the status
  */
-export const sendTaskStatusUpdateEmail = async (to, taskTitle, projectName, newStatus, updatedBy) => {
+export const sendTaskStatusUpdateEmail = async (to, taskTitle, projectName, newStatus, updatedBy, baseUrl) => {
   try {
     if (!to) return;
 
@@ -134,7 +134,7 @@ export const sendTaskStatusUpdateEmail = async (to, taskTitle, projectName, newS
           </div>
 
           <div style="margin: 30px 0;">
-            <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/tasks" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">View Tasks</a>
+            <a href="${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/tasks" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">View Tasks</a>
           </div>
           <hr style="border: 1px solid #eee; margin: 20px 0;">
           <p style="color: #666; font-size: 12px;">This is an automated message from TaskFlow.</p>
@@ -159,7 +159,7 @@ export const sendTaskStatusUpdateEmail = async (to, taskTitle, projectName, newS
  * @param {Array} teamMembers - Array of user objects { name, role, email }
  * @param {string} assignedByName - Name of the admin who assigned the project
  */
-export const sendProjectManagerEmail = async (to, project, manager, client, assignedByName) => {
+export const sendProjectManagerEmail = async (to, project, manager, client, assignedByName, baseUrl) => {
   try {
     if (!to) return;
 
@@ -221,7 +221,7 @@ export const sendProjectManagerEmail = async (to, project, manager, client, assi
 
 
     <div style="margin:28px 0 8px;">
-      <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/projects" style="background:#2563EB;color:#fff;padding:13px 26px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;">View Project →</a>
+      <a href="${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/projects" style="background:#2563EB;color:#fff;padding:13px 26px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;">View Project →</a>
     </div>
     <hr style="border:1px solid #E5E7EB;margin:24px 0 12px;">
     <p style="color:#9CA3AF;font-size:12px;">This is an automated message from TaskFlow. Do not reply to this email.</p>
@@ -248,7 +248,7 @@ export const sendProjectManagerEmail = async (to, project, manager, client, assi
  * @param {Array} teamMembers - Array of user objects { name, role }
  * @param {string} assignedByName - Admin who set this up
  */
-export const sendProjectClientEmail = async (to, project, manager, assignedByName) => {
+export const sendProjectClientEmail = async (to, project, manager, assignedByName, baseUrl) => {
   try {
     if (!to) return;
 
@@ -309,7 +309,7 @@ export const sendProjectClientEmail = async (to, project, manager, assignedByNam
 
 
     <div style="margin:28px 0 8px;">
-      <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}" style="background:#059669;color:#fff;padding:13px 26px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;">Track Your Project →</a>
+      <a href="${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}" style="background:#059669;color:#fff;padding:13px 26px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;">Track Your Project →</a>
     </div>
     <hr style="border:1px solid #E5E7EB;margin:24px 0 12px;">
     <p style="color:#9CA3AF;font-size:12px;">This is an automated message from TaskFlow. Do not reply to this email.</p>
@@ -332,7 +332,7 @@ export const sendProjectClientEmail = async (to, project, manager, assignedByNam
 export const sendProjectAssignmentEmail = sendProjectManagerEmail;
 
 
-export const sendUserApprovalEmail = async (to, userName) => {
+export const sendUserApprovalEmail = async (to, userName, baseUrl) => {
   try {
     if (!to) return;
 
@@ -340,7 +340,7 @@ export const sendUserApprovalEmail = async (to, userName) => {
       from: DEFAULT_FROM,
       to,
       subject: 'Account Approved - Welcome to TaskFlow',
-      text: `Hello ${userName},\n\nYour account has been approved by the administrator.\n\nYou can now log in to TaskFlow and access your dashboard.\n\nLogin here: ${process.env.CLIENT_URL || 'http://localhost:5173'}/login\n\nBest regards,\nTaskFlow Team`,
+      text: `Hello ${userName},\n\nYour account has been approved by the administrator.\n\nYou can now log in to TaskFlow and access your dashboard.\n\nLogin here: ${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/login\n\nBest regards,\nTaskFlow Team`,
       html: `
         <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
           <h2 style="color: #2563eb;">Account Approved!</h2>
@@ -348,7 +348,7 @@ export const sendUserApprovalEmail = async (to, userName) => {
           <p>Great news! Your account has been approved by the administrator.</p>
           <p>You can now log in to TaskFlow and start collaborating.</p>
           <div style="margin: 30px 0;">
-            <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/login" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Login to TaskFlow</a>
+            <a href="${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/login" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Login to TaskFlow</a>
           </div>
           <hr style="border: 1px solid #eee; margin: 20px 0;">
           <p style="color: #666; font-size: 12px;">This is an automated message from TaskFlow.</p>
@@ -402,7 +402,7 @@ export const sendOrgSignupEmail = async (to, userName, orgName) => {
 /**
  * Send an email notification when superadmin updates organization admin credentials.
  */
-export const sendCredentialsUpdatedEmail = async (to, userName, newPassword) => {
+export const sendCredentialsUpdatedEmail = async (to, userName, newPassword, baseUrl) => {
   try {
     if (!to) return;
 
@@ -421,7 +421,7 @@ export const sendCredentialsUpdatedEmail = async (to, userName, newPassword) => 
           </div>
           <p>Please log in with these credentials. For your security, we strongly recommend changing your password directly within the platform if a temporary one was provided to you.</p>
           <div style="margin: 30px 0;">
-            <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/login" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Login Now</a>
+            <a href="${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/login" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Login Now</a>
           </div>
           <hr style="border: 1px solid #eee; margin: 20px 0;">
           <p style="color: #666; font-size: 12px;">This is an automated security message from TaskFlow.</p>
@@ -440,7 +440,7 @@ export const sendCredentialsUpdatedEmail = async (to, userName, newPassword) => 
 /**
  * Send an email notification for a new support ticket.
  */
-export const sendNewTicketNotification = async (to, ticketTitle, description, priority, clientName, ticketId) => {
+export const sendNewTicketNotification = async (to, ticketTitle, description, priority, clientName, ticketId, baseUrl) => {
   try {
     if (!to) return;
 
@@ -457,7 +457,7 @@ export const sendNewTicketNotification = async (to, ticketTitle, description, pr
             <p>${description}</p>
             <p style="margin-bottom: 0;"><strong>Priority:</strong> ${priority}</p>
           </div>
-          <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/tickets/${ticketId}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">View Ticket</a>
+          <a href="${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/tickets/${ticketId}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">View Ticket</a>
         </div>
       `,
     });
@@ -498,7 +498,7 @@ export const sendTicketStatusUpdateNotification = async (to, ticketTitle, newSta
 /**
  * Send an email notification for a new ticket comment.
  */
-export const sendTicketCommentNotification = async (to, ticketTitle, commentAuthor, message, ticketId) => {
+export const sendTicketCommentNotification = async (to, ticketTitle, commentAuthor, message, ticketId, baseUrl) => {
   try {
     if (!to) return;
 
@@ -513,7 +513,7 @@ export const sendTicketCommentNotification = async (to, ticketTitle, commentAuth
           <div style="background: #F9FAFB; padding: 15px; border-radius: 8px; margin: 20px 0; font-style: italic;">
             "${message}"
           </div>
-          <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/tickets/${ticketId}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Reply on Ticket</a>
+          <a href="${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/tickets/${ticketId}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Reply on Ticket</a>
         </div>
       `,
     });
@@ -523,11 +523,11 @@ export const sendTicketCommentNotification = async (to, ticketTitle, commentAuth
     return null;
   }
 };
-export const sendMemberInvitationEmail = async (to, userName, password, role) => {
+export const sendMemberInvitationEmail = async (to, userName, password, role, baseUrl) => {
   try {
     if (!to) return;
 
-    const loginUrl = `${process.env.CLIENT_URL || 'http://localhost:5173'}/login`;
+    const loginUrl = `${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/login`;
 
     const info = await transporter.sendMail({
       from: DEFAULT_FROM,
@@ -576,7 +576,7 @@ export const sendMemberInvitationEmail = async (to, userName, password, role) =>
 /**
  * Send an email notification when a user is added to a manager's team
  */
-export const sendTeamAssignmentEmail = async (to, userName, managerName, teamMembers = []) => {
+export const sendTeamAssignmentEmail = async (to, userName, managerName, teamMembers = [], baseUrl) => {
   try {
     if (!to) return;
 
@@ -617,7 +617,7 @@ export const sendTeamAssignmentEmail = async (to, userName, managerName, teamMem
     </table>
 
     <div style="margin:28px 0 8px;">
-      <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/team" style="background:#8B5CF6;color:#fff;padding:13px 26px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;">View Team →</a>
+      <a href="${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/team" style="background:#8B5CF6;color:#fff;padding:13px 26px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;">View Team →</a>
     </div>
     <hr style="border:1px solid #E5E7EB;margin:24px 0 12px;">
     <p style="color:#9CA3AF;font-size:12px;">This is an automated message from TaskFlow. Do not reply to this email.</p>
@@ -678,7 +678,7 @@ export const sendPasswordResetEmail = async (to, userName, resetLink) => {
 /**
  * Send an email when a timesheet is submitted for approval.
  */
-export const sendTimesheetSubmissionEmail = async (to, managerName, userName, projectName, hours, date) => {
+export const sendTimesheetSubmissionEmail = async (to, managerName, userName, projectName, hours, date, baseUrl) => {
   try {
     if (!to) return;
     const info = await transporter.sendMail({
@@ -694,7 +694,7 @@ export const sendTimesheetSubmissionEmail = async (to, managerName, userName, pr
             <p style="margin: 0;"><strong>Logged Hours:</strong> ${hours}h</p>
             <p style="margin: 5px 0 0 0;"><strong>Date:</strong> ${new Date(date).toLocaleDateString()}</p>
           </div>
-          <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/timesheets" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Review Timesheet</a>
+          <a href="${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/timesheets" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Review Timesheet</a>
         </div>
       `,
     });
@@ -708,7 +708,7 @@ export const sendTimesheetSubmissionEmail = async (to, managerName, userName, pr
 /**
  * Send an email when a timesheet is approved or rejected.
  */
-export const sendTimesheetStatusEmail = async (to, userName, projectName, status, managerName, hours) => {
+export const sendTimesheetStatusEmail = async (to, userName, projectName, status, managerName, hours, baseUrl) => {
   try {
     if (!to) return;
     const isApproved = status === 'APPROVED';
@@ -722,7 +722,7 @@ export const sendTimesheetStatusEmail = async (to, userName, projectName, status
           <h2 style="color: ${color};">Timesheet ${isApproved ? 'Approved' : 'Rejected'}</h2>
           <p>Hello <strong>${userName}</strong>,</p>
           <p>Your time entry of <strong>${hours}h</strong> for the project <strong>${projectName}</strong> has been <strong>${status.toLowerCase()}</strong> by ${managerName}.</p>
-          <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/timesheets" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">View Timesheets</a>
+          <a href="${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/timesheets" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">View Timesheets</a>
         </div>
       `,
     });
@@ -736,7 +736,7 @@ export const sendTimesheetStatusEmail = async (to, userName, projectName, status
 /**
  * Send an email notification to SuperAdmin when a new organization signs up.
  */
-export const sendNewOrgSignupNotificationToSuperAdmin = async (superAdminEmail, superAdminName, orgDetails, adminDetails) => {
+export const sendNewOrgSignupNotificationToSuperAdmin = async (superAdminEmail, superAdminName, orgDetails, adminDetails, baseUrl) => {
   try {
     if (!superAdminEmail) return;
 
@@ -763,7 +763,7 @@ export const sendNewOrgSignupNotificationToSuperAdmin = async (superAdminEmail, 
           </div>
 
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.CLIENT_URL || 'http://localhost:5173'}/superadmin/orgs" style="background-color: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">View Organization in Admin Panel</a>
+            <a href="${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/superadmin/orgs" style="background-color: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">View Organization in Admin Panel</a>
           </div>
 
           <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">

@@ -56,7 +56,8 @@ export const useChatStore = create((set, get) => ({
             return;
         }
 
-        const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000', {
+        const socket = io(window.location.origin, {
+            path: '/socket.io',
             transports: ['websocket', 'polling'],
             reconnection: true,
             reconnectionAttempts: 10

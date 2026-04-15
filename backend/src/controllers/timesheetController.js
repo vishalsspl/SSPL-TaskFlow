@@ -139,7 +139,8 @@ export const createTimeEntry = async (req, res) => {
                 type: 'WORKLOG_SUBMITTED' // Using existing icon from worklog
             });
 
-            await sendTimesheetSubmissionEmail(manager.email, manager.name, req.user.name, project.name, hours, date);
+            const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
+            await sendTimesheetSubmissionEmail(manager.email, manager.name, req.user.name, project.name, hours, date, origin);
         }
     }
 
@@ -227,13 +228,15 @@ export const updateTimeEntryStatus = async (req, res) => {
             type: `TIMESHEET_${status}`
         });
 
+        const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
         await sendTimesheetStatusEmail(
             existingEntry.user.email,
             existingEntry.user.name,
             existingEntry.project.name,
             status,
             req.user.name,
-            existingEntry.hours
+            existingEntry.hours,
+            origin
         );
     }
 

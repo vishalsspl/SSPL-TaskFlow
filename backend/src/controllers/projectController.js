@@ -476,12 +476,14 @@ export const createProject = async (req, res) => {
   const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
 
   if (hasEmailSupport && sendEmail && project.manager?.email) {
+    const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
     sendProjectManagerEmail(
       project.manager.email,
       project,
       project.manager,
       project.client || null,
-      req.user.name
+      req.user.name,
+      origin
     ).catch(err => console.error('Failed to send manager project email:', err));
 
     createNotification(req, {
@@ -494,11 +496,13 @@ export const createProject = async (req, res) => {
 
   // Send rich email notification to client
   if (hasEmailSupport && sendEmail && project.client?.email) {
+    const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
     sendProjectClientEmail(
       project.client.email,
       project,
       project.manager || null,
-      req.user.name
+      req.user.name,
+      origin
     ).catch(err => console.error('Failed to send client project email:', err));
   }
 
@@ -680,9 +684,9 @@ export const bulkCreateProjects = async (req, res) => {
       } catch (logErr) { }
 
       // Notifications
-      if (hasEmailSupport && sendEmail) {
+        const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
         if (project.manager?.email) {
-          sendProjectManagerEmail(project.manager.email, project, project.manager, project.client || null, req.user.name).catch(() => { });
+          sendProjectManagerEmail(project.manager.email, project, project.manager, project.client || null, req.user.name, origin).catch(() => { });
           createNotification(req, {
             userId: project.manager.id,
             title: 'New Project Assigned (Bulk)',
@@ -691,7 +695,7 @@ export const bulkCreateProjects = async (req, res) => {
           });
         }
         if (project.client?.email) {
-          sendProjectClientEmail(project.client.email, project, project.manager || null, req.user.name).catch(() => { });
+          sendProjectClientEmail(project.client.email, project, project.manager || null, req.user.name, origin).catch(() => { });
         }
       }
 
@@ -857,13 +861,15 @@ export const updateProject = async (req, res) => {
 
   if (hasEmailSupport && sendEmail && (isManagerChanged || isClientChanged)) {
 
+    const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
     if (project.manager?.email) {
       sendProjectManagerEmail(
         project.manager.email,
         project,
         project.manager,
         project.client || null,
-        req.user.name
+        req.user.name,
+        origin
       ).catch(err => console.error('Failed to send manager project email:', err));
 
       createNotification(req, {
@@ -879,7 +885,8 @@ export const updateProject = async (req, res) => {
         project.client.email,
         project,
         project.manager || null,
-        req.user.name
+        req.user.name,
+        origin
       ).catch(err => console.error('Failed to send client project email:', err));
     }
   }

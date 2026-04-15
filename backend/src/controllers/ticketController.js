@@ -36,6 +36,7 @@ export const createTicket = async (req, res) => {
             select: { email: true },
         });
 
+        const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
         for (const member of staff) {
             if (member.email) {
                 sendNewTicketNotification(
@@ -44,7 +45,8 @@ export const createTicket = async (req, res) => {
                     ticket.description,
                     ticket.priority,
                     ticket.client.name,
-                    ticket.id
+                    ticket.id,
+                    origin
                 ).catch(err => console.error('Failed to send new ticket notification:', err));
             }
         }
@@ -185,11 +187,13 @@ export const updateTicketStatus = async (req, res) => {
 
         // Notify Client
         if (ticket.client.email) {
+            const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
             sendTicketStatusUpdateNotification(
                 ticket.client.email,
                 ticket.title,
                 status,
-                req.user.name
+                req.user.name,
+                origin
             ).catch(err => console.error('Failed to send ticket status update notification:', err));
         }
 
@@ -236,6 +240,7 @@ export const addComment = async (req, res) => {
             },
         });
 
+        const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
         // Notify relevant parties
         if (req.user.role === 'CLIENT') {
             // Notify staff
@@ -253,7 +258,8 @@ export const addComment = async (req, res) => {
                         comment.ticket.title,
                         req.user.name,
                         message,
-                        ticketId
+                        ticketId,
+                        origin
                     ).catch(err => console.error('Failed to send comment notification to staff:', err));
                 }
             }
@@ -265,7 +271,8 @@ export const addComment = async (req, res) => {
                     comment.ticket.title,
                     req.user.name,
                     message,
-                    ticketId
+                    ticketId,
+                    origin
                 ).catch(err => console.error('Failed to send comment notification to client:', err));
             }
         }
