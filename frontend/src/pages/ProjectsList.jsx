@@ -764,8 +764,8 @@ const ProjectsList = () => {
             <DialogHeader className="mb-2 sm:mb-4">
               <div className="flex items-center justify-between pr-8">
                 <div>
-                  <DialogTitle>Project Quick Overview</DialogTitle>
-                  <DialogDescription>
+                  <DialogTitle className="text-xl sm:text-2xl font-bold">Project Quick Overview</DialogTitle>
+                  <DialogDescription className="text-xs sm:text-sm mt-1">
                     Real-time snapshot of mission progress and team workload.
                   </DialogDescription>
                 </div>

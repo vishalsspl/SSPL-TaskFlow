@@ -492,10 +492,12 @@ const ProjectView = () => {
                   New Task
                 </Button>
               )}
-              <Button variant="outline" size="sm" onClick={exportProfessionalReport} className="bg-secondary border-border text-foreground Montserrat font-bold rounded-xl px-4">
-                <Download className="w-4 h-4 mr-2" />
-                Report
-              </Button>
+              {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
+                <Button variant="outline" size="sm" onClick={exportProfessionalReport} className="bg-secondary border-border text-foreground Montserrat font-bold rounded-xl px-4">
+                  <Download className="w-4 h-4 mr-2" />
+                  Report
+                </Button>
+              )}
               <Button onClick={() => setPresentationMode(true)} size="sm" className="bg-[#48A111] hover:bg-[#48A111]/90 text-white Montserrat font-bold rounded-xl px-4">
                 <Maximize className="w-4 h-4 mr-2" />
                 Present
@@ -519,7 +521,9 @@ const ProjectView = () => {
           {user?.role !== 'CLIENT' && (
             <TabsTrigger value="chat" className="rounded-xl px-4 sm:px-6 Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Chat</TabsTrigger>
           )}
-          <TabsTrigger value="worklogs" className="rounded-xl px-4 sm:px-6 Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Worklogs</TabsTrigger>
+          {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
+            <TabsTrigger value="worklogs" className="rounded-xl px-4 sm:px-6 Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Worklogs</TabsTrigger>
+          )}
         </TabsList>
 
         {/* Only this div scrolls */}
@@ -625,9 +629,11 @@ const ProjectView = () => {
             </TabsContent>
           )}
 
-          <TabsContent value="worklogs" className="space-y-4 mt-0">
-            <WorkLogPanel projectId={id} />
-          </TabsContent>
+          {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
+            <TabsContent value="worklogs" className="space-y-4 mt-0">
+              <WorkLogPanel projectId={id} />
+            </TabsContent>
+          )}
         </div>
       </Tabs>
 

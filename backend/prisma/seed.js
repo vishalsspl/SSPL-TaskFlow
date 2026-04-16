@@ -18,27 +18,23 @@ async function setupTenantDB(dbName) {
 
   try {
     console.log(`🚀 Creating DB: ${dbName}`);
-    // ✅ create DB safely
     await mainPrisma.$executeRawUnsafe(`CREATE DATABASE "${dbName}"`);
   } catch (err) {
     if (err.message.includes("already exists")) {
       console.log(`⚠️ DB already exists: ${dbName}`);
     } else {
-      console.error("❌ DB creation failed:", err.message);
       throw err;
     }
   }
 
   try {
     console.log("⚙️ Running tenant migration...");
-    // Try to find prisma locally first, fallback to npx
     const prismaCmd = process.platform === "win32" ? "npx prisma" : "./node_modules/.bin/prisma";
     execSync(`${prismaCmd} migrate deploy --schema=prisma/tenant/schema.prisma`, {
       stdio: "inherit",
       env: { ...process.env, TENANT_DATABASE_URL: dbUrl }
     });
   } catch (err) {
-    console.error("❌ Migration failed:", err.message);
     throw err;
   }
 
@@ -57,12 +53,13 @@ async function seedTenant(dbUrl, orgId, orgName, plan) {
     const pwMember = await bcrypt.hash("member123", 10);
     const pwClient = await bcrypt.hash("client123", 10);
 
-    // 0. Create Organization in tenant DB
-    await prisma.organization.create({
-      data: {
+    await prisma.organization.upsert({
+      where: { id: orgId },
+      update: {},
+      create: {
         id: orgId,
         name: orgName,
-        plan: plan,
+        plan,
         status: "ACTIVE",
         timezone: "Asia/Kolkata",
         maxUsers: 100,
@@ -70,61 +67,79 @@ async function seedTenant(dbUrl, orgId, orgName, plan) {
       }
     });
 
-    // 1. USERS
-    const admin = await prisma.user.create({
-      data: {
-        id: uuid(), // Generate unique ID instead of letting it default to avoid confusion during seed
-        organizationId: orgId,
-        name: "Admin User",
-        email: `admin@${orgName.toLowerCase()}.com`,
-        passwordHash: pwAdmin,
-        role: "ADMIN",
-        isApproved: true,
-        mustChangePassword: false
-      }
+    let admin = await prisma.user.findFirst({
+      where: { email: `admin@${orgName.toLowerCase()}.com` }
     });
+    if (!admin) {
+      admin = await prisma.user.create({
+        data: {
+          id: uuid(),
+          organizationId: orgId,
+          name: "Admin User",
+          email: `admin@${orgName.toLowerCase()}.com`,
+          passwordHash: pwAdmin,
+          role: "ADMIN",
+          isApproved: true,
+          mustChangePassword: false
+        }
+      });
+    }
 
-    const manager = await prisma.user.create({
-      data: {
-        id: uuid(),
-        organizationId: orgId,
-        name: "Manager User",
-        email: `manager@${orgName.toLowerCase()}.com`,
-        passwordHash: pwManager,
-        role: "MANAGER",
-        isApproved: true,
-        mustChangePassword: false
-      }
+    let manager = await prisma.user.findFirst({
+      where: { email: `manager@${orgName.toLowerCase()}.com` }
     });
+    if (!manager) {
+      manager = await prisma.user.create({
+        data: {
+          id: uuid(),
+          organizationId: orgId,
+          name: "Manager User",
+          email: `manager@${orgName.toLowerCase()}.com`,
+          passwordHash: pwManager,
+          role: "MANAGER",
+          isApproved: true,
+          mustChangePassword: false
+        }
+      });
+    }
 
-    const member = await prisma.user.create({
-      data: {
-        id: uuid(),
-        organizationId: orgId,
-        name: "Member User",
-        email: `member@${orgName.toLowerCase()}.com`,
-        passwordHash: pwMember,
-        role: "MEMBER",
-        managerId: manager.id,
-        isApproved: true,
-        mustChangePassword: false
-      }
+    let member = await prisma.user.findFirst({
+      where: { email: `member@${orgName.toLowerCase()}.com` }
     });
+    if (!member) {
+      member = await prisma.user.create({
+        data: {
+          id: uuid(),
+          organizationId: orgId,
+          name: "Member User",
+          email: `member@${orgName.toLowerCase()}.com`,
+          passwordHash: pwMember,
+          role: "MEMBER",
+          managerId: manager.id,
+          isApproved: true,
+          mustChangePassword: false
+        }
+      });
+    }
 
-    const client = await prisma.user.create({
-      data: {
-        id: uuid(),
-        organizationId: orgId,
-        name: "Client User",
-        email: `client@${orgName.toLowerCase()}.com`,
-        passwordHash: pwClient,
-        role: "CLIENT",
-        isApproved: true,
-        mustChangePassword: false
-      }
+    let client = await prisma.user.findFirst({
+      where: { email: `client@${orgName.toLowerCase()}.com` }
     });
+    if (!client) {
+      client = await prisma.user.create({
+        data: {
+          id: uuid(),
+          organizationId: orgId,
+          name: "Client User",
+          email: `client@${orgName.toLowerCase()}.com`,
+          passwordHash: pwClient,
+          role: "CLIENT",
+          isApproved: true,
+          mustChangePassword: false
+        }
+      });
+    }
 
-    // 2. PROJECT
     const project = await prisma.project.create({
       data: {
         organizationId: orgId,
@@ -134,7 +149,6 @@ async function seedTenant(dbUrl, orgId, orgName, plan) {
       }
     });
 
-    // 3. TASK (Note: Task does NOT have organizationId directly, it's linked via Project)
     const task = await prisma.task.create({
       data: {
         title: "Initial Task",
@@ -143,7 +157,6 @@ async function seedTenant(dbUrl, orgId, orgName, plan) {
       }
     });
 
-    // 4. ASSIGN
     await prisma.taskAssignee.create({
       data: {
         taskId: task.id,
@@ -152,15 +165,13 @@ async function seedTenant(dbUrl, orgId, orgName, plan) {
     });
 
     console.log(`✅ Tenant seeded: ${orgName}`);
+
     return {
       id: admin.id,
       name: admin.name,
       email: admin.email,
       passwordHash: pwAdmin
     };
-  } catch (err) {
-    console.error(`❌ Tenant seed failed for ${orgName}:`, err);
-    throw err;
   } finally {
     await prisma.$disconnect();
   }
@@ -170,15 +181,9 @@ async function main() {
   console.log("🌱 Starting multi-tenant seed...");
 
   try {
-    // 🔥 SUPERADMIN (MAIN DB)
     const superAdmin = await mainPrisma.user.upsert({
       where: { email: "superadmin@taskflow.com" },
-      update: { 
-        role: "SUPERADMIN",
-        isApproved: true,
-        passwordHash: await bcrypt.hash("superadmin123", 10),
-        mustChangePassword: false
-      },
+      update: {},
       create: {
         name: "Super Admin",
         email: "superadmin@taskflow.com",
@@ -191,40 +196,41 @@ async function main() {
 
     console.log("✅ Superadmin created");
 
-    // 🔥 ORGANIZATIONS
     const orgs = [
       { name: "SSPL", plan: "PRO" },
-      { name: "ACME", plan: "STARTER" },
-      { name: "TECHNOVA", plan: "FREE" }
+      { name: "ACME", plan: "STARTER" }
     ];
 
     for (const orgData of orgs) {
       console.log(`\n🏢 Preparing org: ${orgData.name}`);
 
-      const dbName = `org_${uuid().replace(/-/g, "")}`;
-
-      // 1. Create tenant DB + migrations
+      const dbName = `org_${orgData.name.toLowerCase()}`;
       const dbUrl = await setupTenantDB(dbName);
 
-      // 2. Save org in main DB
-      const org = await mainPrisma.organization.create({
-        data: {
-          name: orgData.name,
-          dbUrl,
-          dbStrategy: "DEDICATED",
-          plan: orgData.plan,
-          status: "ACTIVE"
-        }
+      let org = await mainPrisma.organization.findFirst({
+        where: { name: orgData.name }
       });
+
+      if (!org) {
+        org = await mainPrisma.organization.create({
+          data: {
+            name: orgData.name,
+            dbUrl,
+            dbStrategy: "DEDICATED",
+            plan: orgData.plan,
+            status: "ACTIVE"
+          }
+        });
+      }
 
       console.log("✅ Org saved in MAIN DB");
 
-      // 3. Seed tenant DB
       const adminData = await seedTenant(dbUrl, org.id, orgData.name, orgData.plan);
 
-      // 4. Register admin in MAIN DB (auth lookup)
-      await mainPrisma.user.create({
-        data: {
+      await mainPrisma.user.upsert({
+        where: { email: adminData.email },
+        update: {},
+        create: {
           id: adminData.id,
           organizationId: org.id,
           name: adminData.name,
@@ -235,9 +241,9 @@ async function main() {
           mustChangePassword: false
         }
       });
-      console.log("✅ Admin added to MAIN DB lookup");
 
-      // 5. Create initial invoice
+      console.log("✅ Admin added to MAIN DB");
+
       await mainPrisma.invoice.create({
         data: {
           organizationId: org.id,
@@ -251,7 +257,6 @@ async function main() {
     }
 
     console.log("\n🎉 ALL TENANTS SEEDED SUCCESSFULLY!");
-
   } catch (err) {
     console.error("❌ SEED FAILED:", err);
   } finally {

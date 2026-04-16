@@ -394,14 +394,16 @@ const Tasks = () => {
                 
                 {user?.role !== 'CLIENT' && (
                   <div className="flex items-center gap-2">
-                    <Button
-                      onClick={() => setShowImportDialog(true)}
-                      variant="outline"
-                      className="h-10 px-5 rounded-xl border-border/40 hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-primary font-medium transition-all flex items-center gap-2"
-                    >
-                      <FileSpreadsheet className="w-4 h-4" />
-                      <span className="hidden lg:inline">Import Excel</span>
-                    </Button>
+                    {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
+                      <Button
+                        onClick={() => setShowImportDialog(true)}
+                        variant="outline"
+                        className="h-10 px-5 rounded-xl border-border/40 hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-primary font-medium transition-all flex items-center gap-2"
+                      >
+                        <FileSpreadsheet className="w-4 h-4" />
+                        <span className="hidden lg:inline">Import Excel</span>
+                      </Button>
+                    )}
                     <Button 
                       onClick={() => setShowCreateDialog(true)}
                       className="h-10 px-5 rounded-xl flex items-center justify-center bg-primary hover:bg-primary/90 text-primary-foreground transition-all shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] font-bold Montserrat text-sm whitespace-nowrap"

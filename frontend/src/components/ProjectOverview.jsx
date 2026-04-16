@@ -72,32 +72,32 @@ const ProjectOverview = ({ projectId }) => {
     return (
         <div className="space-y-6 mb-8">
             {/* Project Header Info */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h2 className="text-2xl font-bold text-foreground">{project.name}</h2>
-                    <div
-                        className="text-muted-foreground prose prose-sm max-w-none"
-                        dangerouslySetInnerHTML={{ __html: project.description }}
-                    />
-                    {project.client && (
-                        <div className="mt-1 flex items-center text-sm text-muted-foreground">
-                            <Users className="w-4 h-4 mr-2" />
-                            <span className="font-medium">Client:</span>
-                            <span className="ml-2">{project.client.name}</span>
+            <div className="flex flex-col gap-2">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                    <h2 className="text-xl sm:text-2xl font-bold text-foreground leading-tight">{project.name}</h2>
+                    {project.endDate && (
+                        <div className="flex w-fit items-center text-xs sm:text-sm text-muted-foreground bg-muted px-3 py-1 rounded-full border shrink-0">
+                            <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5" />
+                            <span>Due: {formatDate(project.endDate)}</span>
                         </div>
                     )}
                 </div>
-                {project.endDate && (
-                    <div className="flex w-full sm:w-auto items-center text-xs sm:text-sm text-muted-foreground bg-muted px-2 py-1 sm:px-3 sm:py-1 rounded-full border">
-                        <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                        <span>Due: {formatDate(project.endDate)}</span>
+                <div
+                    className="text-sm text-muted-foreground prose prose-sm max-w-none leading-snug"
+                    dangerouslySetInnerHTML={{ __html: project.description }}
+                />
+                {project.client && (
+                    <div className="flex items-center text-sm text-muted-foreground">
+                        <Users className="w-4 h-4 mr-2" />
+                        <span className="font-medium">Client:</span>
+                        <span className="ml-2">{project.client.name}</span>
                     </div>
                 )}
             </div>
 
             {/* Overall Progress Bar */}
             <div className="space-y-2 w-full overflow-hidden">
-                <div className="flex justify-between items-center text-sm gap-2">
+                <div className="flex justify-between items-center text-xs sm:text-sm gap-2">
                     <span className="font-semibold text-foreground truncate">Overall Project Progress (Effort-Based)</span>
                     <span className="font-bold text-primary shrink-0">{overview.progressPercentage}%</span>
                 </div>
@@ -107,38 +107,38 @@ const ProjectOverview = ({ projectId }) => {
                         style={{ width: `${overview.progressPercentage}%` }}
                     />
                 </div>
-                <div className="flex justify-between text-[10px] sm:text-xs text-muted-foreground gap-1 sm:gap-2">
+                <div className="flex justify-between text-[9px] sm:text-xs text-muted-foreground gap-1 sm:gap-2 mt-1">
                     <span className="truncate">{overview.completedStoryPoints} / {overview.totalStoryPoints} Story Points</span>
                     <span className="truncate">{overview.completedTasks} / {overview.totalTasks} Tasks Completed</span>
                 </div>
             </div>
 
             {/* Phase Tracker */}
-            <div className="grid grid-cols-3 md:grid-cols-5 md:grid-cols-6 gap-2 sm:gap-4 overflow-x-hidden">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-4">
                 {phases.map((phase) => (
                     <Card key={phase.id} className={phase.status === 'COMPLETED' ? 'bg-green-500/10 border-green-400/50' : phase.status === 'IN_PROGRESS' ? 'bg-blue-500/10 border-blue-400/50' : 'bg-muted/50'}>
-                        <CardContent className="p-1 sm:p-4 text-center">
-                            <h3 className="font-semibold text-[10px] sm:text-base text-foreground mb-0.5 sm:mb-2 truncate max-w-full">{phase.name}</h3>
+                        <CardContent className="p-3 sm:p-4 text-center">
+                            <h3 className="font-semibold text-xs sm:text-sm text-foreground mb-2 truncate max-w-full">{phase.name}</h3>
                             {phase.status === 'COMPLETED' ? (
-                                <div className="flex flex-col items-center gap-0.5">
-                                    <div className="w-6 h-6 sm:w-12 sm:h-12 rounded-full bg-green-500 flex items-center justify-center">
-                                        <CheckCircle className="w-3 h-3 sm:w-6 sm:h-6 text-white" />
+                                <div className="flex flex-col items-center gap-1">
+                                    <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-green-500 flex items-center justify-center">
+                                        <CheckCircle className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                                     </div>
-                                    <p className="text-[9px] sm:text-xs text-green-700 font-medium whitespace-nowrap">Completed</p>
+                                    <p className="text-[10px] sm:text-xs text-green-700 font-medium">Completed</p>
                                 </div>
                             ) : phase.status === 'IN_PROGRESS' ? (
-                                <div className="flex flex-col items-center gap-0.5">
-                                    <div className="w-6 h-6 sm:w-12 sm:h-12 rounded-full bg-card border border-green-500 flex items-center justify-center">
-                                        <span className="text-[9px] sm:text-sm font-bold text-green-600 leading-none">{phase.completionPercentage}%</span>
+                                <div className="flex flex-col items-center gap-1">
+                                    <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-card border border-green-500 flex items-center justify-center">
+                                        <span className="text-[10px] sm:text-sm font-bold text-green-600 leading-none">{phase.completionPercentage}%</span>
                                     </div>
-                                    <p className="text-[9px] sm:text-xs text-blue-700 font-medium whitespace-nowrap">In Progress</p>
+                                    <p className="text-[10px] sm:text-xs text-blue-700 font-medium">In Progress</p>
                                 </div>
                             ) : (
-                                <div className="flex flex-col items-center gap-0.5">
-                                    <div className="w-6 h-6 sm:w-12 sm:h-12 rounded-full bg-card border border-border flex items-center justify-center">
-                                        <Clock className="w-3 h-3 sm:w-6 sm:h-6 text-muted-foreground" />
+                                <div className="flex flex-col items-center gap-1">
+                                    <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-card border border-border flex items-center justify-center">
+                                        <Clock className="w-4 h-4 sm:w-6 sm:h-6 text-muted-foreground" />
                                     </div>
-                                    <p className="text-[9px] sm:text-xs text-muted-foreground font-medium whitespace-nowrap">Waiting</p>
+                                    <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">Waiting</p>
                                 </div>
                             )}
                         </CardContent>
@@ -161,7 +161,7 @@ const ProjectOverview = ({ projectId }) => {
             </div>
 
             {/* Extra Data Grids hidden on small screens entirely to save space */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6 mt-2 sm:mt-6 hidden md:grid">
+            <div className="hidden md:grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6 mt-2 sm:mt-6">
                 {/* Workload Distribution */}
                 <Card className="w-full overflow-hidden">
                     <CardHeader className="pb-2">

@@ -511,7 +511,7 @@ const Team = () => {
                   <Plus className="w-4 h-4" />
                 </Button>
               )}
-              {currentUser?.role === 'ADMIN' && (
+              {(currentUser?.role === 'ADMIN' || currentUser?.role === 'MANAGER') && (
                 <Button
                   onClick={() => setShowImportDialog(true)}
                   variant="outline"
@@ -596,8 +596,8 @@ const Team = () => {
               </div>
 
               {/* Desktop Add Member + Import Buttons — Far Right */}
-              {currentUser?.role === 'ADMIN' && (
-                <div className="hidden sm:flex items-center gap-2">
+              <div className="hidden sm:flex items-center gap-2">
+                {(currentUser?.role === 'ADMIN' || currentUser?.role === 'MANAGER') && (
                   <Button
                     onClick={() => setShowImportDialog(true)}
                     variant="outline"
@@ -606,6 +606,8 @@ const Team = () => {
                     <FileSpreadsheet className="w-4 h-4" />
                     <span>Import Excel</span>
                   </Button>
+                )}
+                {currentUser?.role === 'ADMIN' && (
                   <Button
                     onClick={() => {
                         setEditingUser(null);
@@ -623,8 +625,8 @@ const Team = () => {
                     <Plus className="w-4 h-4" />
                     <span>Add Member</span>
                   </Button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </div>

@@ -44,7 +44,7 @@ export const useChatStore = create((set, get) => ({
         if (orgIdChanged || userIdChanged) {
             console.log(`[Socket] Context update: Org:${state.organizationId}->${organizationId}, User:${state.userId}->${userId}`);
             set({ userId, organizationId });
-            
+
             // If already connected, we must rejoin rooms with the new organizationId
             if (state.socket && state.isConnected) {
                 console.log('[Socket] Organization changed while connected. Rejoining rooms...');
@@ -56,7 +56,8 @@ export const useChatStore = create((set, get) => ({
             return;
         }
 
-        const socket = io(window.location.origin, {
+        const SOCKET_URL = import.meta.env.VITE_API_URL || window.location.origin;
+        const socket = io(SOCKET_URL, {
             path: '/socket.io',
             transports: ['websocket', 'polling'],
             reconnection: true,
@@ -69,7 +70,7 @@ export const useChatStore = create((set, get) => ({
         socket.on('connect', () => {
             console.log('Chat socket connected:', socket.id);
             set({ isConnected: true });
-            
+
             // Re-join existing rooms if it was a reconnection
             const state = get();
             if (state.activeRoomId) {
@@ -171,8 +172,8 @@ export const useChatStore = create((set, get) => ({
         }
 
         if (!chatEnabled) {
-             console.log('[Chat Store] Chat feature disabled, skipping room rejoins.');
-             return;
+            console.log('[Chat Store] Chat feature disabled, skipping room rejoins.');
+            return;
         }
 
         try {

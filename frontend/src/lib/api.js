@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = ''; // Empty string so that baseURL becomes '/api' (relative)
+const API_URL = import.meta.env.VITE_API_URL || ''; // Uses the VITE_API_URL from your .env file
 
 const api = axios.create({
   baseURL: `${API_URL}/api`,
@@ -28,7 +28,7 @@ api.interceptors.response.use(
       // Only redirect if NOT on login, signup or forgot password pages to avoid loops
       const publicPaths = ['/login', '/signup', '/forgot-password', '/reset-password'];
       const isPublicPath = publicPaths.some(path => window.location.pathname.startsWith(path));
-      
+
       if (!isPublicPath) {
         window.location.href = '/login';
       }
