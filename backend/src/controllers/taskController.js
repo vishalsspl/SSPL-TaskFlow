@@ -251,6 +251,7 @@ export const createTask = async (req, res) => {
   // Send email to all assignees
   const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
 
+  if (hasEmailSupport && sendEmail) {
     const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
     const senderName = req.user.name;
     for (const { user } of task.assignees) {
@@ -501,11 +502,16 @@ export const updateTask = async (req, res) => {
     sendEmail = true,
   } = req.body;
 
+  const existingTask = await req.db.task.findFirst({
+    where: { id, project: { organizationId: req.user.organizationId } },
+    include: { assignees: { include: { user: true } } },
+  });
+  if (!existingTask) return res.status(404).json({ error: 'Task not found' });
+
   if (title !== undefined && !/^[a-zA-Z0-9\s]+$/.test(title)) {
     return res.status(400).json({ error: 'Task name cannot contain special characters. Only alphanumeric characters and spaces are allowed.' });
   }
 
-  // Validate due date is not in the past
   // Validate due date is not in the past ONLY if it's being changed to a new date
   if (dueDate && new Date(dueDate).toISOString() !== new Date(existingTask.dueDate).toISOString()) {
     const today = new Date();
@@ -515,12 +521,6 @@ export const updateTask = async (req, res) => {
       return res.status(400).json({ error: 'Due date cannot be in the past' });
     }
   }
-
-  const existingTask = await req.db.task.findFirst({
-    where: { id, project: { organizationId: req.user.organizationId } },
-    include: { assignees: { include: { user: true } } },
-  });
-  if (!existingTask) return res.status(404).json({ error: 'Task not found' });
 
   const existingAssigneeIds = existingTask.assignees.map((a) => a.userId);
   const newAssigneeIds = assigneeIds !== undefined ? assigneeIds : existingAssigneeIds;

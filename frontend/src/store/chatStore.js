@@ -60,7 +60,10 @@ export const useChatStore = create((set, get) => ({
             path: '/socket.io',
             transports: ['websocket', 'polling'],
             reconnection: true,
-            reconnectionAttempts: 10
+            reconnectionAttempts: 10,
+            extraHeaders: {
+                'Bypass-Tunnel-Reminder': 'true'
+            }
         });
 
         socket.on('connect', () => {

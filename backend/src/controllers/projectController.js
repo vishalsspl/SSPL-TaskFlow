@@ -697,12 +697,10 @@ export const bulkCreateProjects = async (req, res) => {
         if (project.client?.email) {
           sendProjectClientEmail(project.client.email, project, project.manager || null, req.user.name, origin).catch(() => { });
         }
-      }
 
-      results.push({ row: rowNum, name: project.name, status: 'SUCCESS' });
-      successCount++;
-
-    } catch (err) {
+        results.push({ row: rowNum, name: project.name, status: 'SUCCESS' });
+        successCount++;
+      } catch (err) {
       results.push({ row: rowNum, name, status: 'FAILED', error: err.message });
       failCount++;
     }
