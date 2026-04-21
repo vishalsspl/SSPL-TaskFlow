@@ -151,7 +151,7 @@ const OrganizationSettings = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12">
+    <div className="max-w-4xl mx-auto space-y-4 sm:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-12 overflow-x-hidden p-1 sm:p-0">
       
       {/* Branding & Essentials */}
       <Card className="border-border/40 shadow-sm overflow-hidden bg-white/50 dark:bg-black/20 backdrop-blur-sm">
@@ -169,9 +169,9 @@ const OrganizationSettings = () => {
           </div>
         </CardHeader>
         <Separator className="bg-border/40" />
-        <CardContent className="pt-6 space-y-8">
-          <div className="flex flex-col md:flex-row gap-8 items-start">
-            <div className="flex flex-col items-center gap-4">
+        <CardContent className="pt-4 sm:pt-6 space-y-6 sm:space-y-8 px-4 sm:px-6">
+          <div className="flex flex-col md:flex-row gap-6 sm:gap-8 items-start">
+            <div className="flex flex-col items-center gap-4 w-full md:w-auto">
               <input
                 type="file"
                 ref={logoInputRef}
@@ -214,7 +214,7 @@ const OrganizationSettings = () => {
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Company Logo</p>
             </div>
 
-            <div className="flex-1 grid gap-6 w-full">
+            <div className="flex-1 flex flex-col gap-4 sm:gap-6 w-full min-w-0">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Company Name</Label>
@@ -274,8 +274,8 @@ const OrganizationSettings = () => {
           <CardDescription className="text-xs">Physical address and primary contact details</CardDescription>
         </CardHeader>
         <Separator className="bg-border/40" />
-        <CardContent className="pt-6 space-y-6">
-          <div className="grid sm:grid-cols-2 gap-6">
+        <CardContent className="pt-4 sm:pt-6 space-y-4 sm:space-y-6 px-4 sm:px-6">
+          <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
             <div className="space-y-2">
               <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Primary Contact Name</Label>
               <Input 
@@ -319,9 +319,9 @@ const OrganizationSettings = () => {
         <div className="absolute top-0 right-0 p-8 opacity-5">
           <CreditCard className="w-32 h-32" />
         </div>
-        <CardContent className="p-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-            <div className="space-y-2">
+        <CardContent className="p-4 sm:p-8">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6 relative z-10 w-full min-w-0">
+            <div className="space-y-2 w-full">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-primary" />
                 <h3 className="text-xl font-bold tracking-tight">Active Plan: {user?.organization?.plan || 'PRO'}</h3>
@@ -343,17 +343,17 @@ const OrganizationSettings = () => {
         </CardContent>
       </Card>
 
-      <div className="flex items-center justify-end gap-3 pt-4 border-t border-border/40">
+      <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-6 border-t border-border/40 w-full px-2 sm:px-0">
         <Button 
           variant="outline" 
-          className="rounded-xl px-6 h-11 border-border/40 font-bold uppercase text-[10px] tracking-widest"
+          className="rounded-xl px-6 h-11 border-border/40 font-bold uppercase text-[10px] tracking-widest w-full sm:w-auto"
           onClick={() => fetchLatestOrg()}
           disabled={updating}
         >
           Reset Changes
         </Button>
         <Button 
-          className="rounded-xl px-10 h-11 shadow-lg shadow-primary/20 font-bold uppercase text-[10px] tracking-widest gap-2"
+          className="rounded-xl px-10 h-11 shadow-lg shadow-primary/20 font-bold uppercase text-[10px] tracking-widest gap-2 w-full sm:w-auto"
           onClick={handleSave}
           disabled={updating}
         >

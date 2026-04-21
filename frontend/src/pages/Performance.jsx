@@ -23,15 +23,15 @@ const COLORS = ['#48A111', '#0EA5E9', '#F59E0B', '#F43F5E', '#8B5CF6'];
 
 const StatCard = ({ icon: Icon, label, value, sub, color = '#48A111' }) => (
     <Card className="border border-border">
-        <CardContent className="pt-5 pb-4">
-            <div className="flex items-start justify-between">
-                <div>
-                    <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">{label}</p>
-                    <p className="text-3xl font-black" style={{ color }}>{value}</p>
-                    {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
+        <CardContent className="pt-4 pb-3 sm:pt-5 sm:pb-4 px-3 sm:px-6">
+            <div className="flex items-start justify-between gap-1.5 sm:gap-3">
+                <div className="min-w-0 flex-1">
+                    <p className="text-[9px] sm:text-xs font-black uppercase tracking-wider text-muted-foreground mb-1 leading-tight break-words">{label}</p>
+                    <p className="text-xl sm:text-3xl font-black truncate" style={{ color }}>{value}</p>
+                    {sub && <p className="text-[9px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 leading-tight break-words">{sub}</p>}
                 </div>
-                <div className="p-2 rounded-xl" style={{ background: `${color}20` }}>
-                    <Icon className="w-5 h-5" style={{ color }} />
+                <div className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl shrink-0" style={{ background: `${color}20` }}>
+                    <Icon className="w-4 h-4 sm:w-5 sm:h-5" style={{ color }} />
                 </div>
             </div>
         </CardContent>
@@ -69,7 +69,7 @@ const MyPerformance = ({ user, projects }) => {
     const statusData = Object.entries(tasksByStatus || {}).map(([name, value]) => ({ name, value }));
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
             {/* Filter */}
             <div className="flex items-center gap-3">
                 <SearchableSelect
@@ -80,23 +80,23 @@ const MyPerformance = ({ user, projects }) => {
                         ...projects.map(p => ({ label: p.name, value: p.id || 'unknown' }))
                     ]}
                     placeholder="All Projects"
-                    className="w-52 h-10 rounded-xl bg-background border-border/60 font-bold"
+                    className="w-full sm:w-52 h-10 rounded-xl bg-background border-border/60 font-bold"
                 />
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
                 <StatCard icon={CheckCircle2} label="Completion Rate" value={`${summary.completionRate}%`} sub={`${summary.completedTasks}/${summary.totalTasks} tasks`} color="#48A111" />
-                <StatCard icon={Target} label="On-Time Rate" value={`${summary.onTimeRate}%`} sub="Tasks finished before due date" color="#0EA5E9" />
+                <StatCard icon={Target} label="On-Time Rate" value={`${summary.onTimeRate}%`} sub="Finished before due" color="#0EA5E9" />
                 <StatCard icon={Clock} label="Total Hours" value={`${summary.totalHours}h`} sub={`${summary.billableHours}h billable`} color="#F59E0B" />
-                <StatCard icon={Zap} label="Velocity" value={summary.velocity} sub="Story points completed" color="#8B5CF6" />
+                <StatCard icon={Zap} label="Velocity" value={summary.velocity} sub="Points completed" color="#8B5CF6" />
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
                 <StatCard icon={BarChart2} label="In Progress" value={summary.inProgressTasks} color="#0EA5E9" />
                 <StatCard icon={AlertTriangle} label="Overdue" value={summary.overdueTasks} color="#F43F5E" />
                 <StatCard icon={TrendingUp} label="Story Points" value={`${summary.completedStoryPoints}/${summary.totalStoryPoints}`} sub="Completed" color="#48A111" />
-                <StatCard icon={DollarSign} label="Approved Hours" value={`${summary.approvedHours}h`} color="#10B981" />
+                <StatCard icon={DollarSign} label="Apprv Hours" value={`${summary.approvedHours}h`} color="#10B981" />
             </div>
 
             {/* Charts */}
@@ -216,7 +216,7 @@ const TeamPerformance = ({ projects }) => {
     if (loading) return <div className="text-center py-16 text-muted-foreground font-bold">Loading team data...</div>;
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
             <div className="flex items-center gap-3">
                 <SearchableSelect
                     value={projectFilter}
@@ -226,7 +226,7 @@ const TeamPerformance = ({ projects }) => {
                         ...projects.map(p => ({ label: p.name, value: p.id || 'unknown' }))
                     ]}
                     placeholder="All Projects"
-                    className="w-52 h-10 rounded-xl bg-background border-border/60 font-bold"
+                    className="w-full sm:w-52 h-10 rounded-xl bg-background border-border/60 font-bold"
                 />
             </div>
 
@@ -236,47 +236,48 @@ const TeamPerformance = ({ projects }) => {
                 ) : (
                     data.map((member) => (
                         <Card key={member.user.id} className="border border-border">
-                            <CardContent className="pt-5">
-                                <div className="flex items-center gap-4">
-                                    <Avatar className="h-11 w-11 border-2 border-border shrink-0">
+                            <CardContent className="pt-4 sm:pt-5 px-3 sm:px-6 pb-4 sm:pb-5">
+                                <div className="flex items-start gap-3 sm:gap-4">
+                                    <Avatar className="h-10 w-10 sm:h-11 sm:w-11 border-2 border-border shrink-0 mt-0.5 shadow-sm">
                                         <AvatarImage src={member.user.avatar} />
-                                        <AvatarFallback className="bg-primary/10 text-primary font-black">
+                                        <AvatarFallback className="bg-primary/10 text-primary font-black text-xs sm:text-sm">
                                             {member.user.name.charAt(0)}
                                         </AvatarFallback>
                                     </Avatar>
                                     <div className="flex-1 min-w-0">
-                                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2 gap-2">
-                                            <div>
-                                                <p className="font-black text-sm">{member.user.name}</p>
-                                                <p className="text-xs text-muted-foreground capitalize">{member.user.role.toLowerCase()}</p>
+                                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-2 md:gap-4">
+                                            <div className="mb-2 sm:mb-0">
+                                                <p className="font-black text-[13px] sm:text-sm truncate">{member.user.name}</p>
+                                                <p className="text-[10px] sm:text-xs text-muted-foreground capitalize mt-0.5">{member.user.role.toLowerCase()}</p>
                                             </div>
-                                            <div className="flex items-center gap-3 text-xs flex-wrap">
-                                                <div className="text-center">
-                                                    <p className="font-black text-lg text-primary">{member.completionRate}%</p>
-                                                    <p className="text-muted-foreground">Completion</p>
+                                            
+                                            {/* Stats Container - mobile optimized box layout */}
+                                            <div className="grid grid-cols-4 sm:flex sm:items-center gap-1.5 sm:gap-4 text-xs w-full sm:w-auto pb-1 sm:pb-0">
+                                                <div className="flex flex-col items-center justify-center bg-secondary/30 sm:bg-transparent py-1.5 px-1 sm:px-2 rounded-lg min-w-0">
+                                                    <p className="font-black text-[12px] sm:text-lg text-primary truncate">{member.completionRate}%</p>
+                                                    <p className="text-[8px] sm:text-[10px] text-muted-foreground font-bold mt-0.5 uppercase tracking-tight truncate">Done</p>
                                                 </div>
-                                                <div className="text-center">
-                                                    <p className="font-black text-lg">{member.totalHours}h</p>
-                                                    <p className="text-muted-foreground">Hours</p>
+                                                <div className="flex flex-col items-center justify-center bg-secondary/30 sm:bg-transparent py-1.5 px-1 sm:px-2 rounded-lg min-w-0">
+                                                    <p className="font-black text-[12px] sm:text-lg text-foreground truncate">{member.totalHours}h</p>
+                                                    <p className="text-[8px] sm:text-[10px] text-muted-foreground font-bold mt-0.5 uppercase tracking-tight truncate">Hours</p>
                                                 </div>
-                                                <div className="text-center">
-                                                    <p className="font-black text-lg text-purple-500">{member.velocity}</p>
-                                                    <p className="text-muted-foreground">Velocity</p>
+                                                <div className="flex flex-col items-center justify-center bg-secondary/30 sm:bg-transparent py-1.5 px-1 sm:px-2 rounded-lg min-w-0">
+                                                    <p className="font-black text-[12px] sm:text-lg text-purple-500 truncate">{member.velocity}</p>
+                                                    <p className="text-[8px] sm:text-[10px] text-muted-foreground font-bold mt-0.5 uppercase tracking-tight truncate">Velocity</p>
                                                 </div>
-                                                {member.overdueTasks > 0 && (
-                                                    <div className="text-center">
-                                                        <p className="font-black text-lg text-red-500">{member.overdueTasks}</p>
-                                                        <p className="text-muted-foreground">Overdue</p>
-                                                    </div>
-                                                )}
+                                                <div className={`flex flex-col items-center justify-center py-1.5 px-1 sm:px-2 rounded-lg min-w-0 transition-colors ${member.overdueTasks > 0 ? 'bg-red-500/10 sm:bg-transparent' : 'bg-secondary/30 sm:bg-transparent opacity-50'}`}>
+                                                    <p className={`font-black text-[12px] sm:text-lg truncate ${member.overdueTasks > 0 ? 'text-red-500' : 'text-muted-foreground'}`}>{member.overdueTasks}</p>
+                                                    <p className="text-[8px] sm:text-[10px] text-muted-foreground font-bold mt-0.5 uppercase tracking-tight truncate">Overdue</p>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="space-y-1">
-                                            <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                                        
+                                        <div className="space-y-1.5 mt-2">
+                                            <div className="flex justify-between text-[10px] sm:text-xs text-muted-foreground font-medium px-1">
                                                 <span>{member.completedTasks}/{member.totalTasks} tasks</span>
-                                                <span>{member.completionRate}%</span>
+                                                <span className="text-foreground font-bold">{member.completionRate}%</span>
                                             </div>
-                                            <Progress value={member.completionRate} className="h-2" />
+                                            <Progress value={member.completionRate} className="h-1.5 sm:h-2" />
                                         </div>
                                     </div>
                                 </div>
@@ -307,24 +308,26 @@ const Performance = () => {
     return (
         <div className="flex-1 flex flex-col h-full overflow-hidden p-0 sm:p-2 pt-2 gap-4">
             {canViewTeam ? (
-                <Tabs defaultValue="mine" className="flex-1 flex flex-col min-h-0">
-                    <TabsList className="bg-secondary/40 border border-border/60 rounded-xl w-fit">
-                        <TabsTrigger value="mine" className="rounded-lg font-black text-sm">
-                            <UserIcon className="w-4 h-4 mr-2" /> My Performance
-                        </TabsTrigger>
-                        <TabsTrigger value="team" className="rounded-lg font-black text-sm">
-                            <Users className="w-4 h-4 mr-2" /> Team Performance
-                        </TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="mine" className="flex-1 overflow-y-auto mt-4">
+                <Tabs defaultValue="mine" className="flex-1 flex flex-col min-h-0 w-full">
+                    <div className="px-3 sm:px-6 w-full shrink-0">
+                        <TabsList className="bg-secondary/40 border border-border/60 rounded-xl flex-wrap h-auto w-full sm:w-fit justify-start bg-clip-padding">
+                            <TabsTrigger value="mine" className="rounded-lg font-black text-[11px] sm:text-sm px-2 sm:px-4 py-1.5 flex-1 sm:flex-none">
+                                <UserIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2 shrink-0" /> My Performance
+                            </TabsTrigger>
+                            <TabsTrigger value="team" className="rounded-lg font-black text-[11px] sm:text-sm px-2 sm:px-4 py-1.5 flex-1 sm:flex-none">
+                                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2 shrink-0" /> Team Performance
+                            </TabsTrigger>
+                        </TabsList>
+                    </div>
+                    <TabsContent value="mine" className="flex-1 overflow-y-auto overflow-x-hidden mt-4 px-3 sm:px-6 pb-8">
                         <MyPerformance user={user} projects={projects} />
                     </TabsContent>
-                    <TabsContent value="team" className="flex-1 overflow-y-auto mt-4">
+                    <TabsContent value="team" className="flex-1 overflow-y-auto overflow-x-hidden mt-4 px-3 sm:px-6 pb-8">
                         <TeamPerformance projects={projects} />
                     </TabsContent>
                 </Tabs>
             ) : (
-                <div className="overflow-y-auto">
+                <div className="overflow-y-auto overflow-x-hidden px-3 sm:px-6 pb-8">
                     <MyPerformance user={user} projects={projects} />
                 </div>
             )}

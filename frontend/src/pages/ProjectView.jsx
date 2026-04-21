@@ -52,7 +52,7 @@ import {
 import CreateTaskForm from '@/components/forms/CreateTaskForm';
 import Chat from '@/components/Chat';
 import { useTimerStore } from '@/store/timerStore';
-import WorkLogPanel from '@/components/WorkLogPanel';
+
 
 const ProjectView = () => {
   const { id } = useParams();
@@ -463,49 +463,55 @@ const ProjectView = () => {
   const mainContent = (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Sticky header: project title on left, action buttons on right */}
-      <div className="shrink-0 flex flex-col md:flex-row md:items-center md:justify-between gap-3 pb-3">
-        <div className="flex items-center gap-2 min-w-0">
+      <div className="shrink-0 flex flex-col md:flex-row md:items-end md:justify-between gap-3 pb-4 px-4 sm:px-6 md:px-8 pt-4 border-b border-border/40">
+        <div className="flex flex-col min-w-0 flex-1">
           {!presentationMode && (
-            <Button variant="ghost" size="icon" onClick={() => navigate('/projects')} className="shrink-0 text-muted-foreground hover:text-foreground">
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
+            <button
+               onClick={() => navigate('/projects')}
+               className="flex items-center text-[10px] sm:text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-primary transition-all mb-2 w-fit group"
+            >
+              <div className="bg-secondary/50 border border-border/50 p-1 sm:p-1.5 rounded-lg mr-2 group-hover:bg-primary/10 group-hover:border-primary/30 transition-colors">
+                 <ArrowLeft className="w-3 h-3 sm:w-3.5 sm:h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+              </div>
+              Back to Projects
+            </button>
           )}
           <div className="min-w-0">
-            <h2 className="text-xl font-black Montserrat text-foreground truncate">{project.name}</h2>
+            <h2 className="text-xl sm:text-2xl font-black Montserrat text-foreground whitespace-normal break-words leading-tight">{project.name}</h2>
             {project.endDate && (
-              <p className="text-xs text-muted-foreground Montserrat font-medium mt-0.5">
+              <p className="text-xs text-muted-foreground Montserrat font-medium mt-1">
                 DUE: {new Date(project.endDate).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}
               </p>
             )}
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 shrink-0 mt-2 sm:mt-0">
           {!presentationMode && (
             <>
-              <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing} className="bg-secondary border-border text-foreground Montserrat font-bold rounded-xl px-4">
-                <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+              <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing} className="bg-secondary border-border text-foreground Montserrat font-bold rounded-lg sm:rounded-xl px-2 sm:px-4 text-[10px] sm:text-sm h-7 sm:h-9">
+                <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 ${refreshing ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
               {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
-                <Button size="sm" onClick={() => setShowCreateDialog(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground Montserrat font-bold rounded-xl px-4">
-                  <Plus className="w-4 h-4 mr-2" />
+                <Button size="sm" onClick={() => setShowCreateDialog(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground Montserrat font-bold rounded-lg sm:rounded-xl px-2 sm:px-4 text-[10px] sm:text-sm h-7 sm:h-9">
+                  <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                   New Task
                 </Button>
               )}
               {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
-                <Button variant="outline" size="sm" onClick={exportProfessionalReport} className="bg-secondary border-border text-foreground Montserrat font-bold rounded-xl px-4">
-                  <Download className="w-4 h-4 mr-2" />
+                <Button variant="outline" size="sm" onClick={exportProfessionalReport} className="bg-secondary border-border text-foreground Montserrat font-bold rounded-lg sm:rounded-xl px-2 sm:px-4 text-[10px] sm:text-sm h-7 sm:h-9">
+                  <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                   Report
                 </Button>
               )}
-              <Button onClick={() => setPresentationMode(true)} size="sm" className="bg-[#48A111] hover:bg-[#48A111]/90 text-white Montserrat font-bold rounded-xl px-4">
-                <Maximize className="w-4 h-4 mr-2" />
+              <Button onClick={() => setPresentationMode(true)} size="sm" className="bg-[#48A111] hover:bg-[#48A111]/90 text-white Montserrat font-bold rounded-lg sm:rounded-xl px-2 sm:px-4 text-[10px] sm:text-sm h-7 sm:h-9">
+                <Maximize className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 Present
               </Button>
             </>
           )}
           {presentationMode && (
-            <Button onClick={() => setPresentationMode(false)} className="bg-red-500 hover:bg-red-600 text-white Montserrat font-bold rounded-xl px-4">
+            <Button onClick={() => setPresentationMode(false)} className="bg-red-500 hover:bg-red-600 text-white Montserrat font-bold rounded-lg sm:rounded-xl px-2 sm:px-4 text-[10px] sm:text-sm h-7 sm:h-9">
               Exit Presentation Mode
             </Button>
           )}
@@ -513,21 +519,20 @@ const ProjectView = () => {
       </div>
 
       {/* Tabs: sticky list + scrollable content */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0">
-        <TabsList className="shrink-0 bg-secondary border-border p-1 rounded-2xl flex-wrap">
-          <TabsTrigger value="overview" className="rounded-xl px-4 sm:px-6 Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Overview</TabsTrigger>
-          <TabsTrigger value="tasks" className="rounded-xl px-4 sm:px-6 Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Tasks</TabsTrigger>
-          <TabsTrigger value="team" className="rounded-xl px-4 sm:px-6 Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Team</TabsTrigger>
-          {user?.role !== 'CLIENT' && (
-            <TabsTrigger value="chat" className="rounded-xl px-4 sm:px-6 Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Chat</TabsTrigger>
-          )}
-          {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
-            <TabsTrigger value="worklogs" className="rounded-xl px-4 sm:px-6 Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Worklogs</TabsTrigger>
-          )}
-        </TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col flex-1 min-h-0 pt-4">
+        <div className="px-4 sm:px-6 md:px-8">
+          <TabsList className="shrink-0 bg-secondary border-border p-1 rounded-2xl flex-wrap h-auto justify-start sm:justify-center">
+            <TabsTrigger value="overview" className="rounded-xl px-3 sm:px-6 py-1.5 sm:py-2 text-[11px] sm:text-sm Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Overview</TabsTrigger>
+            <TabsTrigger value="tasks" className="rounded-xl px-3 sm:px-6 py-1.5 sm:py-2 text-[11px] sm:text-sm Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Tasks</TabsTrigger>
+            <TabsTrigger value="team" className="rounded-xl px-3 sm:px-6 py-1.5 sm:py-2 text-[11px] sm:text-sm Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Team</TabsTrigger>
+            {user?.role !== 'CLIENT' && (
+              <TabsTrigger value="chat" className="rounded-xl px-3 sm:px-6 py-1.5 sm:py-2 text-[11px] sm:text-sm Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Chat</TabsTrigger>
+            )}
+          </TabsList>
+        </div>
 
         {/* Only this div scrolls */}
-        <div ref={dashboardRef} className="flex-1 overflow-y-auto mt-4 pb-4">
+        <div ref={dashboardRef} className="flex-1 overflow-y-auto overflow-x-hidden mt-4 px-4 sm:px-6 md:px-8 pb-8">
           {overviewContent}
 
           <TabsContent value="tasks" className="space-y-4 mt-0">
@@ -551,7 +556,7 @@ const ProjectView = () => {
                                 <Clock className="w-4 h-4" />
                               </Button>
                             )}
-                            <Badge variant="outline">{task.daysUntilDue} days</Badge>
+                            <Badge variant="outline" className="whitespace-nowrap shrink-0 text-[10px] sm:text-xs px-2 py-0.5">{task.daysUntilDue} days</Badge>
                           </div>
                         </div>
                       ))}
@@ -571,17 +576,17 @@ const ProjectView = () => {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Task</TableHead>
-                          <TableHead>Overdue</TableHead>
-                          <TableHead>Priority</TableHead>
+                          <TableHead className="px-2 sm:px-4 py-2 text-[10px] sm:text-xs font-bold whitespace-nowrap">Task</TableHead>
+                          <TableHead className="px-2 sm:px-4 py-2 text-[10px] sm:text-xs font-bold whitespace-nowrap">Overdue</TableHead>
+                          <TableHead className="px-2 sm:px-4 py-2 text-[10px] sm:text-xs font-bold whitespace-nowrap">Priority</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {overdueTasks.map(task => (
                           <TableRow key={task.id} className="cursor-pointer hover:bg-muted/50" onClick={() => handleTaskClick(task)}>
-                            <TableCell className="font-medium">{task.title}</TableCell>
-                            <TableCell className="text-red-600 font-bold">{task.daysOverdue} days</TableCell>
-                            <TableCell><Badge className={priorityColors[task.priority]}>{task.priority}</Badge></TableCell>
+                            <TableCell className="font-medium text-[10px] sm:text-xs p-2 sm:p-3 max-w-[140px] sm:max-w-none break-words leading-tight">{task.title}</TableCell>
+                            <TableCell className="text-red-600 font-bold text-[10px] sm:text-xs p-2 sm:p-3 whitespace-nowrap">{task.daysOverdue} days</TableCell>
+                            <TableCell className="p-2 sm:p-3 whitespace-nowrap"><Badge className={`${priorityColors[task.priority]} text-[9px] sm:text-[11px] px-1.5 sm:px-2.5 py-0`}>{task.priority}</Badge></TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -594,7 +599,7 @@ const ProjectView = () => {
 
           <TabsContent value="team" className="space-y-4 mt-0">
             <Card>
-              <CardHeader><CardTitle>Workload Distribution</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-sm font-black text-gray-500 uppercase tracking-widest Montserrat">Workload Distribution</CardTitle></CardHeader>
               <CardContent className="pl-2">
                 {workloadChartData && workloadChartData.some(w => w.workload > 0) ? (
                   <ResponsiveContainer width="100%" height={350}>
@@ -609,8 +614,8 @@ const ProjectView = () => {
                 ) : (
                   <div className="flex flex-col items-center justify-center h-[350px] text-muted-foreground border-2 border-dashed border-muted rounded-xl bg-accent/20 mx-4 mb-4">
                     <Users className="w-12 h-12 mb-4 opacity-50" />
-                    <p className="text-lg font-medium">No workload data available</p>
-                    <p className="text-sm">Assign tasks to team members to see workload distribution.</p>
+                    <p className="text-sm font-bold Montserrat text-muted-foreground">No workload data available</p>
+                    <p className="text-xs text-muted-foreground/70 mt-1 text-center px-4">Assign tasks to team members to see workload distribution.</p>
                   </div>
                 )}
               </CardContent>
@@ -629,11 +634,7 @@ const ProjectView = () => {
             </TabsContent>
           )}
 
-          {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
-            <TabsContent value="worklogs" className="space-y-4 mt-0">
-              <WorkLogPanel projectId={id} />
-            </TabsContent>
-          )}
+
         </div>
       </Tabs>
 
@@ -651,7 +652,9 @@ const ProjectView = () => {
           document.body
         )
       ) : (
-        mainContent
+        <div className="flex-1 h-full overflow-hidden bg-background">
+          {mainContent}
+        </div>
       )}
 
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>

@@ -327,125 +327,125 @@ const ProjectsList = () => {
             <form onSubmit={handleSubmit} className="space-y-4 mobile-reduce-spacing">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mobile-reduce-grid">
 
-              {/* Project Name - Full Width */}
-              <div className="md:col-span-2 space-y-2">
-                <Label htmlFor="name" className="text-foreground/90 font-semibold mobile-reduce-label">Project Name <span className="text-red-500">*</span></Label>
-                <div className="relative">
-                  <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70" />
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Project Name"
-                    required
-                    className="!pl-10 mobile-reduce-input"
+                {/* Project Name - Full Width */}
+                <div className="md:col-span-2 space-y-2">
+                  <Label htmlFor="name" className="text-foreground/90 font-semibold mobile-reduce-label">Project Name <span className="text-red-500">*</span></Label>
+                  <div className="relative">
+                    <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70" />
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder="Project Name"
+                      required
+                      className="!pl-10 mobile-reduce-input"
+                    />
+                  </div>
+                </div>
+
+
+                {/* Status */}
+                <div className="space-y-2">
+                  <Label htmlFor="status" className="text-foreground/90 font-semibold mobile-reduce-label">Status <span className="text-red-500">*</span></Label>
+                  <div className="relative">
+                    <Target className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70 z-10" />
+                    <SearchableSelect
+                      value={formData.status}
+                      onChange={(value) => setFormData({ ...formData, status: value })}
+                      options={[
+                        { label: 'Planning', value: 'PLANNING' },
+                        { label: 'Active', value: 'ACTIVE' },
+                        { label: 'On Hold', value: 'ON_HOLD' },
+                        { label: 'Completed', value: 'COMPLETED' },
+                        { label: 'Cancelled', value: 'CANCELLED' }
+                      ]}
+                      placeholder="Select status"
+                      className="!pl-10 mobile-reduce-input"
+                    />
+                  </div>
+                </div>
+
+                {/* Manager */}
+                <div className="space-y-2">
+                  <Label htmlFor="managerId" className="text-foreground/90 font-semibold mobile-reduce-label">Manager</Label>
+                  <div className="relative">
+                    <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70 z-10" />
+                    <SearchableSelect
+                      value={formData.managerId}
+                      onChange={(value) => setFormData({ ...formData, managerId: value })}
+                      options={users.filter(u => u.role === 'MANAGER').map(user => ({ label: user.name, value: user.id }))}
+                      placeholder="Select Manager"
+                      className="!pl-10 mobile-reduce-input"
+                    />
+                  </div>
+                </div>
+
+                {/* Client field - always show now that Type is gone */}
+                <div className="space-y-2">
+                  <Label htmlFor="clientId" className="text-foreground/90 font-semibold mobile-reduce-label">Client</Label>
+                  <div className="relative">
+                    <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70 z-10" />
+                    <SearchableSelect
+                      value={formData.clientId}
+                      onChange={(value) => setFormData({ ...formData, clientId: value })}
+                      options={users.filter(u => u.role === 'CLIENT').map(user => ({ label: user.name, value: user.id }))}
+                      placeholder="Select Client"
+                      className="!pl-10 mobile-reduce-input"
+                    />
+                  </div>
+                </div>
+
+                {/* Start Date */}
+                <div className="space-y-2">
+                  <Label htmlFor="startDate" className="text-foreground/90 font-semibold mobile-reduce-label">Start Date</Label>
+                  <div className="relative">
+                    <DatePicker
+                      date={formData.startDate}
+                      setDate={(date) => setFormData({ ...formData, startDate: date })}
+                      placeholder="Select start date"
+                      className="mobile-reduce-input"
+                    />
+                  </div>
+                </div>
+
+                {/* End Date */}
+                <div className="space-y-2">
+                  <Label htmlFor="endDate" className="text-foreground/90 font-semibold mobile-reduce-label">End Date</Label>
+                  <div className="relative">
+                    <DatePicker
+                      date={formData.endDate}
+                      setDate={(date) => setFormData({ ...formData, endDate: date })}
+                      placeholder="Select end date"
+                      className="mobile-reduce-input"
+                    />
+                  </div>
+                </div>
+
+                {/* Budget */}
+                <div className="space-y-2">
+                  <Label htmlFor="totalBudget" className="text-foreground/90 font-semibold mobile-reduce-label">Budget (₹)</Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-foreground/70">₹</span>
+                    <Input
+                      id="totalBudget"
+                      type="number"
+                      value={formData.totalBudget}
+                      onChange={(e) => setFormData({ ...formData, totalBudget: e.target.value })}
+                      placeholder="0.00"
+                      className="!pl-8 mobile-reduce-input"
+                    />
+                  </div>
+                </div>
+
+                {/* Description - Full Width */}
+                <div className="md:col-span-2 space-y-2">
+                  <Label htmlFor="description" className="text-foreground/90 font-semibold mobile-reduce-label">Description</Label>
+                  <RichTextEditor
+                    value={formData.description}
+                    onChange={(value) => setFormData({ ...formData, description: value })}
+                    placeholder="Project description..."
                   />
                 </div>
-              </div>
-
-
-              {/* Status */}
-              <div className="space-y-2">
-                <Label htmlFor="status" className="text-foreground/90 font-semibold mobile-reduce-label">Status <span className="text-red-500">*</span></Label>
-                <div className="relative">
-                  <Target className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70 z-10" />
-                  <SearchableSelect
-                    value={formData.status}
-                    onChange={(value) => setFormData({ ...formData, status: value })}
-                    options={[
-                      { label: 'Planning', value: 'PLANNING' },
-                      { label: 'Active', value: 'ACTIVE' },
-                      { label: 'On Hold', value: 'ON_HOLD' },
-                      { label: 'Completed', value: 'COMPLETED' },
-                      { label: 'Cancelled', value: 'CANCELLED' }
-                    ]}
-                    placeholder="Select status"
-                    className="!pl-10 mobile-reduce-input"
-                  />
-                </div>
-              </div>
-
-              {/* Manager */}
-              <div className="space-y-2">
-                <Label htmlFor="managerId" className="text-foreground/90 font-semibold mobile-reduce-label">Manager</Label>
-                <div className="relative">
-                  <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70 z-10" />
-                  <SearchableSelect
-                    value={formData.managerId}
-                    onChange={(value) => setFormData({ ...formData, managerId: value })}
-                    options={users.filter(u => u.role === 'MANAGER').map(user => ({ label: user.name, value: user.id }))}
-                    placeholder="Select Manager"
-                    className="!pl-10 mobile-reduce-input"
-                  />
-                </div>
-              </div>
-
-              {/* Client field - always show now that Type is gone */}
-              <div className="space-y-2">
-                <Label htmlFor="clientId" className="text-foreground/90 font-semibold mobile-reduce-label">Client</Label>
-                <div className="relative">
-                  <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70 z-10" />
-                  <SearchableSelect
-                    value={formData.clientId}
-                    onChange={(value) => setFormData({ ...formData, clientId: value })}
-                    options={users.filter(u => u.role === 'CLIENT').map(user => ({ label: user.name, value: user.id }))}
-                    placeholder="Select Client"
-                    className="!pl-10 mobile-reduce-input"
-                  />
-                </div>
-              </div>
-
-              {/* Start Date */}
-              <div className="space-y-2">
-                <Label htmlFor="startDate" className="text-foreground/90 font-semibold mobile-reduce-label">Start Date</Label>
-                <div className="relative">
-                  <DatePicker
-                    date={formData.startDate}
-                    setDate={(date) => setFormData({ ...formData, startDate: date })}
-                    placeholder="Select start date"
-                    className="mobile-reduce-input"
-                  />
-                </div>
-              </div>
-
-              {/* End Date */}
-              <div className="space-y-2">
-                <Label htmlFor="endDate" className="text-foreground/90 font-semibold mobile-reduce-label">End Date</Label>
-                <div className="relative">
-                  <DatePicker
-                    date={formData.endDate}
-                    setDate={(date) => setFormData({ ...formData, endDate: date })}
-                    placeholder="Select end date"
-                    className="mobile-reduce-input"
-                  />
-                </div>
-              </div>
-
-              {/* Budget */}
-              <div className="space-y-2">
-                <Label htmlFor="totalBudget" className="text-foreground/90 font-semibold mobile-reduce-label">Budget (₹)</Label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-foreground/70">₹</span>
-                  <Input
-                    id="totalBudget"
-                    type="number"
-                    value={formData.totalBudget}
-                    onChange={(e) => setFormData({ ...formData, totalBudget: e.target.value })}
-                    placeholder="0.00"
-                    className="!pl-8 mobile-reduce-input"
-                  />
-                </div>
-              </div>
-
-              {/* Description - Full Width */}
-              <div className="md:col-span-2 space-y-2">
-                <Label htmlFor="description" className="text-foreground/90 font-semibold mobile-reduce-label">Description</Label>
-                <RichTextEditor
-                  value={formData.description}
-                  onChange={(value) => setFormData({ ...formData, description: value })}
-                  placeholder="Project description..."
-                />
-              </div>
               </div>
 
               <div className="flex justify-end gap-2 sm:gap-3 pt-4 sm:pt-6 border-t mt-1">
@@ -473,7 +473,7 @@ const ProjectsList = () => {
                 </Button>
                 {/* Mobile Action Button */}
                 {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
-                  <Button 
+                  <Button
                     onClick={() => setShowCreateDialog(true)}
                     className="w-11 h-11 p-0 shrink-0 sm:hidden rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground"
                   >
@@ -762,20 +762,19 @@ const ProjectsList = () => {
         <DialogContent className="sm:max-w-[900px] max-h-[95vh] p-0 overflow-hidden flex flex-col">
           <div className="overflow-y-auto p-4 sm:p-6 flex-1 w-full relative">
             <DialogHeader className="mb-2 sm:mb-4">
-              <div className="flex items-center justify-between pr-8">
-                <div>
-                  <DialogTitle className="text-xl sm:text-2xl font-bold">Project Quick Overview</DialogTitle>
-                  <DialogDescription className="text-xs sm:text-sm mt-1">
-                    Real-time snapshot of mission progress and team workload.
-                  </DialogDescription>
-                </div>
+              <div className="pr-12 relative">
+                <DialogTitle className="text-xl sm:text-2xl font-bold">Project Quick Overview</DialogTitle>
+                <DialogDescription className="text-xs sm:text-sm mt-1">
+                  Real-time snapshot of mission progress and team workload.
+                </DialogDescription>
                 <Button
                   onClick={() => navigate(`/projects/${selectedOverviewProject?.id}`)}
-                  className="bg-primary hover:bg-primary/90 text-white font-bold rounded-xl px-3 sm:px-4"
-                  size="sm"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 sm:-right-2 top-10 sm:top-6 text-muted-foreground hover:text-primary transition-all rounded-full h-8 w-8"
+                  title="View Full Details"
                 >
-                  <Eye className="w-4 h-4 sm:mr-2" />
-                  <span className="hidden sm:inline">View Full Details</span>
+                  <Eye className="w-5 h-5" />
                 </Button>
               </div>
             </DialogHeader>
