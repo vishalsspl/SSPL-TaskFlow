@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Plus, MessageSquare, Clock, Search } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { formatRelativeTime } from '@/lib/utils';
 import TablePagination from '@/components/ui/table-pagination';
 
 const TicketList = () => {
@@ -106,9 +106,8 @@ const TicketList = () => {
             </div>
 
 
-
             <Card className="flex-1 flex flex-col min-h-0">
-                <CardContent className="flex-1 flex flex-col min-h-0">
+                <CardContent className="flex-1 flex flex-col min-h-0 pt-6">
                     <div className="flex-1 overflow-y-auto min-h-0">
                         {/* Desktop Table */}
                         <div className="hidden sm:block">
@@ -160,7 +159,7 @@ const TicketList = () => {
                                                 <TableCell className="text-sm text-muted-foreground">
                                                     <div className="flex items-center gap-1">
                                                         <Clock className="w-3 h-3" />
-                                                        {formatDistanceToNow(new Date(ticket.updatedAt), { addSuffix: true })}
+                                                        {formatRelativeTime(ticket.updatedAt)}
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="text-right">
@@ -205,7 +204,7 @@ const TicketList = () => {
                                             </div>
                                             <div className="flex items-center gap-1 shrink-0">
                                                 <Clock className="w-3 h-3" />
-                                                {formatDistanceToNow(new Date(ticket.updatedAt), { addSuffix: true })}
+                                                {formatRelativeTime(ticket.updatedAt)}
                                             </div>
                                         </div>
                                     </div>

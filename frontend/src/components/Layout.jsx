@@ -182,7 +182,12 @@ const Layout = () => {
       icon: History,
       allowedRoles: ['ADMIN'],
     },
-
+    {
+      name: 'Integrations',
+      href: '/integrations',
+      icon: Zap,
+      allowedRoles: ['ADMIN', 'MANAGER', 'MEMBER'],
+    },
   ];
 
 

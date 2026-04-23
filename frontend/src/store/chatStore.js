@@ -124,9 +124,11 @@ export const useChatStore = create((set, get) => ({
         });
 
         socket.on('new-notification', (notification) => {
-            console.log('[Socket] New notification received:', notification);
+            console.log('[Socket Debug] New notification received:', notification);
             const currentUserId = get().userId;
+            console.log(`[Socket Debug] Current UserID: ${currentUserId}, Target UserID: ${notification.userId}`);
             if (String(notification.userId) === String(currentUserId)) {
+                console.log('[Socket Debug] User matched! Adding notification to store.');
                 useNotificationStore.getState().addNotification(notification);
             }
         });

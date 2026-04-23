@@ -341,11 +341,11 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
                     type="button"
                     variant="outline"
                     onClick={onCancel}
-                    className="w-full sm:w-auto hover:bg-gray-50"
+                    className="w-full sm:w-auto h-10 font-bold rounded-xl"
                 >
                     Cancel
                 </Button>
-                <Button type="submit" disabled={loading} className="w-full sm:w-auto bg-primary hover:bg-primary/90 shadow-md">
+                <Button type="submit" disabled={loading} className="w-full sm:w-auto bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 h-10 font-bold rounded-xl px-8">
                     {loading ? 'Creating...' : 'Create Project'}
                 </Button>
             </div>

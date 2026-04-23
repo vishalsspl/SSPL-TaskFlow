@@ -312,9 +312,6 @@ export const getOrgActivityLogs = async (req, res) => {
                             avatar: true,
                             role: true
                         }
-                    },
-                    project: {
-                        select: { name: true }
                     }
                 }
             }),

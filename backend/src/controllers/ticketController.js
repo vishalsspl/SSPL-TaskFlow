@@ -4,6 +4,7 @@ import {
     sendTicketStatusUpdateNotification,
     sendTicketCommentNotification
 } from '../services/emailService.js';
+import { createNotification } from '../utils/notifications.js';
 
 
 export const createTicket = async (req, res) => {
@@ -33,8 +34,10 @@ export const createTicket = async (req, res) => {
                 organizationId: req.user.organizationId,
                 role: { in: ['ADMIN', 'MANAGER'] },
             },
-            select: { email: true },
+            select: { id: true, email: true },
         });
+
+        console.log(`[Ticket Debug] Target staff for notification: ${staff.length} users. OrgID: ${req.user.organizationId}`);
 
         const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
         for (const member of staff) {
@@ -49,6 +52,15 @@ export const createTicket = async (req, res) => {
                     origin
                 ).catch(err => console.error('Failed to send new ticket notification:', err));
             }
+
+            console.log(`[Ticket Debug] Sending notification to Staff UserID: ${member.id}`);
+            createNotification(req, {
+                userId: member.id,
+                title: 'New Support Ticket',
+                message: `Client ${ticket.client.name} raised a ticket: ${ticket.title}`,
+                type: 'TICKET_CREATED',
+                link: `/tickets/${ticket.id}`
+            });
         }
 
         res.status(201).json(ticket);
@@ -195,6 +207,14 @@ export const updateTicketStatus = async (req, res) => {
                 req.user.name,
                 origin
             ).catch(err => console.error('Failed to send ticket status update notification:', err));
+
+            createNotification(req, {
+                userId: ticket.clientId,
+                title: 'Ticket Status Updated',
+                message: `Your ticket "${ticket.title}" status has been updated to ${status.replace('_', ' ')} by ${req.user.name}`,
+                type: 'TICKET_STATUS_UPDATED',
+                link: `/tickets/${id}`
+            });
         }
 
         res.json(ticket);
@@ -224,21 +244,27 @@ export const addComment = async (req, res) => {
             return res.status(403).json({ error: 'Access denied' });
         }
 
-        const comment = await req.db.ticketComment.create({
-            data: {
-                ticketId,
-                userId: req.user.id,
-                message,
-            },
-            include: {
-                user: { select: { name: true, email: true, avatar: true } },
-                ticket: {
-                    include: {
-                        client: { select: { name: true, email: true } }
+        const [comment] = await req.db.$transaction([
+            req.db.ticketComment.create({
+                data: {
+                    ticketId,
+                    userId: req.user.id,
+                    message,
+                },
+                include: {
+                    user: { select: { name: true, email: true, avatar: true } },
+                    ticket: {
+                        include: {
+                            client: { select: { name: true, email: true } }
+                        }
                     }
-                }
-            },
-        });
+                },
+            }),
+            req.db.ticket.update({
+                where: { id: ticketId },
+                data: { updatedAt: new Date() }
+            })
+        ]);
 
         const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
         // Notify relevant parties
@@ -249,7 +275,7 @@ export const addComment = async (req, res) => {
                     organizationId: req.user.organizationId,
                     role: { in: ['ADMIN', 'MANAGER'] },
                 },
-                select: { email: true },
+                select: { id: true, email: true },
             });
             for (const member of staff) {
                 if (member.email) {
@@ -262,6 +288,14 @@ export const addComment = async (req, res) => {
                         origin
                     ).catch(err => console.error('Failed to send comment notification to staff:', err));
                 }
+
+                createNotification(req, {
+                    userId: member.id,
+                    title: 'New Ticket Comment',
+                    message: `${req.user.name} commented on ticket: ${comment.ticket.title}`,
+                    type: 'TICKET_COMMENT',
+                    link: `/tickets/${ticketId}`
+                });
             }
         } else {
             // Staff commented, notify client
@@ -275,6 +309,14 @@ export const addComment = async (req, res) => {
                     origin
                 ).catch(err => console.error('Failed to send comment notification to client:', err));
             }
+
+            createNotification(req, {
+                userId: comment.ticket.clientId,
+                title: 'New Ticket Comment',
+                message: `${req.user.name} commented on your ticket: ${comment.ticket.title}`,
+                type: 'TICKET_COMMENT',
+                link: `/tickets/${ticketId}`
+            });
         }
 
         res.status(201).json(comment);

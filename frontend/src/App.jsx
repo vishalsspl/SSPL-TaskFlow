@@ -39,6 +39,7 @@ const Timesheets = lazy(() => import('./pages/Timesheets'));
 const Performance = lazy(() => import('./pages/Performance'));
 const OrganizationSettings = lazy(() => import('./pages/organization/OrganizationSettings'));
 const ActivityLog = lazy(() => import('./pages/organization/ActivityLog'));
+const Integrations = lazy(() => import('./pages/Integrations'));
 const RestrictedAccess = lazy(() => import('./pages/RestrictedAccess'));
 
 // ── Lazy-loaded: Ticket pages ──────────────────────────────────────────────
@@ -266,6 +267,14 @@ function App() {
                 element={
                   user?.role === 'ADMIN'
                     ? <ActivityLog />
+                    : <Navigate to="/dashboard" replace />
+                }
+              />
+              <Route
+                path="integrations"
+                element={
+                  ['ADMIN', 'MANAGER', 'MEMBER'].includes(user?.role)
+                    ? <Integrations />
                     : <Navigate to="/dashboard" replace />
                 }
               />

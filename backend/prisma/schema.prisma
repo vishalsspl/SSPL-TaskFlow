@@ -55,9 +55,28 @@ model Organization {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  invoices Invoice[]
-  users    User[]
+  invoices     Invoice[]
+  users        User[]
   activityLogs ActivityLog[]
+  integrations Integration[]
+}
+
+model Integration {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  provider     String    // "github"
+  accessToken  String
+  refreshToken String?
+  expiresAt    DateTime?
+
+  config Json? // For additional metadata like installationId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([organizationId, provider])
 }
 
 // Auth lookup table — keeps email + passwordHash for all users across all tenants

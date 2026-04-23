@@ -1,5 +1,6 @@
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge"
+import { formatDistanceToNow } from 'date-fns';
 
 export function cn(...inputs) {
   return twMerge(clsx(inputs));
@@ -7,7 +8,19 @@ export function cn(...inputs) {
 
 export function formatDate(dateString) {
   if (!dateString) return 'N/A';
-  return new Date(dateString).toLocaleDateString();
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return 'N/A';
+  return date.toLocaleDateString();
+}
+
+export function formatRelativeTime(dateString) {
+  if (!dateString) return 'Just now';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return 'Just now';
+
+  // Prevent "in the future" errors if server/client clocks are slightly out of sync
+  const now = new Date();
+  return formatDistanceToNow(date > now ? now : date, { addSuffix: true });
 }
 
 export function formatChatTimestamp(dateString) {

@@ -379,11 +379,11 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                 </div>
             )}
 
-            <div className="flex justify-end gap-2 sm:gap-3 pt-4 sm:pt-6 border-t mt-1 sm:mt-2">
-                <Button type="button" variant="outline" onClick={onCancel} disabled={loading} className="hover:bg-gray-50 h-8 sm:h-10 text-xs sm:text-sm">
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-4 sm:pt-6 border-t mt-1 sm:mt-2">
+                <Button type="button" variant="outline" onClick={onCancel} disabled={loading} className="w-full sm:w-auto h-10 font-bold rounded-xl">
                     Cancel
                 </Button>
-                <Button type="submit" disabled={loading} className="bg-primary hover:bg-primary/90 shadow-md h-8 sm:h-10 text-xs sm:text-sm px-6">
+                <Button type="submit" disabled={loading} className="w-full sm:w-auto bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 h-10 font-bold rounded-xl px-8">
                     {loading ? (isEdit ? 'Updating...' : 'Creating...') : (isEdit ? 'Update Task' : 'Create Task')}
                 </Button>
             </div>

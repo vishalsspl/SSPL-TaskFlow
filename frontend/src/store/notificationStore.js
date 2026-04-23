@@ -17,6 +17,7 @@ export const useNotificationStore = create((set, get) => ({
     try {
       const response = await api.get(baseUrl);
       const notifications = response.data;
+      console.log(`[Notification Store Debug] Fetched ${notifications.length} notifications from: ${baseUrl}`);
       const unreadCount = notifications.filter(n => !n.isRead).length;
       set({ notifications, unreadCount, loading: false });
     } catch (error) {

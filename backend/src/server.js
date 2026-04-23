@@ -22,6 +22,7 @@ import superadminRoutes from './routes/superadmin.js';
 import settingsRoutes from './routes/settings.js';
 import notificationRoutes from './routes/notifications.js';
 import billingRoutes from './routes/billing.js';
+import integrationRoutes from './routes/integrations.js';
 import { getPublicSettings } from './controllers/settingsController.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import prisma from './lib/prisma.js';
@@ -87,6 +88,7 @@ app.use('/api/superadmin', superadminRoutes);
 app.use('/api/superadmin/settings', settingsRoutes);
 app.use('/api/superadmin/billing', billingRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/integrations', integrationRoutes);
 
 // Socket.io
 io.on('connection', (socket) => {

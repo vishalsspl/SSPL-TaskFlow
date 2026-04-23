@@ -12,8 +12,12 @@ export const createNotification = async (req, { userId, title, message, type, li
         },
       });
   
+      console.log(`[Notification Debug] Created DB record for ${userId}. Emitting to org-${req.user.organizationId}`);
+
       if (req.io) {
-        req.io.to(`org-${req.user.organizationId}`).emit('new-notification', notification);
+        const room = `org-${req.user.organizationId}`;
+        req.io.to(room).emit('new-notification', notification);
+        console.log(`[Notification Debug] Socket emitted to room: ${room}`);
       }
       return notification;
     } catch (error) {

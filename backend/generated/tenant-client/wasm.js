@@ -181,6 +181,8 @@ exports.Prisma.ProjectScalarFieldEnum = {
   endDate: 'endDate',
   totalBudget: 'totalBudget',
   usedBudget: 'usedBudget',
+  githubRepo: 'githubRepo',
+  githubInstallationId: 'githubInstallationId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -261,7 +263,8 @@ exports.Prisma.TicketScalarFieldEnum = {
   status: 'status',
   priority: 'priority',
   clientId: 'clientId',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.TicketCommentScalarFieldEnum = {
@@ -269,7 +272,8 @@ exports.Prisma.TicketCommentScalarFieldEnum = {
   ticketId: 'ticketId',
   userId: 'userId',
   message: 'message',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.ChatMessageScalarFieldEnum = {
@@ -365,6 +369,7 @@ exports.OrgStatus = exports.$Enums.OrgStatus = {
 };
 
 exports.Role = exports.$Enums.Role = {
+  SUPERADMIN: 'SUPERADMIN',
   ADMIN: 'ADMIN',
   MANAGER: 'MANAGER',
   MEMBER: 'MEMBER',

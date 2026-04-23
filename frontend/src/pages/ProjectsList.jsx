@@ -448,11 +448,11 @@ const ProjectsList = () => {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 sm:gap-3 pt-4 sm:pt-6 border-t mt-1">
-                <Button type="button" variant="outline" onClick={() => setShowEditDialog(false)} className="hover:bg-gray-50 h-8 sm:h-10 text-xs sm:text-sm">
+               <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-4 sm:pt-6 border-t mt-1 px-4 sm:px-0">
+                <Button type="button" variant="outline" onClick={() => setShowEditDialog(false)} className="w-full sm:w-auto h-10 font-bold rounded-xl">
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-primary hover:bg-primary/90 shadow-md h-8 sm:h-10 text-xs sm:text-sm px-6">Update Project</Button>
+                <Button type="submit" className="w-full sm:w-auto bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 h-10 font-bold rounded-xl px-8">Update Project</Button>
               </div>
             </form>
           </div>

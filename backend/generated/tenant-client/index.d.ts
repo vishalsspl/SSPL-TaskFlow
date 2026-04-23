@@ -119,6 +119,7 @@ export type OrgStatus = (typeof OrgStatus)[keyof typeof OrgStatus]
 
 
 export const Role: {
+  SUPERADMIN: 'SUPERADMIN',
   ADMIN: 'ADMIN',
   MANAGER: 'MANAGER',
   MEMBER: 'MEMBER',
@@ -2525,7 +2526,6 @@ export namespace Prisma {
     workloads: number
     workLogs: number
     timeEntries: number
-    activityLogs: number
   }
 
   export type ProjectCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2534,7 +2534,6 @@ export namespace Prisma {
     workloads?: boolean | ProjectCountOutputTypeCountWorkloadsArgs
     workLogs?: boolean | ProjectCountOutputTypeCountWorkLogsArgs
     timeEntries?: boolean | ProjectCountOutputTypeCountTimeEntriesArgs
-    activityLogs?: boolean | ProjectCountOutputTypeCountActivityLogsArgs
   }
 
   // Custom InputTypes
@@ -2581,13 +2580,6 @@ export namespace Prisma {
    */
   export type ProjectCountOutputTypeCountTimeEntriesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TimeEntryWhereInput
-  }
-
-  /**
-   * ProjectCountOutputType without action
-   */
-  export type ProjectCountOutputTypeCountActivityLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: ActivityLogWhereInput
   }
 
 
@@ -4313,7 +4305,7 @@ export namespace Prisma {
     resetTokenExpiry: Date | null
     managerId: string | null
     createdAt: Date
-    updatedAt: Date
+    updatedAt: Date | null
     _count: UserCountAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
     _max: UserMaxAggregateOutputType | null
@@ -4461,7 +4453,7 @@ export namespace Prisma {
       resetTokenExpiry: Date | null
       managerId: string | null
       createdAt: Date
-      updatedAt: Date
+      updatedAt: Date | null
     }, ExtArgs["result"]["user"]>
     composites: {}
   }
@@ -5562,6 +5554,8 @@ export namespace Prisma {
     endDate: Date | null
     totalBudget: Decimal | null
     usedBudget: Decimal | null
+    githubRepo: string | null
+    githubInstallationId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -5579,6 +5573,8 @@ export namespace Prisma {
     endDate: Date | null
     totalBudget: Decimal | null
     usedBudget: Decimal | null
+    githubRepo: string | null
+    githubInstallationId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -5596,6 +5592,8 @@ export namespace Prisma {
     endDate: number
     totalBudget: number
     usedBudget: number
+    githubRepo: number
+    githubInstallationId: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -5625,6 +5623,8 @@ export namespace Prisma {
     endDate?: true
     totalBudget?: true
     usedBudget?: true
+    githubRepo?: true
+    githubInstallationId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -5642,6 +5642,8 @@ export namespace Prisma {
     endDate?: true
     totalBudget?: true
     usedBudget?: true
+    githubRepo?: true
+    githubInstallationId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -5659,6 +5661,8 @@ export namespace Prisma {
     endDate?: true
     totalBudget?: true
     usedBudget?: true
+    githubRepo?: true
+    githubInstallationId?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -5763,6 +5767,8 @@ export namespace Prisma {
     endDate: Date | null
     totalBudget: Decimal | null
     usedBudget: Decimal
+    githubRepo: string | null
+    githubInstallationId: string | null
     createdAt: Date
     updatedAt: Date
     _count: ProjectCountAggregateOutputType | null
@@ -5799,6 +5805,8 @@ export namespace Prisma {
     endDate?: boolean
     totalBudget?: boolean
     usedBudget?: boolean
+    githubRepo?: boolean
+    githubInstallationId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
@@ -5809,7 +5817,6 @@ export namespace Prisma {
     workloads?: boolean | Project$workloadsArgs<ExtArgs>
     workLogs?: boolean | Project$workLogsArgs<ExtArgs>
     timeEntries?: boolean | Project$timeEntriesArgs<ExtArgs>
-    activityLogs?: boolean | Project$activityLogsArgs<ExtArgs>
     _count?: boolean | ProjectCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["project"]>
 
@@ -5826,6 +5833,8 @@ export namespace Prisma {
     endDate?: boolean
     totalBudget?: boolean
     usedBudget?: boolean
+    githubRepo?: boolean
+    githubInstallationId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
@@ -5846,6 +5855,8 @@ export namespace Prisma {
     endDate?: boolean
     totalBudget?: boolean
     usedBudget?: boolean
+    githubRepo?: boolean
+    githubInstallationId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -5859,7 +5870,6 @@ export namespace Prisma {
     workloads?: boolean | Project$workloadsArgs<ExtArgs>
     workLogs?: boolean | Project$workLogsArgs<ExtArgs>
     timeEntries?: boolean | Project$timeEntriesArgs<ExtArgs>
-    activityLogs?: boolean | Project$activityLogsArgs<ExtArgs>
     _count?: boolean | ProjectCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ProjectIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5879,7 +5889,6 @@ export namespace Prisma {
       workloads: Prisma.$WorkloadPayload<ExtArgs>[]
       workLogs: Prisma.$WorkLogPayload<ExtArgs>[]
       timeEntries: Prisma.$TimeEntryPayload<ExtArgs>[]
-      activityLogs: Prisma.$ActivityLogPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -5894,6 +5903,8 @@ export namespace Prisma {
       endDate: Date | null
       totalBudget: Prisma.Decimal | null
       usedBudget: Prisma.Decimal
+      githubRepo: string | null
+      githubInstallationId: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["project"]>
@@ -6268,7 +6279,6 @@ export namespace Prisma {
     workloads<T extends Project$workloadsArgs<ExtArgs> = {}>(args?: Subset<T, Project$workloadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkloadPayload<ExtArgs>, T, "findMany"> | Null>
     workLogs<T extends Project$workLogsArgs<ExtArgs> = {}>(args?: Subset<T, Project$workLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkLogPayload<ExtArgs>, T, "findMany"> | Null>
     timeEntries<T extends Project$timeEntriesArgs<ExtArgs> = {}>(args?: Subset<T, Project$timeEntriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TimeEntryPayload<ExtArgs>, T, "findMany"> | Null>
-    activityLogs<T extends Project$activityLogsArgs<ExtArgs> = {}>(args?: Subset<T, Project$activityLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ActivityLogPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6310,6 +6320,8 @@ export namespace Prisma {
     readonly endDate: FieldRef<"Project", 'DateTime'>
     readonly totalBudget: FieldRef<"Project", 'Decimal'>
     readonly usedBudget: FieldRef<"Project", 'Decimal'>
+    readonly githubRepo: FieldRef<"Project", 'String'>
+    readonly githubInstallationId: FieldRef<"Project", 'String'>
     readonly createdAt: FieldRef<"Project", 'DateTime'>
     readonly updatedAt: FieldRef<"Project", 'DateTime'>
   }
@@ -6757,26 +6769,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: TimeEntryScalarFieldEnum | TimeEntryScalarFieldEnum[]
-  }
-
-  /**
-   * Project.activityLogs
-   */
-  export type Project$activityLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the ActivityLog
-     */
-    select?: ActivityLogSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ActivityLogInclude<ExtArgs> | null
-    where?: ActivityLogWhereInput
-    orderBy?: ActivityLogOrderByWithRelationInput | ActivityLogOrderByWithRelationInput[]
-    cursor?: ActivityLogWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: ActivityLogScalarFieldEnum | ActivityLogScalarFieldEnum[]
   }
 
   /**
@@ -12982,6 +12974,7 @@ export namespace Prisma {
     priority: $Enums.Priority | null
     clientId: string | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type TicketMaxAggregateOutputType = {
@@ -12993,6 +12986,7 @@ export namespace Prisma {
     priority: $Enums.Priority | null
     clientId: string | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type TicketCountAggregateOutputType = {
@@ -13004,6 +12998,7 @@ export namespace Prisma {
     priority: number
     clientId: number
     createdAt: number
+    updatedAt: number
     _all: number
   }
 
@@ -13017,6 +13012,7 @@ export namespace Prisma {
     priority?: true
     clientId?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type TicketMaxAggregateInputType = {
@@ -13028,6 +13024,7 @@ export namespace Prisma {
     priority?: true
     clientId?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type TicketCountAggregateInputType = {
@@ -13039,6 +13036,7 @@ export namespace Prisma {
     priority?: true
     clientId?: true
     createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -13123,6 +13121,7 @@ export namespace Prisma {
     priority: $Enums.Priority
     clientId: string
     createdAt: Date
+    updatedAt: Date
     _count: TicketCountAggregateOutputType | null
     _min: TicketMinAggregateOutputType | null
     _max: TicketMaxAggregateOutputType | null
@@ -13151,6 +13150,7 @@ export namespace Prisma {
     priority?: boolean
     clientId?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     organization?: boolean | Ticket$organizationArgs<ExtArgs>
     client?: boolean | UserDefaultArgs<ExtArgs>
     comments?: boolean | Ticket$commentsArgs<ExtArgs>
@@ -13166,6 +13166,7 @@ export namespace Prisma {
     priority?: boolean
     clientId?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     organization?: boolean | Ticket$organizationArgs<ExtArgs>
     client?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["ticket"]>
@@ -13179,6 +13180,7 @@ export namespace Prisma {
     priority?: boolean
     clientId?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }
 
   export type TicketInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -13208,6 +13210,7 @@ export namespace Prisma {
       priority: $Enums.Priority
       clientId: string
       createdAt: Date
+      updatedAt: Date
     }, ExtArgs["result"]["ticket"]>
     composites: {}
   }
@@ -13612,6 +13615,7 @@ export namespace Prisma {
     readonly priority: FieldRef<"Ticket", 'Priority'>
     readonly clientId: FieldRef<"Ticket", 'String'>
     readonly createdAt: FieldRef<"Ticket", 'DateTime'>
+    readonly updatedAt: FieldRef<"Ticket", 'DateTime'>
   }
     
 
@@ -13995,6 +13999,7 @@ export namespace Prisma {
     userId: string | null
     message: string | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type TicketCommentMaxAggregateOutputType = {
@@ -14003,6 +14008,7 @@ export namespace Prisma {
     userId: string | null
     message: string | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type TicketCommentCountAggregateOutputType = {
@@ -14011,6 +14017,7 @@ export namespace Prisma {
     userId: number
     message: number
     createdAt: number
+    updatedAt: number
     _all: number
   }
 
@@ -14021,6 +14028,7 @@ export namespace Prisma {
     userId?: true
     message?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type TicketCommentMaxAggregateInputType = {
@@ -14029,6 +14037,7 @@ export namespace Prisma {
     userId?: true
     message?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type TicketCommentCountAggregateInputType = {
@@ -14037,6 +14046,7 @@ export namespace Prisma {
     userId?: true
     message?: true
     createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -14118,6 +14128,7 @@ export namespace Prisma {
     userId: string
     message: string
     createdAt: Date
+    updatedAt: Date
     _count: TicketCommentCountAggregateOutputType | null
     _min: TicketCommentMinAggregateOutputType | null
     _max: TicketCommentMaxAggregateOutputType | null
@@ -14143,6 +14154,7 @@ export namespace Prisma {
     userId?: boolean
     message?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     ticket?: boolean | TicketDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["ticketComment"]>
@@ -14153,6 +14165,7 @@ export namespace Prisma {
     userId?: boolean
     message?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     ticket?: boolean | TicketDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["ticketComment"]>
@@ -14163,6 +14176,7 @@ export namespace Prisma {
     userId?: boolean
     message?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }
 
   export type TicketCommentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -14186,6 +14200,7 @@ export namespace Prisma {
       userId: string
       message: string
       createdAt: Date
+      updatedAt: Date
     }, ExtArgs["result"]["ticketComment"]>
     composites: {}
   }
@@ -14586,6 +14601,7 @@ export namespace Prisma {
     readonly userId: FieldRef<"TicketComment", 'String'>
     readonly message: FieldRef<"TicketComment", 'String'>
     readonly createdAt: FieldRef<"TicketComment", 'DateTime'>
+    readonly updatedAt: FieldRef<"TicketComment", 'DateTime'>
   }
     
 
@@ -17043,7 +17059,6 @@ export namespace Prisma {
     details?: boolean
     createdAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
-    project?: boolean | ActivityLog$projectArgs<ExtArgs>
     organization?: boolean | ActivityLog$organizationArgs<ExtArgs>
   }, ExtArgs["result"]["activityLog"]>
 
@@ -17058,7 +17073,6 @@ export namespace Prisma {
     details?: boolean
     createdAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
-    project?: boolean | ActivityLog$projectArgs<ExtArgs>
     organization?: boolean | ActivityLog$organizationArgs<ExtArgs>
   }, ExtArgs["result"]["activityLog"]>
 
@@ -17076,12 +17090,10 @@ export namespace Prisma {
 
   export type ActivityLogInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
-    project?: boolean | ActivityLog$projectArgs<ExtArgs>
     organization?: boolean | ActivityLog$organizationArgs<ExtArgs>
   }
   export type ActivityLogIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
-    project?: boolean | ActivityLog$projectArgs<ExtArgs>
     organization?: boolean | ActivityLog$organizationArgs<ExtArgs>
   }
 
@@ -17089,7 +17101,6 @@ export namespace Prisma {
     name: "ActivityLog"
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
-      project: Prisma.$ProjectPayload<ExtArgs> | null
       organization: Prisma.$OrganizationPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -17467,7 +17478,6 @@ export namespace Prisma {
   export interface Prisma__ActivityLogClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
-    project<T extends ActivityLog$projectArgs<ExtArgs> = {}>(args?: Subset<T, ActivityLog$projectArgs<ExtArgs>>): Prisma__ProjectClient<$Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     organization<T extends ActivityLog$organizationArgs<ExtArgs> = {}>(args?: Subset<T, ActivityLog$organizationArgs<ExtArgs>>): Prisma__OrganizationClient<$Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -17825,21 +17835,6 @@ export namespace Prisma {
   }
 
   /**
-   * ActivityLog.project
-   */
-  export type ActivityLog$projectArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Project
-     */
-    select?: ProjectSelect<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ProjectInclude<ExtArgs> | null
-    where?: ProjectWhereInput
-  }
-
-  /**
    * ActivityLog.organization
    */
   export type ActivityLog$organizationArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -18029,7 +18024,7 @@ export namespace Prisma {
   export type NotificationGroupByOutputType = {
     id: string
     userId: string
-    organizationId: string
+    organizationId: string | null
     title: string
     message: string
     type: string
@@ -18066,7 +18061,7 @@ export namespace Prisma {
     isRead?: boolean
     createdAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
-    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
+    organization?: boolean | Notification$organizationArgs<ExtArgs>
   }, ExtArgs["result"]["notification"]>
 
   export type NotificationSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -18080,7 +18075,7 @@ export namespace Prisma {
     isRead?: boolean
     createdAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
-    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
+    organization?: boolean | Notification$organizationArgs<ExtArgs>
   }, ExtArgs["result"]["notification"]>
 
   export type NotificationSelectScalar = {
@@ -18097,23 +18092,23 @@ export namespace Prisma {
 
   export type NotificationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
-    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
+    organization?: boolean | Notification$organizationArgs<ExtArgs>
   }
   export type NotificationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
-    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
+    organization?: boolean | Notification$organizationArgs<ExtArgs>
   }
 
   export type $NotificationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Notification"
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
-      organization: Prisma.$OrganizationPayload<ExtArgs>
+      organization: Prisma.$OrganizationPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       userId: string
-      organizationId: string
+      organizationId: string | null
       title: string
       message: string
       type: string
@@ -18485,7 +18480,7 @@ export namespace Prisma {
   export interface Prisma__NotificationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
-    organization<T extends OrganizationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OrganizationDefaultArgs<ExtArgs>>): Prisma__OrganizationClient<$Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    organization<T extends Notification$organizationArgs<ExtArgs> = {}>(args?: Subset<T, Notification$organizationArgs<ExtArgs>>): Prisma__OrganizationClient<$Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -18839,6 +18834,21 @@ export namespace Prisma {
      * Filter which Notifications to delete
      */
     where?: NotificationWhereInput
+  }
+
+  /**
+   * Notification.organization
+   */
+  export type Notification$organizationArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Organization
+     */
+    select?: OrganizationSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: OrganizationInclude<ExtArgs> | null
+    where?: OrganizationWhereInput
   }
 
   /**
@@ -19944,6 +19954,8 @@ export namespace Prisma {
     endDate: 'endDate',
     totalBudget: 'totalBudget',
     usedBudget: 'usedBudget',
+    githubRepo: 'githubRepo',
+    githubInstallationId: 'githubInstallationId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -20045,7 +20057,8 @@ export namespace Prisma {
     status: 'status',
     priority: 'priority',
     clientId: 'clientId',
-    createdAt: 'createdAt'
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type TicketScalarFieldEnum = (typeof TicketScalarFieldEnum)[keyof typeof TicketScalarFieldEnum]
@@ -20056,7 +20069,8 @@ export namespace Prisma {
     ticketId: 'ticketId',
     userId: 'userId',
     message: 'message',
-    createdAt: 'createdAt'
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type TicketCommentScalarFieldEnum = (typeof TicketCommentScalarFieldEnum)[keyof typeof TicketCommentScalarFieldEnum]
@@ -20603,7 +20617,7 @@ export namespace Prisma {
     resetTokenExpiry?: DateTimeNullableFilter<"User"> | Date | string | null
     managerId?: StringNullableFilter<"User"> | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
-    updatedAt?: DateTimeFilter<"User"> | Date | string
+    updatedAt?: DateTimeNullableFilter<"User"> | Date | string | null
     organization?: XOR<OrganizationNullableRelationFilter, OrganizationWhereInput> | null
     manager?: XOR<UserNullableRelationFilter, UserWhereInput> | null
     members?: UserListRelationFilter
@@ -20636,7 +20650,7 @@ export namespace Prisma {
     resetTokenExpiry?: SortOrderInput | SortOrder
     managerId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
-    updatedAt?: SortOrder
+    updatedAt?: SortOrderInput | SortOrder
     organization?: OrganizationOrderByWithRelationInput
     manager?: UserOrderByWithRelationInput
     members?: UserOrderByRelationAggregateInput
@@ -20673,7 +20687,7 @@ export namespace Prisma {
     resetTokenExpiry?: DateTimeNullableFilter<"User"> | Date | string | null
     managerId?: StringNullableFilter<"User"> | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
-    updatedAt?: DateTimeFilter<"User"> | Date | string
+    updatedAt?: DateTimeNullableFilter<"User"> | Date | string | null
     organization?: XOR<OrganizationNullableRelationFilter, OrganizationWhereInput> | null
     manager?: XOR<UserNullableRelationFilter, UserWhereInput> | null
     members?: UserListRelationFilter
@@ -20706,7 +20720,7 @@ export namespace Prisma {
     resetTokenExpiry?: SortOrderInput | SortOrder
     managerId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
-    updatedAt?: SortOrder
+    updatedAt?: SortOrderInput | SortOrder
     _count?: UserCountOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
     _min?: UserMinOrderByAggregateInput
@@ -20729,7 +20743,7 @@ export namespace Prisma {
     resetTokenExpiry?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
     managerId?: StringNullableWithAggregatesFilter<"User"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
+    updatedAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
   }
 
   export type ProjectWhereInput = {
@@ -20748,6 +20762,8 @@ export namespace Prisma {
     endDate?: DateTimeNullableFilter<"Project"> | Date | string | null
     totalBudget?: DecimalNullableFilter<"Project"> | Decimal | DecimalJsLike | number | string | null
     usedBudget?: DecimalFilter<"Project"> | Decimal | DecimalJsLike | number | string
+    githubRepo?: StringNullableFilter<"Project"> | string | null
+    githubInstallationId?: StringNullableFilter<"Project"> | string | null
     createdAt?: DateTimeFilter<"Project"> | Date | string
     updatedAt?: DateTimeFilter<"Project"> | Date | string
     organization?: XOR<OrganizationRelationFilter, OrganizationWhereInput>
@@ -20758,7 +20774,6 @@ export namespace Prisma {
     workloads?: WorkloadListRelationFilter
     workLogs?: WorkLogListRelationFilter
     timeEntries?: TimeEntryListRelationFilter
-    activityLogs?: ActivityLogListRelationFilter
   }
 
   export type ProjectOrderByWithRelationInput = {
@@ -20774,6 +20789,8 @@ export namespace Prisma {
     endDate?: SortOrderInput | SortOrder
     totalBudget?: SortOrderInput | SortOrder
     usedBudget?: SortOrder
+    githubRepo?: SortOrderInput | SortOrder
+    githubInstallationId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     organization?: OrganizationOrderByWithRelationInput
@@ -20784,7 +20801,6 @@ export namespace Prisma {
     workloads?: WorkloadOrderByRelationAggregateInput
     workLogs?: WorkLogOrderByRelationAggregateInput
     timeEntries?: TimeEntryOrderByRelationAggregateInput
-    activityLogs?: ActivityLogOrderByRelationAggregateInput
   }
 
   export type ProjectWhereUniqueInput = Prisma.AtLeast<{
@@ -20803,6 +20819,8 @@ export namespace Prisma {
     endDate?: DateTimeNullableFilter<"Project"> | Date | string | null
     totalBudget?: DecimalNullableFilter<"Project"> | Decimal | DecimalJsLike | number | string | null
     usedBudget?: DecimalFilter<"Project"> | Decimal | DecimalJsLike | number | string
+    githubRepo?: StringNullableFilter<"Project"> | string | null
+    githubInstallationId?: StringNullableFilter<"Project"> | string | null
     createdAt?: DateTimeFilter<"Project"> | Date | string
     updatedAt?: DateTimeFilter<"Project"> | Date | string
     organization?: XOR<OrganizationRelationFilter, OrganizationWhereInput>
@@ -20813,7 +20831,6 @@ export namespace Prisma {
     workloads?: WorkloadListRelationFilter
     workLogs?: WorkLogListRelationFilter
     timeEntries?: TimeEntryListRelationFilter
-    activityLogs?: ActivityLogListRelationFilter
   }, "id">
 
   export type ProjectOrderByWithAggregationInput = {
@@ -20829,6 +20846,8 @@ export namespace Prisma {
     endDate?: SortOrderInput | SortOrder
     totalBudget?: SortOrderInput | SortOrder
     usedBudget?: SortOrder
+    githubRepo?: SortOrderInput | SortOrder
+    githubInstallationId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: ProjectCountOrderByAggregateInput
@@ -20854,6 +20873,8 @@ export namespace Prisma {
     endDate?: DateTimeNullableWithAggregatesFilter<"Project"> | Date | string | null
     totalBudget?: DecimalNullableWithAggregatesFilter<"Project"> | Decimal | DecimalJsLike | number | string | null
     usedBudget?: DecimalWithAggregatesFilter<"Project"> | Decimal | DecimalJsLike | number | string
+    githubRepo?: StringNullableWithAggregatesFilter<"Project"> | string | null
+    githubInstallationId?: StringNullableWithAggregatesFilter<"Project"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Project"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Project"> | Date | string
   }
@@ -21345,6 +21366,7 @@ export namespace Prisma {
     priority?: EnumPriorityFilter<"Ticket"> | $Enums.Priority
     clientId?: StringFilter<"Ticket"> | string
     createdAt?: DateTimeFilter<"Ticket"> | Date | string
+    updatedAt?: DateTimeFilter<"Ticket"> | Date | string
     organization?: XOR<OrganizationNullableRelationFilter, OrganizationWhereInput> | null
     client?: XOR<UserRelationFilter, UserWhereInput>
     comments?: TicketCommentListRelationFilter
@@ -21359,6 +21381,7 @@ export namespace Prisma {
     priority?: SortOrder
     clientId?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     organization?: OrganizationOrderByWithRelationInput
     client?: UserOrderByWithRelationInput
     comments?: TicketCommentOrderByRelationAggregateInput
@@ -21376,6 +21399,7 @@ export namespace Prisma {
     priority?: EnumPriorityFilter<"Ticket"> | $Enums.Priority
     clientId?: StringFilter<"Ticket"> | string
     createdAt?: DateTimeFilter<"Ticket"> | Date | string
+    updatedAt?: DateTimeFilter<"Ticket"> | Date | string
     organization?: XOR<OrganizationNullableRelationFilter, OrganizationWhereInput> | null
     client?: XOR<UserRelationFilter, UserWhereInput>
     comments?: TicketCommentListRelationFilter
@@ -21390,6 +21414,7 @@ export namespace Prisma {
     priority?: SortOrder
     clientId?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: TicketCountOrderByAggregateInput
     _max?: TicketMaxOrderByAggregateInput
     _min?: TicketMinOrderByAggregateInput
@@ -21407,6 +21432,7 @@ export namespace Prisma {
     priority?: EnumPriorityWithAggregatesFilter<"Ticket"> | $Enums.Priority
     clientId?: StringWithAggregatesFilter<"Ticket"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Ticket"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Ticket"> | Date | string
   }
 
   export type TicketCommentWhereInput = {
@@ -21418,6 +21444,7 @@ export namespace Prisma {
     userId?: StringFilter<"TicketComment"> | string
     message?: StringFilter<"TicketComment"> | string
     createdAt?: DateTimeFilter<"TicketComment"> | Date | string
+    updatedAt?: DateTimeFilter<"TicketComment"> | Date | string
     ticket?: XOR<TicketRelationFilter, TicketWhereInput>
     user?: XOR<UserRelationFilter, UserWhereInput>
   }
@@ -21428,6 +21455,7 @@ export namespace Prisma {
     userId?: SortOrder
     message?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     ticket?: TicketOrderByWithRelationInput
     user?: UserOrderByWithRelationInput
   }
@@ -21441,6 +21469,7 @@ export namespace Prisma {
     userId?: StringFilter<"TicketComment"> | string
     message?: StringFilter<"TicketComment"> | string
     createdAt?: DateTimeFilter<"TicketComment"> | Date | string
+    updatedAt?: DateTimeFilter<"TicketComment"> | Date | string
     ticket?: XOR<TicketRelationFilter, TicketWhereInput>
     user?: XOR<UserRelationFilter, UserWhereInput>
   }, "id">
@@ -21451,6 +21480,7 @@ export namespace Prisma {
     userId?: SortOrder
     message?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: TicketCommentCountOrderByAggregateInput
     _max?: TicketCommentMaxOrderByAggregateInput
     _min?: TicketCommentMinOrderByAggregateInput
@@ -21465,6 +21495,7 @@ export namespace Prisma {
     userId?: StringWithAggregatesFilter<"TicketComment"> | string
     message?: StringWithAggregatesFilter<"TicketComment"> | string
     createdAt?: DateTimeWithAggregatesFilter<"TicketComment"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"TicketComment"> | Date | string
   }
 
   export type ChatMessageWhereInput = {
@@ -21608,7 +21639,6 @@ export namespace Prisma {
     details?: JsonNullableFilter<"ActivityLog">
     createdAt?: DateTimeFilter<"ActivityLog"> | Date | string
     user?: XOR<UserRelationFilter, UserWhereInput>
-    project?: XOR<ProjectNullableRelationFilter, ProjectWhereInput> | null
     organization?: XOR<OrganizationNullableRelationFilter, OrganizationWhereInput> | null
   }
 
@@ -21623,7 +21653,6 @@ export namespace Prisma {
     details?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     user?: UserOrderByWithRelationInput
-    project?: ProjectOrderByWithRelationInput
     organization?: OrganizationOrderByWithRelationInput
   }
 
@@ -21641,7 +21670,6 @@ export namespace Prisma {
     details?: JsonNullableFilter<"ActivityLog">
     createdAt?: DateTimeFilter<"ActivityLog"> | Date | string
     user?: XOR<UserRelationFilter, UserWhereInput>
-    project?: XOR<ProjectNullableRelationFilter, ProjectWhereInput> | null
     organization?: XOR<OrganizationNullableRelationFilter, OrganizationWhereInput> | null
   }, "id">
 
@@ -21681,7 +21709,7 @@ export namespace Prisma {
     NOT?: NotificationWhereInput | NotificationWhereInput[]
     id?: StringFilter<"Notification"> | string
     userId?: StringFilter<"Notification"> | string
-    organizationId?: StringFilter<"Notification"> | string
+    organizationId?: StringNullableFilter<"Notification"> | string | null
     title?: StringFilter<"Notification"> | string
     message?: StringFilter<"Notification"> | string
     type?: StringFilter<"Notification"> | string
@@ -21689,13 +21717,13 @@ export namespace Prisma {
     isRead?: BoolFilter<"Notification"> | boolean
     createdAt?: DateTimeFilter<"Notification"> | Date | string
     user?: XOR<UserRelationFilter, UserWhereInput>
-    organization?: XOR<OrganizationRelationFilter, OrganizationWhereInput>
+    organization?: XOR<OrganizationNullableRelationFilter, OrganizationWhereInput> | null
   }
 
   export type NotificationOrderByWithRelationInput = {
     id?: SortOrder
     userId?: SortOrder
-    organizationId?: SortOrder
+    organizationId?: SortOrderInput | SortOrder
     title?: SortOrder
     message?: SortOrder
     type?: SortOrder
@@ -21712,7 +21740,7 @@ export namespace Prisma {
     OR?: NotificationWhereInput[]
     NOT?: NotificationWhereInput | NotificationWhereInput[]
     userId?: StringFilter<"Notification"> | string
-    organizationId?: StringFilter<"Notification"> | string
+    organizationId?: StringNullableFilter<"Notification"> | string | null
     title?: StringFilter<"Notification"> | string
     message?: StringFilter<"Notification"> | string
     type?: StringFilter<"Notification"> | string
@@ -21720,13 +21748,13 @@ export namespace Prisma {
     isRead?: BoolFilter<"Notification"> | boolean
     createdAt?: DateTimeFilter<"Notification"> | Date | string
     user?: XOR<UserRelationFilter, UserWhereInput>
-    organization?: XOR<OrganizationRelationFilter, OrganizationWhereInput>
+    organization?: XOR<OrganizationNullableRelationFilter, OrganizationWhereInput> | null
   }, "id">
 
   export type NotificationOrderByWithAggregationInput = {
     id?: SortOrder
     userId?: SortOrder
-    organizationId?: SortOrder
+    organizationId?: SortOrderInput | SortOrder
     title?: SortOrder
     message?: SortOrder
     type?: SortOrder
@@ -21744,7 +21772,7 @@ export namespace Prisma {
     NOT?: NotificationScalarWhereWithAggregatesInput | NotificationScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Notification"> | string
     userId?: StringWithAggregatesFilter<"Notification"> | string
-    organizationId?: StringWithAggregatesFilter<"Notification"> | string
+    organizationId?: StringNullableWithAggregatesFilter<"Notification"> | string | null
     title?: StringWithAggregatesFilter<"Notification"> | string
     message?: StringWithAggregatesFilter<"Notification"> | string
     type?: StringWithAggregatesFilter<"Notification"> | string
@@ -22075,7 +22103,7 @@ export namespace Prisma {
     resetToken?: string | null
     resetTokenExpiry?: Date | string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
@@ -22108,7 +22136,7 @@ export namespace Prisma {
     resetTokenExpiry?: Date | string | null
     managerId?: string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
@@ -22137,7 +22165,7 @@ export namespace Prisma {
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
@@ -22170,7 +22198,7 @@ export namespace Prisma {
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
@@ -22201,7 +22229,7 @@ export namespace Prisma {
     resetTokenExpiry?: Date | string | null
     managerId?: string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
   }
 
   export type UserUpdateManyMutationInput = {
@@ -22216,7 +22244,7 @@ export namespace Prisma {
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type UserUncheckedUpdateManyInput = {
@@ -22233,7 +22261,7 @@ export namespace Prisma {
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type ProjectCreateInput = {
@@ -22246,6 +22274,8 @@ export namespace Prisma {
     endDate?: Date | string | null
     totalBudget?: Decimal | DecimalJsLike | number | string | null
     usedBudget?: Decimal | DecimalJsLike | number | string
+    githubRepo?: string | null
+    githubInstallationId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
@@ -22256,7 +22286,6 @@ export namespace Prisma {
     workloads?: WorkloadCreateNestedManyWithoutProjectInput
     workLogs?: WorkLogCreateNestedManyWithoutProjectInput
     timeEntries?: TimeEntryCreateNestedManyWithoutProjectInput
-    activityLogs?: ActivityLogCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateInput = {
@@ -22272,6 +22301,8 @@ export namespace Prisma {
     endDate?: Date | string | null
     totalBudget?: Decimal | DecimalJsLike | number | string | null
     usedBudget?: Decimal | DecimalJsLike | number | string
+    githubRepo?: string | null
+    githubInstallationId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     phases?: PhaseUncheckedCreateNestedManyWithoutProjectInput
@@ -22279,7 +22310,6 @@ export namespace Prisma {
     workloads?: WorkloadUncheckedCreateNestedManyWithoutProjectInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutProjectInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutProjectInput
-    activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUpdateInput = {
@@ -22292,6 +22322,8 @@ export namespace Prisma {
     endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     totalBudget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
+    githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
@@ -22302,7 +22334,6 @@ export namespace Prisma {
     workloads?: WorkloadUpdateManyWithoutProjectNestedInput
     workLogs?: WorkLogUpdateManyWithoutProjectNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutProjectNestedInput
-    activityLogs?: ActivityLogUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateInput = {
@@ -22318,6 +22349,8 @@ export namespace Prisma {
     endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     totalBudget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
+    githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     phases?: PhaseUncheckedUpdateManyWithoutProjectNestedInput
@@ -22325,7 +22358,6 @@ export namespace Prisma {
     workloads?: WorkloadUncheckedUpdateManyWithoutProjectNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutProjectNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutProjectNestedInput
-    activityLogs?: ActivityLogUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectCreateManyInput = {
@@ -22341,6 +22373,8 @@ export namespace Prisma {
     endDate?: Date | string | null
     totalBudget?: Decimal | DecimalJsLike | number | string | null
     usedBudget?: Decimal | DecimalJsLike | number | string
+    githubRepo?: string | null
+    githubInstallationId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -22355,6 +22389,8 @@ export namespace Prisma {
     endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     totalBudget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
+    githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -22372,6 +22408,8 @@ export namespace Prisma {
     endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     totalBudget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
+    githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -22862,6 +22900,7 @@ export namespace Prisma {
     status?: $Enums.TicketStatus
     priority?: $Enums.Priority
     createdAt?: Date | string
+    updatedAt?: Date | string
     organization?: OrganizationCreateNestedOneWithoutTicketsInput
     client: UserCreateNestedOneWithoutTicketsInput
     comments?: TicketCommentCreateNestedManyWithoutTicketInput
@@ -22876,6 +22915,7 @@ export namespace Prisma {
     priority?: $Enums.Priority
     clientId: string
     createdAt?: Date | string
+    updatedAt?: Date | string
     comments?: TicketCommentUncheckedCreateNestedManyWithoutTicketInput
   }
 
@@ -22886,6 +22926,7 @@ export namespace Prisma {
     status?: EnumTicketStatusFieldUpdateOperationsInput | $Enums.TicketStatus
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneWithoutTicketsNestedInput
     client?: UserUpdateOneRequiredWithoutTicketsNestedInput
     comments?: TicketCommentUpdateManyWithoutTicketNestedInput
@@ -22900,6 +22941,7 @@ export namespace Prisma {
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     clientId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     comments?: TicketCommentUncheckedUpdateManyWithoutTicketNestedInput
   }
 
@@ -22912,6 +22954,7 @@ export namespace Prisma {
     priority?: $Enums.Priority
     clientId: string
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type TicketUpdateManyMutationInput = {
@@ -22921,6 +22964,7 @@ export namespace Prisma {
     status?: EnumTicketStatusFieldUpdateOperationsInput | $Enums.TicketStatus
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TicketUncheckedUpdateManyInput = {
@@ -22932,12 +22976,14 @@ export namespace Prisma {
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     clientId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TicketCommentCreateInput = {
     id?: string
     message: string
     createdAt?: Date | string
+    updatedAt?: Date | string
     ticket: TicketCreateNestedOneWithoutCommentsInput
     user: UserCreateNestedOneWithoutTicketCommentsInput
   }
@@ -22948,12 +22994,14 @@ export namespace Prisma {
     userId: string
     message: string
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type TicketCommentUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ticket?: TicketUpdateOneRequiredWithoutCommentsNestedInput
     user?: UserUpdateOneRequiredWithoutTicketCommentsNestedInput
   }
@@ -22964,6 +23012,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TicketCommentCreateManyInput = {
@@ -22972,12 +23021,14 @@ export namespace Prisma {
     userId: string
     message: string
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type TicketCommentUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TicketCommentUncheckedUpdateManyInput = {
@@ -22986,6 +23037,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ChatMessageCreateInput = {
@@ -23112,13 +23164,13 @@ export namespace Prisma {
 
   export type ActivityLogCreateInput = {
     id?: string
+    projectId?: string | null
     action: string
     entity: string
     entityId?: string | null
     details?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     user: UserCreateNestedOneWithoutActivityLogsInput
-    project?: ProjectCreateNestedOneWithoutActivityLogsInput
     organization?: OrganizationCreateNestedOneWithoutActivityLogsInput
   }
 
@@ -23136,13 +23188,13 @@ export namespace Prisma {
 
   export type ActivityLogUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    projectId?: NullableStringFieldUpdateOperationsInput | string | null
     action?: StringFieldUpdateOperationsInput | string
     entity?: StringFieldUpdateOperationsInput | string
     entityId?: NullableStringFieldUpdateOperationsInput | string | null
     details?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutActivityLogsNestedInput
-    project?: ProjectUpdateOneWithoutActivityLogsNestedInput
     organization?: OrganizationUpdateOneWithoutActivityLogsNestedInput
   }
 
@@ -23172,6 +23224,7 @@ export namespace Prisma {
 
   export type ActivityLogUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    projectId?: NullableStringFieldUpdateOperationsInput | string | null
     action?: StringFieldUpdateOperationsInput | string
     entity?: StringFieldUpdateOperationsInput | string
     entityId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -23200,13 +23253,13 @@ export namespace Prisma {
     isRead?: boolean
     createdAt?: Date | string
     user: UserCreateNestedOneWithoutNotificationsInput
-    organization: OrganizationCreateNestedOneWithoutNotificationsInput
+    organization?: OrganizationCreateNestedOneWithoutNotificationsInput
   }
 
   export type NotificationUncheckedCreateInput = {
     id?: string
     userId: string
-    organizationId: string
+    organizationId?: string | null
     title: string
     message: string
     type: string
@@ -23224,13 +23277,13 @@ export namespace Prisma {
     isRead?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutNotificationsNestedInput
-    organization?: OrganizationUpdateOneRequiredWithoutNotificationsNestedInput
+    organization?: OrganizationUpdateOneWithoutNotificationsNestedInput
   }
 
   export type NotificationUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
-    organizationId?: StringFieldUpdateOperationsInput | string
+    organizationId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
@@ -23242,7 +23295,7 @@ export namespace Prisma {
   export type NotificationCreateManyInput = {
     id?: string
     userId: string
-    organizationId: string
+    organizationId?: string | null
     title: string
     message: string
     type: string
@@ -23264,7 +23317,7 @@ export namespace Prisma {
   export type NotificationUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
-    organizationId?: StringFieldUpdateOperationsInput | string
+    organizationId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
@@ -23994,6 +24047,8 @@ export namespace Prisma {
     endDate?: SortOrder
     totalBudget?: SortOrder
     usedBudget?: SortOrder
+    githubRepo?: SortOrder
+    githubInstallationId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -24016,6 +24071,8 @@ export namespace Prisma {
     endDate?: SortOrder
     totalBudget?: SortOrder
     usedBudget?: SortOrder
+    githubRepo?: SortOrder
+    githubInstallationId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -24033,6 +24090,8 @@ export namespace Prisma {
     endDate?: SortOrder
     totalBudget?: SortOrder
     usedBudget?: SortOrder
+    githubRepo?: SortOrder
+    githubInstallationId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -24496,6 +24555,7 @@ export namespace Prisma {
     priority?: SortOrder
     clientId?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type TicketMaxOrderByAggregateInput = {
@@ -24507,6 +24567,7 @@ export namespace Prisma {
     priority?: SortOrder
     clientId?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type TicketMinOrderByAggregateInput = {
@@ -24518,6 +24579,7 @@ export namespace Prisma {
     priority?: SortOrder
     clientId?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type EnumTicketStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -24541,6 +24603,7 @@ export namespace Prisma {
     userId?: SortOrder
     message?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type TicketCommentMaxOrderByAggregateInput = {
@@ -24549,6 +24612,7 @@ export namespace Prisma {
     userId?: SortOrder
     message?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type TicketCommentMinOrderByAggregateInput = {
@@ -24557,6 +24621,7 @@ export namespace Prisma {
     userId?: SortOrder
     message?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type ChatMessageCountOrderByAggregateInput = {
@@ -24617,11 +24682,6 @@ export namespace Prisma {
     projectId?: SortOrder
     organizationId?: SortOrder
     lastSeen?: SortOrder
-  }
-
-  export type ProjectNullableRelationFilter = {
-    is?: ProjectWhereInput | null
-    isNot?: ProjectWhereInput | null
   }
 
   export type ActivityLogCountOrderByAggregateInput = {
@@ -25792,13 +25852,6 @@ export namespace Prisma {
     connect?: TimeEntryWhereUniqueInput | TimeEntryWhereUniqueInput[]
   }
 
-  export type ActivityLogCreateNestedManyWithoutProjectInput = {
-    create?: XOR<ActivityLogCreateWithoutProjectInput, ActivityLogUncheckedCreateWithoutProjectInput> | ActivityLogCreateWithoutProjectInput[] | ActivityLogUncheckedCreateWithoutProjectInput[]
-    connectOrCreate?: ActivityLogCreateOrConnectWithoutProjectInput | ActivityLogCreateOrConnectWithoutProjectInput[]
-    createMany?: ActivityLogCreateManyProjectInputEnvelope
-    connect?: ActivityLogWhereUniqueInput | ActivityLogWhereUniqueInput[]
-  }
-
   export type PhaseUncheckedCreateNestedManyWithoutProjectInput = {
     create?: XOR<PhaseCreateWithoutProjectInput, PhaseUncheckedCreateWithoutProjectInput> | PhaseCreateWithoutProjectInput[] | PhaseUncheckedCreateWithoutProjectInput[]
     connectOrCreate?: PhaseCreateOrConnectWithoutProjectInput | PhaseCreateOrConnectWithoutProjectInput[]
@@ -25832,13 +25885,6 @@ export namespace Prisma {
     connectOrCreate?: TimeEntryCreateOrConnectWithoutProjectInput | TimeEntryCreateOrConnectWithoutProjectInput[]
     createMany?: TimeEntryCreateManyProjectInputEnvelope
     connect?: TimeEntryWhereUniqueInput | TimeEntryWhereUniqueInput[]
-  }
-
-  export type ActivityLogUncheckedCreateNestedManyWithoutProjectInput = {
-    create?: XOR<ActivityLogCreateWithoutProjectInput, ActivityLogUncheckedCreateWithoutProjectInput> | ActivityLogCreateWithoutProjectInput[] | ActivityLogUncheckedCreateWithoutProjectInput[]
-    connectOrCreate?: ActivityLogCreateOrConnectWithoutProjectInput | ActivityLogCreateOrConnectWithoutProjectInput[]
-    createMany?: ActivityLogCreateManyProjectInputEnvelope
-    connect?: ActivityLogWhereUniqueInput | ActivityLogWhereUniqueInput[]
   }
 
   export type EnumProjectStatusFieldUpdateOperationsInput = {
@@ -25959,20 +26005,6 @@ export namespace Prisma {
     deleteMany?: TimeEntryScalarWhereInput | TimeEntryScalarWhereInput[]
   }
 
-  export type ActivityLogUpdateManyWithoutProjectNestedInput = {
-    create?: XOR<ActivityLogCreateWithoutProjectInput, ActivityLogUncheckedCreateWithoutProjectInput> | ActivityLogCreateWithoutProjectInput[] | ActivityLogUncheckedCreateWithoutProjectInput[]
-    connectOrCreate?: ActivityLogCreateOrConnectWithoutProjectInput | ActivityLogCreateOrConnectWithoutProjectInput[]
-    upsert?: ActivityLogUpsertWithWhereUniqueWithoutProjectInput | ActivityLogUpsertWithWhereUniqueWithoutProjectInput[]
-    createMany?: ActivityLogCreateManyProjectInputEnvelope
-    set?: ActivityLogWhereUniqueInput | ActivityLogWhereUniqueInput[]
-    disconnect?: ActivityLogWhereUniqueInput | ActivityLogWhereUniqueInput[]
-    delete?: ActivityLogWhereUniqueInput | ActivityLogWhereUniqueInput[]
-    connect?: ActivityLogWhereUniqueInput | ActivityLogWhereUniqueInput[]
-    update?: ActivityLogUpdateWithWhereUniqueWithoutProjectInput | ActivityLogUpdateWithWhereUniqueWithoutProjectInput[]
-    updateMany?: ActivityLogUpdateManyWithWhereWithoutProjectInput | ActivityLogUpdateManyWithWhereWithoutProjectInput[]
-    deleteMany?: ActivityLogScalarWhereInput | ActivityLogScalarWhereInput[]
-  }
-
   export type PhaseUncheckedUpdateManyWithoutProjectNestedInput = {
     create?: XOR<PhaseCreateWithoutProjectInput, PhaseUncheckedCreateWithoutProjectInput> | PhaseCreateWithoutProjectInput[] | PhaseUncheckedCreateWithoutProjectInput[]
     connectOrCreate?: PhaseCreateOrConnectWithoutProjectInput | PhaseCreateOrConnectWithoutProjectInput[]
@@ -26041,20 +26073,6 @@ export namespace Prisma {
     update?: TimeEntryUpdateWithWhereUniqueWithoutProjectInput | TimeEntryUpdateWithWhereUniqueWithoutProjectInput[]
     updateMany?: TimeEntryUpdateManyWithWhereWithoutProjectInput | TimeEntryUpdateManyWithWhereWithoutProjectInput[]
     deleteMany?: TimeEntryScalarWhereInput | TimeEntryScalarWhereInput[]
-  }
-
-  export type ActivityLogUncheckedUpdateManyWithoutProjectNestedInput = {
-    create?: XOR<ActivityLogCreateWithoutProjectInput, ActivityLogUncheckedCreateWithoutProjectInput> | ActivityLogCreateWithoutProjectInput[] | ActivityLogUncheckedCreateWithoutProjectInput[]
-    connectOrCreate?: ActivityLogCreateOrConnectWithoutProjectInput | ActivityLogCreateOrConnectWithoutProjectInput[]
-    upsert?: ActivityLogUpsertWithWhereUniqueWithoutProjectInput | ActivityLogUpsertWithWhereUniqueWithoutProjectInput[]
-    createMany?: ActivityLogCreateManyProjectInputEnvelope
-    set?: ActivityLogWhereUniqueInput | ActivityLogWhereUniqueInput[]
-    disconnect?: ActivityLogWhereUniqueInput | ActivityLogWhereUniqueInput[]
-    delete?: ActivityLogWhereUniqueInput | ActivityLogWhereUniqueInput[]
-    connect?: ActivityLogWhereUniqueInput | ActivityLogWhereUniqueInput[]
-    update?: ActivityLogUpdateWithWhereUniqueWithoutProjectInput | ActivityLogUpdateWithWhereUniqueWithoutProjectInput[]
-    updateMany?: ActivityLogUpdateManyWithWhereWithoutProjectInput | ActivityLogUpdateManyWithWhereWithoutProjectInput[]
-    deleteMany?: ActivityLogScalarWhereInput | ActivityLogScalarWhereInput[]
   }
 
   export type ProjectCreateNestedOneWithoutPhasesInput = {
@@ -26616,12 +26634,6 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
-  export type ProjectCreateNestedOneWithoutActivityLogsInput = {
-    create?: XOR<ProjectCreateWithoutActivityLogsInput, ProjectUncheckedCreateWithoutActivityLogsInput>
-    connectOrCreate?: ProjectCreateOrConnectWithoutActivityLogsInput
-    connect?: ProjectWhereUniqueInput
-  }
-
   export type OrganizationCreateNestedOneWithoutActivityLogsInput = {
     create?: XOR<OrganizationCreateWithoutActivityLogsInput, OrganizationUncheckedCreateWithoutActivityLogsInput>
     connectOrCreate?: OrganizationCreateOrConnectWithoutActivityLogsInput
@@ -26634,16 +26646,6 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutActivityLogsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutActivityLogsInput, UserUpdateWithoutActivityLogsInput>, UserUncheckedUpdateWithoutActivityLogsInput>
-  }
-
-  export type ProjectUpdateOneWithoutActivityLogsNestedInput = {
-    create?: XOR<ProjectCreateWithoutActivityLogsInput, ProjectUncheckedCreateWithoutActivityLogsInput>
-    connectOrCreate?: ProjectCreateOrConnectWithoutActivityLogsInput
-    upsert?: ProjectUpsertWithoutActivityLogsInput
-    disconnect?: ProjectWhereInput | boolean
-    delete?: ProjectWhereInput | boolean
-    connect?: ProjectWhereUniqueInput
-    update?: XOR<XOR<ProjectUpdateToOneWithWhereWithoutActivityLogsInput, ProjectUpdateWithoutActivityLogsInput>, ProjectUncheckedUpdateWithoutActivityLogsInput>
   }
 
   export type OrganizationUpdateOneWithoutActivityLogsNestedInput = {
@@ -26676,10 +26678,12 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutNotificationsInput, UserUpdateWithoutNotificationsInput>, UserUncheckedUpdateWithoutNotificationsInput>
   }
 
-  export type OrganizationUpdateOneRequiredWithoutNotificationsNestedInput = {
+  export type OrganizationUpdateOneWithoutNotificationsNestedInput = {
     create?: XOR<OrganizationCreateWithoutNotificationsInput, OrganizationUncheckedCreateWithoutNotificationsInput>
     connectOrCreate?: OrganizationCreateOrConnectWithoutNotificationsInput
     upsert?: OrganizationUpsertWithoutNotificationsInput
+    disconnect?: OrganizationWhereInput | boolean
+    delete?: OrganizationWhereInput | boolean
     connect?: OrganizationWhereUniqueInput
     update?: XOR<XOR<OrganizationUpdateToOneWithWhereWithoutNotificationsInput, OrganizationUpdateWithoutNotificationsInput>, OrganizationUncheckedUpdateWithoutNotificationsInput>
   }
@@ -27187,7 +27191,7 @@ export namespace Prisma {
     resetToken?: string | null
     resetTokenExpiry?: Date | string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
@@ -27218,7 +27222,7 @@ export namespace Prisma {
     resetTokenExpiry?: Date | string | null
     managerId?: string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
@@ -27255,6 +27259,8 @@ export namespace Prisma {
     endDate?: Date | string | null
     totalBudget?: Decimal | DecimalJsLike | number | string | null
     usedBudget?: Decimal | DecimalJsLike | number | string
+    githubRepo?: string | null
+    githubInstallationId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     manager?: UserCreateNestedOneWithoutManagedProjectsInput
@@ -27264,7 +27270,6 @@ export namespace Prisma {
     workloads?: WorkloadCreateNestedManyWithoutProjectInput
     workLogs?: WorkLogCreateNestedManyWithoutProjectInput
     timeEntries?: TimeEntryCreateNestedManyWithoutProjectInput
-    activityLogs?: ActivityLogCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutOrganizationInput = {
@@ -27279,6 +27284,8 @@ export namespace Prisma {
     endDate?: Date | string | null
     totalBudget?: Decimal | DecimalJsLike | number | string | null
     usedBudget?: Decimal | DecimalJsLike | number | string
+    githubRepo?: string | null
+    githubInstallationId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     phases?: PhaseUncheckedCreateNestedManyWithoutProjectInput
@@ -27286,7 +27293,6 @@ export namespace Prisma {
     workloads?: WorkloadUncheckedCreateNestedManyWithoutProjectInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutProjectInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutProjectInput
-    activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutOrganizationInput = {
@@ -27306,6 +27312,7 @@ export namespace Prisma {
     status?: $Enums.TicketStatus
     priority?: $Enums.Priority
     createdAt?: Date | string
+    updatedAt?: Date | string
     client: UserCreateNestedOneWithoutTicketsInput
     comments?: TicketCommentCreateNestedManyWithoutTicketInput
   }
@@ -27318,6 +27325,7 @@ export namespace Prisma {
     priority?: $Enums.Priority
     clientId: string
     createdAt?: Date | string
+    updatedAt?: Date | string
     comments?: TicketCommentUncheckedCreateNestedManyWithoutTicketInput
   }
 
@@ -27385,13 +27393,13 @@ export namespace Prisma {
 
   export type ActivityLogCreateWithoutOrganizationInput = {
     id?: string
+    projectId?: string | null
     action: string
     entity: string
     entityId?: string | null
     details?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     user: UserCreateNestedOneWithoutActivityLogsInput
-    project?: ProjectCreateNestedOneWithoutActivityLogsInput
   }
 
   export type ActivityLogUncheckedCreateWithoutOrganizationInput = {
@@ -27510,7 +27518,7 @@ export namespace Prisma {
     resetTokenExpiry?: DateTimeNullableFilter<"User"> | Date | string | null
     managerId?: StringNullableFilter<"User"> | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
-    updatedAt?: DateTimeFilter<"User"> | Date | string
+    updatedAt?: DateTimeNullableFilter<"User"> | Date | string | null
   }
 
   export type ProjectUpsertWithWhereUniqueWithoutOrganizationInput = {
@@ -27545,6 +27553,8 @@ export namespace Prisma {
     endDate?: DateTimeNullableFilter<"Project"> | Date | string | null
     totalBudget?: DecimalNullableFilter<"Project"> | Decimal | DecimalJsLike | number | string | null
     usedBudget?: DecimalFilter<"Project"> | Decimal | DecimalJsLike | number | string
+    githubRepo?: StringNullableFilter<"Project"> | string | null
+    githubInstallationId?: StringNullableFilter<"Project"> | string | null
     createdAt?: DateTimeFilter<"Project"> | Date | string
     updatedAt?: DateTimeFilter<"Project"> | Date | string
   }
@@ -27577,6 +27587,7 @@ export namespace Prisma {
     priority?: EnumPriorityFilter<"Ticket"> | $Enums.Priority
     clientId?: StringFilter<"Ticket"> | string
     createdAt?: DateTimeFilter<"Ticket"> | Date | string
+    updatedAt?: DateTimeFilter<"Ticket"> | Date | string
   }
 
   export type ChatMessageUpsertWithWhereUniqueWithoutOrganizationInput = {
@@ -27688,7 +27699,7 @@ export namespace Prisma {
     NOT?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
     id?: StringFilter<"Notification"> | string
     userId?: StringFilter<"Notification"> | string
-    organizationId?: StringFilter<"Notification"> | string
+    organizationId?: StringNullableFilter<"Notification"> | string | null
     title?: StringFilter<"Notification"> | string
     message?: StringFilter<"Notification"> | string
     type?: StringFilter<"Notification"> | string
@@ -27816,7 +27827,7 @@ export namespace Prisma {
     resetToken?: string | null
     resetTokenExpiry?: Date | string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
@@ -27848,7 +27859,7 @@ export namespace Prisma {
     resetTokenExpiry?: Date | string | null
     managerId?: string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
@@ -27881,7 +27892,7 @@ export namespace Prisma {
     resetToken?: string | null
     resetTokenExpiry?: Date | string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
@@ -27912,7 +27923,7 @@ export namespace Prisma {
     resetToken?: string | null
     resetTokenExpiry?: Date | string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
@@ -27949,6 +27960,8 @@ export namespace Prisma {
     endDate?: Date | string | null
     totalBudget?: Decimal | DecimalJsLike | number | string | null
     usedBudget?: Decimal | DecimalJsLike | number | string
+    githubRepo?: string | null
+    githubInstallationId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
@@ -27958,7 +27971,6 @@ export namespace Prisma {
     workloads?: WorkloadCreateNestedManyWithoutProjectInput
     workLogs?: WorkLogCreateNestedManyWithoutProjectInput
     timeEntries?: TimeEntryCreateNestedManyWithoutProjectInput
-    activityLogs?: ActivityLogCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutManagerInput = {
@@ -27973,6 +27985,8 @@ export namespace Prisma {
     endDate?: Date | string | null
     totalBudget?: Decimal | DecimalJsLike | number | string | null
     usedBudget?: Decimal | DecimalJsLike | number | string
+    githubRepo?: string | null
+    githubInstallationId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     phases?: PhaseUncheckedCreateNestedManyWithoutProjectInput
@@ -27980,7 +27994,6 @@ export namespace Prisma {
     workloads?: WorkloadUncheckedCreateNestedManyWithoutProjectInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutProjectInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutProjectInput
-    activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutManagerInput = {
@@ -28003,6 +28016,8 @@ export namespace Prisma {
     endDate?: Date | string | null
     totalBudget?: Decimal | DecimalJsLike | number | string | null
     usedBudget?: Decimal | DecimalJsLike | number | string
+    githubRepo?: string | null
+    githubInstallationId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
@@ -28012,7 +28027,6 @@ export namespace Prisma {
     workloads?: WorkloadCreateNestedManyWithoutProjectInput
     workLogs?: WorkLogCreateNestedManyWithoutProjectInput
     timeEntries?: TimeEntryCreateNestedManyWithoutProjectInput
-    activityLogs?: ActivityLogCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutClientInput = {
@@ -28027,6 +28041,8 @@ export namespace Prisma {
     endDate?: Date | string | null
     totalBudget?: Decimal | DecimalJsLike | number | string | null
     usedBudget?: Decimal | DecimalJsLike | number | string
+    githubRepo?: string | null
+    githubInstallationId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     phases?: PhaseUncheckedCreateNestedManyWithoutProjectInput
@@ -28034,7 +28050,6 @@ export namespace Prisma {
     workloads?: WorkloadUncheckedCreateNestedManyWithoutProjectInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutProjectInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutProjectInput
-    activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutClientInput = {
@@ -28162,6 +28177,7 @@ export namespace Prisma {
     status?: $Enums.TicketStatus
     priority?: $Enums.Priority
     createdAt?: Date | string
+    updatedAt?: Date | string
     organization?: OrganizationCreateNestedOneWithoutTicketsInput
     comments?: TicketCommentCreateNestedManyWithoutTicketInput
   }
@@ -28174,6 +28190,7 @@ export namespace Prisma {
     status?: $Enums.TicketStatus
     priority?: $Enums.Priority
     createdAt?: Date | string
+    updatedAt?: Date | string
     comments?: TicketCommentUncheckedCreateNestedManyWithoutTicketInput
   }
 
@@ -28191,6 +28208,7 @@ export namespace Prisma {
     id?: string
     message: string
     createdAt?: Date | string
+    updatedAt?: Date | string
     ticket: TicketCreateNestedOneWithoutCommentsInput
   }
 
@@ -28199,6 +28217,7 @@ export namespace Prisma {
     ticketId: string
     message: string
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type TicketCommentCreateOrConnectWithoutUserInput = {
@@ -28265,12 +28284,12 @@ export namespace Prisma {
 
   export type ActivityLogCreateWithoutUserInput = {
     id?: string
+    projectId?: string | null
     action: string
     entity: string
     entityId?: string | null
     details?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
-    project?: ProjectCreateNestedOneWithoutActivityLogsInput
     organization?: OrganizationCreateNestedOneWithoutActivityLogsInput
   }
 
@@ -28303,12 +28322,12 @@ export namespace Prisma {
     link?: string | null
     isRead?: boolean
     createdAt?: Date | string
-    organization: OrganizationCreateNestedOneWithoutNotificationsInput
+    organization?: OrganizationCreateNestedOneWithoutNotificationsInput
   }
 
   export type NotificationUncheckedCreateWithoutUserInput = {
     id?: string
-    organizationId: string
+    organizationId?: string | null
     title: string
     message: string
     type: string
@@ -28463,7 +28482,7 @@ export namespace Prisma {
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
@@ -28495,7 +28514,7 @@ export namespace Prisma {
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
@@ -28714,6 +28733,7 @@ export namespace Prisma {
     userId?: StringFilter<"TicketComment"> | string
     message?: StringFilter<"TicketComment"> | string
     createdAt?: DateTimeFilter<"TicketComment"> | Date | string
+    updatedAt?: DateTimeFilter<"TicketComment"> | Date | string
   }
 
   export type ChatMessageUpsertWithWhereUniqueWithoutUserInput = {
@@ -28885,7 +28905,7 @@ export namespace Prisma {
     resetToken?: string | null
     resetTokenExpiry?: Date | string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
@@ -28917,7 +28937,7 @@ export namespace Prisma {
     resetTokenExpiry?: Date | string | null
     managerId?: string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
@@ -28950,7 +28970,7 @@ export namespace Prisma {
     resetToken?: string | null
     resetTokenExpiry?: Date | string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
@@ -28982,7 +29002,7 @@ export namespace Prisma {
     resetTokenExpiry?: Date | string | null
     managerId?: string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
@@ -29175,38 +29195,6 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type ActivityLogCreateWithoutProjectInput = {
-    id?: string
-    action: string
-    entity: string
-    entityId?: string | null
-    details?: NullableJsonNullValueInput | InputJsonValue
-    createdAt?: Date | string
-    user: UserCreateNestedOneWithoutActivityLogsInput
-    organization?: OrganizationCreateNestedOneWithoutActivityLogsInput
-  }
-
-  export type ActivityLogUncheckedCreateWithoutProjectInput = {
-    id?: string
-    userId: string
-    organizationId?: string | null
-    action: string
-    entity: string
-    entityId?: string | null
-    details?: NullableJsonNullValueInput | InputJsonValue
-    createdAt?: Date | string
-  }
-
-  export type ActivityLogCreateOrConnectWithoutProjectInput = {
-    where: ActivityLogWhereUniqueInput
-    create: XOR<ActivityLogCreateWithoutProjectInput, ActivityLogUncheckedCreateWithoutProjectInput>
-  }
-
-  export type ActivityLogCreateManyProjectInputEnvelope = {
-    data: ActivityLogCreateManyProjectInput | ActivityLogCreateManyProjectInput[]
-    skipDuplicates?: boolean
-  }
-
   export type OrganizationUpsertWithoutProjectsInput = {
     update: XOR<OrganizationUpdateWithoutProjectsInput, OrganizationUncheckedUpdateWithoutProjectsInput>
     create: XOR<OrganizationCreateWithoutProjectsInput, OrganizationUncheckedCreateWithoutProjectsInput>
@@ -29313,7 +29301,7 @@ export namespace Prisma {
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
@@ -29345,7 +29333,7 @@ export namespace Prisma {
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
@@ -29384,7 +29372,7 @@ export namespace Prisma {
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
@@ -29416,7 +29404,7 @@ export namespace Prisma {
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
@@ -29548,22 +29536,6 @@ export namespace Prisma {
     data: XOR<TimeEntryUpdateManyMutationInput, TimeEntryUncheckedUpdateManyWithoutProjectInput>
   }
 
-  export type ActivityLogUpsertWithWhereUniqueWithoutProjectInput = {
-    where: ActivityLogWhereUniqueInput
-    update: XOR<ActivityLogUpdateWithoutProjectInput, ActivityLogUncheckedUpdateWithoutProjectInput>
-    create: XOR<ActivityLogCreateWithoutProjectInput, ActivityLogUncheckedCreateWithoutProjectInput>
-  }
-
-  export type ActivityLogUpdateWithWhereUniqueWithoutProjectInput = {
-    where: ActivityLogWhereUniqueInput
-    data: XOR<ActivityLogUpdateWithoutProjectInput, ActivityLogUncheckedUpdateWithoutProjectInput>
-  }
-
-  export type ActivityLogUpdateManyWithWhereWithoutProjectInput = {
-    where: ActivityLogScalarWhereInput
-    data: XOR<ActivityLogUpdateManyMutationInput, ActivityLogUncheckedUpdateManyWithoutProjectInput>
-  }
-
   export type ProjectCreateWithoutPhasesInput = {
     id?: string
     name: string
@@ -29574,6 +29546,8 @@ export namespace Prisma {
     endDate?: Date | string | null
     totalBudget?: Decimal | DecimalJsLike | number | string | null
     usedBudget?: Decimal | DecimalJsLike | number | string
+    githubRepo?: string | null
+    githubInstallationId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
@@ -29583,7 +29557,6 @@ export namespace Prisma {
     workloads?: WorkloadCreateNestedManyWithoutProjectInput
     workLogs?: WorkLogCreateNestedManyWithoutProjectInput
     timeEntries?: TimeEntryCreateNestedManyWithoutProjectInput
-    activityLogs?: ActivityLogCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutPhasesInput = {
@@ -29599,13 +29572,14 @@ export namespace Prisma {
     endDate?: Date | string | null
     totalBudget?: Decimal | DecimalJsLike | number | string | null
     usedBudget?: Decimal | DecimalJsLike | number | string
+    githubRepo?: string | null
+    githubInstallationId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     tasks?: TaskUncheckedCreateNestedManyWithoutProjectInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutProjectInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutProjectInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutProjectInput
-    activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutPhasesInput = {
@@ -29682,6 +29656,8 @@ export namespace Prisma {
     endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     totalBudget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
+    githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
@@ -29691,7 +29667,6 @@ export namespace Prisma {
     workloads?: WorkloadUpdateManyWithoutProjectNestedInput
     workLogs?: WorkLogUpdateManyWithoutProjectNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutProjectNestedInput
-    activityLogs?: ActivityLogUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutPhasesInput = {
@@ -29707,13 +29682,14 @@ export namespace Prisma {
     endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     totalBudget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
+    githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tasks?: TaskUncheckedUpdateManyWithoutProjectNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutProjectNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutProjectNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutProjectNestedInput
-    activityLogs?: ActivityLogUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type TaskUpsertWithWhereUniqueWithoutPhaseInput = {
@@ -29742,6 +29718,8 @@ export namespace Prisma {
     endDate?: Date | string | null
     totalBudget?: Decimal | DecimalJsLike | number | string | null
     usedBudget?: Decimal | DecimalJsLike | number | string
+    githubRepo?: string | null
+    githubInstallationId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
@@ -29751,7 +29729,6 @@ export namespace Prisma {
     workloads?: WorkloadCreateNestedManyWithoutProjectInput
     workLogs?: WorkLogCreateNestedManyWithoutProjectInput
     timeEntries?: TimeEntryCreateNestedManyWithoutProjectInput
-    activityLogs?: ActivityLogCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutTasksInput = {
@@ -29767,13 +29744,14 @@ export namespace Prisma {
     endDate?: Date | string | null
     totalBudget?: Decimal | DecimalJsLike | number | string | null
     usedBudget?: Decimal | DecimalJsLike | number | string
+    githubRepo?: string | null
+    githubInstallationId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     phases?: PhaseUncheckedCreateNestedManyWithoutProjectInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutProjectInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutProjectInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutProjectInput
-    activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutTasksInput = {
@@ -29919,6 +29897,8 @@ export namespace Prisma {
     endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     totalBudget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
+    githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
@@ -29928,7 +29908,6 @@ export namespace Prisma {
     workloads?: WorkloadUpdateManyWithoutProjectNestedInput
     workLogs?: WorkLogUpdateManyWithoutProjectNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutProjectNestedInput
-    activityLogs?: ActivityLogUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutTasksInput = {
@@ -29944,13 +29923,14 @@ export namespace Prisma {
     endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     totalBudget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
+    githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     phases?: PhaseUncheckedUpdateManyWithoutProjectNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutProjectNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutProjectNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutProjectNestedInput
-    activityLogs?: ActivityLogUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type PhaseUpsertWithoutTasksInput = {
@@ -30093,7 +30073,7 @@ export namespace Prisma {
     resetToken?: string | null
     resetTokenExpiry?: Date | string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
@@ -30125,7 +30105,7 @@ export namespace Prisma {
     resetTokenExpiry?: Date | string | null
     managerId?: string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
@@ -30218,7 +30198,7 @@ export namespace Prisma {
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
@@ -30250,7 +30230,7 @@ export namespace Prisma {
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
@@ -30278,7 +30258,7 @@ export namespace Prisma {
     resetToken?: string | null
     resetTokenExpiry?: Date | string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
@@ -30310,7 +30290,7 @@ export namespace Prisma {
     resetTokenExpiry?: Date | string | null
     managerId?: string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
@@ -30341,6 +30321,8 @@ export namespace Prisma {
     endDate?: Date | string | null
     totalBudget?: Decimal | DecimalJsLike | number | string | null
     usedBudget?: Decimal | DecimalJsLike | number | string
+    githubRepo?: string | null
+    githubInstallationId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
@@ -30350,7 +30332,6 @@ export namespace Prisma {
     tasks?: TaskCreateNestedManyWithoutProjectInput
     workloads?: WorkloadCreateNestedManyWithoutProjectInput
     timeEntries?: TimeEntryCreateNestedManyWithoutProjectInput
-    activityLogs?: ActivityLogCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutWorkLogsInput = {
@@ -30366,13 +30347,14 @@ export namespace Prisma {
     endDate?: Date | string | null
     totalBudget?: Decimal | DecimalJsLike | number | string | null
     usedBudget?: Decimal | DecimalJsLike | number | string
+    githubRepo?: string | null
+    githubInstallationId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     phases?: PhaseUncheckedCreateNestedManyWithoutProjectInput
     tasks?: TaskUncheckedCreateNestedManyWithoutProjectInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutProjectInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutProjectInput
-    activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutWorkLogsInput = {
@@ -30446,7 +30428,7 @@ export namespace Prisma {
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
@@ -30478,7 +30460,7 @@ export namespace Prisma {
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
@@ -30515,6 +30497,8 @@ export namespace Prisma {
     endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     totalBudget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
+    githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
@@ -30524,7 +30508,6 @@ export namespace Prisma {
     tasks?: TaskUpdateManyWithoutProjectNestedInput
     workloads?: WorkloadUpdateManyWithoutProjectNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutProjectNestedInput
-    activityLogs?: ActivityLogUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutWorkLogsInput = {
@@ -30540,13 +30523,14 @@ export namespace Prisma {
     endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     totalBudget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
+    githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     phases?: PhaseUncheckedUpdateManyWithoutProjectNestedInput
     tasks?: TaskUncheckedUpdateManyWithoutProjectNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutProjectNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutProjectNestedInput
-    activityLogs?: ActivityLogUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type TaskUpsertWithoutWorkLogsInput = {
@@ -30610,7 +30594,7 @@ export namespace Prisma {
     resetToken?: string | null
     resetTokenExpiry?: Date | string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
@@ -30642,7 +30626,7 @@ export namespace Prisma {
     resetTokenExpiry?: Date | string | null
     managerId?: string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
@@ -30673,6 +30657,8 @@ export namespace Prisma {
     endDate?: Date | string | null
     totalBudget?: Decimal | DecimalJsLike | number | string | null
     usedBudget?: Decimal | DecimalJsLike | number | string
+    githubRepo?: string | null
+    githubInstallationId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
@@ -30682,7 +30668,6 @@ export namespace Prisma {
     tasks?: TaskCreateNestedManyWithoutProjectInput
     workloads?: WorkloadCreateNestedManyWithoutProjectInput
     workLogs?: WorkLogCreateNestedManyWithoutProjectInput
-    activityLogs?: ActivityLogCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutTimeEntriesInput = {
@@ -30698,13 +30683,14 @@ export namespace Prisma {
     endDate?: Date | string | null
     totalBudget?: Decimal | DecimalJsLike | number | string | null
     usedBudget?: Decimal | DecimalJsLike | number | string
+    githubRepo?: string | null
+    githubInstallationId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     phases?: PhaseUncheckedCreateNestedManyWithoutProjectInput
     tasks?: TaskUncheckedCreateNestedManyWithoutProjectInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutProjectInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutProjectInput
-    activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutTimeEntriesInput = {
@@ -30778,7 +30764,7 @@ export namespace Prisma {
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
@@ -30810,7 +30796,7 @@ export namespace Prisma {
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
@@ -30847,6 +30833,8 @@ export namespace Prisma {
     endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     totalBudget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
+    githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
@@ -30856,7 +30844,6 @@ export namespace Prisma {
     tasks?: TaskUpdateManyWithoutProjectNestedInput
     workloads?: WorkloadUpdateManyWithoutProjectNestedInput
     workLogs?: WorkLogUpdateManyWithoutProjectNestedInput
-    activityLogs?: ActivityLogUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutTimeEntriesInput = {
@@ -30872,13 +30859,14 @@ export namespace Prisma {
     endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     totalBudget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
+    githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     phases?: PhaseUncheckedUpdateManyWithoutProjectNestedInput
     tasks?: TaskUncheckedUpdateManyWithoutProjectNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutProjectNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutProjectNestedInput
-    activityLogs?: ActivityLogUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type TaskUpsertWithoutTimeEntriesInput = {
@@ -30942,7 +30930,7 @@ export namespace Prisma {
     resetToken?: string | null
     resetTokenExpiry?: Date | string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
@@ -30974,7 +30962,7 @@ export namespace Prisma {
     resetTokenExpiry?: Date | string | null
     managerId?: string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
@@ -31005,6 +30993,8 @@ export namespace Prisma {
     endDate?: Date | string | null
     totalBudget?: Decimal | DecimalJsLike | number | string | null
     usedBudget?: Decimal | DecimalJsLike | number | string
+    githubRepo?: string | null
+    githubInstallationId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
@@ -31014,7 +31004,6 @@ export namespace Prisma {
     tasks?: TaskCreateNestedManyWithoutProjectInput
     workLogs?: WorkLogCreateNestedManyWithoutProjectInput
     timeEntries?: TimeEntryCreateNestedManyWithoutProjectInput
-    activityLogs?: ActivityLogCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutWorkloadsInput = {
@@ -31030,13 +31019,14 @@ export namespace Prisma {
     endDate?: Date | string | null
     totalBudget?: Decimal | DecimalJsLike | number | string | null
     usedBudget?: Decimal | DecimalJsLike | number | string
+    githubRepo?: string | null
+    githubInstallationId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     phases?: PhaseUncheckedCreateNestedManyWithoutProjectInput
     tasks?: TaskUncheckedCreateNestedManyWithoutProjectInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutProjectInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutProjectInput
-    activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutWorkloadsInput = {
@@ -31067,7 +31057,7 @@ export namespace Prisma {
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
@@ -31099,7 +31089,7 @@ export namespace Prisma {
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
@@ -31136,6 +31126,8 @@ export namespace Prisma {
     endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     totalBudget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
+    githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
@@ -31145,7 +31137,6 @@ export namespace Prisma {
     tasks?: TaskUpdateManyWithoutProjectNestedInput
     workLogs?: WorkLogUpdateManyWithoutProjectNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutProjectNestedInput
-    activityLogs?: ActivityLogUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutWorkloadsInput = {
@@ -31161,13 +31152,14 @@ export namespace Prisma {
     endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     totalBudget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
+    githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     phases?: PhaseUncheckedUpdateManyWithoutProjectNestedInput
     tasks?: TaskUncheckedUpdateManyWithoutProjectNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutProjectNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutProjectNestedInput
-    activityLogs?: ActivityLogUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type OrganizationCreateWithoutTicketsInput = {
@@ -31259,7 +31251,7 @@ export namespace Prisma {
     resetToken?: string | null
     resetTokenExpiry?: Date | string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
@@ -31291,7 +31283,7 @@ export namespace Prisma {
     resetTokenExpiry?: Date | string | null
     managerId?: string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
@@ -31316,6 +31308,7 @@ export namespace Prisma {
     id?: string
     message: string
     createdAt?: Date | string
+    updatedAt?: Date | string
     user: UserCreateNestedOneWithoutTicketCommentsInput
   }
 
@@ -31324,6 +31317,7 @@ export namespace Prisma {
     userId: string
     message: string
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type TicketCommentCreateOrConnectWithoutTicketInput = {
@@ -31442,7 +31436,7 @@ export namespace Prisma {
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
@@ -31474,7 +31468,7 @@ export namespace Prisma {
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
@@ -31513,6 +31507,7 @@ export namespace Prisma {
     status?: $Enums.TicketStatus
     priority?: $Enums.Priority
     createdAt?: Date | string
+    updatedAt?: Date | string
     organization?: OrganizationCreateNestedOneWithoutTicketsInput
     client: UserCreateNestedOneWithoutTicketsInput
   }
@@ -31526,6 +31521,7 @@ export namespace Prisma {
     priority?: $Enums.Priority
     clientId: string
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type TicketCreateOrConnectWithoutCommentsInput = {
@@ -31545,7 +31541,7 @@ export namespace Prisma {
     resetToken?: string | null
     resetTokenExpiry?: Date | string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
@@ -31577,7 +31573,7 @@ export namespace Prisma {
     resetTokenExpiry?: Date | string | null
     managerId?: string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
@@ -31616,6 +31612,7 @@ export namespace Prisma {
     status?: EnumTicketStatusFieldUpdateOperationsInput | $Enums.TicketStatus
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneWithoutTicketsNestedInput
     client?: UserUpdateOneRequiredWithoutTicketsNestedInput
   }
@@ -31629,6 +31626,7 @@ export namespace Prisma {
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     clientId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UserUpsertWithoutTicketCommentsInput = {
@@ -31654,7 +31652,7 @@ export namespace Prisma {
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
@@ -31686,7 +31684,7 @@ export namespace Prisma {
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
@@ -31714,7 +31712,7 @@ export namespace Prisma {
     resetToken?: string | null
     resetTokenExpiry?: Date | string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
@@ -31746,7 +31744,7 @@ export namespace Prisma {
     resetTokenExpiry?: Date | string | null
     managerId?: string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
@@ -31867,7 +31865,7 @@ export namespace Prisma {
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
@@ -31899,7 +31897,7 @@ export namespace Prisma {
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
@@ -32010,7 +32008,7 @@ export namespace Prisma {
     resetToken?: string | null
     resetTokenExpiry?: Date | string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
@@ -32042,7 +32040,7 @@ export namespace Prisma {
     resetTokenExpiry?: Date | string | null
     managerId?: string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
@@ -32163,7 +32161,7 @@ export namespace Prisma {
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
@@ -32195,7 +32193,7 @@ export namespace Prisma {
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
@@ -32306,7 +32304,7 @@ export namespace Prisma {
     resetToken?: string | null
     resetTokenExpiry?: Date | string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
@@ -32338,7 +32336,7 @@ export namespace Prisma {
     resetTokenExpiry?: Date | string | null
     managerId?: string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
@@ -32357,55 +32355,6 @@ export namespace Prisma {
   export type UserCreateOrConnectWithoutActivityLogsInput = {
     where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutActivityLogsInput, UserUncheckedCreateWithoutActivityLogsInput>
-  }
-
-  export type ProjectCreateWithoutActivityLogsInput = {
-    id?: string
-    name: string
-    description?: string | null
-    category?: string | null
-    status?: $Enums.ProjectStatus
-    startDate?: Date | string | null
-    endDate?: Date | string | null
-    totalBudget?: Decimal | DecimalJsLike | number | string | null
-    usedBudget?: Decimal | DecimalJsLike | number | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    organization: OrganizationCreateNestedOneWithoutProjectsInput
-    manager?: UserCreateNestedOneWithoutManagedProjectsInput
-    client?: UserCreateNestedOneWithoutClientProjectsInput
-    phases?: PhaseCreateNestedManyWithoutProjectInput
-    tasks?: TaskCreateNestedManyWithoutProjectInput
-    workloads?: WorkloadCreateNestedManyWithoutProjectInput
-    workLogs?: WorkLogCreateNestedManyWithoutProjectInput
-    timeEntries?: TimeEntryCreateNestedManyWithoutProjectInput
-  }
-
-  export type ProjectUncheckedCreateWithoutActivityLogsInput = {
-    id?: string
-    organizationId: string
-    name: string
-    description?: string | null
-    category?: string | null
-    managerId?: string | null
-    clientId?: string | null
-    status?: $Enums.ProjectStatus
-    startDate?: Date | string | null
-    endDate?: Date | string | null
-    totalBudget?: Decimal | DecimalJsLike | number | string | null
-    usedBudget?: Decimal | DecimalJsLike | number | string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    phases?: PhaseUncheckedCreateNestedManyWithoutProjectInput
-    tasks?: TaskUncheckedCreateNestedManyWithoutProjectInput
-    workloads?: WorkloadUncheckedCreateNestedManyWithoutProjectInput
-    workLogs?: WorkLogUncheckedCreateNestedManyWithoutProjectInput
-    timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutProjectInput
-  }
-
-  export type ProjectCreateOrConnectWithoutActivityLogsInput = {
-    where: ProjectWhereUniqueInput
-    create: XOR<ProjectCreateWithoutActivityLogsInput, ProjectUncheckedCreateWithoutActivityLogsInput>
   }
 
   export type OrganizationCreateWithoutActivityLogsInput = {
@@ -32508,7 +32457,7 @@ export namespace Prisma {
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
@@ -32540,7 +32489,7 @@ export namespace Prisma {
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
@@ -32554,61 +32503,6 @@ export namespace Prisma {
     chatRoomLastSeen?: ChatRoomLastSeenUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     attendances?: AttendanceUncheckedUpdateManyWithoutUserNestedInput
-  }
-
-  export type ProjectUpsertWithoutActivityLogsInput = {
-    update: XOR<ProjectUpdateWithoutActivityLogsInput, ProjectUncheckedUpdateWithoutActivityLogsInput>
-    create: XOR<ProjectCreateWithoutActivityLogsInput, ProjectUncheckedCreateWithoutActivityLogsInput>
-    where?: ProjectWhereInput
-  }
-
-  export type ProjectUpdateToOneWithWhereWithoutActivityLogsInput = {
-    where?: ProjectWhereInput
-    data: XOR<ProjectUpdateWithoutActivityLogsInput, ProjectUncheckedUpdateWithoutActivityLogsInput>
-  }
-
-  export type ProjectUpdateWithoutActivityLogsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    category?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
-    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    totalBudget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
-    manager?: UserUpdateOneWithoutManagedProjectsNestedInput
-    client?: UserUpdateOneWithoutClientProjectsNestedInput
-    phases?: PhaseUpdateManyWithoutProjectNestedInput
-    tasks?: TaskUpdateManyWithoutProjectNestedInput
-    workloads?: WorkloadUpdateManyWithoutProjectNestedInput
-    workLogs?: WorkLogUpdateManyWithoutProjectNestedInput
-    timeEntries?: TimeEntryUpdateManyWithoutProjectNestedInput
-  }
-
-  export type ProjectUncheckedUpdateWithoutActivityLogsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    organizationId?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    category?: NullableStringFieldUpdateOperationsInput | string | null
-    managerId?: NullableStringFieldUpdateOperationsInput | string | null
-    clientId?: NullableStringFieldUpdateOperationsInput | string | null
-    status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
-    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    totalBudget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
-    usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    phases?: PhaseUncheckedUpdateManyWithoutProjectNestedInput
-    tasks?: TaskUncheckedUpdateManyWithoutProjectNestedInput
-    workloads?: WorkloadUncheckedUpdateManyWithoutProjectNestedInput
-    workLogs?: WorkLogUncheckedUpdateManyWithoutProjectNestedInput
-    timeEntries?: TimeEntryUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type OrganizationUpsertWithoutActivityLogsInput = {
@@ -32706,7 +32600,7 @@ export namespace Prisma {
     resetToken?: string | null
     resetTokenExpiry?: Date | string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
@@ -32738,7 +32632,7 @@ export namespace Prisma {
     resetTokenExpiry?: Date | string | null
     managerId?: string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
@@ -32859,7 +32753,7 @@ export namespace Prisma {
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
@@ -32891,7 +32785,7 @@ export namespace Prisma {
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
@@ -33002,7 +32896,7 @@ export namespace Prisma {
     resetToken?: string | null
     resetTokenExpiry?: Date | string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
@@ -33034,7 +32928,7 @@ export namespace Prisma {
     resetTokenExpiry?: Date | string | null
     managerId?: string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
@@ -33155,7 +33049,7 @@ export namespace Prisma {
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
@@ -33187,7 +33081,7 @@ export namespace Prisma {
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
@@ -33299,7 +33193,7 @@ export namespace Prisma {
     resetTokenExpiry?: Date | string | null
     managerId?: string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
   }
 
   export type ProjectCreateManyOrganizationInput = {
@@ -33314,6 +33208,8 @@ export namespace Prisma {
     endDate?: Date | string | null
     totalBudget?: Decimal | DecimalJsLike | number | string | null
     usedBudget?: Decimal | DecimalJsLike | number | string
+    githubRepo?: string | null
+    githubInstallationId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -33326,6 +33222,7 @@ export namespace Prisma {
     priority?: $Enums.Priority
     clientId: string
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type ChatMessageCreateManyOrganizationInput = {
@@ -33388,7 +33285,7 @@ export namespace Prisma {
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
@@ -33419,7 +33316,7 @@ export namespace Prisma {
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
@@ -33449,7 +33346,7 @@ export namespace Prisma {
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type ProjectUpdateWithoutOrganizationInput = {
@@ -33462,6 +33359,8 @@ export namespace Prisma {
     endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     totalBudget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
+    githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     manager?: UserUpdateOneWithoutManagedProjectsNestedInput
@@ -33471,7 +33370,6 @@ export namespace Prisma {
     workloads?: WorkloadUpdateManyWithoutProjectNestedInput
     workLogs?: WorkLogUpdateManyWithoutProjectNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutProjectNestedInput
-    activityLogs?: ActivityLogUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutOrganizationInput = {
@@ -33486,6 +33384,8 @@ export namespace Prisma {
     endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     totalBudget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
+    githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     phases?: PhaseUncheckedUpdateManyWithoutProjectNestedInput
@@ -33493,7 +33393,6 @@ export namespace Prisma {
     workloads?: WorkloadUncheckedUpdateManyWithoutProjectNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutProjectNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutProjectNestedInput
-    activityLogs?: ActivityLogUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateManyWithoutOrganizationInput = {
@@ -33508,6 +33407,8 @@ export namespace Prisma {
     endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     totalBudget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
+    githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -33519,6 +33420,7 @@ export namespace Prisma {
     status?: EnumTicketStatusFieldUpdateOperationsInput | $Enums.TicketStatus
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     client?: UserUpdateOneRequiredWithoutTicketsNestedInput
     comments?: TicketCommentUpdateManyWithoutTicketNestedInput
   }
@@ -33531,6 +33433,7 @@ export namespace Prisma {
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     clientId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     comments?: TicketCommentUncheckedUpdateManyWithoutTicketNestedInput
   }
 
@@ -33542,6 +33445,7 @@ export namespace Prisma {
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     clientId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ChatMessageUpdateWithoutOrganizationInput = {
@@ -33594,13 +33498,13 @@ export namespace Prisma {
 
   export type ActivityLogUpdateWithoutOrganizationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    projectId?: NullableStringFieldUpdateOperationsInput | string | null
     action?: StringFieldUpdateOperationsInput | string
     entity?: StringFieldUpdateOperationsInput | string
     entityId?: NullableStringFieldUpdateOperationsInput | string | null
     details?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutActivityLogsNestedInput
-    project?: ProjectUpdateOneWithoutActivityLogsNestedInput
   }
 
   export type ActivityLogUncheckedUpdateWithoutOrganizationInput = {
@@ -33701,7 +33605,7 @@ export namespace Prisma {
     resetToken?: string | null
     resetTokenExpiry?: Date | string | null
     createdAt?: Date | string
-    updatedAt?: Date | string
+    updatedAt?: Date | string | null
   }
 
   export type ProjectCreateManyManagerInput = {
@@ -33716,6 +33620,8 @@ export namespace Prisma {
     endDate?: Date | string | null
     totalBudget?: Decimal | DecimalJsLike | number | string | null
     usedBudget?: Decimal | DecimalJsLike | number | string
+    githubRepo?: string | null
+    githubInstallationId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -33732,6 +33638,8 @@ export namespace Prisma {
     endDate?: Date | string | null
     totalBudget?: Decimal | DecimalJsLike | number | string | null
     usedBudget?: Decimal | DecimalJsLike | number | string
+    githubRepo?: string | null
+    githubInstallationId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -33778,6 +33686,7 @@ export namespace Prisma {
     status?: $Enums.TicketStatus
     priority?: $Enums.Priority
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type TicketCommentCreateManyUserInput = {
@@ -33785,6 +33694,7 @@ export namespace Prisma {
     ticketId: string
     message: string
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type ChatMessageCreateManyUserInput = {
@@ -33816,7 +33726,7 @@ export namespace Prisma {
 
   export type NotificationCreateManyUserInput = {
     id?: string
-    organizationId: string
+    organizationId?: string | null
     title: string
     message: string
     type: string
@@ -33847,7 +33757,7 @@ export namespace Prisma {
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
@@ -33878,7 +33788,7 @@ export namespace Prisma {
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
@@ -33908,7 +33818,7 @@ export namespace Prisma {
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type ProjectUpdateWithoutManagerInput = {
@@ -33921,6 +33831,8 @@ export namespace Prisma {
     endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     totalBudget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
+    githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
@@ -33930,7 +33842,6 @@ export namespace Prisma {
     workloads?: WorkloadUpdateManyWithoutProjectNestedInput
     workLogs?: WorkLogUpdateManyWithoutProjectNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutProjectNestedInput
-    activityLogs?: ActivityLogUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutManagerInput = {
@@ -33945,6 +33856,8 @@ export namespace Prisma {
     endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     totalBudget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
+    githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     phases?: PhaseUncheckedUpdateManyWithoutProjectNestedInput
@@ -33952,7 +33865,6 @@ export namespace Prisma {
     workloads?: WorkloadUncheckedUpdateManyWithoutProjectNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutProjectNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutProjectNestedInput
-    activityLogs?: ActivityLogUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateManyWithoutManagerInput = {
@@ -33967,6 +33879,8 @@ export namespace Prisma {
     endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     totalBudget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
+    githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -33981,6 +33895,8 @@ export namespace Prisma {
     endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     totalBudget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
+    githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
@@ -33990,7 +33906,6 @@ export namespace Prisma {
     workloads?: WorkloadUpdateManyWithoutProjectNestedInput
     workLogs?: WorkLogUpdateManyWithoutProjectNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutProjectNestedInput
-    activityLogs?: ActivityLogUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutClientInput = {
@@ -34005,6 +33920,8 @@ export namespace Prisma {
     endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     totalBudget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
+    githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     phases?: PhaseUncheckedUpdateManyWithoutProjectNestedInput
@@ -34012,7 +33929,6 @@ export namespace Prisma {
     workloads?: WorkloadUncheckedUpdateManyWithoutProjectNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutProjectNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutProjectNestedInput
-    activityLogs?: ActivityLogUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateManyWithoutClientInput = {
@@ -34027,6 +33943,8 @@ export namespace Prisma {
     endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     totalBudget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
+    githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -34140,6 +34058,7 @@ export namespace Prisma {
     status?: EnumTicketStatusFieldUpdateOperationsInput | $Enums.TicketStatus
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneWithoutTicketsNestedInput
     comments?: TicketCommentUpdateManyWithoutTicketNestedInput
   }
@@ -34152,6 +34071,7 @@ export namespace Prisma {
     status?: EnumTicketStatusFieldUpdateOperationsInput | $Enums.TicketStatus
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     comments?: TicketCommentUncheckedUpdateManyWithoutTicketNestedInput
   }
 
@@ -34163,12 +34083,14 @@ export namespace Prisma {
     status?: EnumTicketStatusFieldUpdateOperationsInput | $Enums.TicketStatus
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TicketCommentUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ticket?: TicketUpdateOneRequiredWithoutCommentsNestedInput
   }
 
@@ -34177,6 +34099,7 @@ export namespace Prisma {
     ticketId?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TicketCommentUncheckedUpdateManyWithoutUserInput = {
@@ -34184,6 +34107,7 @@ export namespace Prisma {
     ticketId?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ChatMessageUpdateWithoutUserInput = {
@@ -34236,12 +34160,12 @@ export namespace Prisma {
 
   export type ActivityLogUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
+    projectId?: NullableStringFieldUpdateOperationsInput | string | null
     action?: StringFieldUpdateOperationsInput | string
     entity?: StringFieldUpdateOperationsInput | string
     entityId?: NullableStringFieldUpdateOperationsInput | string | null
     details?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    project?: ProjectUpdateOneWithoutActivityLogsNestedInput
     organization?: OrganizationUpdateOneWithoutActivityLogsNestedInput
   }
 
@@ -34275,12 +34199,12 @@ export namespace Prisma {
     link?: NullableStringFieldUpdateOperationsInput | string | null
     isRead?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    organization?: OrganizationUpdateOneRequiredWithoutNotificationsNestedInput
+    organization?: OrganizationUpdateOneWithoutNotificationsNestedInput
   }
 
   export type NotificationUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    organizationId?: StringFieldUpdateOperationsInput | string
+    organizationId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
@@ -34291,7 +34215,7 @@ export namespace Prisma {
 
   export type NotificationUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    organizationId?: StringFieldUpdateOperationsInput | string
+    organizationId?: NullableStringFieldUpdateOperationsInput | string | null
     title?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
@@ -34384,17 +34308,6 @@ export namespace Prisma {
     status?: $Enums.TimeEntryStatus
     billable?: boolean
     isManual?: boolean
-    createdAt?: Date | string
-  }
-
-  export type ActivityLogCreateManyProjectInput = {
-    id?: string
-    userId: string
-    organizationId?: string | null
-    action: string
-    entity: string
-    entityId?: string | null
-    details?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
 
@@ -34574,39 +34487,6 @@ export namespace Prisma {
     status?: EnumTimeEntryStatusFieldUpdateOperationsInput | $Enums.TimeEntryStatus
     billable?: BoolFieldUpdateOperationsInput | boolean
     isManual?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ActivityLogUpdateWithoutProjectInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    action?: StringFieldUpdateOperationsInput | string
-    entity?: StringFieldUpdateOperationsInput | string
-    entityId?: NullableStringFieldUpdateOperationsInput | string | null
-    details?: NullableJsonNullValueInput | InputJsonValue
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutActivityLogsNestedInput
-    organization?: OrganizationUpdateOneWithoutActivityLogsNestedInput
-  }
-
-  export type ActivityLogUncheckedUpdateWithoutProjectInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    organizationId?: NullableStringFieldUpdateOperationsInput | string | null
-    action?: StringFieldUpdateOperationsInput | string
-    entity?: StringFieldUpdateOperationsInput | string
-    entityId?: NullableStringFieldUpdateOperationsInput | string | null
-    details?: NullableJsonNullValueInput | InputJsonValue
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ActivityLogUncheckedUpdateManyWithoutProjectInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    organizationId?: NullableStringFieldUpdateOperationsInput | string | null
-    action?: StringFieldUpdateOperationsInput | string
-    entity?: StringFieldUpdateOperationsInput | string
-    entityId?: NullableStringFieldUpdateOperationsInput | string | null
-    details?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -34797,12 +34677,14 @@ export namespace Prisma {
     userId: string
     message: string
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type TicketCommentUpdateWithoutTicketInput = {
     id?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutTicketCommentsNestedInput
   }
 
@@ -34811,6 +34693,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TicketCommentUncheckedUpdateManyWithoutTicketInput = {
@@ -34818,6 +34701,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     message?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 

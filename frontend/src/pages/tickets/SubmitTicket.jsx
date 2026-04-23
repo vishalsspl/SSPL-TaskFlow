@@ -57,21 +57,21 @@ const SubmitTicket = () => {
     };
 
     return (
-        <div className="max-w-3xl mx-auto space-y-6">
-            <Button variant="ghost" onClick={() => navigate('/tickets')}>
+        <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6 page-padding pb-10">
+            <Button variant="ghost" onClick={() => navigate('/tickets')} className="h-8 text-xs font-bold px-0 hover:bg-transparent">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Tickets
             </Button>
 
             <Card>
-                <CardHeader>
-                    <CardTitle>Submit a New Ticket</CardTitle>
-                    <CardDescription>
+                <CardHeader className="space-y-1 pb-4 px-4 sm:px-6">
+                    <CardTitle className="text-xl sm:text-2xl">Submit a New Ticket</CardTitle>
+                    <CardDescription className="text-xs sm:text-sm">
                         Report an issue or request support. We'll get back to you as soon as possible.
                     </CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSubmit}>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-4 px-4 sm:px-6">
                         <div className="space-y-2">
                             <Label htmlFor="title" className="text-foreground/90 font-semibold">Ticket Title</Label>
                             <Input
@@ -80,6 +80,7 @@ const SubmitTicket = () => {
                                 value={title}
                                 onChange={(e) => setTitle(e.target.value)}
                                 required
+                                className="rounded-xl border-border h-10 sm:h-11 transition-all focus:ring-2 focus:ring-primary/20"
                             />
                         </div>
 
@@ -108,11 +109,11 @@ const SubmitTicket = () => {
                             />
                         </div>
                     </CardContent >
-                    <CardFooter className="flex justify-end gap-3">
-                        <Button type="button" variant="outline" onClick={() => navigate('/tickets')} disabled={loading}>
+                    <CardFooter className="flex flex-col sm:flex-row justify-end gap-3 px-4 sm:px-6 pb-6">
+                        <Button type="button" variant="outline" onClick={() => navigate('/tickets')} disabled={loading} className="w-full sm:w-auto rounded-xl h-10 sm:h-11 font-bold">
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={loading}>
+                        <Button type="submit" disabled={loading} className="w-full sm:w-auto rounded-xl h-10 sm:h-11 font-bold shadow-lg shadow-primary/20">
                             {loading ? 'Submitting...' : 'Submit Ticket'}
                         </Button>
                     </CardFooter>

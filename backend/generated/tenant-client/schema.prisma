@@ -1,6 +1,7 @@
 generator client {
-  provider = "prisma-client-js"
-  output   = "../../generated/tenant-client"
+  provider      = "prisma-client-js"
+  output        = "../../generated/tenant-client"
+  binaryTargets = ["native", "debian-openssl-1.1.x", "debian-openssl-3.0.x", "linux-musl", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -8,7 +9,7 @@ datasource db {
   url      = env("TENANT_DATABASE_URL")
 }
 
-// ─── Organization (lightweight copy for backward-compat filtering) ──────────
+// ─── Organization ──────────────────────────────────────────────────────────
 model Organization {
   id   String @id @default(uuid())
   name String
@@ -95,8 +96,8 @@ model User {
   notifications    Notification[]
   attendances      Attendance[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
 
   @@unique([email, organizationId])
 }
@@ -124,12 +125,14 @@ model Project {
   totalBudget Decimal? @db.Decimal(12, 2)
   usedBudget  Decimal  @default(0) @db.Decimal(12, 2)
 
-  phases       Phase[]
-  tasks        Task[]
-  workloads    Workload[]
-  workLogs     WorkLog[]
-  timeEntries  TimeEntry[]
-  activityLogs ActivityLog[]
+  phases      Phase[]
+  tasks       Task[]
+  workloads   Workload[]
+  workLogs    WorkLog[]
+  timeEntries TimeEntry[]
+
+  githubRepo           String? // e.g., "owner/repo"
+  githubInstallationId String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -266,6 +269,7 @@ model Ticket {
   comments TicketComment[]
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ─── TicketComment ──────────────────────────────────────────────────────────
@@ -280,6 +284,7 @@ model TicketComment {
   user   User   @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ─── ChatMessage ────────────────────────────────────────────────────────────
@@ -323,7 +328,6 @@ model ActivityLog {
   details        Json?
 
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  project      Project?      @relation(fields: [projectId], references: [id], onDelete: Cascade)
   organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
@@ -331,9 +335,9 @@ model ActivityLog {
 
 // ─── Notification ───────────────────────────────────────────────────────────
 model Notification {
-  id             String @id @default(uuid())
+  id             String  @id @default(uuid())
   userId         String
-  organizationId String
+  organizationId String?
 
   title   String
   message String
@@ -341,8 +345,8 @@ model Notification {
   link    String?
   isRead  Boolean @default(false)
 
-  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 }
@@ -365,6 +369,7 @@ model Attendance {
 
 // ─── Enums ──────────────────────────────────────────────────────────────────
 enum Role {
+  SUPERADMIN
   ADMIN
   MANAGER
   MEMBER

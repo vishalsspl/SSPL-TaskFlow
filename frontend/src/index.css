@@ -237,9 +237,10 @@
 @media (max-width: 640px) {
   .ck-editor {
     max-width: 100% !important;
+    width: 100% !important;
   }
 
-  .ck.ck-toolbar {
+  .ck.ck-toolbar .ck-toolbar__items {
     flex-wrap: wrap !important;
   }
 

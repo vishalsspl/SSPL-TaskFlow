@@ -11,8 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Bell, Check, Trash2, Info, FolderKanban, ListTodo, Activity, MessageSquare, CheckCircle2, XCircle, Clock, Building2 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { cn, formatRelativeTime } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import VibrantLoader from '@/components/ui/VibrantLoader';
 
@@ -76,6 +75,10 @@ const NotificationBell = () => {
         return '/chat';
       case 'NEW_ORG_SIGNUP':
         return '/superadmin/orgs';
+      case 'TICKET_CREATED':
+      case 'TICKET_STATUS_UPDATED':
+      case 'TICKET_COMMENT':
+        return notification.link || '/tickets';
       default:
         return null;
     }
@@ -111,6 +114,12 @@ const NotificationBell = () => {
         return <div className="p-2 bg-amber-500/10 rounded-full"><Clock className="w-4 h-4 text-amber-500" /></div>;
       case 'NEW_ORG_SIGNUP':
         return <div className="p-2 bg-[#48A111]/20 rounded-full shadow-[0_0_10px_rgba(72,161,17,0.2)]"><Building2 className="w-4 h-4 text-[#48A111]" /></div>;
+      case 'TICKET_CREATED':
+        return <div className="p-2 bg-blue-500/10 rounded-full"><MessageSquare className="w-4 h-4 text-blue-500" /></div>;
+      case 'TICKET_STATUS_UPDATED':
+        return <div className="p-2 bg-orange-500/10 rounded-full"><Clock className="w-4 h-4 text-orange-500" /></div>;
+      case 'TICKET_COMMENT':
+        return <div className="p-2 bg-indigo-500/10 rounded-full"><MessageSquare className="w-4 h-4 text-indigo-500" /></div>;
       default:
         return <div className="p-2 bg-gray-500/10 rounded-full"><Info className="w-4 h-4 text-gray-500" /></div>;
     }
@@ -138,11 +147,7 @@ const NotificationBell = () => {
           </p>
           <div className="flex items-center gap-1.5 shrink-0 text-[10px] text-muted-foreground/60 font-medium">
             <Clock className="w-2.5 h-2.5" />
-            {(() => {
-              const date = new Date(notification.createdAt);
-              const now = new Date();
-              return formatDistanceToNow(date > now ? now : date, { addSuffix: true });
-            })()}
+            {formatRelativeTime(notification.createdAt)}
           </div>
         </div>
         <p className={cn(
