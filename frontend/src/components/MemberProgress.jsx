@@ -82,8 +82,33 @@ const StatsGrid = ({ stats, statusColors }) => (
                 <p className="text-xs text-muted-foreground font-medium">Story Points Delivered</p>
                 <p className="text-xl font-bold">{stats.completedStoryPoints} / {stats.totalStoryPoints}</p>
             </div>
-            <div className="h-12 w-12 rounded-full border-4 border-primary/20 border-t-primary flex items-center justify-center text-[10px] font-bold">
-                {stats.totalStoryPoints > 0 ? Math.round((stats.completedStoryPoints / stats.totalStoryPoints) * 100) : 0}%
+            <div className="relative h-12 w-12 flex items-center justify-center">
+                <svg className="w-full h-full transform -rotate-90">
+                    <circle
+                        cx="24"
+                        cy="24"
+                        r="20"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="transparent"
+                        className="text-primary/20"
+                    />
+                    <circle
+                        cx="24"
+                        cy="24"
+                        r="20"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="transparent"
+                        strokeDasharray={2 * Math.PI * 20}
+                        strokeDashoffset={2 * Math.PI * 20 * (1 - (stats.totalStoryPoints > 0 ? (stats.completedStoryPoints / stats.totalStoryPoints) : 0))}
+                        strokeLinecap="round"
+                        className="text-primary transition-all duration-500"
+                    />
+                </svg>
+                <span className="absolute text-[10px] font-bold">
+                    {stats.totalStoryPoints > 0 ? Math.round((stats.completedStoryPoints / stats.totalStoryPoints) * 100) : 0}%
+                </span>
             </div>
         </div>
     </div>

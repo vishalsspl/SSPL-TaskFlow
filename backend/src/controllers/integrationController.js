@@ -176,6 +176,10 @@ export const getRepoActivity = async (req, res) => {
       url: c.html_url
     })));
   } catch (error) {
+    if (error.status === 409 || error.response?.status === 409 || error.message?.includes('empty')) {
+      console.log(`GitHub Info: Repository ${project.githubRepo} is empty.`);
+      return res.json([]);
+    }
     console.error('GitHub API Error:', error.message);
     res.status(500).json({ error: 'Failed to fetch repository activity' });
   }
@@ -215,6 +219,10 @@ export const getRepoCommits = async (req, res) => {
       url: c.html_url
     })));
   } catch (error) {
+    if (error.status === 409 || error.response?.status === 409 || error.message?.includes('empty')) {
+      console.log(`GitHub Info: Repository ${owner}/${repo} is empty.`);
+      return res.json([]);
+    }
     console.error('GitHub Commits Error:', error.message);
     res.status(500).json({ error: 'Failed to fetch commits' });
   }

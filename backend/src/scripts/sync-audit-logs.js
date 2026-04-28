@@ -23,15 +23,8 @@ async function syncAuditLogs() {
         continue;
       }
 
-      // 2. Fetch specific logs from the TENANT DB
-      // We target major events: PROJECT_CREATED, UPDATED (project), DELETED (project), INVITED, APPROVED
-      const tenantLogs = await tenantDb.activityLog.findMany({
-        where: {
-          action: {
-            in: ['PROJECT_CREATED', 'UPDATED', 'DELETED', 'INVITED', 'APPROVED']
-          }
-        }
-      });
+      // 2. Fetch ALL logs from the TENANT DB
+      const tenantLogs = await tenantDb.activityLog.findMany();
 
       console.log(`Found ${tenantLogs.length} relevant logs in Tenant DB.`);
 

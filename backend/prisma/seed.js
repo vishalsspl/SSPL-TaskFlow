@@ -182,11 +182,11 @@ async function main() {
 
   try {
     const superAdmin = await mainPrisma.user.upsert({
-      where: { email: "superadmin@taskflow.com" },
+      where: { email: "superadmin@sveltoz.com" },
       update: {},
       create: {
         name: "Super Admin",
-        email: "superadmin@taskflow.com",
+        email: "superadmin@sveltoz.com",
         passwordHash: await bcrypt.hash("superadmin123", 10),
         role: "SUPERADMIN",
         isApproved: true,
