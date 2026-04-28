@@ -162,9 +162,12 @@ export const getRepoActivity = async (req, res) => {
     const octokit = new Octokit({ auth: integration.accessToken });
     const [owner, repo] = project.githubRepo.split('/');
     
+    const { sha } = req.query;
+    
     const { data: commits } = await octokit.repos.listCommits({
       owner,
       repo,
+      sha,
       per_page: 10
     });
 
@@ -204,9 +207,12 @@ export const getRepoCommits = async (req, res) => {
   try {
     const octokit = new Octokit({ auth: integration.accessToken });
 
+    const { sha } = req.query;
+
     const { data: commits } = await octokit.repos.listCommits({
       owner,
       repo,
+      sha,
       per_page: 20
     });
 
@@ -225,6 +231,40 @@ export const getRepoCommits = async (req, res) => {
     }
     console.error('GitHub Commits Error:', error.message);
     res.status(500).json({ error: 'Failed to fetch commits' });
+  }
+};
+
+export const getRepoBranches = async (req, res) => {
+  const { owner, repo } = req.params;
+
+  const integration = await prisma.integration.findUnique({
+    where: {
+      organizationId_provider: {
+        organizationId: req.user.organizationId,
+        provider: 'github'
+      }
+    }
+  });
+
+  if (!integration) {
+    return res.status(404).json({ error: 'GitHub not connected' });
+  }
+
+  try {
+    const octokit = new Octokit({ auth: integration.accessToken });
+    const { data: branches } = await octokit.repos.listBranches({
+      owner,
+      repo,
+      per_page: 100
+    });
+
+    res.json(branches.map(b => ({
+      name: b.name,
+      protected: b.protected
+    })));
+  } catch (error) {
+    console.error('GitHub Branches Error:', error.message);
+    res.status(500).json({ error: 'Failed to fetch branches' });
   }
 };
 
@@ -254,7 +294,13 @@ export const getLinkedProjects = async (req, res) => {
         id: true,
         name: true,
         githubRepo: true,
-        status: true
+        status: true,
+        manager: {
+          select: {
+            name: true,
+            avatar: true
+          }
+        }
       },
       orderBy: { updatedAt: 'desc' }
     });

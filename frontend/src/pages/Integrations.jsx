@@ -3,8 +3,9 @@ import { useHeaderStore } from '@/store/headerStore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import api from '@/lib/api';
-import { Github, CheckCircle2, XCircle, ExternalLink, RefreshCw, Unlink, GitCommit, ChevronRight, ArrowLeft, Clock, User, Loader2, FolderGit2, Link2 } from 'lucide-react';
+import { Github, CheckCircle2, XCircle, ExternalLink, RefreshCw, Unlink, GitCommit, ChevronRight, ArrowLeft, Clock, User, Loader2, FolderGit2, Link2, GitBranch, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthStore } from '@/store/authStore';
 
@@ -36,6 +37,9 @@ const Integrations = () => {
   const [selectedProject, setSelectedProject] = useState(null);
   const [projectCommits, setProjectCommits] = useState([]);
   const [loadingProjectCommits, setLoadingProjectCommits] = useState(false);
+  const [branches, setBranches] = useState([]);
+  const [selectedBranch, setSelectedBranch] = useState('');
+  const [fetchingBranches, setFetchingBranches] = useState(false);
 
   const isAdmin = user?.role === 'ADMIN';
 
@@ -135,9 +139,22 @@ const Integrations = () => {
     setProjectCommits([]);
     setLoadingCommits(true);
     setCommits([]);
+    setSelectedBranch('');
 
     try {
       const [owner, repoName] = repo.full_name.split('/');
+      
+      // Fetch branches first
+      setFetchingBranches(true);
+      try {
+        const branchRes = await api.get(`/integrations/github/branches/${owner}/${repoName}`);
+        setBranches(branchRes.data || []);
+      } catch (err) {
+        console.error('Failed to fetch branches:', err);
+      } finally {
+        setFetchingBranches(false);
+      }
+
       const response = await api.get(`/integrations/github/commits/${owner}/${repoName}`);
       setCommits(response.data);
     } catch (error) {
@@ -148,6 +165,36 @@ const Integrations = () => {
       });
     } finally {
       setLoadingCommits(false);
+    }
+  };
+
+  const handleBranchChange = async (branchName) => {
+    setSelectedBranch(branchName);
+    const repoFullName = selectedRepo?.full_name || selectedProject?.githubRepo;
+    if (!repoFullName) return;
+
+    const [owner, repoName] = repoFullName.split('/');
+    
+    if (selectedRepo) {
+      setLoadingCommits(true);
+      try {
+        const response = await api.get(`/integrations/github/commits/${owner}/${repoName}${branchName ? `?sha=${branchName}` : ''}`);
+        setCommits(response.data);
+      } catch (error) {
+        toast({ title: "Error", description: "Failed to fetch commits for branch.", variant: "destructive" });
+      } finally {
+        setLoadingCommits(false);
+      }
+    } else if (selectedProject) {
+      setLoadingProjectCommits(true);
+      try {
+        const response = await api.get(`/integrations/github/commits/${owner}/${repoName}${branchName ? `?sha=${branchName}` : ''}`);
+        setProjectCommits(response.data);
+      } catch (error) {
+        toast({ title: "Error", description: "Failed to fetch commits for branch.", variant: "destructive" });
+      } finally {
+        setLoadingProjectCommits(false);
+      }
     }
   };
 
@@ -163,9 +210,22 @@ const Integrations = () => {
     setCommits([]);
     setLoadingProjectCommits(true);
     setProjectCommits([]);
+    setSelectedBranch('');
 
     try {
       const [owner, repoName] = project.githubRepo.split('/');
+      
+      // Fetch branches first
+      setFetchingBranches(true);
+      try {
+        const branchRes = await api.get(`/integrations/github/branches/${owner}/${repoName}`);
+        setBranches(branchRes.data || []);
+      } catch (err) {
+        console.error('Failed to fetch branches:', err);
+      } finally {
+        setFetchingBranches(false);
+      }
+
       const response = await api.get(`/integrations/github/commits/${owner}/${repoName}`);
       setProjectCommits(response.data);
     } catch (error) {
@@ -183,7 +243,7 @@ const Integrations = () => {
   const renderCommitTimeline = (commitList, isLoading, label, onClose) => (
     <Card className="border-none shadow-xl overflow-hidden animate-in slide-in-from-top-2 duration-300">
       <CardHeader className="pb-4 bg-gradient-to-r from-primary/5 to-transparent">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-xl">
               <GitCommit className="w-5 h-5 text-primary" />
@@ -196,14 +256,47 @@ const Integrations = () => {
               </CardDescription>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClose}
-            className="rounded-xl text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="w-4 h-4 mr-1" /> Close
-          </Button>
+          
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            {branches.length > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider hidden sm:inline">Branch:</span>
+                <Select
+                  value={selectedBranch || "default"}
+                  onValueChange={(val) => handleBranchChange(val === "default" ? "" : val)}
+                >
+                  <SelectTrigger className="w-full md:w-[180px] h-9 rounded-xl bg-background/50 border-border/50 hover:bg-accent/10 transition-all font-semibold">
+                    <SelectValue placeholder="Select branch" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-border/50 bg-popover/95 backdrop-blur-md">
+                    <SelectItem value="default" className="rounded-lg focus:bg-primary/10">
+                      <div className="flex items-center gap-2">
+                        <GitBranch className="w-3.5 h-3.5 opacity-50" />
+                        <span>Default Branch</span>
+                      </div>
+                    </SelectItem>
+                    {branches.map(b => (
+                      <SelectItem key={b.name} value={b.name} className="rounded-lg focus:bg-primary/10">
+                        <div className="flex items-center gap-2">
+                          <GitBranch className="w-3.5 h-3.5 opacity-50" />
+                          <span>{b.name}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="rounded-full text-muted-foreground hover:text-foreground hover:bg-accent/20 w-8 h-8"
+            >
+              <X className="w-5 h-5" />
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="p-0">
@@ -338,47 +431,57 @@ const Integrations = () => {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                    {repos.map((repo) => (
-                      <div
-                        key={repo.id}
-                        onClick={() => handleRepoClick(repo)}
-                        className={`p-4 rounded-2xl border transition-all cursor-pointer group ${
-                          selectedRepo?.id === repo.id
-                            ? 'bg-primary/10 border-primary/30 ring-2 ring-primary/20'
-                            : 'bg-card/50 hover:bg-accent/10 border-border'
-                        }`}
-                      >
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
-                          <div className="flex items-center gap-3">
-                            <Github className="w-5 h-5 text-muted-foreground shrink-0" />
-                            <div className="min-w-0">
-                              <p className="font-semibold truncate">{repo.name}</p>
-                              <p className="text-xs text-muted-foreground truncate">{repo.full_name}</p>
+                    {repos.map((repo) => {
+                      const isAlreadyLinked = linkedProjects.some(p => p.githubRepo === repo.full_name);
+                      return (
+                        <div
+                          key={repo.id}
+                          onClick={() => handleRepoClick(repo)}
+                          className={`p-4 rounded-2xl border transition-all cursor-pointer group ${
+                            selectedRepo?.id === repo.id
+                              ? 'bg-primary/10 border-primary/30 ring-2 ring-primary/20'
+                              : isAlreadyLinked 
+                                ? 'bg-primary/5 border-primary/20 shadow-sm shadow-primary/5'
+                                : 'bg-card/50 hover:bg-accent/10 border-border'
+                          }`}
+                        >
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
+                            <div className="flex items-center gap-3">
+                              <Github className={`w-5 h-5 shrink-0 ${isAlreadyLinked ? 'text-primary' : 'text-muted-foreground'}`} />
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <p className="font-semibold truncate">{repo.name}</p>
+                                  {isAlreadyLinked && (
+                                    <Badge variant="outline" className="h-4 text-[9px] px-1.5 border-primary/30 text-primary bg-primary/5 uppercase tracking-tighter">Linked</Badge>
+                                  )}
+                                </div>
+                                <p className="text-xs text-muted-foreground truncate">{repo.full_name}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {selectedRepo?.id === repo.id ? (
+                                <Badge variant="outline" className="text-xs border-primary/30 text-primary">
+                                  <GitCommit className="w-3 h-3 mr-1" /> Viewing
+                                </Badge>
+                              ) : (
+                                <span className="text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                                  View commits <ChevronRight className="w-3 h-3" />
+                                </span>
+                              )}
+                              <a
+                                href={repo.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-2 hover:bg-primary/10 rounded-xl transition-all"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <ExternalLink className={`w-4 h-4 ${isAlreadyLinked ? 'text-primary' : 'text-primary'}`} />
+                              </a>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            {selectedRepo?.id === repo.id ? (
-                              <Badge variant="outline" className="text-xs border-primary/30 text-primary">
-                                <GitCommit className="w-3 h-3 mr-1" /> Viewing
-                              </Badge>
-                            ) : (
-                              <span className="text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                                View commits <ChevronRight className="w-3 h-3" />
-                              </span>
-                            )}
-                            <a
-                              href={repo.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="p-2 hover:bg-primary/10 rounded-xl transition-all"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <ExternalLink className="w-4 h-4 text-primary" />
-                            </a>
-                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </>
               )}
@@ -410,6 +513,14 @@ const Integrations = () => {
                                 <Link2 className="w-3 h-3 text-muted-foreground" />
                                 <p className="text-xs text-muted-foreground truncate">{project.githubRepo}</p>
                               </div>
+                              {isAdmin && project.manager && (
+                                <div className="flex items-center gap-1.5 mt-1">
+                                  <User className={`w-3 h-3 ${selectedProject?.id === project.id ? 'text-primary' : 'text-primary/70'}`} />
+                                  <p className={`text-[10px] font-bold uppercase tracking-wider ${selectedProject?.id === project.id ? 'text-primary' : 'text-primary/70'}`}>
+                                    Linked by: {project.manager.name}
+                                  </p>
+                                </div>
+                              )}
                             </div>
                           </div>
                           <div className="flex items-center gap-2">

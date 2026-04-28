@@ -3,7 +3,8 @@ import api from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Github, GitCommit, GitPullRequest, ExternalLink, RefreshCw, Link as LinkIcon, AlertTriangle } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Github, GitCommit, GitPullRequest, ExternalLink, RefreshCw, Link as LinkIcon, AlertTriangle, GitBranch } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { formatDistanceToNow } from 'date-fns';
@@ -15,6 +16,8 @@ const GitHubProjectTab = ({ projectId }) => {
   const [repos, setRepos] = useState([]);
   const [activity, setActivity] = useState([]);
   const [syncing, setSyncing] = useState(false);
+  const [branches, setBranches] = useState([]);
+  const [selectedBranch, setSelectedBranch] = useState('');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -35,7 +38,16 @@ const GitHubProjectTab = ({ projectId }) => {
       setLinkedRepo(repoFullName);
 
       if (repoFullName) {
-        fetchActivity(projectId);
+        // Fetch branches
+        try {
+          const [owner, repo] = repoFullName.split('/');
+          const branchRes = await api.get(`/integrations/github/branches/${owner}/${repo}`);
+          setBranches(branchRes.data || []);
+        } catch (err) {
+          console.error('Failed to fetch branches:', err);
+        }
+        
+        fetchActivity(projectId, selectedBranch);
       }
     } catch (error) {
       setIsConnected(false);
@@ -44,16 +56,21 @@ const GitHubProjectTab = ({ projectId }) => {
     }
   };
 
-  const fetchActivity = async (id) => {
+  const fetchActivity = async (id, branch = '') => {
     setSyncing(true);
     try {
-      const response = await api.get(`/integrations/github/activity/${id}`);
+      const response = await api.get(`/integrations/github/activity/${id}${branch ? `?sha=${branch}` : ''}`);
       setActivity(response.data);
     } catch (error) {
       console.error('Failed to fetch activity:', error);
     } finally {
       setSyncing(false);
     }
+  };
+
+  const handleBranchChange = (branchName) => {
+    setSelectedBranch(branchName);
+    fetchActivity(projectId, branchName);
   };
 
   const handleLinkRepo = async (repoFullName) => {
@@ -148,7 +165,33 @@ const GitHubProjectTab = ({ projectId }) => {
           <Badge variant="secondary" className="rounded-full">Active</Badge>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => fetchActivity(projectId)} disabled={syncing} className="rounded-xl">
+          {branches.length > 0 && (
+            <Select
+              value={selectedBranch || "default"}
+              onValueChange={(val) => handleBranchChange(val === "default" ? "" : val)}
+            >
+              <SelectTrigger className="w-[160px] h-9 rounded-xl bg-background/50 border-border/50 hover:bg-accent/10 transition-all font-semibold">
+                <SelectValue placeholder="Branch" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border-border/50 bg-popover/95 backdrop-blur-md">
+                <SelectItem value="default" className="rounded-lg focus:bg-primary/10">
+                  <div className="flex items-center gap-2">
+                    <GitBranch className="w-3.5 h-3.5 opacity-50" />
+                    <span>Default Branch</span>
+                  </div>
+                </SelectItem>
+                {branches.map(b => (
+                  <SelectItem key={b.name} value={b.name} className="rounded-lg focus:bg-primary/10">
+                    <div className="flex items-center gap-2">
+                      <GitBranch className="w-3.5 h-3.5 opacity-50" />
+                      <span>{b.name}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          <Button variant="outline" size="sm" onClick={() => fetchActivity(projectId, selectedBranch)} disabled={syncing} className="rounded-xl">
             <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
             Sync
           </Button>

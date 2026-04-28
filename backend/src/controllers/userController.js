@@ -362,6 +362,7 @@ export const updateUser = async (req, res) => {
     });
 
     // Sync core fields to MAIN DB (name, role, password)
+    // Using upsert to handle cases where user might be missing from MAIN DB (auto-heal)
     try {
       const mainUpdate = {};
       if (name !== undefined) mainUpdate.name = name;
@@ -369,13 +370,25 @@ export const updateUser = async (req, res) => {
       if (updateData.passwordHash) mainUpdate.passwordHash = updateData.passwordHash;
 
       if (Object.keys(mainUpdate).length > 0) {
-        await prisma.user.update({
+        // We use upsert to ensure that if the user is missing from Main DB, they are recreated
+        // This handles synchronization issues gracefully
+        await prisma.user.upsert({
           where: { id },
-          data: mainUpdate,
+          update: mainUpdate,
+          create: {
+            id,
+            organizationId: req.user.organizationId,
+            name: updatedUser.name,
+            email: updatedUser.email,
+            role: updatedUser.role,
+            passwordHash: updateData.passwordHash || existingUser.passwordHash,
+            isApproved: existingUser.isApproved || true,
+            mustChangePassword: existingUser.mustChangePassword || false
+          }
         });
       }
     } catch (syncErr) {
-      console.error('[UpdateUser] Failed to sync to MAIN DB:', syncErr.message);
+      console.error('[UpdateUser] Failed to sync/upsert to MAIN DB:', syncErr.message);
       return res.status(500).json({ error: 'Failed to synchronize account changes to the auth database. User may need to re-login.' });
     }
 

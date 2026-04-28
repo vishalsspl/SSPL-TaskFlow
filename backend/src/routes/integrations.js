@@ -7,6 +7,7 @@ import {
   getLinkedProjects,
   linkProjectToRepo,
   getRepoActivity,
+  getRepoBranches,
   disconnectGitHub
 } from '../controllers/integrationController.js';
 import { authenticate } from '../middleware/auth.js';
@@ -25,6 +26,7 @@ router.get('/github/auth', getGitHubAuthUrl);
 router.get('/github/repos', getGitHubRepos);
 router.post('/github/link/:projectId', linkProjectToRepo);
 router.get('/github/activity/:projectId', getRepoActivity);
+router.get('/github/branches/:owner/:repo', getRepoBranches);
 router.get('/github/commits/:owner/:repo', getRepoCommits);
 router.get('/github/linked-projects', getLinkedProjects);
 router.delete('/github', disconnectGitHub);
