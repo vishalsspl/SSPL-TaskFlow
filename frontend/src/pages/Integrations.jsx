@@ -243,29 +243,29 @@ const Integrations = () => {
   const renderCommitTimeline = (commitList, isLoading, label, onClose) => (
     <Card className="border-none shadow-xl overflow-hidden animate-in slide-in-from-top-2 duration-300">
       <CardHeader className="pb-4 bg-gradient-to-r from-primary/5 to-transparent">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-xl">
+            <div className="p-2 bg-primary/10 rounded-xl shrink-0">
               <GitCommit className="w-5 h-5 text-primary" />
             </div>
-            <div>
-              <CardTitle className="text-lg font-bold">Recent Commits</CardTitle>
-              <CardDescription className="flex items-center gap-1.5 mt-0.5">
-                <Github className="w-3.5 h-3.5" />
-                {label}
+            <div className="min-w-0">
+              <CardTitle className="text-base sm:text-lg font-bold truncate">Recent Commits</CardTitle>
+              <CardDescription className="flex items-center gap-1.5 mt-0.5 truncate text-[10px] sm:text-sm">
+                <Github className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">{label}</span>
               </CardDescription>
             </div>
           </div>
           
-          <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             {branches.length > 0 && (
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider hidden sm:inline">Branch:</span>
+              <div className="flex items-center gap-2 flex-1 sm:flex-initial">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider hidden lg:inline">Branch:</span>
                 <Select
                   value={selectedBranch || "default"}
                   onValueChange={(val) => handleBranchChange(val === "default" ? "" : val)}
                 >
-                  <SelectTrigger className="w-full md:w-[180px] h-9 rounded-xl bg-background/50 border-border/50 hover:bg-accent/10 transition-all font-semibold">
+                  <SelectTrigger className="w-full sm:w-[160px] md:w-[180px] h-9 rounded-xl bg-background/50 border-border/50 hover:bg-accent/10 transition-all font-semibold text-xs sm:text-sm">
                     <SelectValue placeholder="Select branch" />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-border/50 bg-popover/95 backdrop-blur-md">
@@ -292,9 +292,9 @@ const Integrations = () => {
               variant="ghost"
               size="icon"
               onClick={onClose}
-              className="rounded-full text-muted-foreground hover:text-foreground hover:bg-accent/20 w-8 h-8"
+              className="rounded-full text-muted-foreground hover:text-foreground hover:bg-accent/20 w-8 h-8 shrink-0"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
           </div>
         </div>
@@ -318,30 +318,30 @@ const Integrations = () => {
                 href={commit.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-start gap-4 px-6 py-4 hover:bg-accent/5 transition-colors group"
+                className="flex items-start gap-3 sm:gap-4 px-4 sm:px-6 py-3 sm:py-4 hover:bg-accent/5 transition-colors group"
               >
                 <div className="flex flex-col items-center pt-1 flex-shrink-0">
                   {commit.authorAvatar ? (
                     <img
                       src={commit.authorAvatar}
                       alt={commit.author}
-                      className="w-8 h-8 rounded-full ring-2 ring-background"
+                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-full ring-2 ring-background shadow-sm"
                     />
                   ) : (
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-background">
-                      <User className="w-4 h-4 text-primary" />
+                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center ring-2 ring-background">
+                      <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
                     </div>
                   )}
                   {index < commitList.length - 1 && (
-                    <div className="w-px h-full bg-border/50 mt-2 min-h-[16px]" />
+                    <div className="w-px h-full bg-border/50 mt-2 min-h-[12px] sm:min-h-[16px]" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0 space-y-1">
-                  <p className="text-sm font-medium leading-snug group-hover:text-primary transition-colors line-clamp-2">
+                  <p className="text-xs sm:text-sm font-medium leading-snug group-hover:text-primary transition-colors line-clamp-2 sm:line-clamp-none">
                     {commit.message.split('\n')[0]}
                   </p>
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mt-1">
-                    <span className="flex items-center gap-1">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[10px] sm:text-xs text-muted-foreground mt-1">
+                    <span className="flex items-center gap-1 font-semibold text-foreground/70">
                       <User className="w-3 h-3" />
                       {commit.author}
                     </span>
@@ -349,12 +349,12 @@ const Integrations = () => {
                       <Clock className="w-3 h-3" />
                       {formatRelativeTime(commit.date)}
                     </span>
-                    <span className="font-mono text-primary/60 group-hover:text-primary transition-colors">
+                    <span className="font-mono text-primary/60 bg-primary/5 px-1 rounded group-hover:text-primary transition-colors">
                       {commit.sha.substring(0, 7)}
                     </span>
                   </div>
                 </div>
-                <ExternalLink className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-1" />
+                <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-muted-foreground opacity-30 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-1" />
               </a>
             ))}
           </div>
@@ -368,16 +368,16 @@ const Integrations = () => {
       {/* ─── GitHub Connection Card ─── */}
       <Card className="border-none shadow-xl bg-gradient-to-br from-card to-secondary/10">
         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0 pb-7">
-          <div className="space-y-1">
-            <CardTitle className="text-2xl font-bold flex items-center gap-2">
-              <Github className="w-8 h-8" />
+          <div className="space-y-1.5 w-full sm:w-auto">
+            <CardTitle className="text-xl sm:text-2xl font-black flex items-center gap-2 Montserrat">
+              <Github className="w-6 h-6 sm:w-8 sm:h-8" />
               GitHub Integration
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-xs sm:text-sm leading-relaxed">
               Sync your repositories and track commit activity directly in TaskFlow.
             </CardDescription>
           </div>
-          <Badge variant={isConnected ? "success" : "secondary"} className="h-7 px-4 rounded-full">
+          <Badge variant={isConnected ? "success" : "secondary"} className="h-6 sm:h-7 px-3 sm:px-4 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider">
             {isConnected ? (
               <span className="flex items-center gap-1.5">
                 <CheckCircle2 className="w-3.5 h-3.5" /> Connected
@@ -414,17 +414,18 @@ const Integrations = () => {
               {/* ─── Available Repositories (Admin only) ─── */}
               {isAdmin && (
                 <>
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
-                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                    <h3 className="text-[11px] sm:text-sm font-black text-muted-foreground uppercase tracking-widest Montserrat flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                       Available Repositories ({repos.length})
                     </h3>
-                    <div className="flex flex-wrap gap-2">
-                      <Button variant="outline" size="sm" onClick={checkConnection} disabled={loading} className="rounded-xl">
-                        <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
+                      <Button variant="outline" size="sm" onClick={checkConnection} disabled={loading} className="flex-1 sm:flex-none h-8 sm:h-9 rounded-xl bg-secondary/50 border-border/50 text-[10px] sm:text-xs font-bold uppercase tracking-wider Montserrat">
+                        <RefreshCw className={`w-3 h-3 sm:w-3.5 sm:h-3.5 mr-2 ${loading ? 'animate-spin' : ''}`} />
                         Refresh
                       </Button>
-                      <Button variant="destructive" size="sm" onClick={handleDisconnect} className="rounded-xl">
-                        <Unlink className="w-4 h-4 mr-2" />
+                      <Button variant="destructive" size="sm" onClick={handleDisconnect} className="flex-1 sm:flex-none h-8 sm:h-9 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-wider Montserrat">
+                        <Unlink className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-2" />
                         Disconnect
                       </Button>
                     </div>
@@ -437,7 +438,7 @@ const Integrations = () => {
                         <div
                           key={repo.id}
                           onClick={() => handleRepoClick(repo)}
-                          className={`p-4 rounded-2xl border transition-all cursor-pointer group ${
+                          className={`relative p-3 sm:p-4 rounded-2xl border transition-all cursor-pointer group ${
                             selectedRepo?.id === repo.id
                               ? 'bg-primary/10 border-primary/30 ring-2 ring-primary/20'
                               : isAlreadyLinked 
@@ -445,40 +446,42 @@ const Integrations = () => {
                                 : 'bg-card/50 hover:bg-accent/10 border-border'
                           }`}
                         >
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
-                            <div className="flex items-center gap-3">
-                              <Github className={`w-5 h-5 shrink-0 ${isAlreadyLinked ? 'text-primary' : 'text-muted-foreground'}`} />
-                              <div className="min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <p className="font-semibold truncate">{repo.name}</p>
-                                  {isAlreadyLinked && (
-                                    <Badge variant="outline" className="h-4 text-[9px] px-1.5 border-primary/30 text-primary bg-primary/5 uppercase tracking-tighter">Linked</Badge>
-                                  )}
-                                </div>
-                                <p className="text-xs text-muted-foreground truncate">{repo.full_name}</p>
+                          <div className="flex items-start gap-3">
+                            <div className={`p-2 rounded-xl shrink-0 ${isAlreadyLinked ? 'bg-primary/10' : 'bg-muted'}`}>
+                              <Github className={`w-4 h-4 sm:w-5 sm:h-5 ${isAlreadyLinked ? 'text-primary' : 'text-muted-foreground'}`} />
+                            </div>
+                            <div className="min-w-0 flex-1 pr-8">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <p className="font-bold text-sm sm:text-base truncate Montserrat">{repo.name}</p>
+                                {isAlreadyLinked && (
+                                  <Badge variant="outline" className="h-4 text-[8px] sm:text-[9px] px-1.5 border-primary/30 text-primary bg-primary/5 uppercase tracking-tighter font-black">Linked</Badge>
+                                )}
+                              </div>
+                              <p className="text-[10px] sm:text-xs text-muted-foreground truncate opacity-70 mt-0.5">{repo.full_name}</p>
+                              
+                              <div className="mt-2 flex items-center gap-2">
+                                {selectedRepo?.id === repo.id ? (
+                                  <Badge className="text-[9px] sm:text-[10px] bg-primary text-primary-foreground font-black uppercase tracking-widest py-0.5">
+                                    <GitCommit className="w-2.5 h-2.5 mr-1" /> Viewing
+                                  </Badge>
+                                ) : (
+                                  <span className="text-[10px] text-primary font-bold opacity-0 group-hover:opacity-100 transition-all flex items-center gap-1 translate-x-[-4px] group-hover:translate-x-0">
+                                    View activity <ChevronRight className="w-3 h-3" />
+                                  </span>
+                                )}
                               </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                              {selectedRepo?.id === repo.id ? (
-                                <Badge variant="outline" className="text-xs border-primary/30 text-primary">
-                                  <GitCommit className="w-3 h-3 mr-1" /> Viewing
-                                </Badge>
-                              ) : (
-                                <span className="text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                                  View commits <ChevronRight className="w-3 h-3" />
-                                </span>
-                              )}
-                              <a
-                                href={repo.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="p-2 hover:bg-primary/10 rounded-xl transition-all"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                <ExternalLink className={`w-4 h-4 ${isAlreadyLinked ? 'text-primary' : 'text-primary'}`} />
-                              </a>
-                            </div>
                           </div>
+                          
+                          <a
+                            href={repo.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="absolute top-3 sm:top-4 right-3 sm:right-4 p-2 hover:bg-primary/10 rounded-xl transition-all text-primary opacity-40 group-hover:opacity-100"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
                         </div>
                       );
                     })}
@@ -498,41 +501,43 @@ const Integrations = () => {
                       <div
                         key={project.id}
                         onClick={() => handleProjectClick(project)}
-                        className={`p-4 rounded-2xl border transition-all cursor-pointer group ${
+                        className={`relative p-3 sm:p-4 rounded-2xl border transition-all cursor-pointer group ${
                           selectedProject?.id === project.id
                             ? 'bg-primary/10 border-primary/30 ring-2 ring-primary/20'
                             : 'bg-card/50 hover:bg-accent/10 border-border'
                         }`}
                       >
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
-                          <div className="flex items-center gap-3">
-                            <FolderGit2 className="w-5 h-5 text-muted-foreground shrink-0" />
-                            <div className="min-w-0">
-                              <p className="font-semibold truncate">{project.name}</p>
-                              <div className="flex items-center gap-2 mt-0.5">
-                                <Link2 className="w-3 h-3 text-muted-foreground" />
-                                <p className="text-xs text-muted-foreground truncate">{project.githubRepo}</p>
-                              </div>
+                        <div className="flex items-start gap-3">
+                          <div className={`p-2 rounded-xl shrink-0 ${selectedProject?.id === project.id ? 'bg-primary/10' : 'bg-muted'}`}>
+                            <FolderGit2 className={`w-4 h-4 sm:w-5 sm:h-5 ${selectedProject?.id === project.id ? 'text-primary' : 'text-muted-foreground'}`} />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-bold text-sm sm:text-base truncate Montserrat">{project.name}</p>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <Link2 className="w-3 h-3 text-muted-foreground/50" />
+                              <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{project.githubRepo}</p>
+                            </div>
+                            
+                            <div className="mt-2 flex flex-wrap items-center gap-3">
                               {isAdmin && project.manager && (
-                                <div className="flex items-center gap-1.5 mt-1">
-                                  <User className={`w-3 h-3 ${selectedProject?.id === project.id ? 'text-primary' : 'text-primary/70'}`} />
-                                  <p className={`text-[10px] font-bold uppercase tracking-wider ${selectedProject?.id === project.id ? 'text-primary' : 'text-primary/70'}`}>
-                                    Linked by: {project.manager.name}
+                                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-primary/5 border border-primary/10">
+                                  <User className="w-2.5 h-2.5 text-primary" />
+                                  <p className="text-[9px] font-black uppercase tracking-wider text-primary/80">
+                                    {project.manager.name}
                                   </p>
                                 </div>
                               )}
+                              
+                              {selectedProject?.id === project.id ? (
+                                <Badge className="text-[9px] sm:text-[10px] bg-primary text-primary-foreground font-black uppercase tracking-widest py-0.5">
+                                  <GitCommit className="w-2.5 h-2.5 mr-1" /> Viewing
+                                </Badge>
+                              ) : (
+                                <span className="text-[10px] text-primary font-bold opacity-0 group-hover:opacity-100 transition-all flex items-center gap-1 translate-x-[-4px] group-hover:translate-x-0">
+                                  Track commits <ChevronRight className="w-3 h-3" />
+                                </span>
+                              )}
                             </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {selectedProject?.id === project.id ? (
-                              <Badge variant="outline" className="text-xs border-primary/30 text-primary">
-                                <GitCommit className="w-3 h-3 mr-1" /> Viewing
-                              </Badge>
-                            ) : (
-                              <span className="text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                                View commits <ChevronRight className="w-3 h-3" />
-                              </span>
-                            )}
                           </div>
                         </div>
                       </div>

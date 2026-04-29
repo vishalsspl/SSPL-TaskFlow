@@ -213,26 +213,37 @@ const GitHubProjectTab = ({ projectId }) => {
               <p className="text-sm text-muted-foreground italic">No recent commits found</p>
             </div>
           ) : (
-            <div className="relative space-y-4 before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border before:to-transparent">
-              {activity.map((commit, idx) => (
-                <div key={commit.sha} className="relative flex items-start gap-6 group">
-                  <div className="absolute left-0 mt-1.5 w-10 h-10 rounded-full bg-card border-2 border-border flex items-center justify-center z-10 group-hover:border-primary transition-colors">
-                    <GitCommit className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+            <div className="relative space-y-4">
+              {/* Timeline vertical line - hidden on mobile if too cramped */}
+              <div className="absolute left-[19px] sm:left-[21px] top-2 bottom-2 w-0.5 bg-gradient-to-b from-border/50 via-border to-border/50 hidden xs:block" />
+              
+              {activity.map((commit) => (
+                <div key={commit.sha} className="relative flex items-start gap-3 sm:gap-4 group">
+                  {/* Timeline dot/icon */}
+                  <div className="relative z-10 shrink-0 mt-1 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-card border-2 border-border flex items-center justify-center group-hover:border-primary transition-colors hidden xs:flex">
+                    <GitCommit className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground group-hover:text-primary transition-colors" />
                   </div>
-                  <div className="flex-1 ml-10 p-4 rounded-2xl bg-secondary/30 border border-border/50 group-hover:bg-secondary/50 transition-all">
-                    <div className="flex items-center justify-between mb-1">
-                      <p className="text-sm font-bold text-foreground truncate max-w-[70%]">{commit.message}</p>
-                      <span className="text-[10px] font-medium text-muted-foreground whitespace-nowrap">
+                  
+                  {/* Commit card content */}
+                  <div className="flex-1 min-w-0 p-3 sm:p-4 rounded-2xl bg-secondary/30 border border-border/50 group-hover:bg-secondary/50 transition-all shadow-sm">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
+                      <p className="text-xs sm:text-sm font-bold text-foreground truncate group-hover:text-primary transition-colors">
+                        {commit.message}
+                      </p>
+                      <span className="text-[9px] sm:text-[10px] font-medium text-muted-foreground whitespace-nowrap">
                         {formatDistanceToNow(new Date(commit.date), { addSuffix: true })}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-bold text-primary">
-                        {commit.author.charAt(0)}
+                    
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center text-[9px] font-bold text-primary">
+                          {commit.author.charAt(0).toUpperCase()}
+                        </div>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">{commit.author}</p>
                       </div>
-                      <p className="text-xs text-muted-foreground">{commit.author}</p>
-                      <span className="text-xs text-muted-foreground/30">•</span>
-                      <code className="text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground font-mono">
+                      <span className="text-muted-foreground/30 hidden sm:inline">•</span>
+                      <code className="text-[9px] sm:text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground/70 font-mono">
                         {commit.sha.substring(0, 7)}
                       </code>
                     </div>
