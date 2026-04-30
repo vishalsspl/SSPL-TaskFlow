@@ -19,7 +19,7 @@ import {
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-const OrgEditDialog = ({ editOrg, setEditOrg, onSave, saving }) => {
+const OrgEditDialog = ({ editOrg, setEditOrg, onSave, saving, globalTiers }) => {
   if (!editOrg) return null;
 
   return (
@@ -92,7 +92,22 @@ const OrgEditDialog = ({ editOrg, setEditOrg, onSave, saving }) => {
                             "rounded-xl cursor-pointer font-semibold text-xs py-3 mb-1 transition-all",
                             editOrg?.plan === planVal ? "bg-orange-500 text-white" : "hover:bg-primary/10"
                           )}
-                          onClick={() => setEditOrg((prev) => ({ ...prev, plan: planVal }))}
+                          onClick={() => {
+                            const planId = planVal;
+                            const defaults = globalTiers?.[planId];
+                            setEditOrg((prev) => ({
+                              ...prev,
+                              plan: planId,
+                              ...(defaults && {
+                                maxUsers: defaults.maxUsers,
+                                maxProjects: defaults.maxProjects,
+                                customFeatures: {
+                                  ...(prev.customFeatures || {}),
+                                  ...defaults.features
+                                }
+                              })
+                            }));
+                          }}
                         >
                           {planVal}
                         </DropdownMenuItem>
@@ -150,6 +165,7 @@ const OrgEditDialog = ({ editOrg, setEditOrg, onSave, saving }) => {
                   { key: 'chat', label: 'Chat' },
                   { key: 'performance', label: 'Performance' },
                   { key: 'timesheets', label: 'Timesheets' },
+                  { key: 'github', label: 'Github Integration' },
                 ].map(({ key, label }) => {
                   const isEnabled = editOrg?.customFeatures?.[key] !== false;
                   return (
