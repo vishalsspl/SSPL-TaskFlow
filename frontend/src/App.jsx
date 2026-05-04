@@ -274,7 +274,7 @@ function App() {
                 path="integrations"
                 element={
                   ['ADMIN', 'MANAGER', 'MEMBER'].includes(user?.role)
-                    ? <Integrations />
+                    ? <FeatureGuard feature="github"><Integrations /></FeatureGuard>
                     : <Navigate to="/dashboard" replace />
                 }
               />

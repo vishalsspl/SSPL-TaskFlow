@@ -73,14 +73,14 @@ export const createOrganization = async (req, res) => {
             const key = `${planVal.toLowerCase()}_features`;
             if (!s[key]) return { 
                 projects: true, kanban: true, tasks: true, tickets: true, 
-                team: true, chat: true, performance: true, timesheets: true 
+                team: true, chat: true, performance: true, timesheets: true, github: true
             };
             try {
                 return typeof s[key] === 'string' ? JSON.parse(s[key]) : s[key];
             } catch (e) {
                 return { 
                     projects: true, kanban: true, tasks: true, tickets: true, 
-                    team: true, chat: true, performance: true, timesheets: true 
+                    team: true, chat: true, performance: true, timesheets: true, github: true
                 };
             }
         };

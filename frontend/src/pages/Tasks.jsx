@@ -422,7 +422,7 @@ const Tasks = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[30%]">Task</TableHead>
+                    <TableHead className="w-[30%] text-center">TASK</TableHead>
                     <TableHead>Project</TableHead>
                     <TableHead>Assigned To</TableHead>
                     <TableHead>Status</TableHead>
@@ -448,10 +448,10 @@ const Tasks = () => {
                         className="cursor-pointer hover:bg-accent transition-colors group border-b border-border"
                         onClick={() => handleTaskClick(task)}
                       >
-                        <TableCell>
-                          <div className="flex items-center gap-3">
+                        <TableCell className="relative">
+                          <div className="flex items-center justify-center text-center px-6 w-full min-h-[2rem]">
                             <div
-                              className="w-1.5 h-1.5 rounded-full shadow-[0_0_8px]"
+                              className="absolute left-4 w-1.5 h-1.5 rounded-full shadow-[0_0_8px] shrink-0"
                               style={{
                                 backgroundColor: task.status === 'TODO' ? '#F59E0B' :
                                   task.status === 'IN_PROGRESS' ? '#00A3FF' :
@@ -459,14 +459,17 @@ const Tasks = () => {
                                       task.status === 'COMPLETED' ? '#48A111' : '#EF4444'
                               }}
                             />
-                            <div>
-                              <p className="font-bold Montserrat leading-tight text-foreground group-hover:text-primary transition-colors">{task.title}</p>
-                              {task.description && (
-                                <p className="text-xs text-gray-500 line-clamp-1 mt-0.5 Montserrat">
-                                  {task.description.replace(/<[^>]*>/g, '')}
-                                </p>
-                              )}
-                            </div>
+                            <p className="font-bold Montserrat leading-tight text-foreground group-hover:text-primary transition-colors">{task.title}</p>
+                            
+                            {/* Styled Custom Tooltip */}
+                            {task.description && (
+                              <div className="absolute left-6 bottom-full mb-2 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 translate-y-1 pointer-events-none transition-all duration-300 z-[100] invisible group-hover:visible">
+                                <div className="bg-[#111113] text-gray-200 text-xs rounded-xl shadow-2xl border border-white/10 p-3 w-64 break-words whitespace-normal text-left font-medium leading-relaxed tracking-wide">
+                                  {task.description.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ')}
+                                </div>
+                                <div className="absolute -bottom-1.5 left-6 w-3 h-3 bg-[#111113] border-b border-r border-white/10 rotate-45"></div>
+                              </div>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell className="text-xs font-medium Montserrat text-gray-400">{task.project.name}</TableCell>

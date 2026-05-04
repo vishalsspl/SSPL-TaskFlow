@@ -187,6 +187,7 @@ const Layout = () => {
       href: '/integrations',
       icon: Zap,
       allowedRoles: ['ADMIN', 'MANAGER', 'MEMBER'],
+      featureKey: 'github'
     },
   ];
 

@@ -15,6 +15,7 @@ const RestrictedAccess = ({ feature }) => {
     chat: 'Team Chat',
     tickets: 'Support Helpdesk',
     branding: 'Custom Branding',
+    github: 'Github Integration',
   };
 
   const featureLabel = featureLabels[feature?.toLowerCase()] || feature || 'This Feature';

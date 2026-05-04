@@ -29,6 +29,7 @@ const OrgList = () => {
   const [page, setPage] = useState(1);
   const [orgToDelete, setOrgToDelete] = useState(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [globalTiers, setGlobalTiers] = useState(null);
   const itemsPerPage = 10;
 
   const [newOrg, setNewOrg] = useState({
@@ -42,6 +43,7 @@ const OrgList = () => {
       searchPlaceholder: 'Search organizations or industries...'
     });
     fetchOrgs();
+    fetchGlobalTiers();
   }, [setHeader]);
 
   useEffect(() => {
@@ -59,6 +61,37 @@ const OrgList = () => {
       toast({ title: 'Failed to load organisations', variant: 'destructive' });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchGlobalTiers = async () => {
+    try {
+      const res = await api.get('/superadmin/settings');
+      const s = res.data || {};
+      const tiers = {
+        FREE: { maxUsers: 10, maxProjects: 3, features: {} },
+        STARTER: { maxUsers: 30, maxProjects: 5, features: {} },
+        PRO: { maxUsers: 100, maxProjects: 50, features: {} },
+        ENTERPRISE: { maxUsers: 1000, maxProjects: 500, features: {} }
+      };
+      
+      ['FREE', 'STARTER', 'PRO', 'ENTERPRISE'].forEach(p => {
+        const lp = p.toLowerCase();
+        if (s[`${lp}_max_users`]) tiers[p].maxUsers = Number(s[`${lp}_max_users`]);
+        if (s[`${lp}_max_projects`]) tiers[p].maxProjects = Number(s[`${lp}_max_projects`]);
+        if (s[`${lp}_features`]) {
+          try {
+            tiers[p].features = typeof s[`${lp}_features`] === 'string' 
+              ? JSON.parse(s[`${lp}_features`]) 
+              : s[`${lp}_features`];
+          } catch (e) {
+            console.error(`Failed to parse features for ${p}`, e);
+          }
+        }
+      });
+      setGlobalTiers(tiers);
+    } catch (e) {
+      console.error('Failed to fetch global tiers:', e);
     }
   };
 
@@ -286,7 +319,13 @@ const OrgList = () => {
       </Card>
 
       {/* Dialogs */}
-      <OrgEditDialog editOrg={editOrg} setEditOrg={setEditOrg} onSave={saveOrg} saving={saving} />
+      <OrgEditDialog 
+        editOrg={editOrg} 
+        setEditOrg={setEditOrg} 
+        onSave={saveOrg} 
+        saving={saving} 
+        globalTiers={globalTiers}
+      />
       <OrgCreateDialog open={createOpen} onOpenChange={setCreateOpen} newOrg={newOrg} setNewOrg={setNewOrg} onProvision={provisionOrg} saving={saving} />
       <DeleteConfirmDialog
         open={showDeleteDialog}

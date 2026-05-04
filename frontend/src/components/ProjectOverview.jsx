@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
     Table,
     TableBody,
@@ -25,12 +26,25 @@ import {
     Calendar,
     Loader2,
     Users,
+    ChevronLeft,
+    ChevronRight,
 } from 'lucide-react';
 import { formatDate, priorityColors } from '@/lib/utils';
 
 const ProjectOverview = ({ projectId }) => {
     const [dashboard, setDashboard] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [overduePage, setOverduePage] = useState(1);
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const itemsPerPage = isMobile ? 5 : 10;
 
     useEffect(() => {
         if (projectId) {
@@ -64,6 +78,10 @@ const ProjectOverview = ({ projectId }) => {
 
     const { project, overview, phases, overdueTasks, workloads, upcomingDeadlines } = dashboard;
 
+    const totalOverduePages = Math.ceil((overdueTasks?.length || 0) / itemsPerPage);
+    const currentOverduePage = Math.min(overduePage, Math.max(1, totalOverduePages));
+    const paginatedOverdueTasks = overdueTasks?.slice((currentOverduePage - 1) * itemsPerPage, currentOverduePage * itemsPerPage) || [];
+
     const workloadChartData = workloads.map((w) => ({
         name: w.user.name,
         workload: w.workloadPercentage,
@@ -83,7 +101,7 @@ const ProjectOverview = ({ projectId }) => {
                     )}
                 </div>
                 <div
-                    className="text-sm text-muted-foreground prose prose-sm max-w-none leading-snug"
+                    className="text-sm text-muted-foreground prose prose-sm max-w-none leading-relaxed p-3 sm:p-4 bg-muted/20 rounded-lg"
                     dangerouslySetInnerHTML={{ __html: project.description }}
                 />
                 {project.client && (
@@ -160,8 +178,8 @@ const ProjectOverview = ({ projectId }) => {
                 </Card>
             </div>
 
-            {/* Extra Data Grids hidden on small screens entirely to save space */}
-            <div className="hidden md:grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6 mt-2 sm:mt-6">
+            {/* Extra Data Grids */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6 mt-2 sm:mt-6">
                 {/* Workload Distribution */}
                 <Card className="w-full overflow-hidden">
                     <CardHeader className="pb-2">
@@ -215,7 +233,7 @@ const ProjectOverview = ({ projectId }) => {
 
             {/* Overdue Tasks Table */}
             {overdueTasks.length > 0 && (
-                <Card className="mt-2 sm:mt-6 w-full overflow-hidden hidden md:block">
+                <Card className="mt-2 sm:mt-6 w-full overflow-hidden block">
                     <CardHeader className="pb-1 sm:pb-2 pt-3 sm:pt-6">
                         <CardTitle className="text-sm sm:text-lg text-red-600">Overdue Tasks</CardTitle>
                     </CardHeader>
@@ -223,29 +241,56 @@ const ProjectOverview = ({ projectId }) => {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Task</TableHead>
-                                    <TableHead>Assignee</TableHead>
-                                    <TableHead>Priority</TableHead>
-                                    <TableHead>Overdue</TableHead>
+                                    <TableHead className="px-2 sm:px-4 py-2 text-[10px] sm:text-xs font-bold whitespace-nowrap">Task</TableHead>
+                                    <TableHead className="px-2 sm:px-4 py-2 text-[10px] sm:text-xs font-bold whitespace-nowrap">Assignee</TableHead>
+                                    <TableHead className="px-2 sm:px-4 py-2 text-[10px] sm:text-xs font-bold whitespace-nowrap">Priority</TableHead>
+                                    <TableHead className="px-2 sm:px-4 py-2 text-[10px] sm:text-xs font-bold whitespace-nowrap">Overdue</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {overdueTasks.slice(0, 5).map((task) => (
+                                {paginatedOverdueTasks.map((task) => (
                                     <TableRow key={task.id}>
-                                        <TableCell className="font-medium">{task.title}</TableCell>
-                                        <TableCell>{task.assignees?.map(a => a.user?.name).join(', ') || 'Unassigned'}</TableCell>
-                                        <TableCell>
-                                            <Badge className={priorityColors[task.priority]}>
+                                        <TableCell className="font-medium text-[10px] sm:text-xs p-2 sm:p-3 max-w-[140px] sm:max-w-none break-words leading-tight">{task.title}</TableCell>
+                                        <TableCell className="text-[10px] sm:text-xs p-2 sm:p-3 whitespace-nowrap">{task.assignees?.map(a => a.user?.name).join(', ') || 'Unassigned'}</TableCell>
+                                        <TableCell className="p-2 sm:p-3 whitespace-nowrap">
+                                            <Badge className={`${priorityColors[task.priority]} text-[9px] sm:text-[11px] px-1.5 sm:px-2.5 py-0`}>
                                                 {task.priority}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="text-red-600 font-bold">
+                                        <TableCell className="text-red-600 font-bold text-[10px] sm:text-xs p-2 sm:p-3 whitespace-nowrap">
                                             {task.daysOverdue} days
                                         </TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
                         </Table>
+                        {totalOverduePages > 1 && (
+                            <div className="flex items-center justify-between mt-4">
+                                <div className="text-sm text-muted-foreground">
+                                    Page {currentOverduePage} of {totalOverduePages}
+                                </div>
+                                <div className="flex space-x-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setOverduePage((prev) => Math.max(prev - 1, 1))}
+                                        disabled={currentOverduePage === 1}
+                                    >
+                                        <ChevronLeft className="w-4 h-4 mr-1" />
+                                        Prev
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setOverduePage((prev) => Math.min(prev + 1, totalOverduePages))}
+                                        disabled={currentOverduePage === totalOverduePages || totalOverduePages === 0}
+                                    >
+                                        Next
+                                        <ChevronRight className="w-4 h-4 ml-1" />
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             )}
