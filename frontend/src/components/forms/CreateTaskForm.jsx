@@ -96,10 +96,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
             return;
         }
 
-        if (formData.assigneeIds.length === 0) {
-            toast({ title: "Validation Error", description: "Please assign at least one team member.", variant: "destructive" });
-            return;
-        }
+
 
         if (!formData.dueDate) {
             toast({ title: "Validation Error", description: "Please select a due date.", variant: "destructive" });
@@ -246,7 +243,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
 
                 {/* Assign To */}
                 <div className="space-y-2">
-                    <Label htmlFor="assignee" className="text-foreground/90 font-semibold mobile-reduce-label">Assign To <span className="text-red-500">*</span></Label>
+                    <Label htmlFor="assignee" className="text-foreground/90 font-semibold mobile-reduce-label">Assign To</Label>
                     <div className="relative">
                         <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70 z-10" />
                         <MultiSearchableSelect

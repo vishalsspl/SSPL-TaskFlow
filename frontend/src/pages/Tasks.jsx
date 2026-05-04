@@ -134,7 +134,7 @@ const Tasks = () => {
       if (debouncedSearch) {
         params.search = debouncedSearch;
       }
-      
+
       // Fix: Filter by assignedTo on backend for Members to ensure correct pagination
       if (user?.role === 'MEMBER') {
         params.assignedTo = user.id;
@@ -391,7 +391,7 @@ const Tasks = () => {
                 >
                   <Filter className="w-4 h-4" />
                 </Button>
-                
+
                 {user?.role !== 'CLIENT' && (
                   <div className="flex items-center gap-2">
                     {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
@@ -404,7 +404,7 @@ const Tasks = () => {
                         <span className="hidden lg:inline">Import Excel</span>
                       </Button>
                     )}
-                    <Button 
+                    <Button
                       onClick={() => setShowCreateDialog(true)}
                       className="h-10 px-5 rounded-xl flex items-center justify-center bg-primary hover:bg-primary/90 text-primary-foreground transition-all shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] font-bold Montserrat text-sm whitespace-nowrap"
                     >
@@ -460,7 +460,7 @@ const Tasks = () => {
                               }}
                             />
                             <p className="font-bold Montserrat leading-tight text-foreground group-hover:text-primary transition-colors">{task.title}</p>
-                            
+
                             {/* Styled Custom Tooltip */}
                             {task.description && (
                               <div className="absolute left-6 bottom-full mb-2 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 translate-y-1 pointer-events-none transition-all duration-300 z-[100] invisible group-hover:visible">
@@ -524,14 +524,14 @@ const Tasks = () => {
                               <div
                                 className="h-full rounded-full transition-all duration-500"
                                 style={{
-                                  width: `${task.completionPercentage}%`,
+                                  width: `${task.status === 'COMPLETED' ? 100 : task.completionPercentage}%`,
                                   backgroundColor: task.status === 'COMPLETED' ? '#48A111' : '#00A3FF',
                                   boxShadow: `0 0 8px ${task.status === 'COMPLETED' ? '#48A11160' : '#00A3FF60'}`
                                 }}
                               />
                             </div>
                             <span className="text-[10px] font-black Montserrat text-gray-500 block text-right">
-                              {task.completionPercentage}%
+                              {task.status === 'COMPLETED' ? 100 : task.completionPercentage}%
                             </span>
                           </div>
                         </TableCell>
@@ -646,13 +646,13 @@ const Tasks = () => {
                     <div className="mt-2">
                       <div className="flex items-center justify-between text-[10px] text-gray-500 mb-1">
                         <span>Progress</span>
-                        <span>{task.completionPercentage}%</span>
+                        <span>{task.status === 'COMPLETED' ? 100 : task.completionPercentage}%</span>
                       </div>
                       <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
                         <div
                           className="h-full rounded-full"
                           style={{
-                            width: `${task.completionPercentage}%`,
+                            width: `${task.status === 'COMPLETED' ? 100 : task.completionPercentage}%`,
                             backgroundColor: task.status === 'COMPLETED' ? '#48A111' : '#00A3FF',
                           }}
                         />

@@ -271,11 +271,11 @@ const Layout = () => {
       <Separator className="mt-4 mb-4" />
 
       {/* User Profile */}
-      <div className="px-4">
+      <div className={(isMobile || isSidebarOpen) ? "px-4" : "px-0 w-full flex justify-center"}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className={`w-full ${(isMobile || isSidebarOpen) ? 'justify-start' : 'justify-center px-0'} h-auto py-3 px-2 hover:bg-muted whitespace-normal`}>
-              <div className={`flex items-center ${(isMobile || isSidebarOpen) ? 'gap-3' : ''} text-left w-full`}>
+            <Button variant="ghost" className={`w-full ${(isMobile || isSidebarOpen) ? 'justify-start' : 'justify-center px-0'} h-auto py-3 px-2 hover:bg-transparent whitespace-normal`}>
+              <div className={`flex items-center ${(isMobile || isSidebarOpen) ? 'gap-3 w-full text-left' : 'justify-center'}`}>
                 <Avatar className="w-8 h-8 border shrink-0">
                   <AvatarImage src={user?.avatar} />
                   <AvatarFallback className="bg-primary/10 text-primary">
