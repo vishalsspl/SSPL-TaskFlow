@@ -175,6 +175,7 @@ export const getRepoActivity = async (req, res) => {
       sha: c.sha,
       message: c.commit.message,
       author: c.commit.author.name,
+      email: c.commit.author.email,
       date: c.commit.author.date,
       url: c.html_url
     })));
@@ -220,6 +221,7 @@ export const getRepoCommits = async (req, res) => {
       sha: c.sha,
       message: c.commit.message,
       author: c.commit.author.name,
+      email: c.commit.author.email,
       authorAvatar: c.author?.avatar_url || null,
       date: c.commit.author.date,
       url: c.html_url

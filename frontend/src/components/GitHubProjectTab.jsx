@@ -240,7 +240,12 @@ const GitHubProjectTab = ({ projectId }) => {
                         <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center text-[9px] font-bold text-primary">
                           {commit.author.charAt(0).toUpperCase()}
                         </div>
-                        <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">{commit.author}</p>
+                        <div className="flex flex-col">
+                          <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">{commit.author}</p>
+                          {commit.email && (
+                            <p className="text-[8px] sm:text-[9px] text-muted-foreground/60">{commit.email}</p>
+                          )}
+                        </div>
                       </div>
                       <span className="text-muted-foreground/30 hidden sm:inline">•</span>
                       <code className="text-[9px] sm:text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground/70 font-mono">

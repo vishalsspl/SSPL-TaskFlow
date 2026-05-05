@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Users, ListChecks, BarChart3, Zap, Shield, Workflow, ArrowLeft, ChevronRight } from 'lucide-react';
+import { Building2, KanbanSquare, MessageSquare, GitCommit, ShieldCheck, CreditCard, ChevronRight, Zap } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
 import { cn } from '@/lib/utils';
 import MarketingNavbar from '@/components/layout/MarketingNavbar';
@@ -15,42 +15,42 @@ const HowItWorks = () => {
   const steps = [
     {
       number: "01",
-      title: "Set Your Workspace",
-      description: "Create your organization and invite your team. Configure your core modules — Projects, Timesheets, and Chat — to match your team's unique rhythm.",
-      icon: Users,
+      title: "Initialize Your Command Center",
+      description: "Register your organization and establish a managed multi-tenant workspace. Invite your team, assign custom roles (Admin, Manager, Member, Client), and configure automated billing subscriptions seamlessly.",
+      icon: Building2,
       image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=1000",
     },
     {
       number: "02",
-      title: "Sync Your Workflow",
-      description: "Map your projects, assign tasks, and start tracking time. Our real-time synchronization ensures everyone is on the same page, always.",
-      icon: Workflow,
+      title: "Architect Projects & Tasks",
+      description: "Deploy robust Kanban and Grid views to manage complex lifecycles. Assign tasks, track progress in real-time, and link GitHub repositories to automatically sync commits directly with your work items.",
+      icon: KanbanSquare,
       image: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=1000",
     },
     {
       number: "03",
-      title: "Master the Velocity",
-      description: "Use real-time insights and chat to remove bottlenecks. Watch your team's productivity skyrocket as you ship together, faster than ever.",
-      icon: Zap,
+      title: "Collaborate & Track Time",
+      description: "Shatter silos with real-time socket-based chat and threaded comments. Let developers log timesheets directly on tasks while clients raise priority support tickets effortlessly.",
+      icon: MessageSquare,
       image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1000",
     },
   ];
 
   const features = [
     {
-      title: "Project Precision",
-      description: "Manage complex projects with ease using our intuitive task tracking and milestone management system.",
-      icon: ListChecks,
+      title: "Native GitHub Sync",
+      description: "Connect repositories directly to projects. Commits are automatically parsed and associated with specific tasks, keeping your codebase and project management perfectly aligned.",
+      icon: GitCommit,
     },
     {
-      title: "Time Intelligence",
-      description: "Beautifully simple timesheets that provide deep insights into your team's effort and resource allocation.",
-      icon: BarChart3,
+      title: "Comprehensive Access Control",
+      description: "Granular permissions tailored for modern agencies. From SuperAdmins managing global platform limits to Clients tracking their specific project deliverables securely.",
+      icon: ShieldCheck,
     },
     {
-      title: "Real-time Pulse",
-      description: "Integrated team chat and notifications that keep everyone synchronized without the context switching.",
-      icon: Shield,
+      title: "Automated Billing & Quotas",
+      description: "Seamlessly handle multi-tenant SaaS billing. Dynamically restrict project and user quotas based on organizational subscription tiers via integrated payment gateways.",
+      icon: CreditCard,
     },
   ];
 
