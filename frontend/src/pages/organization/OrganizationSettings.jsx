@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useHeaderStore } from '@/store/headerStore';
 import { useAuthStore } from '@/store/authStore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -28,6 +29,7 @@ const OrganizationSettings = () => {
   const { user, updateUser } = useAuthStore();
   const { toast } = useToast();
   const logoInputRef = useRef(null);
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
   const [updating, setUpdating] = useState(false);
@@ -336,7 +338,7 @@ const OrganizationSettings = () => {
                 </div>
               </div>
             </div>
-            <Button className="rounded-xl px-8 h-12 shadow-xl shadow-primary/20 font-bold uppercase text-[11px] tracking-widest shrink-0">
+            <Button onClick={() => navigate('/billing')} className="rounded-xl px-8 h-12 shadow-xl shadow-primary/20 font-bold uppercase text-[11px] tracking-widest shrink-0">
               Manage Billing
             </Button>
           </div>

@@ -111,67 +111,65 @@ const SuperAdminBilling = () => {
     if (!settings || usersCount === 0) return Number(invoice.amount);
 
     // Dynamic calculation for non-Enterprise plans
-    if (invoice.plan === 'PRO') return (Number(settings.pro_per_user_price) || 15000) * usersCount;
-    if (invoice.plan === 'STARTER') return (Number(settings.starter_per_user_price) || 5000) * usersCount;
+    if (invoice.plan === 'PRO') return (Number(settings.pro_per_user_price) || 10) * usersCount;
+    if (invoice.plan === 'STARTER') return (Number(settings.starter_per_user_price) || 10) * usersCount;
     if (invoice.plan === 'ENTERPRISE') return null; // Custom handling
 
     return Number(invoice.amount);
   };
 
   const getUnitPrice = (invoice) => {
-    if (invoice.plan === 'PRO') return Number(settings?.pro_per_user_price) || 15000;
-    if (invoice.plan === 'STARTER') return Number(settings?.starter_per_user_price) || 5000;
+    if (invoice.plan === 'PRO') return Number(settings?.pro_per_user_price) || 10;
+    if (invoice.plan === 'STARTER') return Number(settings?.starter_per_user_price) || 10;
     return null;
   };
 
   return (
     <div className="space-y-8 pb-20">
       {/* ── Stats Overview ────────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
         {[
           { label: 'Total Revenue', value: `₹${invoices.filter(i => i.status === 'PAID').reduce((acc, curr) => acc + (getUnitPrice(curr) || Number(curr.amount) || 0), 0).toLocaleString('en-IN')}`, icon: CreditCard, color: 'text-primary' },
           { label: 'Pending Payments', value: `₹${invoices.filter(i => i.status === 'PENDING').reduce((acc, curr) => acc + (getUnitPrice(curr) || Number(curr.amount) || 0), 0).toLocaleString('en-IN')}`, icon: Clock, color: 'text-amber-500' },
           { label: 'Overdue Amount', value: `₹${invoices.filter(i => i.status === 'OVERDUE').reduce((acc, curr) => acc + (getUnitPrice(curr) || Number(curr.amount) || 0), 0).toLocaleString('en-IN')}`, icon: AlertCircle, color: 'text-rose-500' },
           { label: 'Active Invoices', value: invoices.length, icon: CheckCircle2, color: 'text-emerald-500' }
         ].map((stat, i) => (
-          <Card key={i} className="rounded-[2rem] border-border/40 bg-white/50 dark:bg-black/40 backdrop-blur-xl shadow-xl overflow-hidden group transition-all hover:scale-[1.02]">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-1">{stat.label}</p>
-                  <h3 className={`text-2xl font-black ${stat.color}`}>{stat.value}</h3>
-                </div>
-                <div className={`w-12 h-12 rounded-2xl bg-background border border-border/40 flex items-center justify-center ${stat.color} shadow-inner`}>
-                  <stat.icon className="w-5 h-5" />
+          <Card key={i} className="rounded-2xl sm:rounded-[2rem] border-border/40 bg-white/50 dark:bg-black/40 backdrop-blur-xl shadow-xl overflow-hidden group transition-all hover:scale-[1.02]">
+            <CardContent className="p-4 sm:p-6 flex flex-col justify-between h-full">
+              <div className="flex items-start justify-between mb-1 sm:mb-0">
+                <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mt-1">{stat.label}</p>
+                <div className={`w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl bg-background border border-border/40 flex items-center justify-center ${stat.color} shadow-inner shrink-0 ml-2`}>
+                  <stat.icon className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
               </div>
+              <h3 className={`text-lg sm:text-2xl font-black mt-2 sm:mt-0 ${stat.color}`}>{stat.value}</h3>
             </CardContent>
           </Card>
         ))}
       </div>
 
       {/* ── Main Billing Table ────────────────────────────────────────── */}
-      <Card className="rounded-[2.5rem] border-border/40 shadow-2xl bg-white/40 dark:bg-black/40 backdrop-blur-3xl overflow-hidden">
-        <CardHeader className="p-8 pb-4">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-            <div className="space-y-1">
-              <CardTitle className="text-xl font-black tracking-tight">All Invoices</CardTitle>
-              <CardDescription className="text-[10px] font-bold tracking-widest uppercase opacity-60">Payment records for all organizations</CardDescription>
+      <Card className="rounded-3xl sm:rounded-[2.5rem] border-border/40 shadow-2xl bg-white/40 dark:bg-black/40 backdrop-blur-3xl overflow-hidden">
+        <CardHeader className="p-5 sm:p-8 pb-4">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6">
+            <div className="space-y-0.5 sm:space-y-1">
+              <CardTitle className="text-lg sm:text-xl font-black tracking-tight">All Invoices</CardTitle>
+              <CardDescription className="text-[9px] sm:text-[10px] font-bold tracking-widest uppercase opacity-60">Payment records for all organizations</CardDescription>
             </div>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <Button className="h-11 px-6 rounded-xl bg-primary text-white font-bold text-[10px] tracking-widest uppercase shadow-lg shadow-primary/20 gap-2 w-full sm:w-auto">
-                <Plus className="w-4 h-4" /> Generate Invoice
+              <Button className="h-10 sm:h-11 px-6 rounded-xl bg-primary text-white font-bold text-[9px] sm:text-[10px] tracking-widest uppercase shadow-lg shadow-primary/20 gap-2 w-full sm:w-auto">
+                <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Generate Invoice
               </Button>
             </div>
           </div>
         </CardHeader>
 
-        <div className="px-8 pb-4 flex items-center gap-2">
+        <div className="px-5 sm:px-8 pb-4 flex items-center gap-2 overflow-x-auto scrollbar-hide py-1">
           {['ALL', 'PAID', 'PENDING', 'OVERDUE'].map(status => (
             <Button
               key={status}
               variant={statusFilter === status ? 'secondary' : 'ghost'}
-              className={`h-8 px-4 rounded-full text-[10px] font-black tracking-widest uppercase transition-all ${statusFilter === status ? 'bg-primary/10 text-primary hover:bg-primary/20' : 'text-muted-foreground'}`}
+              className={`h-8 px-4 rounded-full text-[9px] sm:text-[10px] shrink-0 font-black tracking-widest uppercase transition-all ${statusFilter === status ? 'bg-primary/10 text-primary hover:bg-primary/20' : 'text-muted-foreground'}`}
               onClick={() => setStatusFilter(status)}
             >
               {status}
@@ -180,7 +178,60 @@ const SuperAdminBilling = () => {
         </div>
 
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
+          {/* Mobile View */}
+          <div className="sm:hidden grid grid-cols-1 gap-4 p-4">
+            {loading ? (
+              <div className="flex flex-col items-center justify-center gap-4 py-8">
+                <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+              </div>
+            ) : filteredInvoices.length === 0 ? (
+              <p className="text-sm font-bold opacity-40 italic text-center py-8">No billing records found</p>
+            ) : (
+              filteredInvoices.slice((page - 1) * 10, page * 10).map((invoice) => (
+                <Card key={invoice.id} className="p-4 rounded-2xl border-border/40 shadow-md bg-white/50 dark:bg-black/40">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="min-w-0 pr-2">
+                      <span className="text-sm font-black text-foreground truncate block">{invoice.organization.name}</span>
+                      <p className="text-[10px] text-muted-foreground/60 font-bold truncate">{invoice.organization.billingEmail || 'No Email'}</p>
+                    </div>
+                    <div className="shrink-0">{getStatusBadge(invoice.status)}</div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 mb-4 mt-2">
+                    <div>
+                      <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">Amount</p>
+                      <p className="text-xs font-black">{getUnitPrice(invoice) !== null ? `₹${getUnitPrice(invoice).toLocaleString('en-IN')}` : 'Custom'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">Plan</p>
+                      <Badge variant="outline" className="text-[8px] font-black tracking-wider uppercase px-1.5 py-0 border-primary/20 text-primary/70 bg-primary/5 mt-0.5">{invoice.plan || 'Custom'}</Badge>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">Date</p>
+                      <p className="text-[10px] font-black mt-0.5">{format(new Date(invoice.createdAt), 'MMM dd, yyyy')}</p>
+                    </div>
+                    {invoice.dueDate && (
+                      <div>
+                        <p className="text-[9px] font-black uppercase tracking-widest text-rose-500/80">Expires</p>
+                        <p className="text-[10px] font-black text-rose-500 mt-0.5">{format(new Date(invoice.dueDate), 'MMM dd')}</p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex justify-end gap-2 pt-3 border-t border-border/10">
+                    {invoice.status === 'PENDING' && (
+                      <Button onClick={() => handleUpdateStatus(invoice.id, 'PAID')} variant="outline" size="sm" className="h-8 text-[9px] font-bold uppercase tracking-widest text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/10 hover:text-emerald-500">
+                        Mark Paid
+                      </Button>
+                    )}
+                    <Button onClick={() => { setSearchTerm(invoice.organization.name); navigate('/superadmin/orgs'); }} variant="outline" size="sm" className="h-8 text-[9px] font-bold uppercase tracking-widest">
+                      View Org
+                    </Button>
+                  </div>
+                </Card>
+              ))
+            )}
+          </div>
+
+          <div className="hidden sm:block overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow className="border-border/60 hover:bg-transparent bg-muted/30">
@@ -289,8 +340,8 @@ const SuperAdminBilling = () => {
           </div>
 
           {!loading && filteredInvoices.length > 10 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 px-10 py-6 border-t border-border/10 mt-auto">
-              <p className="text-xs font-medium text-muted-foreground opacity-50">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-6 px-5 sm:px-10 py-4 sm:py-6 border-t border-border/10 mt-auto">
+              <p className="text-[10px] sm:text-xs font-medium text-muted-foreground opacity-50">
                 Showing {(page - 1) * 10 + 1} - {Math.min(filteredInvoices.length, page * 10)} of {filteredInvoices.length} Invoices
               </p>
               <div className="flex items-center gap-3">

@@ -47,10 +47,10 @@ const PlansAndLimits = () => {
   const [savingOrg, setSavingOrg] = useState(false);
 
   const [globalTiers, setGlobalTiers] = useState({
-    FREE: { maxUsers: 10, maxProjects: 3, features: { projects: true, kanban: true, tasks: true, tickets: true, team: true, chat: true, performance: true, timesheets: true, github: true } },
-    STARTER: { maxUsers: 30, maxProjects: 5, features: { projects: true, kanban: true, tasks: true, tickets: true, team: true, chat: true, performance: true, timesheets: true, github: true } },
-    PRO: { maxUsers: 100, maxProjects: 50, features: { projects: true, kanban: true, tasks: true, tickets: true, team: true, chat: true, performance: true, timesheets: true, github: true } },
-    ENTERPRISE: { maxUsers: 1000, maxProjects: 500, features: { projects: true, kanban: true, tasks: true, tickets: true, team: true, chat: true, performance: true, timesheets: true, github: true } }
+    FREE: { maxUsers: 10, maxProjects: 3, pricePerUser: 0, features: { projects: true, kanban: true, tasks: true, tickets: true, team: true, chat: true, performance: true, timesheets: true, github: true } },
+    STARTER: { maxUsers: 30, maxProjects: 5, pricePerUser: 10, features: { projects: true, kanban: true, tasks: true, tickets: true, team: true, chat: true, performance: true, timesheets: true, github: true } },
+    PRO: { maxUsers: 100, maxProjects: 50, pricePerUser: 10, features: { projects: true, kanban: true, tasks: true, tickets: true, team: true, chat: true, performance: true, timesheets: true, github: true } },
+    ENTERPRISE: { maxUsers: 1000, maxProjects: 500, pricePerUser: 0, features: { projects: true, kanban: true, tasks: true, tickets: true, team: true, chat: true, performance: true, timesheets: true, github: true } }
   });
   const [loadingTiers, setLoadingTiers] = useState(false);
   const [savingTiers, setSavingTiers] = useState(false);
@@ -83,6 +83,7 @@ const PlansAndLimits = () => {
         const lp = p.toLowerCase();
         if (s[`${lp}_max_users`]) newTiers[p].maxUsers = Number(s[`${lp}_max_users`]);
         if (s[`${lp}_max_projects`]) newTiers[p].maxProjects = Number(s[`${lp}_max_projects`]);
+        if (s[`${lp}_per_user_price`] !== undefined) newTiers[p].pricePerUser = Number(s[`${lp}_per_user_price`]);
         if (s[`${lp}_features`]) {
           try {
             newTiers[p].features = typeof s[`${lp}_features`] === 'string'
@@ -152,6 +153,7 @@ const PlansAndLimits = () => {
         const lp = p.toLowerCase();
         payload[`${lp}_max_users`] = data.maxUsers;
         payload[`${lp}_max_projects`] = data.maxProjects;
+        payload[`${lp}_per_user_price`] = data.pricePerUser;
         payload[`${lp}_features`] = JSON.stringify(data.features);
       });
       await api.put('/superadmin/settings', payload);
@@ -293,28 +295,28 @@ const PlansAndLimits = () => {
 
                   {/* Org Header Bar */}
                   <Card className="rounded-xl border-border/30 overflow-hidden">
-                    <CardContent className="p-4 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Button variant="ghost" size="icon" className="lg:hidden h-8 w-8" onClick={() => { setSelectedOrgId(''); setCurrentOrg(null); }}>
+                    <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div className="flex items-center gap-3 w-full sm:w-auto">
+                        <Button variant="ghost" size="icon" className="lg:hidden h-8 w-8 shrink-0" onClick={() => { setSelectedOrgId(''); setCurrentOrg(null); }}>
                           <ArrowLeft className="h-4 w-4" />
                         </Button>
-                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
                           <Building2 className="w-5 h-5" />
                         </div>
-                        <div>
-                          <h2 className="text-base font-bold">{currentOrg.name}</h2>
-                          <div className="flex gap-3 text-[10px] text-muted-foreground mt-0.5">
-                            {currentOrg.country && <span className="flex items-center gap-1"><Flag className="w-3 h-3" />{currentOrg.country}</span>}
-                            {currentOrg.industry && <span className="flex items-center gap-1"><Briefcase className="w-3 h-3" />{currentOrg.industry}</span>}
+                        <div className="min-w-0">
+                          <h2 className="text-base font-bold truncate">{currentOrg.name}</h2>
+                          <div className="flex gap-2 sm:gap-3 text-[10px] text-muted-foreground mt-0.5 flex-wrap">
+                            {currentOrg.country && <span className="flex items-center gap-1 whitespace-nowrap"><Flag className="w-3 h-3" />{currentOrg.country}</span>}
+                            {currentOrg.industry && <span className="flex items-center gap-1 whitespace-nowrap"><Briefcase className="w-3 h-3" />{currentOrg.industry}</span>}
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 w-full sm:w-auto justify-end sm:justify-start">
                         <Badge className={cn(
                           "px-3 py-1 rounded-lg text-[9px] font-bold uppercase",
                           currentOrg.status === 'ACTIVE' ? 'bg-primary text-white' : 'bg-orange-500 text-white'
                         )}>{currentOrg.status}</Badge>
-                        <Button onClick={handleUpdateOrg} disabled={savingOrg} size="sm" className="h-8 rounded-lg text-xs font-semibold gap-1.5">
+                        <Button onClick={handleUpdateOrg} disabled={savingOrg} size="sm" className="h-8 rounded-lg text-xs font-semibold gap-1.5 flex-1 sm:flex-none">
                           {savingOrg ? <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Save className="w-3 h-3" />}
                           Save Changes
                         </Button>
@@ -472,6 +474,37 @@ const PlansAndLimits = () => {
                         className="h-8 rounded-lg text-sm font-semibold"
                       />
                     </div>
+                  </div>
+
+                  {/* Price Per User */}
+                  <div className="space-y-1">
+                    <Label className="text-[10px] font-medium opacity-60">Price Per User / Month (₹)</Label>
+                    {p.id === 'FREE' ? (
+                      <Input
+                        type="text"
+                        value="₹0 (Free)"
+                        disabled
+                        className="h-8 rounded-lg text-sm font-semibold opacity-50"
+                      />
+                    ) : p.id === 'ENTERPRISE' ? (
+                      <Input
+                        type="text"
+                        value="Custom Pricing"
+                        disabled
+                        className="h-8 rounded-lg text-sm font-semibold opacity-50"
+                      />
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-primary shrink-0">₹</span>
+                        <Input
+                          type="number"
+                          min="0"
+                          value={globalTiers[p.id].pricePerUser}
+                          onChange={e => setGlobalTiers(prev => ({ ...prev, [p.id]: { ...prev[p.id], pricePerUser: e.target.value } }))}
+                          className="h-8 rounded-lg text-sm font-semibold"
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-2">

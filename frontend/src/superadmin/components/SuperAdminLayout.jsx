@@ -181,63 +181,78 @@ const SuperAdminLayout = () => {
       {/* Content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         {/* Header */}
-        <header className="h-16 border-b border-border/40 bg-white/80 dark:bg-black/60 backdrop-blur-2xl z-20 flex items-center justify-between px-4 sm:px-6 shrink-0">
-          <div className="flex items-center gap-4 flex-1 min-w-0">
-            {/* Mobile menu toggle */}
-            <div className="md:hidden">
-              <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="hover:bg-accent rounded-xl h-10 w-10">
-                    <Menu className="w-5 h-5" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="left" className="p-0 w-72 border-r border-border/40 bg-background/95 backdrop-blur-xl">
-                  <SheetHeader className="sr-only">
-                    <SheetTitle>SuperAdmin Navigation</SheetTitle>
-                    <SheetDescription>Platform-level administrative controls and monitoring.</SheetDescription>
-                  </SheetHeader>
-                  <NavContent isMobile={true} />
-                </SheetContent>
-              </Sheet>
-            </div>
+        <header className="min-h-16 h-auto border-b border-border/40 bg-white/80 dark:bg-black/60 backdrop-blur-2xl z-20 flex flex-col justify-center shrink-0 transition-all">
+          <div className="h-14 sm:h-16 flex items-center justify-between px-4 sm:px-6 w-full gap-2">
+            <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+              {/* Mobile menu toggle */}
+              <div className="md:hidden">
+                <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
+                  <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon" className="hover:bg-accent rounded-xl h-9 w-9 sm:h-10 sm:w-10 shrink-0">
+                      <Menu className="w-5 h-5" />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="left" className="p-0 w-72 border-r border-border/40 bg-background/95 backdrop-blur-xl">
+                    <SheetHeader className="sr-only">
+                      <SheetTitle>SuperAdmin Navigation</SheetTitle>
+                      <SheetDescription>Platform-level administrative controls and monitoring.</SheetDescription>
+                    </SheetHeader>
+                    <NavContent isMobile={true} />
+                  </SheetContent>
+                </Sheet>
+              </div>
 
-            {/* Title section - Responsive sizing */}
-            <div className="flex flex-col min-w-0 overflow-hidden">
-              <h1 className="text-sm sm:text-lg font-bold text-foreground truncate max-w-[150px] sm:max-w-none">
-                {title || 'Platform Admin'}
-              </h1>
-              {description && (
-                <p className="text-[9px] text-muted-foreground font-medium truncate opacity-70 hidden xs:block">
-                  {description}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Global Search Center */}
-          {showSearch && (
-            <div className="flex-1 max-w-sm sm:max-w-md mx-2 sm:mx-6 overflow-visible animate-in fade-in zoom-in duration-300">
-              <div className="relative w-full group overflow-visible">
-                <Input
-                  type="search"
-                  placeholder={searchPlaceholder}
-                  className="w-full h-10 px-4 rounded-xl bg-secondary/10 border-border/5 focus:bg-background focus:ring-4 focus:ring-[#48A111]/10 focus:border-[#48A111]/30 transition-all text-xs font-bold shadow-inner Montserrat"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+              {/* Title section - Responsive sizing */}
+              <div className="flex flex-col min-w-0 overflow-hidden">
+                <h1 className="text-base sm:text-lg font-bold text-foreground truncate">
+                  {title || 'Platform Admin'}
+                </h1>
+                {description && (
+                  <p className="text-[9px] text-muted-foreground font-medium truncate opacity-70 hidden xs:block">
+                    {description}
+                  </p>
+                )}
               </div>
             </div>
-          )}
 
-          <div className="flex items-center gap-1 sm:gap-4 shrink-0">
-            {/* Activity indicator hidden on small screens to save space */}
-            <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-primary/5 rounded-full border border-primary/10">
-              <Activity className="w-3 h-3 text-primary animate-pulse" />
-              <span className="text-[9px] font-bold text-primary/80 tracking-widest">Live</span>
+            {/* Global Search Center - Desktop Only */}
+            {showSearch && (
+              <div className="hidden sm:block flex-1 max-w-md mx-6 overflow-visible animate-in fade-in zoom-in duration-300">
+                <div className="relative w-full group overflow-visible">
+                  <Input
+                    type="search"
+                    placeholder={searchPlaceholder}
+                    className="w-full h-10 px-4 rounded-xl bg-secondary/10 border-border/5 focus:bg-background focus:ring-4 focus:ring-[#48A111]/10 focus:border-[#48A111]/30 transition-all text-xs font-bold shadow-inner Montserrat"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+              {/* Activity indicator hidden on small screens to save space */}
+              <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-primary/5 rounded-full border border-primary/10">
+                <Activity className="w-3 h-3 text-primary animate-pulse" />
+                <span className="text-[9px] font-bold text-primary/80 tracking-widest">Live</span>
+              </div>
+              
+              <NotificationBell />
             </div>
-            
-            <NotificationBell />
           </div>
+
+          {/* Global Search Center - Mobile Only */}
+          {showSearch && (
+            <div className="sm:hidden px-4 pb-3 w-full animate-in fade-in slide-in-from-top-2 duration-300">
+              <Input
+                type="search"
+                placeholder={searchPlaceholder}
+                className="w-full h-10 px-4 rounded-xl bg-secondary/10 border-border/5 focus:bg-background focus:ring-2 focus:ring-[#48A111]/10 focus:border-[#48A111]/30 transition-all text-xs font-bold shadow-inner Montserrat"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          )}
         </header>
 
         {/* Main content - Responsive padding */}

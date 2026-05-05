@@ -40,6 +40,7 @@ const Performance = lazy(() => import('./pages/Performance'));
 const OrganizationSettings = lazy(() => import('./pages/organization/OrganizationSettings'));
 const ActivityLog = lazy(() => import('./pages/organization/ActivityLog'));
 const Integrations = lazy(() => import('./pages/Integrations'));
+const BillingPage = lazy(() => import('./pages/BillingPage'));
 const RestrictedAccess = lazy(() => import('./pages/RestrictedAccess'));
 
 // ── Lazy-loaded: Ticket pages ──────────────────────────────────────────────
@@ -275,6 +276,14 @@ function App() {
                 element={
                   ['ADMIN', 'MANAGER', 'MEMBER'].includes(user?.role)
                     ? <FeatureGuard feature="github"><Integrations /></FeatureGuard>
+                    : <Navigate to="/dashboard" replace />
+                }
+              />
+              <Route
+                path="billing"
+                element={
+                  user?.role === 'ADMIN'
+                    ? <BillingPage />
                     : <Navigate to="/dashboard" replace />
                 }
               />

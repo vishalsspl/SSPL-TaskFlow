@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
   DialogContent,
@@ -11,8 +12,13 @@ import { Button } from "@/components/ui/button";
 import { Check, Sparkles, Zap, ShieldCheck, Rocket } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PLAN_LIMITS } from "@/lib/plans";
+import { useAuthStore } from "@/store/authStore";
 
 const UpgradePlanModal = ({ isOpen, onClose, limitType = 'resources' }) => {
+  const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const isAdmin = user?.role === 'ADMIN';
+
   const plans = [
     {
       ...PLAN_LIMITS.STARTER,
@@ -44,6 +50,13 @@ const UpgradePlanModal = ({ isOpen, onClose, limitType = 'resources' }) => {
     },
   ];
 
+  const handlePlanAction = () => {
+    onClose();
+    if (isAdmin) {
+      navigate('/billing');
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl p-0 overflow-hidden border-none bg-transparent shadow-none max-h-[95vh] Montserrat">
@@ -62,7 +75,11 @@ const UpgradePlanModal = ({ isOpen, onClose, limitType = 'resources' }) => {
               </DialogTitle>
               <DialogDescription className="text-muted-foreground text-base md:text-lg max-w-xl mx-auto font-medium leading-relaxed text-center">
                 You've hit your <span className="text-primary font-bold">{limitType} limit</span> on the trial plan.
-                <br className="hidden md:block" /> Upgrade to unlock the full potential of SSPL TaskFlow.
+                <br className="hidden md:block" /> 
+                {isAdmin 
+                  ? 'Upgrade to unlock the full potential of SSPL TaskFlow.'
+                  : 'Contact your organization Admin to upgrade the plan.'
+                }
               </DialogDescription>
             </DialogHeader>
 
@@ -113,9 +130,10 @@ const UpgradePlanModal = ({ isOpen, onClose, limitType = 'resources' }) => {
                         ? "bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20" 
                         : "bg-secondary hover:bg-secondary/80 text-foreground border border-border/20"
                     )}
-                    onClick={() => window.location.href = '/billing'}
+                    onClick={handlePlanAction}
+                    disabled={!isAdmin}
                   >
-                    {plan.buttonText}
+                    {isAdmin ? plan.buttonText : 'Contact Admin'}
                   </Button>
                 </div>
               ))}
@@ -139,3 +157,4 @@ const UpgradePlanModal = ({ isOpen, onClose, limitType = 'resources' }) => {
 
 
 export default UpgradePlanModal;
+

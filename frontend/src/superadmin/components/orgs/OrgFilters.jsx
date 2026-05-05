@@ -15,9 +15,9 @@ const OrgFilters = ({
  onProvision,
 }) => {
  return (
- <div className="flex flex-col lg:flex-row items-center justify-between gap-4 w-full">
+ <div className="flex flex-col sm:flex-row items-center justify-between gap-4 w-full">
  {/* Filters and Button */}
- <div className="flex items-center justify-end gap-3 w-full lg:w-auto flex-wrap sm:flex-nowrap flex-1">
+ <div className="grid grid-cols-2 sm:flex sm:items-center sm:justify-end gap-3 w-full sm:w-auto flex-1">
  {/* Status Filter */}
  <SearchableSelect
  value={statusFilter}
@@ -31,7 +31,7 @@ const OrgFilters = ({
  ]}
  placeholder="Status: All"
  searchPlaceholder="Search status..."
- className="w-full sm:w-44 h-11 rounded-xl bg-background border-border/40 hover:bg-accent/20 transition-all font-semibold"
+ className="w-full sm:w-40 h-10 rounded-xl bg-background border-border/40 hover:bg-accent/20 transition-all font-semibold text-[11px]"
  />
 
  {/* Plan Filter */}
@@ -47,12 +47,12 @@ const OrgFilters = ({
  ]}
  placeholder="Plan: All"
  searchPlaceholder="Search plan..."
- className="w-full sm:w-44 h-11 rounded-xl bg-background border-border/40 hover:bg-accent/20 transition-all font-semibold"
+ className="w-full sm:w-40 h-10 rounded-xl bg-background border-border/40 hover:bg-accent/20 transition-all font-semibold text-[11px]"
  />
 
       <Button
         variant="outline"
-        className="h-11 rounded-xl gap-3 font-bold text-[10px] tracking-widest hover:bg-primary hover:text-white transition-all duration-300 w-full lg:w-auto px-6 border-primary/40 text-primary border-[1.5px] uppercase"
+        className="col-span-2 sm:col-span-1 h-10 rounded-xl gap-2 font-bold text-[10px] tracking-widest hover:bg-primary hover:text-white transition-all duration-300 w-full sm:w-auto px-6 border-primary/40 text-primary border-[1.5px] uppercase"
         onClick={onProvision}
       >
         <Building2 className="w-3.5 h-3.5" /> Add New

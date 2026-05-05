@@ -39,6 +39,11 @@ model Organization {
   primaryContactPhone String?
   address             String?
 
+  // Razorpay
+  razorpayCustomerId  String?
+  currentPeriodStart  DateTime?
+  currentPeriodEnd    DateTime?
+
   // org-level settings
   requireApproval      Boolean @default(false)
   allowClientSignup    Boolean @default(false)
@@ -124,10 +129,14 @@ model Invoice {
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   amount      Decimal      @db.Decimal(10, 2)
-  currency    String       @default("USD")
+  currency    String       @default("INR")
   status      InvoiceStatus @default(PENDING)
   description String?
   plan        OrgPlan?
+
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+  invoiceNumber     String?   @unique
 
   dueDate DateTime?
   paidAt  DateTime?

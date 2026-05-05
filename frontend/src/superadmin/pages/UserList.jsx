@@ -125,8 +125,8 @@ const SuperAdminUserList = () => {
               {/* Subtle gradient background decoration */}
               <div className="absolute -right-20 -top-20 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none group-hover:bg-primary/10 transition-colors duration-700" />
               
-              <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6 w-full p-6 sm:p-8">
-                <div className="flex flex-col gap-4">
+              <div className="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-6 w-full p-5 sm:p-8">
+                <div className="flex flex-col gap-3 w-full min-w-0">
                   <Button 
                     variant="ghost" 
                     size="sm" 
@@ -139,29 +139,29 @@ const SuperAdminUserList = () => {
                     Back to Organizations
                   </Button>
                   
-                  <div className="flex items-center gap-5">
-                    <div className="hidden sm:flex w-14 h-14 bg-primary/10 rounded-2xl items-center justify-center shadow-inner group-hover:scale-105 transition-transform duration-500">
+                  <div className="flex items-center gap-4 w-full">
+                    <div className="hidden sm:flex w-14 h-14 bg-primary/10 rounded-2xl items-center justify-center shadow-inner group-hover:scale-105 transition-transform duration-500 shrink-0">
                       <Building2 className="w-7 h-7 text-primary" />
                     </div>
-                    <div className="flex flex-col">
-                      <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground flex items-center gap-3">
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <h2 className="text-xl sm:text-3xl font-black tracking-tight text-foreground truncate block w-full">
                         {orgs.find(o => o.id === selectedOrgId)?.name || 'Organization Details'}
                       </h2>
-                      <div className="flex items-center gap-3 text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground opacity-60">
+                      <div className="flex flex-wrap items-center gap-2 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-60 mt-0.5">
                         <span className="flex items-center gap-1.5">
                           <div className="w-1 h-1 rounded-full bg-primary" />
                           Managed Workspace
                         </span>
-                        <span>•</span>
+                        <span className="hidden sm:inline">•</span>
                         <span>{users.length} Active Users</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto mt-2 md:mt-0">
+                <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto mt-2 md:mt-0 pt-4 md:pt-0">
                   <div className="relative w-full sm:w-[240px]">
-                    <div className="absolute -top-6 left-1 text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">
+                    <div className="absolute -top-5 sm:-top-6 left-1 text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">
                       Filter by Access Role
                     </div>
                     <SearchableSelect

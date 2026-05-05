@@ -55,6 +55,7 @@ import {
   BarChart3,
   Building2,
   History,
+  CreditCard,
 } from 'lucide-react';
 import { useChatStore } from '@/store/chatStore';
 import { useHeaderStore } from '@/store/headerStore';
@@ -188,6 +189,12 @@ const Layout = () => {
       icon: Zap,
       allowedRoles: ['ADMIN', 'MANAGER', 'MEMBER'],
       featureKey: 'github'
+    },
+    {
+      name: 'Billing',
+      href: '/billing',
+      icon: CreditCard,
+      allowedRoles: ['ADMIN'],
     },
   ];
 

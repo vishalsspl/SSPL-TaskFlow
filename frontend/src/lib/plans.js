@@ -3,34 +3,34 @@ export const PLAN_LIMITS = {
     name: 'Free (Trial)',
     users: 10,
     projects: 3,
-    features: ["10 Users", "3 Projects", "Basic Tools"],
+    features: ["10 Users", "3 Projects", "Kanban Board", "Basic Tasks"],
   },
   TRIAL: {
     name: 'Trial',
     users: 10,
     projects: 3,
-    features: ["10 Users", "3 Projects", "Basic Tools"],
+    features: ["10 Users", "3 Projects", "Kanban Board", "Basic Tasks"],
   },
   STARTER: {
     name: 'Starter',
     users: 30,
     projects: 5,
-    price: '₹19',
-    features: ["30 Users", "5 Projects", "Basic Analytics", "Email Support"],
+    price: '₹10',
+    features: ["30 Users", "5 Projects", "Tasks & Tickets", "Team & Chat", "Email Support"],
   },
   PRO: {
     name: 'Pro',
     users: 100,
     projects: 50,
-    price: '₹49',
-    features: ["100 Users", "50 Projects", "Advanced Reports", "Priority Support"],
+    price: '₹10',
+    features: ["100 Users", "50 Projects", "Performance Analytics", "Timesheets", "GitHub Integration"],
   },
   ENTERPRISE: {
     name: 'Enterprise',
     users: 1000,
     projects: 500,
     price: 'Custom',
-    features: ["1000 Users", "500 Projects", "SSO & SAML", "Dedicated Manager"],
+    features: ["Unlimited Users", "Unlimited Projects", "SSO & SAML", "Dedicated Manager", "SLA Guarantee"],
   }
 };
 

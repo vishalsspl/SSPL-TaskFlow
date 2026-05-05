@@ -79,30 +79,30 @@ const PlatformSettings = () => {
   };
 
   const SettingSection = ({ title, description, icon: Icon, children }) => (
-    <Card className="rounded-[2.5rem] border-border/40 shadow-2xl bg-white/40 dark:bg-black/40 backdrop-blur-3xl overflow-hidden group transition-all">
-      <CardHeader className="p-8 pb-6">
-        <div className="flex items-center gap-5">
-          <div className="w-14 h-14 rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-center text-primary shadow-inner transition-transform group-hover:scale-105">
-            <Icon className="w-7 h-7" />
+    <Card className="rounded-3xl sm:rounded-[2.5rem] border-border/40 shadow-2xl bg-white/40 dark:bg-black/40 backdrop-blur-3xl overflow-hidden group transition-all">
+      <CardHeader className="p-5 sm:p-8 sm:pb-6">
+        <div className="flex items-center gap-4 sm:gap-5">
+          <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-center text-primary shadow-inner transition-transform group-hover:scale-105 shrink-0">
+            <Icon className="w-5 h-5 sm:w-7 sm:h-7" />
           </div>
-          <div className="space-y-1">
-            <CardTitle className="text-xl font-bold tracking-widest">{title}</CardTitle>
-            <CardDescription className="text-[10px] font-bold tracking-widest opacity-60">{description}</CardDescription>
+          <div className="space-y-0.5 sm:space-y-1">
+            <CardTitle className="text-lg sm:text-xl font-bold tracking-widest">{title}</CardTitle>
+            <CardDescription className="text-[9px] sm:text-[10px] font-bold tracking-widest opacity-60 leading-tight">{description}</CardDescription>
           </div>
         </div>
       </CardHeader>
       <Separator className="bg-border/10" />
-      <CardContent className="p-8 space-y-8">
+      <CardContent className="p-5 sm:p-8 space-y-6 sm:space-y-8">
         {children}
       </CardContent>
     </Card>
   );
 
   const FormRow = ({ label, description, children }) => (
-    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-      <div className="space-y-1.5 max-w-xl">
+    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6">
+      <div className="space-y-1 sm:space-y-1.5 max-w-xl">
         <Label className="text-sm font-bold text-foreground/90">{label}</Label>
-        <p className="text-[11px] text-muted-foreground font-medium">{description}</p>
+        <p className="text-[10px] sm:text-[11px] text-muted-foreground font-medium">{description}</p>
       </div>
       <div className="w-full lg:w-72 shrink-0">
         {children}
@@ -289,22 +289,22 @@ const PlatformSettings = () => {
 
       {/* ── Override Hub ────────────────────────────────────────────── */}
       {dirty && (
-        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-4xl z-50 animate-in slide-in-from-bottom-10 duration-500">
-          <div className="bg-black/90 dark:bg-black/95 backdrop-blur-3xl p-6 rounded-[2.5rem] border border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.5)] flex flex-col sm:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-primary/20 rounded-2xl flex items-center justify-center animate-pulse">
-                <AlertCircle className="w-6 h-6 text-primary" />
+        <div className="fixed bottom-6 sm:bottom-10 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-4xl z-50 animate-in slide-in-from-bottom-10 duration-500">
+          <div className="bg-black/90 dark:bg-black/95 backdrop-blur-3xl p-4 sm:p-6 rounded-3xl sm:rounded-[2.5rem] border border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.5)] flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6">
+            <div className="flex items-center gap-3 sm:gap-4 self-start sm:self-auto w-full sm:w-auto">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/20 rounded-xl sm:rounded-2xl flex items-center justify-center animate-pulse shrink-0">
+                <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
               </div>
-              <div className="text-left">
-                <h4 className="text-white font-bold text-sm">Unsaved Changes</h4>
-                <p className="text-white/40 text-[10px] font-bold ">You have changes that haven't been saved yet</p>
+              <div className="text-left flex-1">
+                <h4 className="text-white font-bold text-xs sm:text-sm">Unsaved Changes</h4>
+                <p className="text-white/40 text-[9px] sm:text-[10px] font-bold leading-tight mt-0.5">You have changes that haven't been saved yet</p>
               </div>
             </div>
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              <Button variant="ghost" className="h-14 rounded-2xl px-8 text-white/60 hover:text-white font-bold text-[11px] " onClick={() => setDirty(false)}>
+              <Button variant="ghost" className="h-10 sm:h-14 rounded-xl sm:rounded-2xl px-6 sm:px-8 text-white/60 hover:text-white font-bold text-[10px] sm:text-[11px] w-1/2 sm:w-auto" onClick={() => setDirty(false)}>
                 Discard
               </Button>
-              <Button className="h-14 rounded-2xl px-12 bg-primary text-white font-bold text-[11px] shadow-xl shadow-primary/30 flex-1 sm:flex-none" onClick={handleSave}>
+              <Button className="h-10 sm:h-14 rounded-xl sm:rounded-2xl px-6 sm:px-12 bg-primary text-white font-bold text-[10px] sm:text-[11px] shadow-xl shadow-primary/30 w-1/2 sm:w-auto flex-1 sm:flex-none" onClick={handleSave}>
                 Save Changes
               </Button>
             </div>

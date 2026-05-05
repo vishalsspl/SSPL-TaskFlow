@@ -42,8 +42,8 @@ const Pricing = () => {
     if (planName === "Enterprise") return "Custom";
     
     let basePricePerUser = 0;
-    if (planName === "Starter") basePricePerUser = parseInt(settings?.starter_per_user_price) || 200;
-    if (planName === "Professional") basePricePerUser = parseInt(settings?.pro_per_user_price) || 600;
+    if (planName === "Starter") basePricePerUser = parseInt(settings?.starter_per_user_price) || 10;
+    if (planName === "Professional") basePricePerUser = parseInt(settings?.pro_per_user_price) || 10;
     
     let total = basePricePerUser * teamSize;
     const discountPercent = parseInt(settings?.annual_discount_percent) || 17;
@@ -63,9 +63,9 @@ const Pricing = () => {
       features: [
         `Up to 10 team members`,
         `3 projects`,
-        "Basic task management",
-        "500MB storage",
-        "Community support",
+        "Kanban Board",
+        "Basic Task Management",
+        "Community Support",
       ],
       buttonText: "Sign Up",
       buttonVariant: "outline",
@@ -74,13 +74,16 @@ const Pricing = () => {
     {
       name: "Starter",
       price: calculatePrice("Starter"),
-      description: "Better for growing teams with more tasks",
+      description: "Essential tools for growing teams",
       features: [
         `Up to ${teamSize > 30 ? teamSize : settings?.starter_max_users || '30'} members`,
-        `${settings?.starter_max_projects || '15'} projects`,
-        "Advanced task features",
-        "5GB storage",
-        "Email support",
+        `${settings?.starter_max_projects || '5'} projects`,
+        "Kanban Board",
+        "Tasks Management",
+        "Tickets & Support",
+        "Team Management",
+        "Chat & Collaboration",
+        "Email Support",
       ],
       buttonText: "Sign Up",
       buttonVariant: "outline",
@@ -89,15 +92,16 @@ const Pricing = () => {
     {
       name: "Professional",
       price: calculatePrice("Professional"),
-      description: "Best for teams that need more power",
+      description: "Full power for scaling teams",
       features: [
         `Up to ${teamSize > 100 ? teamSize : settings?.pro_max_users || '100'} members`,
-        `${settings?.pro_max_projects || '100'} projects`,
-        "Full task management",
-        "100GB storage",
-        "Priority support",
-        "Custom workflows",
-        "Analytics & reporting",
+        `${settings?.pro_max_projects || '50'} projects`,
+        "Everything in Starter",
+        "Performance Analytics",
+        "Timesheets & Tracking",
+        "GitHub Integration",
+        "Activity Logs & Audit",
+        "Priority Support",
       ],
       buttonText: "Start Free Trial",
       buttonVariant: "default",
@@ -110,12 +114,12 @@ const Pricing = () => {
       features: [
         `Unlimited team members`,
         `Unlimited projects`,
-        "All pro features",
-        "1TB storage",
-        "24/7 dedicated support",
-        "Custom integrations",
-        "Advanced security",
-        "SLA guarantee",
+        "Everything in Pro",
+        "SSO & SAML",
+        "Custom Integrations",
+        "Dedicated Account Manager",
+        "24/7 Priority Support",
+        "SLA Guarantee",
       ],
       buttonText: "Contact Sales",
       buttonVariant: "outline",
