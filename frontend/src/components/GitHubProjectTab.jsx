@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Github, GitCommit, GitPullRequest, ExternalLink, RefreshCw, Link as LinkIcon, AlertTriangle, GitBranch } from 'lucide-react';
+import { Github, GitCommit, GitPullRequest, ExternalLink, RefreshCw, Link as LinkIcon, AlertTriangle, GitBranch, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { formatDistanceToNow } from 'date-fns';
@@ -86,6 +86,27 @@ const GitHubProjectTab = ({ projectId }) => {
       toast({
         title: "Linking Failed",
         description: "Failed to link repository to project.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleUnlinkRepo = async () => {
+    if (!window.confirm("Are you sure you want to unlink this repository? This won't delete any code, just stop tracking commits here.")) return;
+    try {
+      await api.post(`/integrations/github/link/${projectId}`, { repoFullName: null });
+      setLinkedRepo(null);
+      setActivity([]);
+      setBranches([]);
+      setSelectedBranch('');
+      toast({
+        title: "Repository Unlinked",
+        description: "Successfully unlinked repository from this project."
+      });
+    } catch (error) {
+      toast({
+        title: "Unlinking Failed",
+        description: "Failed to unlink repository.",
         variant: "destructive"
       });
     }
@@ -192,12 +213,16 @@ const GitHubProjectTab = ({ projectId }) => {
             </Select>
           )}
           <Button variant="outline" size="sm" onClick={() => fetchActivity(projectId, selectedBranch)} disabled={syncing} className="rounded-xl">
-            <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
-            Sync
+            <RefreshCw className={`w-4 h-4 sm:mr-2 ${syncing ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">Sync</span>
           </Button>
           <Button variant="outline" size="sm" className="rounded-xl" onClick={() => window.open(`https://github.com/${linkedRepo}`, '_blank')}>
-            <ExternalLink className="w-4 h-4 mr-2" />
-            View on GitHub
+            <ExternalLink className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">View on GitHub</span>
+          </Button>
+          <Button variant="outline" size="sm" className="rounded-xl text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 border-red-200 dark:border-red-900/30" onClick={handleUnlinkRepo}>
+            <Trash2 className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Unlink</span>
           </Button>
         </div>
       </div>

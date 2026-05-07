@@ -149,7 +149,7 @@ export const useTimerStore = create(
           description: logDescription
         };
 
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        const API_URL = import.meta.env.VITE_API_URL;
         
         try {
           await fetch(`${API_URL}/api/worklogs`, {

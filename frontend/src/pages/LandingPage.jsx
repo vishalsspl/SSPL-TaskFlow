@@ -64,7 +64,7 @@ const LandingPage = () => {
                             )}
                             onClick={() => navigate('/signup')}
                         >
-                            Sign Up
+                            Get Started
                         </Button>
                     </div>
                 </div>

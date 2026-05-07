@@ -67,7 +67,7 @@ const Pricing = () => {
         "Basic Task Management",
         "Community Support",
       ],
-      buttonText: "Sign Up",
+      buttonText: "Get Started",
       buttonVariant: "outline",
       popular: false,
     },
@@ -85,7 +85,7 @@ const Pricing = () => {
         "Chat & Collaboration",
         "Email Support",
       ],
-      buttonText: "Sign Up",
+      buttonText: "Get Started",
       buttonVariant: "outline",
       popular: false,
     },
@@ -225,77 +225,79 @@ const Pricing = () => {
 
           {/* Pricing Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto relative z-10">
-            {plans.map((plan, idx) => (
-              <Card
-                key={plan.name}
-                className={cn(
-                  "relative backdrop-blur-xl shadow-2xl transition-all duration-500 hover:scale-[1.02] flex flex-col group animate-in fade-in slide-in-from-bottom-8",
-                  isDarkMode ? "bg-white/5 border-white/10" : "bg-white border-[#48A111]/10 shadow-xl"
-                )}
-                style={{ animationDelay: `${idx * 150}ms` }}
-              >
-                {plan.popular && (
-                  <>
-                    <div className="absolute -inset-[1px] bg-gradient-to-r from-[#48A111] to-[#A3E635] rounded-xl opacity-40 group-hover:opacity-100 transition duration-500 blur-sm" />
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#48A111] to-[#A3E635] text-white px-3 py-1 rounded-full text-[9px] font-black tracking-widest uppercase shadow-xl z-20">
-                      Most Popular
-                    </div>
-                  </>
-                )}
-                
-                <CardHeader className="relative z-10 pt-6 pb-4">
-                  <CardTitle className={cn("text-xl font-black tracking-tight leading-none mb-1.5 transition-colors", isDarkMode ? "text-white" : "text-slate-900")}>{plan.name}</CardTitle>
-                  <CardDescription className={cn("text-xs font-medium leading-relaxed transition-colors", isDarkMode ? "text-white/40" : "text-slate-500")}>
-                    {plan.description}
-                  </CardDescription>
-                </CardHeader>
-                
-                <CardContent className="relative z-10 flex-1 pt-0">
-                  <div className="mb-8">
-                    <span className={cn("text-3xl md:text-4xl font-black tracking-tighter transition-colors", isDarkMode ? "text-white" : "text-slate-900")}>{plan.price}</span>
-                    {plan.price !== "Custom" && plan.price !== "₹0" && (
-                      <div className="flex flex-col">
-                        <span className={cn("font-bold uppercase tracking-widest text-[8px] mt-1 transition-colors", isDarkMode ? "text-white/40" : "text-slate-400")}>
-                          {billingCycle === 'monthly' ? 'per month' : 'per year / billed annually'}
-                        </span>
-                        <span className={cn("font-medium text-[8px] mt-0.5 transition-colors", isDarkMode ? "text-white/20" : "text-slate-500")}>
-                          Approx. ₹{(parseFloat(plan.price.replace(/[₹,]/g, '')) / teamSize).toFixed(0)} per user / month
-                        </span>
+            {plans.map((plan, idx) => {
+              return (
+                <Card
+                  key={plan.name}
+                  className={cn(
+                    "relative backdrop-blur-xl shadow-2xl transition-all duration-500 hover:scale-[1.02] flex flex-col group animate-in fade-in slide-in-from-bottom-8",
+                    isDarkMode ? "bg-white/5 border-white/10" : "bg-white border-[#48A111]/10 shadow-xl"
+                  )}
+                  style={{ animationDelay: `${idx * 150}ms` }}
+                >
+                  {plan.popular && (
+                    <>
+                      <div className="absolute -inset-[1px] bg-gradient-to-r from-[#48A111] to-[#A3E635] rounded-xl opacity-40 group-hover:opacity-100 transition duration-500 blur-sm" />
+                      <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#48A111] to-[#A3E635] text-white px-3 py-1 rounded-full text-[9px] font-black tracking-widest uppercase shadow-xl z-20">
+                        Most Popular
                       </div>
-                    )}
-                  </div>
+                    </>
+                  )}
                   
-                  <ul className="space-y-3 mb-6">
-                    {plan.features.map((feature, index) => (
-                      <li key={index} className={cn("flex items-start gap-2.5 transition-colors duration-300", isDarkMode ? "text-white/70 group-hover:text-white" : "text-slate-600 group-hover:text-slate-900")}>
-                        <div className={cn(
-                          "w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 border transition-all",
-                          isDarkMode ? "bg-[#48A111]/10 border-[#48A111]/20 group-hover:bg-[#48A111] group-hover:text-white" : "bg-[#48A111]/5 border-[#48A111]/20 group-hover:bg-[#48A111] group-hover:text-white"
-                        )}>
-                          <Check className="size-2.5 font-bold" />
+                  <CardHeader className="relative z-10 pt-6 pb-4">
+                    <CardTitle className={cn("text-xl font-black tracking-tight leading-none mb-1.5 transition-colors", isDarkMode ? "text-white" : "text-slate-900")}>{plan.name}</CardTitle>
+                    <CardDescription className={cn("text-xs font-medium leading-relaxed transition-colors", isDarkMode ? "text-white/40" : "text-slate-500")}>
+                      {plan.description}
+                    </CardDescription>
+                  </CardHeader>
+                  
+                  <CardContent className="relative z-10 flex-1 pt-0">
+                    <div className="mb-8">
+                      <span className={cn("text-3xl md:text-4xl font-black tracking-tighter transition-colors", isDarkMode ? "text-white" : "text-slate-900")}>{plan.price}</span>
+                      {plan.price !== "Custom" && plan.price !== "₹0" && (
+                        <div className="flex flex-col">
+                          <span className={cn("font-bold uppercase tracking-widest text-[8px] mt-1 transition-colors", isDarkMode ? "text-white/40" : "text-slate-400")}>
+                            {billingCycle === 'monthly' ? 'per month' : 'per year / billed annually'}
+                          </span>
+                          <span className={cn("font-medium text-[8px] mt-0.5 transition-colors", isDarkMode ? "text-white/20" : "text-slate-500")}>
+                            Approx. ₹{(parseFloat(plan.price.replace(/[₹,]/g, '')) / teamSize).toFixed(0)} per user / month
+                          </span>
                         </div>
-                        <span className="text-[11px] font-medium leading-tight">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-                
-                <CardFooter className="relative z-10 pb-6 pt-0">
-                  <Button
-                    variant={plan.buttonVariant === 'default' ? 'default' : 'outline'}
-                    className={cn(
-                        "w-full h-11 md:h-12 rounded-xl text-[10px] md:text-xs font-black tracking-widest uppercase transition-all duration-300",
-                        plan.popular 
-                          ? (isDarkMode ? "bg-white text-black hover:bg-white/90 shadow-xl shadow-white/5" : "bg-[#48A111] text-white hover:bg-[#48A111]/90 shadow-xl shadow-[#48A111]/10") 
-                          : (isDarkMode ? "border-white/10 bg-white/5 hover:bg-white/10 text-white" : "border-slate-200 bg-white hover:bg-slate-50 text-slate-900")
-                    )}
-                    onClick={() => navigate('/signup')}
-                  >
-                    {plan.buttonText}
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
+                      )}
+                    </div>
+                    
+                    <ul className="space-y-3 mb-6">
+                      {plan.features.map((feature, index) => (
+                        <li key={index} className={cn("flex items-start gap-2.5 transition-colors duration-300", isDarkMode ? "text-white/70 group-hover:text-white" : "text-slate-600 group-hover:text-slate-900")}>
+                          <div className={cn(
+                            "w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5 border transition-all",
+                            isDarkMode ? "bg-[#48A111]/10 border-[#48A111]/20 group-hover:bg-[#48A111] group-hover:text-white" : "bg-[#48A111]/5 border-[#48A111]/20 group-hover:bg-[#48A111] group-hover:text-white"
+                          )}>
+                            <Check className="size-2.5 font-bold" />
+                          </div>
+                          <span className="text-[11px] font-medium leading-tight">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </CardContent>
+                  
+                  <CardFooter className="relative z-10 pb-6 pt-0">
+                    <Button
+                      variant={plan.buttonVariant === 'default' ? 'default' : 'outline'}
+                      className={cn(
+                          "w-full h-11 md:h-12 rounded-xl text-[10px] md:text-xs font-black tracking-widest uppercase transition-all duration-300",
+                          plan.popular 
+                            ? (isDarkMode ? "bg-white text-black hover:bg-white/90 shadow-xl shadow-white/5" : "bg-[#48A111] text-white hover:bg-[#48A111]/90 shadow-xl shadow-[#48A111]/10") 
+                            : (isDarkMode ? "border-white/10 bg-white/5 hover:bg-white/10 text-white" : "border-slate-200 bg-white hover:bg-slate-50 text-slate-900")
+                      )}
+                      onClick={() => navigate('/signup')}
+                    >
+                      {plan.buttonText}
+                    </Button>
+                  </CardFooter>
+                </Card>
+              );
+            })}
           </div>
 
           <div className="mt-16 md:mt-24 text-center animate-in fade-in duration-1000 delay-500">

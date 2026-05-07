@@ -31,7 +31,7 @@ const MarketingNavbar = () => {
                 </Link>
 
                 {/* Desktop Nav */}
-                <div className="hidden md:flex items-center gap-10 text-sm font-medium">
+                <div className="hidden md:flex items-center absolute left-1/2 -translate-x-1/2 gap-10 text-sm font-medium">
                     {navLinks.map((link) => (
                         <Link key={link.href} to={link.href} className={cn("transition-colors hover:text-[#48A111]", isDarkMode ? "text-white/70" : "text-slate-600")}>
                             {link.label}
@@ -69,7 +69,7 @@ const MarketingNavbar = () => {
                             )}
                             onClick={() => navigate('/signup')}
                         >
-                            Sign Up
+                            Get Started
                         </Button>
                     </div>
 
@@ -117,7 +117,7 @@ const MarketingNavbar = () => {
                                     )}
                                     onClick={() => { setIsMenuOpen(false); navigate('/signup'); }}
                                 >
-                                    Sign Up
+                                    Get Started
                                 </Button>
                             <Button
                                 variant="outline"

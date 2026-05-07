@@ -817,7 +817,7 @@ export const forgotPassword = async (req, res) => {
     data: { resetToken: resetTokenValue, resetTokenExpiry }
   });
 
-  const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL || 'http://localhost:5173';
+  const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
   const resetLink = `${origin}/reset-password/${resetTokenValue}`;
   await sendPasswordResetEmail(user.email, user.name, resetLink);
 

@@ -19,6 +19,7 @@ const ActivityLog = () => {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [action, setAction] = useState('');
+  const [entity, setEntity] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotal] = useState(1);
 
@@ -31,11 +32,11 @@ const ActivityLog = () => {
 
   useEffect(() => {
     setPage(1);
-  }, [action, globalSearch]);
+  }, [action, entity, globalSearch]);
 
   useEffect(() => {
     fetchLogs();
-  }, [page, action, globalSearch]);
+  }, [page, action, entity, globalSearch]);
 
   // ── API calls ─────────────────────────────────────────────────────────
 
@@ -47,6 +48,7 @@ const ActivityLog = () => {
           page, 
           limit: 10,
           action: action || undefined,
+          entity: entity || undefined,
           search: globalSearch || undefined,
         },
       });
@@ -66,6 +68,7 @@ const ActivityLog = () => {
       const res = await api.get('/organizations/activity-logs', {
         params: {
           action: action || undefined,
+          entity: entity || undefined,
           search: globalSearch || undefined,
           limit: 1000 
         },
@@ -117,6 +120,7 @@ const ActivityLog = () => {
     if (actionLower.includes('user') || actionLower.includes('invite') || actionLower.includes('member')) return <User className="w-4 h-4 text-emerald-500" />;
     if (actionLower.includes('database') || actionLower.includes('backup') || actionLower.includes('time')) return <Database className="w-4 h-4 text-purple-500" />;
     if (actionLower.includes('message')) return <History className="w-4 h-4 text-teal-500" />;
+    if (actionLower.includes('integration') || actionLower.includes('github') || actionLower.includes('repo')) return <History className="w-4 h-4 text-orange-500" />;
     return <Activity className="w-4 h-4 text-primary/60" />;
   };
 
@@ -150,6 +154,8 @@ const ActivityLog = () => {
             <AuditFilters
               action={action}
               setAction={setAction}
+              entity={entity}
+              setEntity={setEntity}
               setPage={setPage}
               onExport={handleExportCSV}
             />

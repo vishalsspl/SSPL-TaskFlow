@@ -51,7 +51,6 @@ import {
 } from '@/components/ui/dialog';
 import CreateTaskForm from '@/components/forms/CreateTaskForm';
 import Chat from '@/components/Chat';
-import GitHubProjectTab from '@/components/GitHubProjectTab';
 import { useTimerStore } from '@/store/timerStore';
 
 
@@ -526,7 +525,6 @@ const ProjectView = () => {
             <TabsTrigger value="overview" className="rounded-xl px-3 sm:px-6 py-1.5 sm:py-2 text-[11px] sm:text-sm Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Overview</TabsTrigger>
             <TabsTrigger value="tasks" className="rounded-xl px-3 sm:px-6 py-1.5 sm:py-2 text-[11px] sm:text-sm Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Tasks</TabsTrigger>
             <TabsTrigger value="team" className="rounded-xl px-3 sm:px-6 py-1.5 sm:py-2 text-[11px] sm:text-sm Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Team</TabsTrigger>
-            <TabsTrigger value="github" className="rounded-xl px-3 sm:px-6 py-1.5 sm:py-2 text-[11px] sm:text-sm Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">GitHub</TabsTrigger>
             {user?.role !== 'CLIENT' && (
               <TabsTrigger value="chat" className="rounded-xl px-3 sm:px-6 py-1.5 sm:py-2 text-[11px] sm:text-sm Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Chat</TabsTrigger>
             )}
@@ -622,10 +620,6 @@ const ProjectView = () => {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
-
-          <TabsContent value="github" className="space-y-4 mt-0">
-            <GitHubProjectTab projectId={id} />
           </TabsContent>
 
           {user?.role !== 'CLIENT' && (

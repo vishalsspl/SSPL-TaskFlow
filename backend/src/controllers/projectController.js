@@ -67,11 +67,64 @@ const getManagerGeneralTeam = async (db, managerId, organizationId) => {
 
 
 export const getAllProjects = async (req, res) => {
-  const { search, status: statusFilter, category, page, limit: rawLimit } = req.query;
-
-  const where = {
-    organizationId: req.user.organizationId,
+  const fs = await import('fs');
+  const logFile = 'project_error_debug.log';
+  const log = (msg) => {
+    const timestamp = new Date().toISOString();
+    fs.appendFileSync(logFile, `${timestamp} [getAllProjects] ${msg}\n`);
+    console.log(`[getAllProjects] ${msg}`);
   };
+
+  try {
+    log(`Start - User: ${req.user?.id}, Org: ${req.user?.organizationId}`);
+    
+    // ── Check for tenant DB connection errors ─────────────────────────────
+    if (req.tenantDbError) {
+      log(`Tenant DB Error detected: ${req.tenantDbError}`);
+      return res.status(503).json({
+        error: 'Organization database connection failed',
+        message: 'We are having trouble connecting to your organization database. Please try again later.',
+        details: process.env.NODE_ENV === 'development' ? req.tenantDbError : undefined
+      });
+    }
+
+    // ── Verify model existence (prevents crash on main DB fallback) ───────
+    if (!req.db) {
+      log('req.db is UNDEFINED');
+      return res.status(500).json({ error: 'Database client not initialized' });
+    }
+
+    if (!req.db.project) {
+      log('req.db.project is UNDEFINED. Current db keys: ' + Object.keys(req.db).filter(k => !k.startsWith('$')).join(', '));
+      if (req.user.role === 'SUPERADMIN') {
+         return res.json([]); 
+      }
+      return res.status(500).json({ 
+        error: 'Database configuration error',
+        message: 'The requested model "Project" is not available in the current database context.'
+      });
+    }
+
+    log('Database and Model verified. Testing connection...');
+    try {
+      await req.db.$connect();
+      log('Connection Successful');
+    } catch (connErr) {
+      log(`Connection Failed: ${connErr.message}`);
+      return res.status(500).json({ error: 'Database connection failed', details: connErr.message });
+    }
+
+    const { search, status: statusFilter, category, page, limit: rawLimit } = req.query;
+
+    const where = {
+      organizationId: req.user.organizationId,
+    };
+
+    // For SuperAdmin, we might want to show all if no organizationId is in token, 
+    // but usually they use the SuperAdmin dashboard.
+    if (req.user.role === 'SUPERADMIN' && !req.user.organizationId) {
+       delete where.organizationId;
+    }
 
   // If Manager, only show projects they manage
   if (req.user.role === 'MANAGER') {
@@ -137,53 +190,45 @@ export const getAllProjects = async (req, res) => {
     where.category = category;
   }
 
-  const include = {
-    client: {
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        avatar: true,
-      },
-    },
-    manager: {
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        avatar: true,
-      },
-    },
-    _count: {
-      select: {
-        tasks: true,
-        phases: true,
-      },
-    },
-    tasks: {
-      select: {
-        status: true,
-        storyPoints: true,
-      }
-    }
+  const projectSelect = {
+    id: true,
+    organizationId: true,
+    name: true,
+    description: true,
+    category: true,
+    managerId: true,
+    clientId: true,
+    status: true,
+    startDate: true,
+    endDate: true,
+    totalBudget: true,
+    usedBudget: true,
+    createdAt: true,
+    updatedAt: true,
+    // Relations
+    manager: { select: { id: true, name: true, email: true, role: true, avatar: true } },
+    client: { select: { id: true, name: true, email: true, role: true, avatar: true } },
+    _count: { select: { tasks: true, phases: true } },
+    tasks: { select: { status: true, storyPoints: true } }
   };
 
   const addProgress = (projects) => {
     return projects.map(project => {
-      const totalStoryPoints = project.tasks.reduce((sum, t) => sum + (t.storyPoints || 0), 0);
-      const completedStoryPoints = project.tasks
+      const tasks = project.tasks || [];
+      const totalStoryPoints = tasks.reduce((sum, t) => sum + (t.storyPoints || 0), 0);
+      const completedStoryPoints = tasks
         .filter((t) => t.status === 'COMPLETED')
         .reduce((sum, t) => sum + (t.storyPoints || 0), 0);
 
       let progress = 0;
       if (totalStoryPoints > 0) {
         progress = Math.round((completedStoryPoints / totalStoryPoints) * 100);
-      } else if (project._count.tasks > 0) {
-        const completedTasks = project.tasks.filter(t => t.status === 'COMPLETED').length;
+      } else if (project._count?.tasks > 0) {
+        const completedTasks = tasks.filter(t => t.status === 'COMPLETED').length;
         progress = Math.round((completedTasks / project._count.tasks) * 100);
       }
 
-      const { tasks, ...projectWithoutTasks } = project;
+      const { tasks: _, ...projectWithoutTasks } = project;
       return { ...projectWithoutTasks, progress };
     });
   };
@@ -194,10 +239,11 @@ export const getAllProjects = async (req, res) => {
     const limit = Math.max(1, parseInt(rawLimit) || 10);
     const skip = (pageNum - 1) * limit;
 
+    log(`Fetching paginated projects (page: ${pageNum}, limit: ${limit})...`);
     const [projects, total] = await Promise.all([
       req.db.project.findMany({
         where,
-        include,
+        select: projectSelect,
         orderBy: { name: 'asc' },
         skip,
         take: limit,
@@ -205,7 +251,8 @@ export const getAllProjects = async (req, res) => {
       req.db.project.count({ where }),
     ]);
 
-    return res.json({
+    log(`Found ${projects.length} projects (Total: ${total}). Computing progress...`);
+    const result = {
       data: addProgress(projects),
       pagination: {
         total,
@@ -213,19 +260,40 @@ export const getAllProjects = async (req, res) => {
         limit,
         totalPages: Math.ceil(total / limit),
       },
-    });
+    };
+    log('Success. Returning paginated response.');
+    return res.json(result);
   }
 
   // No pagination - return all (backward compat for dropdowns)
+  log('Fetching all projects (no pagination)...');
   const projects = await req.db.project.findMany({
     where,
-    include,
+    select: projectSelect,
     orderBy: {
       name: 'asc',
     },
   });
 
-  res.json(addProgress(projects));
+  log(`Found ${projects.length} projects. Computing progress...`);
+  const result = addProgress(projects);
+  log('Success. Returning response.');
+  res.json(result);
+
+  } catch (error) {
+    const fs = await import('fs');
+    const logFile = 'project_error_debug.log';
+    const timestamp = new Date().toISOString();
+    const errorMsg = `${timestamp} [CRASH] ${error.message}\nStack: ${error.stack}\n`;
+    fs.appendFileSync(logFile, errorMsg);
+    console.error('CRITICAL ERROR in getAllProjects:', error);
+    
+    res.status(500).json({ 
+      error: 'Failed to fetch projects',
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
 };
 
 export const getProject = async (req, res) => {
@@ -236,7 +304,20 @@ export const getProject = async (req, res) => {
       id,
       organizationId: req.user.organizationId,
     },
-    include: {
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      category: true,
+      managerId: true,
+      clientId: true,
+      status: true,
+      startDate: true,
+      endDate: true,
+      totalBudget: true,
+      usedBudget: true,
+      createdAt: true,
+      updatedAt: true,
       client: {
         select: {
           id: true,
@@ -413,7 +494,20 @@ export const createProject = async (req, res) => {
       status: status || 'PLANNING',
       category: category || 'INTERNAL',
     },
-    include: {
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      category: true,
+      managerId: true,
+      clientId: true,
+      status: true,
+      startDate: true,
+      endDate: true,
+      totalBudget: true,
+      usedBudget: true,
+      createdAt: true,
+      updatedAt: true,
       client: {
         select: {
           id: true,
@@ -504,6 +598,27 @@ export const createProject = async (req, res) => {
       req.user.name,
       origin
     ).catch(err => console.error('Failed to send client project email:', err));
+  }
+
+  // Activity Logging
+  try {
+    const logData = {
+      userId: req.user.id,
+      organizationId: req.user.organizationId,
+      projectId: project.id,
+      action: 'CREATED',
+      entity: 'project',
+      entityId: project.id,
+      details: { name: project.name },
+    };
+
+    // 1. Log to tenant DB
+    await req.db.activityLog.create({ data: logData });
+
+    // 2. Log to main DB for SuperAdmin visibility
+    await prisma.activityLog.create({ data: logData });
+  } catch (logErr) {
+    console.error('[CreateProject] Failed to log activity:', logErr.message);
   }
 
   res.status(201).json(project);
@@ -813,7 +928,20 @@ export const updateProject = async (req, res) => {
       status,
       category,
     },
-    include: {
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      category: true,
+      managerId: true,
+      clientId: true,
+      status: true,
+      startDate: true,
+      endDate: true,
+      totalBudget: true,
+      usedBudget: true,
+      createdAt: true,
+      updatedAt: true,
       client: {
         select: {
           id: true,

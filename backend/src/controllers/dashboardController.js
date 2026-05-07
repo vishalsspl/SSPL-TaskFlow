@@ -9,7 +9,20 @@ export const getDashboard = async (req, res) => {
       id: projectId,
       organizationId: req.user.organizationId,
     },
-    include: {
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      category: true,
+      managerId: true,
+      clientId: true,
+      status: true,
+      startDate: true,
+      endDate: true,
+      totalBudget: true,
+      usedBudget: true,
+      createdAt: true,
+      updatedAt: true,
       manager: {
         select: {
           id: true,

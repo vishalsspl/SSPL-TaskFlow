@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import {
   Select,
@@ -31,7 +32,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, FolderKanban, Eye, Edit2, Trash2, Search, Filter, Layers, FileText, Users, Briefcase, Target, Calendar, FileSpreadsheet } from 'lucide-react';
+import { Plus, FolderKanban, Eye, Edit2, Trash2, Search, Filter, Layers, FileText, Users, Briefcase, Target, Calendar, FileSpreadsheet, UserPlus } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { SearchableSelect } from '@/components/ui/searchable-select';
@@ -61,6 +62,10 @@ const ProjectsList = () => {
   const [showOverviewDialog, setShowOverviewDialog] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showAddMemberDialog, setShowAddMemberDialog] = useState(false);
+  const [selectedProjectForMember, setSelectedProjectForMember] = useState(null);
+  const [memberToAddId, setMemberToAddId] = useState('');
+  const [addingMember, setAddingMember] = useState(false);
   const [users, setUsers] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
@@ -238,6 +243,27 @@ const ProjectsList = () => {
   const handleCreateSuccess = () => {
     setShowCreateDialog(false);
     fetchProjects();
+  };
+
+  const handleAddMember = async () => {
+    if (!memberToAddId) {
+      toast({ title: 'Error', description: 'Please select a member to add', variant: 'destructive' });
+      return;
+    }
+    setAddingMember(true);
+    try {
+      await api.post(`/projects/${selectedProjectForMember.id}/members`, { userId: memberToAddId });
+      toast({ title: 'Success', description: 'Member added to project successfully' });
+      setShowAddMemberDialog(false);
+      setMemberToAddId('');
+      setSelectedProjectForMember(null);
+      fetchProjects();
+    } catch (error) {
+      console.error('Failed to add member:', error);
+      toast({ title: 'Error', description: error.response?.data?.error || 'Failed to add member', variant: 'destructive' });
+    } finally {
+      setAddingMember(false);
+    }
   };
 
   const STATUS_STYLES = {
@@ -462,8 +488,8 @@ const ProjectsList = () => {
       <Card className="flex-1 flex flex-col min-h-0 border-none sm:border shadow-none sm:shadow-sm">
         <CardContent className="flex-1 flex flex-col min-h-0 pt-2 sm:pt-4 px-2 sm:px-4">
           <div className="bg-secondary/40 p-2 rounded-2xl mb-6 mt-4 shadow-inner backdrop-blur-sm" style={{ border: '1px solid var(--table-border)' }}>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div className="flex flex-row items-center gap-2 flex-1 sm:min-w-[200px] w-full sm:w-auto">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+              <div className="flex flex-row items-center gap-2 sm:min-w-[40px] w-full lg:w-auto">
                 <Button
                   variant="outline"
                   className={`h-11 w-11 p-0 shrink-0 sm:hidden rounded-xl border-border/40 ${showFiltersMobile ? 'bg-primary/10 text-primary border-primary/30' : 'text-muted-foreground'}`}
@@ -482,15 +508,15 @@ const ProjectsList = () => {
                 )}
               </div>
 
-              <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
-                <div className={`flex-col sm:flex-row flex-wrap items-center gap-1.5 w-full sm:w-auto mt-2 sm:mt-0 ${showFiltersMobile ? 'flex' : 'hidden sm:flex'}`}>
+              <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto flex-1 justify-end">
+                <div className={`flex-col sm:flex-row flex-wrap items-center gap-2 w-full sm:w-auto mt-0 ${showFiltersMobile ? 'flex' : 'hidden sm:flex'}`}>
                   <SearchableSelect
                     options={managerOptions}
                     value={managerFilter}
                     onChange={handleManagerFilterChange}
                     placeholder="All Managers"
                     searchPlaceholder="Search manager..."
-                    className="w-full sm:w-[145px] h-11 rounded-xl bg-background border-border/40 hover:bg-accent/20 transition-all"
+                    className="w-full sm:w-[155px] h-11 rounded-xl bg-background border-border/40 hover:bg-accent/20 transition-all"
                   />
                   {user?.role !== 'CLIENT' && (
                     <SearchableSelect
@@ -499,7 +525,7 @@ const ProjectsList = () => {
                       onChange={setClientFilter}
                       placeholder="All Clients"
                       searchPlaceholder="Search client..."
-                      className="w-full sm:w-[145px] h-11 rounded-xl bg-background border-border/40 hover:bg-accent/20 transition-all"
+                      className="w-full sm:w-[155px] h-11 rounded-xl bg-background border-border/40 hover:bg-accent/20 transition-all"
                       style={{ borderColor: 'var(--input-border)' }}
                     />
                   )}
@@ -515,25 +541,24 @@ const ProjectsList = () => {
                       { label: 'Cancelled', value: 'CANCELLED' }
                     ]}
                     placeholder="Status"
-                    className="w-full sm:w-[145px] h-11 rounded-xl bg-background border-border/40 hover:bg-accent/20 transition-all font-semibold"
+                    className="w-full sm:w-[155px] h-11 rounded-xl bg-background border-border/40 hover:bg-accent/20 transition-all font-semibold"
                   />
-
                 </div>
 
                 {/* Desktop Action Buttons */}
                 {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
-                  <div className="hidden sm:flex items-center gap-2">
+                  <div className="hidden sm:flex items-center gap-2 shrink-0">
                     <Button
                       onClick={() => setShowImportDialog(true)}
                       variant="outline"
                       className="h-11 px-5 rounded-xl border-border/40 hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-primary font-medium transition-all flex items-center gap-2"
                     >
                       <FileSpreadsheet className="w-4 h-4" />
-                      <span>Import Excel</span>
+                      <span className="hidden xl:inline">Import Excel</span>
                     </Button>
                     <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
                       <DialogTrigger asChild>
-                        <Button className="w-[145px] px-4 h-11 rounded-xl flex items-center justify-center bg-primary hover:bg-primary/90 text-primary-foreground shrink-0 transition-all shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98]">
+                        <Button className="min-w-[145px] px-4 h-11 rounded-xl flex items-center justify-center bg-primary hover:bg-primary/90 text-primary-foreground transition-all shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98]">
                           <Plus className="w-4 h-4 mr-2 shrink-0" />
                           <span>New Project</span>
                         </Button>
@@ -580,7 +605,7 @@ const ProjectsList = () => {
                       {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && <TableHead>Budget</TableHead>}
                       <TableHead>Status</TableHead>
                       <TableHead>Tasks</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead className="text-center w-[140px]">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -661,9 +686,21 @@ const ProjectsList = () => {
                               {project._count.tasks}
                             </span>
                           </TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className="text-center">
                             {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
-                              <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+                              <div className="flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  title="Add Member"
+                                  onClick={() => {
+                                    setSelectedProjectForMember(project);
+                                    setMemberToAddId('');
+                                    setShowAddMemberDialog(true);
+                                  }}
+                                >
+                                  <UserPlus className="w-4 h-4" />
+                                </Button>
                                 <Button
                                   variant="ghost"
                                   size="icon"
@@ -722,6 +759,18 @@ const ProjectsList = () => {
                       </div>
                       {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
                         <div className="flex gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8" 
+                            onClick={() => {
+                              setSelectedProjectForMember(project);
+                              setMemberToAddId('');
+                              setShowAddMemberDialog(true);
+                            }}
+                          >
+                            <UserPlus className="w-4 h-4" />
+                          </Button>
                           <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(project)}>
                             <Edit2 className="w-4 h-4" />
                           </Button>
@@ -789,6 +838,37 @@ const ProjectsList = () => {
         onOpenChange={setShowImportDialog}
         onImportComplete={fetchProjects}
       />
+
+      <Dialog open={showAddMemberDialog} onOpenChange={setShowAddMemberDialog}>
+        <DialogContent className="sm:max-w-[425px] rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserPlus className="w-5 h-5 text-primary" />
+              Add Member to Project
+            </DialogTitle>
+            <DialogDescription>
+              Select a member to add to <strong>{selectedProjectForMember?.name}</strong>.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-6">
+            <SearchableSelect
+              value={memberToAddId}
+              onChange={setMemberToAddId}
+              options={users.filter(u => u.role === 'MEMBER' || u.role === 'MANAGER').map(u => ({
+                label: `${u.name} (${u.role})`,
+                value: u.id
+              }))}
+              placeholder="Search for a team member..."
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setShowAddMemberDialog(false)} className="rounded-xl">Cancel</Button>
+            <Button onClick={handleAddMember} disabled={addingMember} className="rounded-xl">
+              Add Member
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

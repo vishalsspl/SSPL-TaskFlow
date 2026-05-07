@@ -3,7 +3,7 @@
   SSPL-TaskFlow Frontend Architecture Reference
   Stack: React 18, Vite, React Router v6, Zustand, Axios, TailwindCSS, shadcn/ui, Socket.IO client
   Root: /home/vishal/Vishal/SSPL-TaskFlow/frontend
-  Dev Port: 5173 | API: VITE_API_URL (default http://localhost:5000)
+  Dev Port: 5173 | API: VITE_API_URL (Current: http://117.217.120.58:8153)
   Import alias: '@' maps to 'src/'
 -->
 <frontend_architecture project="SSPL-TaskFlow" version="1.0.0" framework="React 18" build="Vite">
@@ -17,7 +17,7 @@
     <item name="Realtime"         value="Socket.IO client - managed by chatStore" />
     <item name="Styling"          value="TailwindCSS + src/index.css for custom utilities" />
     <item name="UI Components"    value="shadcn/ui (in src/components/ui/)" />
-    <item name="Env Var - API"    value="VITE_API_URL (fallback: http://localhost:5000)" />
+    <item name="Env Var - API"    value="VITE_API_URL (Current: http://117.217.120.58:8153)" />
   </tech_stack>
 
   <!-- ─────────────────────────────────────────────────────────────── -->
@@ -159,7 +159,7 @@
   <!-- ─────────────────────────────────────────────────────────────── -->
   <api_client file="src/lib/api.js">
     Singleton Axios instance. ALL components import from this file.
-    baseURL: VITE_API_URL/api (e.g. http://localhost:5000/api)
+    baseURL: VITE_API_URL/api (e.g. http://117.217.120.58:8153/api)
 
     REQUEST INTERCEPTOR:
       Reads token from localStorage 'auth-storage' → path: state.token

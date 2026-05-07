@@ -33,24 +33,39 @@ export const attachTenantDb = async (req, res, next) => {
     // Look up the organization's dbUrl from MAIN DB
     const org = await prisma.organization.findUnique({
       where: { id: organizationId },
-      select: { dbUrl: true, dbStrategy: true },
+      select: { name: true, dbUrl: true, dbStrategy: true },
     });
 
-    if (!org || !org.dbUrl || org.dbStrategy !== 'DEDICATED') {
-      // No dedicated DB — fallback to main DB (for SHARED strategy or missing dbUrl)
+    if (!org) {
+      console.warn(`[TenantMiddleware] Organization not found: ${organizationId}`);
       req.db = prisma;
       return next();
     }
 
+    if (!org.dbUrl || org.dbStrategy !== 'DEDICATED') {
+      // No dedicated DB — fallback to main DB (for SHARED strategy or missing dbUrl)
+      // Note: If shared strategy is used, models must exist in main prisma client
+      req.db = prisma;
+      req.isSharedDb = true;
+      return next();
+    }
+
     // Get (or create) a PrismaClient for this tenant's database
-    const tenantClient = await tenantDbManager.getClient(org.dbUrl);
-    req.db = tenantClient;
-    next();
+    try {
+      const tenantClient = await tenantDbManager.getClient(org.dbUrl);
+      req.db = tenantClient;
+      next();
+    } catch (dbErr) {
+      console.error(`[TenantMiddleware] Failed to connect to tenant DB for "${org.name}":`, dbErr.message);
+      
+      // We still attach prisma to avoid "undefined" errors in some places, 
+      // but we mark it as failed so controllers can handle it.
+      req.db = prisma;
+      req.tenantDbError = dbErr.message;
+      next();
+    }
   } catch (error) {
-    console.error('[TenantMiddleware] Error resolving tenant DB:', error.message);
-    const fs = await import('fs');
-    fs.appendFileSync('tenant_middleware_error.log', new Date().toISOString() + ' ' + error.message + '\n' + (error.stack || '') + '\n');
-    // Fail open with main DB rather than crashing the request
+    console.error('[TenantMiddleware] Critical error resolving tenant DB:', error.message);
     req.db = prisma;
     next();
   }

@@ -8,11 +8,29 @@ const include = {
 };
 
 export const getTimeEntries = async (req, res) => {
-    const { startDate, endDate, userId, projectId, status, page, limit: rawLimit } = req.query;
+    try {
+        // ── Check for tenant DB connection errors ─────────────────────────────
+        if (req.tenantDbError) {
+            return res.status(503).json({
+                error: 'Organization database connection failed',
+                message: 'We are having trouble connecting to your organization database.',
+            });
+        }
 
-    const where = {
-        project: { organizationId: req.user.organizationId },
-    };
+        // ── Verify model existence ────────────────────────────────────────────
+        if (!req.db || !req.db.timeEntry) {
+            if (req.user.role === 'SUPERADMIN') return res.json({ entries: [], attendanceSummary: [] });
+            return res.status(500).json({ 
+                error: 'Database configuration error',
+                message: 'The requested model "TimeEntry" is not available.'
+            });
+        }
+
+        const { startDate, endDate, userId, projectId, status, page, limit: rawLimit } = req.query;
+
+        const where = {
+            project: { organizationId: req.user.organizationId },
+        };
 
     if (startDate && endDate) {
         where.date = { gte: new Date(startDate), lte: new Date(endDate) };
@@ -60,13 +78,17 @@ export const getTimeEntries = async (req, res) => {
         })
     ]);
 
-    res.json({
-        entries,
-        attendanceSummary: attendanceSummary.map(a => ({
-            date: a.clockIn,
-            hours: (a.durationMinutes || 0) / 60
-        }))
-    });
+        res.json({
+            entries,
+            attendanceSummary: attendanceSummary.map(a => ({
+                date: a.clockIn,
+                hours: (a.durationMinutes || 0) / 60
+            }))
+        });
+    } catch (error) {
+        console.error('Error in getTimeEntries:', error);
+        res.status(500).json({ error: 'Failed to fetch time entries', message: error.message });
+    }
 };
 
 export const createTimeEntry = async (req, res) => {

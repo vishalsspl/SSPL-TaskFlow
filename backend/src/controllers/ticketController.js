@@ -71,9 +71,27 @@ export const createTicket = async (req, res) => {
 };
 
 export const getAllTickets = async (req, res) => {
-    const { search, page, limit: rawLimit } = req.query;
-
     try {
+        // ── Check for tenant DB connection errors ─────────────────────────────
+        if (req.tenantDbError) {
+            return res.status(503).json({
+                error: 'Organization database connection failed',
+                message: 'We are having trouble connecting to your organization database.',
+                details: process.env.NODE_ENV === 'development' ? req.tenantDbError : undefined
+            });
+        }
+
+        // ── Verify model existence ────────────────────────────────────────────
+        if (!req.db || !req.db.ticket) {
+            if (req.user.role === 'SUPERADMIN') return res.json([]);
+            return res.status(500).json({ 
+                error: 'Database configuration error',
+                message: 'The requested model "Ticket" is not available.'
+            });
+        }
+
+        const { search, page, limit: rawLimit } = req.query;
+
         const where = { organizationId: req.user.organizationId };
 
         // Clients only see their own tickets

@@ -9,12 +9,12 @@ const options = {
             description: 'API documentation for the SSPL-TaskFlow SaaS Platform',
             contact: {
                 name: 'API Support',
-                url: process.env.CLIENT_URL || 'http://localhost:5173',
+                url: process.env.CLIENT_URL,
             },
         },
         servers: [
             {
-                url: process.env.API_URL || 'http://localhost:5000',
+                url: process.env.API_URL,
                 description: 'API Server',
             }
         ],

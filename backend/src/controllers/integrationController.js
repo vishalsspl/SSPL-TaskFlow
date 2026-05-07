@@ -2,13 +2,34 @@ import axios from 'axios';
 import { Octokit } from '@octokit/rest';
 import prisma from '../lib/prisma.js';
 
+const createNotification = async (req, { userId, title, message, type }) => {
+  try {
+    const notification = await req.db.notification.create({
+      data: {
+        userId,
+        title,
+        message,
+        type,
+        organizationId: req.user.organizationId,
+      },
+    });
+
+    if (req.io) {
+      req.io.to(`org-${req.user.organizationId}`).emit('new-notification', notification);
+    }
+    return notification;
+  } catch (error) {
+    console.error('Failed to create internal notification:', error);
+  }
+};
+
 export const getGitHubAuthUrl = async (req, res) => {
   const clientId = process.env.GITHUB_CLIENT_ID;
   const redirectUri = process.env.GITHUB_CALLBACK_URL;
   const scope = 'repo,user';
-  
+
   const url = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${req.user.organizationId}`;
-  
+
   res.json({ url });
 };
 
@@ -67,14 +88,24 @@ export const handleGitHubCallback = async (req, res) => {
     });
 
     // Log activity
-    await prisma.activityLog.create({
-      data: {
-        userId: req.user.id,
-        organizationId,
-        action: 'INTEGRATION_CONNECTED',
-        entity: 'integration',
-        details: { provider: 'github' }
-      }
+    const logData = {
+      userId: req.user.id,
+      organizationId,
+      action: 'INTEGRATION_CONNECTED',
+      entity: 'integration',
+      details: { provider: 'github' }
+    };
+    await prisma.activityLog.create({ data: logData });
+    // Also log to tenant DB if available
+    if (req.db) {
+      await req.db.activityLog.create({ data: logData });
+    }
+
+    createNotification(req, {
+      userId: req.user.id,
+      title: 'GitHub Connected',
+      message: 'GitHub has been successfully connected to your organization.',
+      type: 'INTEGRATION_CONNECTED'
     });
 
     res.send('<script>window.close();</script>'); // Close the popup
@@ -123,9 +154,43 @@ export const linkProjectToRepo = async (req, res) => {
   const { repoFullName } = req.body;
 
   try {
-    const project = await req.db.project.update({
-      where: { id: projectId, organizationId: req.user.organizationId },
-      data: { githubRepo: repoFullName }
+    // Check if column exists first to avoid crash
+    try {
+      const project = await req.db.project.update({
+        where: { id: projectId, organizationId: req.user.organizationId },
+        data: { githubRepo: repoFullName }
+      });
+
+      // ... rest of logic
+    } catch (dbErr) {
+      if (dbErr.message.includes('githubRepo')) {
+        return res.status(400).json({
+          error: 'GitHub Integration column is missing in database. Please run the migration script on the server.'
+        });
+      }
+      throw dbErr;
+    }
+
+    // Log activity
+    const action = repoFullName ? 'REPO_LINKED' : 'REPO_UNLINKED';
+    await req.db.activityLog.create({
+      data: {
+        userId: req.user.id,
+        organizationId: req.user.organizationId,
+        projectId,
+        action,
+        entity: 'project',
+        details: { repo: repoFullName, projectName: project.name }
+      }
+    });
+
+    createNotification(req, {
+      userId: req.user.id,
+      title: repoFullName ? 'Repository Linked' : 'Repository Unlinked',
+      message: repoFullName
+        ? `Repository ${repoFullName} linked to project ${project.name}`
+        : `Repository unlinked from project ${project.name}`,
+      type: action
     });
 
     res.json(project);
@@ -138,7 +203,8 @@ export const getRepoActivity = async (req, res) => {
   const { projectId } = req.params;
 
   const project = await req.db.project.findUnique({
-    where: { id: projectId, organizationId: req.user.organizationId }
+    where: { id: projectId, organizationId: req.user.organizationId },
+    select: { id: true, name: true } // Only fetch what's needed safely
   });
 
   if (!project || !project.githubRepo) {
@@ -161,9 +227,9 @@ export const getRepoActivity = async (req, res) => {
   try {
     const octokit = new Octokit({ auth: integration.accessToken });
     const [owner, repo] = project.githubRepo.split('/');
-    
+
     const { sha } = req.query;
-    
+
     const { data: commits } = await octokit.repos.listCommits({
       owner,
       repo,
@@ -295,12 +361,24 @@ export const getLinkedProjects = async (req, res) => {
       select: {
         id: true,
         name: true,
-        githubRepo: true,
+        // githubRepo: true, // Temporarily disabled due to missing DB column
         status: true,
         manager: {
           select: {
             name: true,
             avatar: true
+          }
+        },
+        workloads: {
+          select: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                avatar: true,
+                role: true
+              }
+            }
           }
         }
       },
@@ -324,6 +402,26 @@ export const disconnectGitHub = async (req, res) => {
           provider: 'github'
         }
       }
+    });
+
+    // Log activity
+    const logData = {
+      userId: req.user.id,
+      organizationId: req.user.organizationId,
+      action: 'INTEGRATION_DISCONNECTED',
+      entity: 'integration',
+      details: { provider: 'github' }
+    };
+    await prisma.activityLog.create({ data: logData });
+    if (req.db) {
+      await req.db.activityLog.create({ data: logData });
+    }
+
+    createNotification(req, {
+      userId: req.user.id,
+      title: 'GitHub Disconnected',
+      message: 'GitHub has been disconnected from your organization.',
+      type: 'INTEGRATION_DISCONNECTED'
     });
 
     res.json({ message: 'GitHub disconnected successfully' });

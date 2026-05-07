@@ -6,8 +6,11 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import api from '@/lib/api';
 import { Github, CheckCircle2, XCircle, ExternalLink, RefreshCw, Unlink, GitCommit, ChevronRight, ArrowLeft, Clock, User, Loader2, FolderGit2, Link2, GitBranch, X } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthStore } from '@/store/authStore';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 const formatRelativeTime = (dateString) => {
   const date = new Date(dateString);
@@ -40,6 +43,16 @@ const Integrations = () => {
   const [branches, setBranches] = useState([]);
   const [selectedBranch, setSelectedBranch] = useState('');
   const [fetchingBranches, setFetchingBranches] = useState(false);
+
+  // Link modal state
+  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+  const [repoToLink, setRepoToLink] = useState(null);
+  const [projectsToLink, setProjectsToLink] = useState([]);
+  const [selectedProjectIdToLink, setSelectedProjectIdToLink] = useState('');
+  const [linking, setLinking] = useState(false);
+  const [showUnlinkDialog, setShowUnlinkDialog] = useState(false);
+  const [projectToUnlinkId, setProjectToUnlinkId] = useState(null);
+  const [showDisconnectDialog, setShowDisconnectDialog] = useState(false);
 
   const isAdmin = user?.role === 'ADMIN';
 
@@ -114,6 +127,7 @@ const Integrations = () => {
       setLinkedProjects([]);
       setSelectedProject(null);
       setProjectCommits([]);
+      setShowDisconnectDialog(false);
       toast({
         title: "Disconnected",
         description: "GitHub has been disconnected from your organization."
@@ -124,6 +138,53 @@ const Integrations = () => {
         description: "Failed to disconnect GitHub.",
         variant: "destructive"
       });
+    }
+  };
+
+  const openLinkModal = async (repo) => {
+    setRepoToLink(repo);
+    setSelectedProjectIdToLink('');
+    setIsLinkModalOpen(true);
+    try {
+      const response = await api.get('/projects');
+      const projectsData = Array.isArray(response.data) ? response.data : response.data.data || [];
+      setProjectsToLink(projectsData);
+    } catch (error) {
+      console.error('Failed to fetch projects', error);
+      toast({ title: 'Error', description: 'Failed to fetch projects', variant: 'destructive' });
+    }
+  };
+
+  const submitLink = async () => {
+    if (!selectedProjectIdToLink) {
+      toast({ title: 'Error', description: 'Please select a project', variant: 'destructive' });
+      return;
+    }
+    setLinking(true);
+    try {
+      await api.post(`/integrations/github/link/${selectedProjectIdToLink}`, { repoFullName: repoToLink.full_name });
+      toast({ title: 'Success', description: 'Repository linked successfully' });
+      setIsLinkModalOpen(false);
+      fetchLinkedProjects();
+    } catch (error) {
+      toast({ title: 'Error', description: 'Failed to link repository', variant: 'destructive' });
+    } finally {
+      setLinking(false);
+    }
+  };
+
+  const handleUnlinkProject = async (projectId) => {
+    try {
+      await api.post(`/integrations/github/link/${projectId}`, { repoFullName: null });
+      toast({ title: "Success", description: "Project unlinked successfully" });
+      if (selectedProject?.id === projectId) {
+        setSelectedProject(null);
+        setProjectCommits([]);
+      }
+      setShowUnlinkDialog(false);
+      fetchLinkedProjects();
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to unlink project", variant: "destructive" });
     }
   };
 
@@ -424,7 +485,7 @@ const Integrations = () => {
                         <RefreshCw className={`w-3 h-3 sm:w-3.5 sm:h-3.5 mr-2 ${loading ? 'animate-spin' : ''}`} />
                         Refresh
                       </Button>
-                      <Button variant="destructive" size="sm" onClick={handleDisconnect} className="flex-1 sm:flex-none h-8 sm:h-9 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-wider Montserrat">
+                      <Button variant="destructive" size="sm" onClick={() => setShowDisconnectDialog(true)} className="flex-1 sm:flex-none h-8 sm:h-9 rounded-xl text-[10px] sm:text-xs font-bold uppercase tracking-wider Montserrat">
                         <Unlink className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-2" />
                         Disconnect
                       </Button>
@@ -459,7 +520,7 @@ const Integrations = () => {
                               </div>
                               <p className="text-[10px] sm:text-xs text-muted-foreground truncate opacity-70 mt-0.5">{repo.full_name}</p>
                               
-                              <div className="mt-2 flex items-center gap-2">
+                              <div className="mt-3 flex items-center gap-3">
                                 {selectedRepo?.id === repo.id ? (
                                   <Badge className="text-[9px] sm:text-[10px] bg-primary text-primary-foreground font-black uppercase tracking-widest py-0.5">
                                     <GitCommit className="w-2.5 h-2.5 mr-1" /> Viewing
@@ -469,6 +530,14 @@ const Integrations = () => {
                                     View activity <ChevronRight className="w-3 h-3" />
                                   </span>
                                 )}
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="h-7 text-[10px] font-bold rounded-lg z-10 hover:bg-primary/10 hover:text-primary transition-colors border-primary/20"
+                                  onClick={(e) => { e.stopPropagation(); openLinkModal(repo); }}
+                                >
+                                  <Link2 className="w-3 h-3 mr-1" /> Assign to Project
+                                </Button>
                               </div>
                             </div>
                           </div>
@@ -528,6 +597,25 @@ const Integrations = () => {
                                 </div>
                               )}
                               
+                              {project.workloads && project.workloads.length > 0 && (
+                                <div className="flex items-center" title={project.workloads.map(w => w.user.name).join(', ')}>
+                                  {project.workloads.slice(0, 3).map((w, i) => (
+                                    <div key={w.user.id} className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white ring-2 ring-card bg-primary ${i > 0 ? '-ml-1.5' : ''}`}>
+                                      {w.user.avatar ? (
+                                        <img src={w.user.avatar} className="w-full h-full rounded-full object-cover" alt={w.user.name} />
+                                      ) : (
+                                        w.user.name.charAt(0).toUpperCase()
+                                      )}
+                                    </div>
+                                  ))}
+                                  {project.workloads.length > 3 && (
+                                    <div className="w-5 h-5 rounded-full flex items-center justify-center text-[7px] font-bold text-muted-foreground bg-secondary ring-2 ring-card -ml-1.5">
+                                      +{project.workloads.length - 3}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                              
                               {selectedProject?.id === project.id ? (
                                 <Badge className="text-[9px] sm:text-[10px] bg-primary text-primary-foreground font-black uppercase tracking-widest py-0.5">
                                   <GitCommit className="w-2.5 h-2.5 mr-1" /> Viewing
@@ -536,6 +624,21 @@ const Integrations = () => {
                                 <span className="text-[10px] text-primary font-bold opacity-0 group-hover:opacity-100 transition-all flex items-center gap-1 translate-x-[-4px] group-hover:translate-x-0">
                                   Track commits <ChevronRight className="w-3 h-3" />
                                 </span>
+                              )}
+                              
+                              {isAdmin && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-6 text-[9px] font-bold rounded-lg z-10 hover:bg-destructive/10 hover:text-destructive text-destructive transition-colors border-destructive/20 ml-auto"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setProjectToUnlinkId(project.id);
+                                    setShowUnlinkDialog(true);
+                                  }}
+                                >
+                                  <Unlink className="w-2.5 h-2.5 mr-1" /> Unlink
+                                </Button>
                               )}
                             </div>
                           </div>
@@ -567,7 +670,7 @@ const Integrations = () => {
         () => { setSelectedRepo(null); setCommits([]); }
       )}
 
-      {/* ─── Project Commit Logs (Any role clicks a linked project) ─── */}
+      {/* Project Commit Logs (Any role clicks a linked project) */}
       {selectedProject && renderCommitTimeline(
         projectCommits,
         loadingProjectCommits,
@@ -575,7 +678,56 @@ const Integrations = () => {
         () => { setSelectedProject(null); setProjectCommits([]); }
       )}
 
+      {/* Link Repository Dialog */}
+      <ConfirmDialog
+        open={showUnlinkDialog}
+        onOpenChange={setShowUnlinkDialog}
+        onConfirm={() => handleUnlinkProject(projectToUnlinkId)}
+        title="Unlink Repository?"
+        description="Are you sure you want to unlink this repository from the project? This will stop syncing commit activity."
+        confirmText="Yes, Unlink"
+      />
 
+      <ConfirmDialog
+        open={showDisconnectDialog}
+        onOpenChange={setShowDisconnectDialog}
+        onConfirm={handleDisconnect}
+        title="Disconnect GitHub?"
+        description="Are you sure you want to disconnect your GitHub account? This will remove all repository links for the entire organization."
+        confirmText="Yes, Disconnect"
+      />
+
+      <Dialog open={isLinkModalOpen} onOpenChange={setIsLinkModalOpen}>
+        <DialogContent className="sm:max-w-[425px] rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Link2 className="w-5 h-5 text-primary" />
+              Assign Repository
+            </DialogTitle>
+            <DialogDescription>
+              Select a project to assign the repository <strong>{repoToLink?.name}</strong> to. The project's manager will gain access to this repository's activity.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-6">
+            <SearchableSelect
+              value={selectedProjectIdToLink}
+              onChange={setSelectedProjectIdToLink}
+              options={projectsToLink.map(p => ({
+                label: `${p.name} ${p.manager ? `(Manager: ${p.manager.name})` : ''}`,
+                value: p.id
+              }))}
+              placeholder="Search for a project..."
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setIsLinkModalOpen(false)} className="rounded-xl">Cancel</Button>
+            <Button onClick={submitLink} disabled={linking} className="rounded-xl">
+              {linking ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+              Assign Repository
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

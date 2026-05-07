@@ -22,7 +22,6 @@ import superadminRoutes from './routes/superadmin.js';
 import settingsRoutes from './routes/settings.js';
 import notificationRoutes from './routes/notifications.js';
 import billingRoutes from './routes/billing.js';
-import paymentRoutes from './routes/payment.js';
 import integrationRoutes from './routes/integrations.js';
 import { getPublicSettings } from './controllers/settingsController.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -35,39 +34,16 @@ dotenv.config();
 
 const app = express();
 const httpServer = createServer(app);
-
-// CORS Configuration
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:5174',
-  'http://localhost:5175',
-  'http://localhost:5176',
-  'http://localhost:5177',
-  process.env.CLIENT_URL
-].filter(origin => origin);
-
-const corsOptions = {
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id', 'bypass-tunnel-reminder']
-};
-
 const io = new Server(httpServer, {
-  cors: corsOptions
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
 });
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(attachIo(io));
@@ -88,7 +64,6 @@ app.use('/api/worklogs', worklogRoutes);
 app.use('/api/superadmin', superadminRoutes);
 app.use('/api/superadmin/settings', settingsRoutes);
 app.use('/api/superadmin/billing', billingRoutes);
-app.use('/api/billing', paymentRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/integrations', integrationRoutes);
 

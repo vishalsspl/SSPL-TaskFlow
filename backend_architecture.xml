@@ -3,7 +3,7 @@
   SSPL-TaskFlow Backend Architecture Reference
   Stack: Node.js, Express.js, Prisma ORM, PostgreSQL, Socket.IO, JWT Auth, Nodemailer
   Root: /home/vishal/Vishal/SSPL-TaskFlow/backend
-  Dev Port: 5000 | DB: PostgreSQL via DATABASE_URL env var
+  Dev Port: 8153 | DB: PostgreSQL via DATABASE_URL env var
   Module system: ES Modules (import/export, NOT require/module.exports)
 -->
 <backend_architecture project="SSPL-TaskFlow" version="1.0.0" framework="Express.js" runtime="Node.js">
@@ -18,7 +18,7 @@
     <item name="Realtime"      value="Socket.IO (chat feature, excluded for Superadmins)" />
     <item name="Email"         value="Nodemailer (emailService.js)" />
     <item name="API Docs"      value="Swagger UI at /api/docs (swagger-ui-express)" />
-    <item name="Dev Server"    value="Nodemon (npm run dev)" />
+    <item name="Dev Server"    value="Nodemon (on port 8153)" />
     <item name="Schema File"   value="backend/prisma/schema.prisma" />
     <item name="Env Vars"      value="DATABASE_URL, JWT_SECRET, PORT, SMTP_* (email config)" />
   </tech_stack>
@@ -789,7 +789,7 @@
   <environment_variables>
     DATABASE_URL    — PostgreSQL connection string (required)
     JWT_SECRET      — Secret for JWT signing (required)
-    PORT            — Server port (optional, default: 5000)
+    PORT            — Server port (Current: 8153)
     SMTP_HOST       — Email server host
     SMTP_PORT       — Email server port
     SMTP_USER       — Email username

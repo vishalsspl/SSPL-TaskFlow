@@ -335,37 +335,56 @@ const Tasks = () => {
 
       <Card className="flex-1 flex flex-col min-h-0 border-none sm:border shadow-none sm:shadow-sm">
         <CardContent className="flex-1 flex flex-col min-h-0 pt-2 sm:pt-4 px-1 sm:px-4">
-          <div className="bg-secondary/20 backdrop-blur-md p-4 rounded-2xl mb-6 mt-4 mx-2 border border-white/5 shadow-xl">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-              <div className="flex flex-col md:flex-row items-center gap-3 flex-1 w-full">
-                <div className={`flex flex-wrap items-center gap-2 w-full ${showFiltersMobile ? 'flex' : 'hidden md:flex'}`}>
+          <div className="bg-secondary/20 backdrop-blur-md p-2 rounded-2xl mb-6 mt-4 shadow-inner border border-white/5 shadow-xl">
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3">
+              <div className="flex flex-row items-center gap-2 w-full xl:w-auto">
+                <Button
+                  variant="outline"
+                  className={`h-10 w-10 p-0 md:hidden rounded-xl border-border/40 ${showFiltersMobile ? 'bg-primary/20 text-primary border-primary/30' : 'text-muted-foreground'}`}
+                  onClick={() => setShowFiltersMobile(!showFiltersMobile)}
+                >
+                  <Filter className="w-4 h-4" />
+                </Button>
+                {/* Mobile Action Button */}
+                {user?.role !== 'CLIENT' && (
+                  <Button
+                    onClick={() => setShowCreateDialog(true)}
+                    className="w-10 h-10 p-0 md:hidden rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shrink-0"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+
+              <div className="flex flex-col md:flex-row items-center gap-3 w-full xl:w-auto flex-1 justify-end">
+                <div className={`flex-col md:flex-row flex-wrap items-center gap-2 w-full md:w-auto ${showFiltersMobile ? 'flex' : 'hidden md:flex'}`}>
                   <SearchableSelect
                     options={[{ value: 'all', label: 'All Projects' }, ...projects.map(p => ({ value: p.id, label: p.name }))]}
                     value={projectFilter}
                     onChange={(val) => setProjectFilter(val || 'all')}
                     placeholder="Project"
-                    className="w-[130px] h-10 rounded-xl bg-background/50 border-border/40 hover:bg-background transition-all"
+                    className="w-full md:w-[140px] h-10 rounded-xl bg-background/50 border-border/40 hover:bg-background transition-all"
                   />
                   <SearchableSelect
                     options={managerOptions}
                     value={managerFilter}
                     onChange={setManagerFilter}
                     placeholder="Manager"
-                    className="w-[130px] h-10 rounded-xl bg-background/50 border-border/40 hover:bg-background transition-all"
+                    className="w-full md:w-[140px] h-10 rounded-xl bg-background/50 border-border/40 hover:bg-background transition-all"
                   />
                   <SearchableSelect
                     options={priorityOptions}
                     value={priorityFilter}
                     onChange={setPriorityFilter}
                     placeholder="Priority"
-                    className="w-[120px] h-10 rounded-xl bg-background/50 border-border/40 hover:bg-background transition-all"
+                    className="w-full md:w-[130px] h-10 rounded-xl bg-background/50 border-border/40 hover:bg-background transition-all"
                   />
                   <SearchableSelect
                     options={typeOptions}
                     value={typeFilter}
                     onChange={setTypeFilter}
                     placeholder="Type"
-                    className="w-[120px] h-10 rounded-xl bg-background/50 border-border/40 hover:bg-background transition-all"
+                    className="w-full md:w-[130px] h-10 rounded-xl bg-background/50 border-border/40 hover:bg-background transition-all"
                   />
                   <SearchableSelect
                     value={filter}
@@ -378,35 +397,26 @@ const Tasks = () => {
                       { label: 'Completed', value: 'COMPLETED' }
                     ]}
                     placeholder="Status"
-                    className="w-[120px] h-10 rounded-xl bg-background/50 border-border/40 hover:bg-background transition-all"
+                    className="w-full md:w-[130px] h-10 rounded-xl bg-background/50 border-border/40 hover:bg-background transition-all"
                   />
                 </div>
-              </div>
 
-              <div className="flex items-center gap-2 shrink-0 self-end lg:self-center">
-                <Button
-                  variant="outline"
-                  className={`h-10 w-10 p-0 md:hidden rounded-xl border-border/40 ${showFiltersMobile ? 'bg-primary/20 text-primary border-primary/30' : 'text-muted-foreground'}`}
-                  onClick={() => setShowFiltersMobile(!showFiltersMobile)}
-                >
-                  <Filter className="w-4 h-4" />
-                </Button>
-
+                {/* Desktop Action Buttons */}
                 {user?.role !== 'CLIENT' && (
-                  <div className="flex items-center gap-2">
+                  <div className="hidden md:flex items-center gap-2 shrink-0">
                     {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
                       <Button
                         onClick={() => setShowImportDialog(true)}
                         variant="outline"
-                        className="h-10 px-5 rounded-xl border-border/40 hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-primary font-medium transition-all flex items-center gap-2"
+                        className="h-10 px-4 rounded-xl border-border/40 hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-primary font-medium transition-all flex items-center gap-2"
                       >
                         <FileSpreadsheet className="w-4 h-4" />
-                        <span className="hidden lg:inline">Import Excel</span>
+                        <span className="hidden xl:inline">Import Excel</span>
                       </Button>
                     )}
                     <Button
                       onClick={() => setShowCreateDialog(true)}
-                      className="h-10 px-5 rounded-xl flex items-center justify-center bg-primary hover:bg-primary/90 text-primary-foreground transition-all shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] font-bold Montserrat text-sm whitespace-nowrap"
+                      className="min-w-[130px] px-5 h-10 rounded-xl flex items-center justify-center bg-primary hover:bg-primary/90 text-primary-foreground transition-all shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] font-bold Montserrat text-sm whitespace-nowrap"
                     >
                       <Plus className="w-4 h-4 mr-2" />
                       <span>New Task</span>

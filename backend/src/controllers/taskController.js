@@ -4,7 +4,26 @@ import prisma from '../lib/prisma.js';
 
 
 export const getAllTasks = async (req, res) => {
-  const { projectId, status, priority, type, assignedTo, search, page, limit: rawLimit } = req.query;
+  try {
+    // ── Check for tenant DB connection errors ─────────────────────────────
+    if (req.tenantDbError) {
+      return res.status(503).json({
+        error: 'Organization database connection failed',
+        message: 'We are having trouble connecting to your organization database.',
+        details: process.env.NODE_ENV === 'development' ? req.tenantDbError : undefined
+      });
+    }
+
+    // ── Verify model existence ────────────────────────────────────────────
+    if (!req.db || !req.db.task) {
+      if (req.user.role === 'SUPERADMIN') return res.json([]);
+      return res.status(500).json({ 
+        error: 'Database configuration error',
+        message: 'The requested model "Task" is not available.'
+      });
+    }
+
+    const { projectId, status, priority, type, assignedTo, search, page, limit: rawLimit } = req.query;
 
   const where = {
     project: {
@@ -95,6 +114,10 @@ export const getAllTasks = async (req, res) => {
   });
 
   res.json(tasks);
+  } catch (error) {
+    console.error('Error in getAllTasks:', error);
+    res.status(500).json({ error: 'Failed to fetch tasks', message: error.message });
+  }
 };
 
 export const getTask = async (req, res) => {

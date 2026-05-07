@@ -33,16 +33,17 @@ const UserCards = ({ users, getRoleBadge, onForceReset, onDelete }) => {
                   <Button variant="ghost" size="icon" className="h-8 w-8 rounded-xl hover:bg-primary/5 shrink-0">
                     <MoreVertical className="h-4 w-4" />
                   </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 rounded-2xl shadow-2xl bg-background dark:bg-black/95 backdrop-blur-xl border-border/40 p-2">
-                <DropdownMenuItem className="rounded-xl py-3 font-semibold text-xs cursor-pointer text-foreground dark:text-white focus:bg-primary/10 transition-all" onClick={() => onForceReset(u)}>
-                  <Key className="w-4 h-4 mr-3 text-primary" /> Reset Password
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-red-500 rounded-xl py-3 font-semibold text-xs cursor-pointer focus:bg-red-500 focus:text-white transition-all" onClick={() => onDelete(u)}>
-                  <UserX className="w-4 h-4 mr-3" /> Delete User
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 rounded-2xl shadow-2xl bg-background dark:bg-black/95 backdrop-blur-xl border-border/40 p-2">
+                  <DropdownMenuItem className="rounded-xl py-3 font-semibold text-xs cursor-pointer text-foreground dark:text-white focus:bg-primary/10 transition-all" onClick={() => onForceReset(u)}>
+                    <Key className="w-4 h-4 mr-3 text-primary" /> Reset Password
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="text-red-500 rounded-xl py-3 font-semibold text-xs cursor-pointer focus:bg-red-500 focus:text-white transition-all" onClick={() => onDelete(u)}>
+                    <UserX className="w-4 h-4 mr-3" /> Delete User
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
 
           <div className="space-y-3 pt-4 border-t border-border/10">

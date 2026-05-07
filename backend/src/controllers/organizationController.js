@@ -281,7 +281,7 @@ export const deleteOrganization = async (req, res) => {
 // ── GET /api/organizations/activity-logs ────────────────────────────────────
 // ADMIN only — fetch log history for the current organisation
 export const getOrgActivityLogs = async (req, res) => {
-    const { page = 1, limit = 25, action, search } = req.query;
+    const { page = 1, limit = 25, action, entity, search } = req.query;
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const { organizationId } = req.user;
 
@@ -289,6 +289,7 @@ export const getOrgActivityLogs = async (req, res) => {
         const where = {
             organizationId,
             ...(action && { action: { contains: action, mode: 'insensitive' } }),
+            ...(entity && { entity: { contains: entity, mode: 'insensitive' } }),
             ...(search && {
                 OR: [
                     { action: { contains: search, mode: 'insensitive' } },

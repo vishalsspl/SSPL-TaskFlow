@@ -6,18 +6,20 @@
  * frequently-accessed tenant connections alive.
  */
 
-// We import from the generated tenant client
-// This will be available after running: prisma generate --schema=prisma/tenant.prisma
-let TenantPrismaClient;
+import { PrismaClient as MainPrismaClient } from '@prisma/client';
 
-try {
-  const mod = await import('../../generated/tenant-client/index.js');
-  TenantPrismaClient = mod.PrismaClient;
-} catch (err) {
-  console.warn('[TenantDbManager] Tenant client not generated yet. Run: npm run db:generate:tenant');
-  // Fallback: use the main PrismaClient — useful during migration period
-  const { PrismaClient } = await import('@prisma/client');
-  TenantPrismaClient = PrismaClient;
+let TenantPrismaClient = null;
+
+async function loadTenantClient() {
+  if (TenantPrismaClient) return TenantPrismaClient;
+  try {
+    const mod = await import('../../generated/tenant-client/index.js');
+    TenantPrismaClient = mod.PrismaClient;
+  } catch (err) {
+    console.warn('[TenantDbManager] Tenant client not generated yet. Falling back to main PrismaClient. Run: npm run db:generate:tenant');
+    TenantPrismaClient = MainPrismaClient;
+  }
+  return TenantPrismaClient;
 }
 
 const MAX_CACHED_CONNECTIONS = 50;
@@ -27,7 +29,7 @@ class TenantDbManager {
   constructor() {
     /** @type {Map<string, { client: any, lastUsed: number }>} */
     this.cache = new Map();
-    
+
     // Periodic cleanup of idle connections
     this.cleanupInterval = setInterval(() => this.cleanupIdle(), 60 * 1000);
   }
@@ -54,8 +56,11 @@ class TenantDbManager {
       this.evictOldest();
     }
 
+    // Lazily load tenant client
+    const ClientClass = await loadTenantClient();
+
     // Create new client
-    const client = new TenantPrismaClient({
+    const client = new ClientClass({
       datasources: {
         db: { url: dbUrl },
       },
@@ -129,6 +134,20 @@ class TenantDbManager {
     this.cache.clear();
     clearInterval(this.cleanupInterval);
     console.log('[TenantDbManager] All tenant connections closed.');
+  }
+
+  /**
+   * Alias for disconnectAll — called by server.js on graceful shutdown
+   */
+  async shutdown() {
+    return this.disconnectAll();
+  }
+
+  /**
+   * Returns the number of active cached connections
+   */
+  getPoolSize() {
+    return this.cache.size;
   }
 }
 
