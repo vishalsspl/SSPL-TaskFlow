@@ -135,38 +135,15 @@ const Signup = () => {
     if (validateStep0()) setStep(1);
   };
 
-  const handleCheckOrg = async () => {
-    if (!form.organizationName.trim()) return;
-    setCheckingOrg(true);
-    setOrgCheckError('');
-    setOrgVerified(false);
-    try {
-      const { data } = await api.post('/auth/check-org', { organizationName: form.organizationName.trim() });
-      if (data.exists) {
-        setOrgVerified(true);
-        setVerifiedOrgName(data.organizationName);
-      } else {
-        setOrgCheckError('Organisation not found. Please check the name or contact your admin.');
-      }
-    } catch (err) {
-      setOrgCheckError(err.response?.data?.error || 'Failed to verify organisation. Please try again.');
-    } finally {
-      setCheckingOrg(false);
-    }
-  };
-
   const validateStep1 = () => {
     const errs = {};
     if (!form.organizationName.trim()) errs.organizationName = true;
-    
-    // Only require these if user is an ADMIN (creating a new org)
     if (form.role === 'ADMIN') {
       if (!form.industry) errs.industry = true;
       if (!form.size) errs.size = true;
       if (!form.website.trim()) errs.website = true;
       if (!form.country) errs.country = true;
     }
-
     if (Object.keys(errs).length) {
       setFieldErrors(errs);
       setError('Please fill in all mandatory fields.');
@@ -175,14 +152,27 @@ const Signup = () => {
     return true;
   };
 
-  // ── final submit ───────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateStep1()) return;
 
     setLoading(true);
     setError('');
+    setOrgCheckError('');
+
     try {
+      // For non-admin roles, check if org exists first
+      if (form.role !== 'ADMIN') {
+        const { data: orgData } = await api.post('/auth/check-org', { organizationName: form.organizationName.trim() });
+        if (!orgData.exists) {
+          setOrgCheckError('Organisation not found. Please check the name or contact your admin.');
+          setLoading(false);
+          return;
+        }
+        setOrgVerified(true);
+        setVerifiedOrgName(orgData.organizationName);
+      }
+
       const { data } = await api.post('/auth/signup', {
         name: form.name.trim(),
         email: form.email.trim(),
@@ -195,12 +185,10 @@ const Signup = () => {
         country: form.country || undefined,
       });
 
-      // If it's a join request, data might not contain a token (pending approval)
       if (data.token) {
         storeLogin(data.token, data.user);
         navigate('/dashboard');
       } else {
-        // Redirect to a "Pending" page or show success message
         toast({ title: 'Success', description: data.message });
         navigate('/pending-approval');
       }
@@ -215,6 +203,7 @@ const Signup = () => {
       setLoading(false);
     }
   };
+
 
   // ── shared input style ─────────────────────────────────────────────────
   const inputClass = (key) => cn(
@@ -384,34 +373,14 @@ const Signup = () => {
                     </div>
                   </Field>
 
-                  {/* Verify button for non-admin */}
-                  {form.role !== 'ADMIN' && !orgVerified && (
-                    <Button type="button" onClick={handleCheckOrg} disabled={checkingOrg || !form.organizationName.trim()}
-                      className="mt-3 w-full bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold h-10 rounded-xl" variant="default">
-                      {checkingOrg ? 'Verifying…' : 'Verify Organisation'}
-                    </Button>
-                  )}
-
-                  {/* Org found */}
-                  {form.role !== 'ADMIN' && orgVerified && (
-                    <div className="mt-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                      <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
-                        <Building2 className="w-4 h-4 text-emerald-400" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-emerald-400">{verifiedOrgName}</p>
-                        <p className="text-[11px] text-emerald-400/70">Organisation found — your request will be sent to the admin for approval.</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Org not found */}
+                  {/* Org not found error */}
                   {orgCheckError && (
                     <div className="mt-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
                       <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
                       <p className="text-sm font-medium text-red-300">{orgCheckError}</p>
                     </div>
                   )}
+
                 </div>
 
                 {form.role === 'ADMIN' && (
@@ -492,10 +461,11 @@ const Signup = () => {
                 </p>
               </div>
 
-              <Button type="submit" disabled={loading || (form.role !== 'ADMIN' && !orgVerified)}
-                className="w-full bg-[#48A111] hover:bg-[#48A111]/90 text-white font-bold h-12 rounded-xl shadow-lg shadow-[#48A111]/10 disabled:opacity-50">
+              <Button type="submit" disabled={loading}
+                className="w-full bg-[#48A111] hover:bg-[#48A111]/90 text-white font-bold h-12 rounded-xl shadow-lg shadow-[#48A111]/10">
                 {loading ? 'Submitting registration…' : 'Submit Registration'}
               </Button>
+
             </form>
           )}
 
