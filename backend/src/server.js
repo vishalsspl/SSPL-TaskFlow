@@ -1,8 +1,8 @@
+import 'dotenv/config';
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import 'express-async-errors';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger.js';
@@ -30,7 +30,8 @@ import tenantDbManager from './lib/tenantDbManager.js';
 import { attachIo } from './middleware/socketMiddleware.js';
 
 
-dotenv.config();
+// dotenv.config(); is now handled by the import above
+
 
 const app = express();
 const httpServer = createServer(app);
@@ -332,6 +333,14 @@ httpServer.listen(PORT, () => {
 // Graceful Shutdown
 const shutdown = async () => {
   console.log('\nGracefully shutting down server...');
+  
+  // Force exit after 1 second if graceful shutdown hangs
+  const forceExit = setTimeout(() => {
+    console.log('Forcefully shutting down...');
+    process.exit(1);
+  }, 1000);
+  forceExit.unref();
+
   try {
     await prisma.$disconnect();
     await tenantDbManager.shutdown();
@@ -341,6 +350,7 @@ const shutdown = async () => {
   }
 
   httpServer.close(() => {
+    clearTimeout(forceExit);
     console.log('Server closed.');
     process.exit(0);
   });
@@ -348,12 +358,14 @@ const shutdown = async () => {
 
 process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
-process.once('SIGUSR2', async () => {
-  await prisma.$disconnect();
-  await tenantDbManager.shutdown();
-  httpServer.close(() => {
-    process.kill(process.pid, 'SIGUSR2');
-  });
+
+// Handle Nodemon restarts (Windows compatible)
+process.once('SIGUSR2', () => {
+  console.log('Nodemon restart detected. Exiting...');
+  process.exit(0);
 });
+
+
+
 
 export default app;

@@ -1099,7 +1099,7 @@ export const addProjectMember = async (req, res) => {
     });
 
     if (existingWorkload) {
-      return res.status(400).json({ error: 'User is already a member of this project' });
+      return res.status(200).json({ message: 'already added', alreadyAdded: true });
     }
 
     // Create workload (default 0% workloadPercentage just to link them)

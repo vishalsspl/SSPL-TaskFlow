@@ -8,8 +8,10 @@
     "seed": "node prisma/seed.js"
   },
   "scripts": {
-    "dev": "nodemon src/server.js",
+    "dev": "powershell -Command \"Get-NetTCPConnection -LocalPort 5000 -ErrorAction SilentlyContinue | Where-Object { $_.OwningProcess -gt 4 } | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }\" & nodemon src/server.js",
     "start": "node src/server.js",
+
+
     "db:migrate": "prisma migrate dev",
     "db:migrate:tenant": "prisma migrate dev --schema=prisma/tenant/schema.prisma",
     "db:seed": "node prisma/seed.js",

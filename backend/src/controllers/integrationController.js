@@ -154,22 +154,20 @@ export const linkProjectToRepo = async (req, res) => {
   const { repoFullName } = req.body;
 
   try {
-    // Check if column exists first to avoid crash
+    // Auto-migrate: check if githubRepo column exists in tenant DB
     try {
-      const project = await req.db.project.update({
-        where: { id: projectId, organizationId: req.user.organizationId },
-        data: { githubRepo: repoFullName }
-      });
-
-      // ... rest of logic
-    } catch (dbErr) {
-      if (dbErr.message.includes('githubRepo')) {
-        return res.status(400).json({
-          error: 'GitHub Integration column is missing in database. Please run the migration script on the server.'
-        });
+      await req.db.$queryRawUnsafe('SELECT "githubRepo" FROM "Project" LIMIT 1');
+    } catch (err) {
+      if (err.message.includes('column "githubRepo" does not exist') || err.message.includes('does not exist')) {
+        await req.db.$executeRawUnsafe('ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "githubRepo" TEXT');
+        await req.db.$executeRawUnsafe('ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "githubInstallationId" TEXT');
       }
-      throw dbErr;
     }
+
+    const project = await req.db.project.update({
+      where: { id: projectId, organizationId: req.user.organizationId },
+      data: { githubRepo: repoFullName }
+    });
 
     // Log activity
     const action = repoFullName ? 'REPO_LINKED' : 'REPO_UNLINKED';
@@ -195,6 +193,7 @@ export const linkProjectToRepo = async (req, res) => {
 
     res.json(project);
   } catch (error) {
+    console.error('Link Project to Repo Error:', error.message);
     res.status(500).json({ error: 'Failed to link repository' });
   }
 };
@@ -340,6 +339,21 @@ export const getLinkedProjects = async (req, res) => {
   const { organizationId, role, id: userId } = req.user;
 
   try {
+    // Auto-migrate: check if githubRepo column exists in tenant DB
+    try {
+      await req.db.$queryRawUnsafe('SELECT "githubRepo" FROM "Project" LIMIT 1');
+    } catch (err) {
+      if (err.message.includes('column "githubRepo" does not exist') || err.message.includes('does not exist')) {
+        console.log(`[GitHub Integration] Auto-migrating Project table for tenant: ${organizationId}`);
+        try {
+          await req.db.$executeRawUnsafe('ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "githubRepo" TEXT');
+          await req.db.$executeRawUnsafe('ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "githubInstallationId" TEXT');
+        } catch (migrationErr) {
+          console.error('[GitHub Integration] Migration failed:', migrationErr.message);
+        }
+      }
+    }
+
     let where = {
       organizationId,
       githubRepo: { not: null }
@@ -361,7 +375,7 @@ export const getLinkedProjects = async (req, res) => {
       select: {
         id: true,
         name: true,
-        // githubRepo: true, // Temporarily disabled due to missing DB column
+        githubRepo: true,
         status: true,
         manager: {
           select: {

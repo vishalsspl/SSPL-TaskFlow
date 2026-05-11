@@ -32,7 +32,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, FolderKanban, Eye, Edit2, Trash2, Search, Filter, Layers, FileText, Users, Briefcase, Target, Calendar, FileSpreadsheet, UserPlus } from 'lucide-react';
+import { Plus, FolderKanban, Eye, Edit2, Trash2, Search, Filter, Layers, FileText, Users, Briefcase, Target, Calendar, FileSpreadsheet, UserPlus, RefreshCw } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { SearchableSelect } from '@/components/ui/searchable-select';
@@ -44,6 +44,15 @@ import ProjectOverview from '@/components/ProjectOverview';
 import TablePagination from '@/components/ui/table-pagination';
 import { DatePicker } from '@/components/ui/date-picker';
 import ImportProjectsDialog from '@/components/ImportProjectsDialog';
+
+const getContrastColor = (hexColor) => {
+  if (!hexColor || hexColor === '#111113') return '#FFFFFF';
+  const r = parseInt(hexColor.slice(1, 3), 16);
+  const g = parseInt(hexColor.slice(3, 5), 16);
+  const b = parseInt(hexColor.slice(5, 7), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.5 ? '#000000' : '#FFFFFF';
+};
 
 const ProjectsList = () => {
   const { toast } = useToast();
@@ -252,8 +261,14 @@ const ProjectsList = () => {
     }
     setAddingMember(true);
     try {
-      await api.post(`/projects/${selectedProjectForMember.id}/members`, { userId: memberToAddId });
-      toast({ title: 'Success', description: 'Member added to project successfully' });
+      const response = await api.post(`/projects/${selectedProjectForMember.id}/members`, { userId: memberToAddId });
+      
+      if (response.data.alreadyAdded) {
+        toast({ title: 'Info', description: 'already added' });
+      } else {
+        toast({ title: 'Success', description: 'Member added to project successfully' });
+      }
+
       setShowAddMemberDialog(false);
       setMemberToAddId('');
       setSelectedProjectForMember(null);
@@ -263,6 +278,39 @@ const ProjectsList = () => {
       toast({ title: 'Error', description: error.response?.data?.error || 'Failed to add member', variant: 'destructive' });
     } finally {
       setAddingMember(false);
+    }
+  };
+
+  const [projectMembers, setProjectMembers] = useState([]);
+  const [loadingMembers, setLoadingMembers] = useState(false);
+
+  const fetchProjectMembers = async (projectId) => {
+    setLoadingMembers(true);
+    try {
+      const response = await api.get(`/dashboard/${projectId}`);
+      setProjectMembers(response.data.workloads || []);
+    } catch (error) {
+      console.error('Failed to fetch project members:', error);
+    } finally {
+      setLoadingMembers(false);
+    }
+  };
+
+  const handleRemoveMember = async (userId, userName) => {
+    try {
+      await api.delete(`/projects/${selectedProjectForMember.id}/members/${userId}`);
+      toast({
+        title: "Member Removed",
+        description: `${userName} has been removed from the project.`,
+      });
+      fetchProjectMembers(selectedProjectForMember.id);
+    } catch (error) {
+      console.error('Failed to remove member:', error);
+      toast({
+        title: "Error",
+        description: error.response?.data?.error || "Failed to remove member.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -629,10 +677,16 @@ const ProjectsList = () => {
                             
                             {/* Styled Custom Tooltip */}
                             <div className="absolute left-6 bottom-full mb-2 opacity-0 group-hover/row:opacity-100 group-hover/row:translate-y-0 translate-y-1 pointer-events-none transition-all duration-300 z-[100] invisible group-hover/row:visible">
-                              <div className="bg-[#111113] text-gray-200 text-xs rounded-xl shadow-2xl border border-white/10 p-3 w-max break-words whitespace-normal text-left font-medium leading-relaxed tracking-wide">
+                              <div 
+                                className="text-xs rounded-xl shadow-2xl border border-white/10 p-3 w-max break-words whitespace-normal text-left font-bold leading-relaxed tracking-wide"
+                                style={{ backgroundColor: rowColor, color: getContrastColor(rowColor) }}
+                              >
                                 Click to view project details
                               </div>
-                              <div className="absolute -bottom-1.5 left-6 w-3 h-3 bg-[#111113] border-b border-r border-white/10 rotate-45"></div>
+                              <div 
+                                className="absolute -bottom-1.5 left-6 w-3 h-3 border-b border-r border-white/10 rotate-45"
+                                style={{ backgroundColor: rowColor }}
+                              ></div>
                             </div>
                           </TableCell>
                           <TableCell>
@@ -692,11 +746,12 @@ const ProjectsList = () => {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  title="Add Member"
+                                  title="Manage Members"
                                   onClick={() => {
                                     setSelectedProjectForMember(project);
                                     setMemberToAddId('');
                                     setShowAddMemberDialog(true);
+                                    fetchProjectMembers(project.id);
                                   }}
                                 >
                                   <UserPlus className="w-4 h-4" />
@@ -767,6 +822,7 @@ const ProjectsList = () => {
                               setSelectedProjectForMember(project);
                               setMemberToAddId('');
                               setShowAddMemberDialog(true);
+                              fetchProjectMembers(project.id);
                             }}
                           >
                             <UserPlus className="w-4 h-4" />
@@ -840,33 +896,81 @@ const ProjectsList = () => {
       />
 
       <Dialog open={showAddMemberDialog} onOpenChange={setShowAddMemberDialog}>
-        <DialogContent className="sm:max-w-[425px] rounded-2xl">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <UserPlus className="w-5 h-5 text-primary" />
-              Add Member to Project
+        <DialogContent className="w-[95vw] sm:max-w-[425px] rounded-3xl p-0 overflow-hidden border-none shadow-2xl">
+          <DialogHeader className="p-5 sm:p-6 pb-0">
+            <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl font-black Montserrat">
+              <Users className="w-5 h-5 text-primary" />
+              Manage Members
             </DialogTitle>
-            <DialogDescription>
-              Select a member to add to <strong>{selectedProjectForMember?.name}</strong>.
+            <DialogDescription className="text-xs sm:text-sm Montserrat font-medium">
+              View or add members to <strong>{selectedProjectForMember?.name}</strong>.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-6">
-            <SearchableSelect
-              value={memberToAddId}
-              onChange={setMemberToAddId}
-              options={users.filter(u => u.role === 'MEMBER' || u.role === 'MANAGER').map(u => ({
-                label: `${u.name} (${u.role})`,
-                value: u.id
-              }))}
-              placeholder="Search for a team member..."
-            />
+          
+          <div className="p-5 sm:p-6 pt-4 space-y-5">
+            {/* Current Members Section */}
+            <div>
+              <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-widest Montserrat mb-3">Current Members</h4>
+              {loadingMembers ? (
+                <div className="flex justify-center py-4"><RefreshCw className="w-4 h-4 animate-spin text-muted-foreground" /></div>
+              ) : projectMembers.length === 0 ? (
+                <p className="text-xs text-muted-foreground italic py-2">No members assigned yet.</p>
+              ) : (
+                <div className="max-h-[200px] overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+                  {projectMembers.map((m) => (
+                    <div key={m.id} className="flex items-center justify-between p-2 rounded-xl border border-border bg-card/30 group">
+                      <div className="flex items-center gap-3">
+                        <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary Montserrat">
+                          {m.user.name.charAt(0)}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold Montserrat truncate">{m.user.name}</p>
+                          <p className="text-[10px] text-muted-foreground Montserrat truncate">{m.user.email}</p>
+                        </div>
+                      </div>
+                      {m.user.id !== selectedProjectForMember?.managerId && (
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-destructive hover:bg-destructive/10 transition-colors"
+                          onClick={() => handleRemoveMember(m.user.id, m.user.name)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Add New Member Section */}
+            <div className="pt-5 border-t border-border/50">
+              <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-widest Montserrat mb-3">Add New Member</h4>
+              <div className="flex flex-col gap-3">
+                <SearchableSelect
+                  value={memberToAddId}
+                  onChange={setMemberToAddId}
+                  options={users
+                    .filter(u => (u.role === 'MEMBER' || u.role === 'MANAGER') && !projectMembers.some(pm => pm.user.id === u.id))
+                    .map(u => ({
+                      label: `${u.name} (${u.role})`,
+                      value: u.id
+                    }))}
+                  placeholder="Select a member..."
+                />
+                <Button onClick={handleAddMember} disabled={addingMember || !memberToAddId} className="w-full rounded-xl py-6 font-black Montserrat shadow-lg shadow-primary/20">
+                  {addingMember ? 'Adding...' : 'Add to Project'}
+                </Button>
+              </div>
+            </div>
           </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setShowAddMemberDialog(false)} className="rounded-xl">Cancel</Button>
-            <Button onClick={handleAddMember} disabled={addingMember} className="rounded-xl">
-              Add Member
+          
+          <div className="px-5 sm:px-6 pb-6">
+            <Button variant="ghost" onClick={() => setShowAddMemberDialog(false)} className="rounded-xl w-full text-xs font-bold Montserrat text-muted-foreground hover:bg-secondary">
+              Close Panel
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

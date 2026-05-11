@@ -273,12 +273,14 @@ export const createTask = async (req, res) => {
 
   // Send email to all assignees
   const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
+  console.log(`[TaskController] Email support active: ${hasEmailSupport}, sendEmail flag: ${sendEmail}`);
 
   if (hasEmailSupport && sendEmail) {
     const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
     const senderName = req.user.name;
     for (const { user } of task.assignees) {
       if (user?.email) {
+
         sendTaskAssignmentEmail(
           user.email,
           task.title,

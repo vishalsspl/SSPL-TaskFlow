@@ -97,19 +97,19 @@ const NotificationBell = () => {
   const getIcon = (type) => {
     switch (type) {
       case 'PROJECT_ASSIGNED':
-        return <div className="p-2 bg-blue-500/10 rounded-full"><FolderKanban className="w-4 h-4 text-blue-500" /></div>;
+        return <div className="p-2 bg-primary/10 rounded-full"><FolderKanban className="w-4 h-4 text-primary" /></div>;
       case 'TASK_ASSIGNED':
-        return <div className="p-2 bg-purple-500/10 rounded-full"><ListTodo className="w-4 h-4 text-purple-500" /></div>;
+        return <div className="p-2 bg-primary/10 rounded-full"><ListTodo className="w-4 h-4 text-primary" /></div>;
       case 'TASK_STATUS_UPDATED':
-        return <div className="p-2 bg-orange-500/10 rounded-full"><Activity className="w-4 h-4 text-orange-500" /></div>;
+        return <div className="p-2 bg-amber-500/10 rounded-full"><Activity className="w-4 h-4 text-amber-500" /></div>;
       case 'TASK_APPROVED':
       case 'TIMESHEET_APPROVED':
-        return <div className="p-2 bg-green-500/10 rounded-full"><CheckCircle2 className="w-4 h-4 text-green-500" /></div>;
+        return <div className="p-2 bg-primary/20 rounded-full"><CheckCircle2 className="w-4 h-4 text-primary" /></div>;
       case 'TASK_REJECTED':
       case 'TIMESHEET_REJECTED':
-        return <div className="p-2 bg-red-500/10 rounded-full"><XCircle className="w-4 h-4 text-red-500" /></div>;
+        return <div className="p-2 bg-destructive/10 rounded-full"><XCircle className="w-4 h-4 text-destructive" /></div>;
       case 'CHAT_MESSAGE':
-        return <div className="p-2 bg-cyan-500/10 rounded-full"><MessageSquare className="w-4 h-4 text-cyan-500" /></div>;
+        return <div className="p-2 bg-sky-500/10 rounded-full"><MessageSquare className="w-4 h-4 text-sky-500" /></div>;
       case 'WORKLOG_SUBMITTED':
         return <div className="p-2 bg-amber-500/10 rounded-full"><Clock className="w-4 h-4 text-amber-500" /></div>;
       case 'NEW_ORG_SIGNUP':

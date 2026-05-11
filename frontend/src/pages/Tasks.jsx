@@ -60,6 +60,30 @@ import { useTimerStore } from '@/store/timerStore';
 import { Clock } from 'lucide-react';
 import ImportTasksDialog from '@/components/ImportTasksDialog';
 
+const PROJECT_COLORS = [
+  '#48A111', // SSPL Green
+  '#00A3FF', // Sky Blue
+  '#8B5CF6', // Violet
+  '#F59E0B', // Amber
+  '#D946EF', // Fuchsia
+  '#10B981', // Emerald
+];
+
+const getProjectColor = (projectId, projects = []) => {
+  const index = projects.findIndex(p => p.id === projectId);
+  if (index === -1) return '#111113'; // Default dark
+  return PROJECT_COLORS[index % PROJECT_COLORS.length];
+};
+
+const getContrastColor = (hexColor) => {
+  if (!hexColor || hexColor === '#111113') return '#FFFFFF';
+  const r = parseInt(hexColor.slice(1, 3), 16);
+  const g = parseInt(hexColor.slice(3, 5), 16);
+  const b = parseInt(hexColor.slice(5, 7), 16);
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.5 ? '#000000' : '#FFFFFF';
+};
+
 const Tasks = () => {
   const { user } = useAuthStore();
   const { setHeader, searchTerm: globalSearch, setSearchTerm: setGlobalSearch } = useHeaderStore();
@@ -474,10 +498,19 @@ const Tasks = () => {
                             {/* Styled Custom Tooltip */}
                             {task.description && (
                               <div className="absolute left-6 bottom-full mb-2 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 translate-y-1 pointer-events-none transition-all duration-300 z-[100] invisible group-hover:visible">
-                                <div className="bg-[#111113] text-gray-200 text-xs rounded-xl shadow-2xl border border-white/10 p-3 w-64 break-words whitespace-normal text-left font-medium leading-relaxed tracking-wide">
+                                <div 
+                                  className="text-xs rounded-xl shadow-2xl p-3 w-64 break-words whitespace-normal text-left font-bold leading-relaxed tracking-wide border border-white/10"
+                                  style={{ 
+                                    backgroundColor: getProjectColor(task.project?.id, projects),
+                                    color: getContrastColor(getProjectColor(task.project?.id, projects))
+                                  }}
+                                >
                                   {task.description.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ')}
                                 </div>
-                                <div className="absolute -bottom-1.5 left-6 w-3 h-3 bg-[#111113] border-b border-r border-white/10 rotate-45"></div>
+                                <div 
+                                  className="absolute -bottom-1.5 left-6 w-3 h-3 border-b border-r border-white/10 rotate-45"
+                                  style={{ backgroundColor: getProjectColor(task.project?.id, projects) }}
+                                ></div>
                               </div>
                             )}
                           </div>

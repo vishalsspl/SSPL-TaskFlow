@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '@/lib/api';
+import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -36,7 +37,11 @@ import {
   FileText,
   Plus,
   DollarSign,
-  Layers
+  Layers,
+  Trash2,
+  MoreVertical,
+  Mail,
+  UserX
 } from 'lucide-react';
 import { formatCurrency, formatDate, priorityColors } from '@/lib/utils';
 import html2canvas from 'html2canvas';
@@ -55,6 +60,7 @@ import { useTimerStore } from '@/store/timerStore';
 
 
 const ProjectView = () => {
+  const { toast } = useToast();
   const { id } = useParams();
   const navigate = useNavigate();
   const [dashboard, setDashboard] = useState(null);
@@ -70,6 +76,9 @@ const ProjectView = () => {
   const startTimer = useTimerStore(state => state.startTimer);
   const dashboardRef = useRef(null);
   const { user } = useAuthStore();
+  const [showRemoveMemberDialog, setShowRemoveMemberDialog] = useState(false);
+  const [memberToRemove, setMemberToRemove] = useState(null);
+  const [removingMember, setRemovingMember] = useState(false);
 
 
   useEffect(() => {
@@ -113,6 +122,31 @@ const ProjectView = () => {
     if (user?.role === 'CLIENT' || user?.role === 'MEMBER') return;
     setSelectedTask(task);
     setShowEditDialog(true);
+  };
+
+  const handleRemoveMember = async () => {
+    if (!memberToRemove) return;
+    setRemovingMember(true);
+    try {
+      await api.delete(`/projects/${id}/members/${memberToRemove.user.id}`);
+      setHeader(null, null); // Clear header to force refresh on next fetch if needed
+      fetchDashboard(true);
+      toast({
+        title: "Member Removed",
+        description: `${memberToRemove.user.name} has been removed from the project.`,
+      });
+      setShowRemoveMemberDialog(false);
+      setMemberToRemove(null);
+    } catch (error) {
+      console.error('Failed to remove member:', error);
+      toast({
+        title: "Error",
+        description: error.response?.data?.error || "Failed to remove member.",
+        variant: "destructive",
+      });
+    } finally {
+      setRemovingMember(false);
+    }
   };
 
   const handleTaskUpdated = () => {
@@ -381,15 +415,15 @@ const ProjectView = () => {
 
       {/* Project Description */}
       {project.description && (
-        <Card className="bg-card border-border ring-1 ring-border shadow-2xl relative overflow-hidden group">
+        <Card className="bg-card border-border ring-1 ring-border shadow-2xl relative overflow-hidden group border-l-4 border-l-primary/50 hover:border-l-primary transition-all duration-500">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-[10px] font-black text-gray-500 uppercase tracking-widest Montserrat">Project Scope & Description</CardTitle>
-            <div className="p-1.5 bg-white/5 rounded-lg">
-              <FileText className="h-3.5 w-3.5 text-primary" />
+            <div className="p-2 bg-primary/10 rounded-xl group-hover:scale-110 transition-transform duration-500">
+              <FileText className="h-4 w-4 text-primary" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-sm text-gray-400 Montserrat leading-relaxed prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: project.description }} />
+            <div className="text-sm text-gray-300 Montserrat leading-relaxed prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: project.description }} />
           </CardContent>
         </Card>
       )}
@@ -597,29 +631,80 @@ const ProjectView = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="team" className="space-y-4 mt-0">
-            <Card>
-              <CardHeader><CardTitle className="text-sm font-black text-gray-500 uppercase tracking-widest Montserrat">Workload Distribution</CardTitle></CardHeader>
-              <CardContent className="pl-2">
-                {workloadChartData && workloadChartData.some(w => w.workload > 0) ? (
-                  <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={workloadChartData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip />
-                      <Bar dataKey="workload" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-[350px] text-muted-foreground border-2 border-dashed border-muted rounded-xl bg-accent/20 mx-4 mb-4">
-                    <Users className="w-12 h-12 mb-4 opacity-50" />
-                    <p className="text-sm font-bold Montserrat text-muted-foreground">No workload data available</p>
-                    <p className="text-xs text-muted-foreground/70 mt-1 text-center px-4">Assign tasks to team members to see workload distribution.</p>
+          <TabsContent value="team" className="space-y-6 mt-0">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Member List */}
+              <Card className="lg:col-span-2">
+                <CardHeader>
+                  <CardTitle className="text-sm font-black text-gray-500 uppercase tracking-widest Montserrat">Project Team Members</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {workloads.map((w) => (
+                      <div key={w.id} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card/50 hover:bg-card transition-colors group">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-black Montserrat">
+                            {w.user.name.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="text-sm font-black Montserrat">{w.user.name}</p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <Mail className="w-3 h-3 text-muted-foreground" />
+                              <p className="text-xs text-muted-foreground Montserrat">{w.user.email}</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="text-right mr-4 hidden sm:block">
+                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest Montserrat">Workload</p>
+                            <p className="text-xs font-black Montserrat text-primary">{w.workloadPercentage}%</p>
+                          </div>
+                          {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && w.user.id !== project.managerId && (
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="text-destructive hover:bg-destructive/10 transition-colors"
+                              onClick={() => {
+                                setMemberToRemove(w);
+                                setShowRemoveMemberDialog(true);
+                              }}
+                            >
+                              <UserX className="w-5 h-5" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+
+              {/* Workload Chart */}
+              <Card>
+                <CardHeader><CardTitle className="text-sm font-black text-gray-500 uppercase tracking-widest Montserrat">Effort Balance</CardTitle></CardHeader>
+                <CardContent>
+                  {workloadChartData && workloadChartData.some(w => w.workload > 0) ? (
+                    <ResponsiveContainer width="100%" height={250}>
+                      <BarChart data={workloadChartData}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                        <XAxis dataKey="name" fontSize={10} axisLine={false} tickLine={false} />
+                        <YAxis fontSize={10} axisLine={false} tickLine={false} />
+                        <Tooltip 
+                          contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px' }}
+                          cursor={{ fill: 'hsl(var(--primary)/0.1)' }}
+                        />
+                        <Bar dataKey="workload" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-[200px] text-muted-foreground">
+                      <Users className="w-8 h-8 mb-2 opacity-30" />
+                      <p className="text-xs font-bold Montserrat opacity-50">No data</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {user?.role !== 'CLIENT' && (
@@ -689,6 +774,28 @@ const ProjectView = () => {
               onSuccess={handleTaskUpdated}
               onCancel={() => { setShowEditDialog(false); setSelectedTask(null); }}
             />
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={showRemoveMemberDialog} onOpenChange={setShowRemoveMemberDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-destructive flex items-center gap-2">
+              <AlertCircle className="w-5 h-5" />
+              Remove Team Member
+            </DialogTitle>
+            <DialogDescription className="pt-2">
+              Are you sure you want to remove <strong>{memberToRemove?.user.name}</strong> from this project? 
+              They will no longer have access to tasks or project discussions.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-3 mt-4">
+            <Button variant="outline" onClick={() => setShowRemoveMemberDialog(false)} disabled={removingMember}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleRemoveMember} disabled={removingMember}>
+              {removingMember ? 'Removing...' : 'Remove Member'}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

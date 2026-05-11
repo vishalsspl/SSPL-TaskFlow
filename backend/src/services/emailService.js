@@ -1,21 +1,33 @@
 import nodemailer from 'nodemailer';
 
 // Create reusable transporter object using the default SMTP transport
+console.log(`[EmailService] Initializing transporter for host: ${process.env.SMTP_HOST || 'smtp.ethereal.email'}`);
+
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.ethereal.email',
-  port: process.env.SMTP_PORT || 587,
-  secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+  host: process.env.SMTP_HOST || 'smtp.office365.com',
+  port: parseInt(process.env.SMTP_PORT) || 587,
+  secure: process.env.SMTP_SECURE === 'true', // false for 587
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
+  tls: {
+    // Microsoft 365 often requires specific ciphers or versions
+    ciphers: 'TLSv1.2',
+    rejectUnauthorized: false
+  },
+  // Some Office 365 accounts need this
+  requireTLS: true
 });
+
+
 
 const DEFAULT_FROM = `"${process.env.SMTP_FROM_NAME || 'TaskFlow'}" <${process.env.SMTP_USER}>`;
 
 export const sendTaskAssignmentEmail = async (to, taskTitle, projectName, assignedByName, { priority, dueDate, status, description, baseUrl } = {}) => {
   try {
     if (!to) return;
+
 
     const priorityColors = { HIGH: '#DC2626', MEDIUM: '#D97706', LOW: '#16A34A' };
     const priorityColor = priorityColors[priority] || '#6B7280';

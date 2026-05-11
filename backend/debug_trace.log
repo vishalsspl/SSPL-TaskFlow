@@ -13,3 +13,7 @@ authController invite - req.db exists? true
 authController invite - req.db === prisma? false
 Entering req.db.user.create
 Successfully created user in tenant DB
+authController invite - req.db exists? true
+authController invite - req.db === prisma? false
+Entering req.db.user.create
+Successfully created user in tenant DB
