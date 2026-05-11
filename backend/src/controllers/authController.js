@@ -192,6 +192,29 @@ export const logout = async (req, res) => {
   }
 };
 
+// ── check-org (public) ────────────────────────────────────────────────────
+export const checkOrg = async (req, res) => {
+  const { organizationName } = req.body;
+  if (!organizationName || organizationName.trim().length < 2) {
+    return res.status(400).json({ error: 'Organisation name is required (min 2 characters).' });
+  }
+
+  try {
+    const org = await prisma.organization.findFirst({
+      where: { name: { equals: organizationName.trim(), mode: 'insensitive' } },
+      select: { id: true, name: true }
+    });
+
+    if (org) {
+      return res.json({ exists: true, organizationName: org.name });
+    }
+    return res.json({ exists: false });
+  } catch (error) {
+    console.error('[CheckOrg] Error:', error.message);
+    return res.status(500).json({ error: 'Server error while checking organisation.' });
+  }
+};
+
 // ── signup ─────────────────────────────────────────────────────────────────
 export const signup = async (req, res) => {
   console.log('[Signup] Request Body:', req.body);

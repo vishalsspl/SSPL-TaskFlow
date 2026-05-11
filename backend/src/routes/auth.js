@@ -1,5 +1,6 @@
 import express from 'express';
-import { login, signup, invite, bulkInvite, me, logout, changePassword, forgotPassword, resetPassword } from '../controllers/authController.js';
+import { login, signup, invite, bulkInvite, me, logout, changePassword, forgotPassword, resetPassword, checkOrg } from '../controllers/authController.js';
+
 import { authenticate, authorize } from '../middleware/auth.js';
 import { attachTenantDb } from '../middleware/tenantMiddleware.js';
 
@@ -89,6 +90,8 @@ router.post('/login', login);
  *         description: Validation error or user already exists
  */
 router.post('/signup', signup);
+router.post('/check-org', checkOrg);
+
 
 /**
  * @swagger

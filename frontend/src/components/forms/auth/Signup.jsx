@@ -62,6 +62,10 @@ const Signup = () => {
   const [fieldErrors, setFieldErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [orgVerified, setOrgVerified] = useState(false);
+  const [verifiedOrgName, setVerifiedOrgName] = useState('');
+  const [orgCheckError, setOrgCheckError] = useState('');
+  const [checkingOrg, setCheckingOrg] = useState(false);
 
   const [form, setForm] = useState({
     // step 0 — personal
@@ -129,6 +133,26 @@ const Signup = () => {
   const nextStep = () => {
     setError('');
     if (validateStep0()) setStep(1);
+  };
+
+  const handleCheckOrg = async () => {
+    if (!form.organizationName.trim()) return;
+    setCheckingOrg(true);
+    setOrgCheckError('');
+    setOrgVerified(false);
+    try {
+      const { data } = await api.post('/auth/check-org', { organizationName: form.organizationName.trim() });
+      if (data.exists) {
+        setOrgVerified(true);
+        setVerifiedOrgName(data.organizationName);
+      } else {
+        setOrgCheckError('Organisation not found. Please check the name or contact your admin.');
+      }
+    } catch (err) {
+      setOrgCheckError(err.response?.data?.error || 'Failed to verify organisation. Please try again.');
+    } finally {
+      setCheckingOrg(false);
+    }
   };
 
   const validateStep1 = () => {
@@ -355,10 +379,39 @@ const Signup = () => {
                     <div className="relative">
                       <Building2 className={cn("absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors", isDarkMode ? "text-white/40" : "text-slate-400")} />
                       <Input id="organizationName" placeholder={form.role === 'ADMIN' ? 'Acme Corp' : 'Enter company name to join'} value={form.organizationName}
-                        onChange={set('organizationName')}
+                        onChange={(e) => { set('organizationName')(e); setOrgVerified(false); setOrgCheckError(''); }}
                         className={cn('!pl-10', inputClass('organizationName'))} />
                     </div>
                   </Field>
+
+                  {/* Verify button for non-admin */}
+                  {form.role !== 'ADMIN' && !orgVerified && (
+                    <Button type="button" onClick={handleCheckOrg} disabled={checkingOrg || !form.organizationName.trim()}
+                      className="mt-3 w-full bg-[#2563EB] hover:bg-[#2563EB]/90 text-white font-bold h-10 rounded-xl" variant="default">
+                      {checkingOrg ? 'Verifying…' : 'Verify Organisation'}
+                    </Button>
+                  )}
+
+                  {/* Org found */}
+                  {form.role !== 'ADMIN' && orgVerified && (
+                    <div className="mt-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                        <Building2 className="w-4 h-4 text-emerald-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-emerald-400">{verifiedOrgName}</p>
+                        <p className="text-[11px] text-emerald-400/70">Organisation found — your request will be sent to the admin for approval.</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Org not found */}
+                  {orgCheckError && (
+                    <div className="mt-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
+                      <p className="text-sm font-medium text-red-300">{orgCheckError}</p>
+                    </div>
+                  )}
                 </div>
 
                 {form.role === 'ADMIN' && (
@@ -439,12 +492,13 @@ const Signup = () => {
                 </p>
               </div>
 
-              <Button type="submit" disabled={loading}
-                className="w-full bg-[#48A111] hover:bg-[#48A111]/90 text-white font-bold h-12 rounded-xl shadow-lg shadow-[#48A111]/10">
+              <Button type="submit" disabled={loading || (form.role !== 'ADMIN' && !orgVerified)}
+                className="w-full bg-[#48A111] hover:bg-[#48A111]/90 text-white font-bold h-12 rounded-xl shadow-lg shadow-[#48A111]/10 disabled:opacity-50">
                 {loading ? 'Submitting registration…' : 'Submit Registration'}
               </Button>
             </form>
           )}
+
         </CardContent>
       </Card>
     </div>
