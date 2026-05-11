@@ -39,6 +39,14 @@ import UserForm from '@/components/forms/UserForm';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import UpgradePlanModal from '@/components/ui/UpgradePlanModal';
 import ImportUsersDialog from '@/components/ImportUsersDialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown, Filter } from 'lucide-react';
+
 
 const generatePassword = () => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
@@ -489,144 +497,202 @@ const Team = () => {
         </Dialog>
 
         {/* ─── Filter Toolbar ─── */}
-        <div className="bg-secondary/40 px-2 py-3 rounded-2xl mb-1 shadow-inner backdrop-blur-sm mt-2" style={{ border: '1px solid var(--table-border)' }}>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 w-full">
-            <div className="flex flex-row items-center gap-2 flex-1 min-w-0">
-              {/* Mobile Add Member Button */}
-              {currentUser?.role === 'ADMIN' && (
-                <Button
-                  onClick={() => {
-                        setEditingUser(null);
-                        setFormData({
-                            name: '',
-                            email: '',
-                            role: 'MEMBER',
-                            password: generatePassword(),
-                            sendEmail: true,
-                        });
-                        setShowDialog(true);
-                  }}
-                  className="w-11 h-11 p-0 shrink-0 sm:hidden rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground"
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
-              )}
-              {(currentUser?.role === 'ADMIN' || currentUser?.role === 'MANAGER') && (
-                <Button
-                  onClick={() => setShowImportDialog(true)}
-                  variant="outline"
-                  className="w-11 h-11 p-0 shrink-0 sm:hidden rounded-xl border-border/40 hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-primary"
-                  title="Import from Excel"
-                >
-                  <FileSpreadsheet className="w-4 h-4" />
-                </Button>
-              )}
-            </div>
+        <div className="bg-secondary/40 px-2 py-2.5 sm:py-3 rounded-2xl mb-1 shadow-inner backdrop-blur-sm mt-2 border border-border/40">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 w-full">
+            
+            {/* Left side: Tabs and Mobile Icons */}
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              {/* Mobile/Tablet Add/Import Buttons */}
+              <div className="flex lg:hidden items-center gap-1.5 shrink-0 pr-2 border-r border-border/20 mr-1">
+                {currentUser?.role === 'ADMIN' && (
+                  <Button
+                    onClick={() => {
+                      setEditingUser(null);
+                      setFormData({
+                        name: '',
+                        email: '',
+                        role: 'MEMBER',
+                        password: generatePassword(),
+                        sendEmail: true,
+                      });
+                      setShowDialog(true);
+                    }}
+                    className="w-10 h-10 p-0 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground"
+                    title="Add Member"
+                  >
+                    <Plus className="w-5 h-5" />
+                  </Button>
+                )}
+                {(currentUser?.role === 'ADMIN' || currentUser?.role === 'MANAGER') && (
+                  <Button
+                    onClick={() => setShowImportDialog(true)}
+                    variant="outline"
+                    className="w-10 h-10 p-0 rounded-xl border-border/40 hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-primary"
+                    title="Import from Excel"
+                  >
+                    <FileSpreadsheet className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
 
-            {/* Filter tabs and Action Button — right side */}
-            <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
-              <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto no-scrollbar pb-1 sm:pb-0">
+              {/* Scrollable Tabs (Desktop) */}
+              <div className="hidden lg:flex items-center gap-2 flex-1 overflow-x-auto no-scrollbar">
                 {(currentUser?.role === 'ADMIN' || currentUser?.role === 'MANAGER') && (
                   <>
                     <Button
                       variant="none"
                       onClick={() => { setPage(1); setSelectedManagerId('ALL'); }}
-                      className={`group gap-2 h-11 w-full sm:w-[145px] px-2 sm:px-4 justify-center sm:justify-start rounded-xl font-medium transition-all duration-300 text-sm shrink-0 border ${selectedManagerId === 'ALL'
+                      className={`group gap-2 h-10 sm:h-11 px-3 sm:px-4 rounded-xl font-medium transition-all duration-300 text-xs sm:text-sm shrink-0 border ${selectedManagerId === 'ALL'
                         ? 'bg-primary/10 text-primary border-primary/30 shadow-[0_0_15px_rgba(var(--primary),0.1)]'
                         : 'bg-secondary/40 text-muted-foreground border-transparent hover:bg-secondary/60 hover:text-foreground'}`}
                       style={selectedManagerId !== 'ALL' ? { borderColor: 'var(--input-border)' } : {}}
                     >
-                      <Layers className="w-4 h-4 shrink-0 transition-transform group-hover:scale-110" />
-                      <span className="truncate">All</span>
-                      <Badge variant="none" className={`ml-auto shrink-0 text-[10px] px-2 py-0.5 rounded-full ${selectedManagerId === 'ALL' ? 'bg-primary/20 text-primary' : 'bg-muted/30 text-muted-foreground'}`}>{roleCounts.ALL}</Badge>
+                      <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 transition-transform group-hover:scale-110" />
+                      <span className="hidden sm:inline">All</span>
+                      <Badge variant="none" className={`ml-auto shrink-0 text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full ${selectedManagerId === 'ALL' ? 'bg-primary/20 text-primary' : 'bg-muted/30 text-muted-foreground'}`}>{roleCounts.ALL}</Badge>
                     </Button>
 
                     {currentUser?.role === 'ADMIN' && (
                       <Button
                         variant="none"
                         onClick={() => { setPage(1); setSelectedManagerId('MANAGERS_LIST'); }}
-                        className={`group gap-2 h-11 w-full sm:w-[145px] px-2 sm:px-4 justify-center sm:justify-start rounded-xl font-medium transition-all duration-300 text-sm shrink-0 border ${selectedManagerId === 'MANAGERS_LIST'
+                        className={`group gap-2 h-10 sm:h-11 px-3 sm:px-4 rounded-xl font-medium transition-all duration-300 text-xs sm:text-sm shrink-0 border ${selectedManagerId === 'MANAGERS_LIST'
                           ? 'bg-[#0EA5E9]/10 text-[#0EA5E9] border-[#0EA5E9]/30 shadow-[0_0_15px_rgba(14,165,233,0.1)]'
                           : 'bg-secondary/40 text-muted-foreground border-transparent hover:bg-secondary/60 hover:text-foreground'}`}
                       >
-                        <Shield className="w-4 h-4 shrink-0 transition-transform group-hover:scale-110" />
-                        <span className="truncate">Managers</span>
-                        <Badge variant="none" className={`ml-auto shrink-0 text-[10px] px-2 py-0.5 rounded-full ${selectedManagerId === 'MANAGERS_LIST' ? 'bg-[#0EA5E9]/20 text-[#0EA5E9]' : 'bg-muted/30 text-muted-foreground'}`}>{roleCounts.MANAGER}</Badge>
+                        <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 transition-transform group-hover:scale-110" />
+                        <span className="hidden sm:inline">Managers</span>
+                        <Badge variant="none" className={`ml-auto shrink-0 text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full ${selectedManagerId === 'MANAGERS_LIST' ? 'bg-[#0EA5E9]/20 text-[#0EA5E9]' : 'bg-muted/30 text-muted-foreground'}`}>{roleCounts.MANAGER}</Badge>
                       </Button>
                     )}
                     {currentUser?.role === 'ADMIN' && (
                       <Button
                         variant="none"
                         onClick={() => { setPage(1); setSelectedManagerId('CLIENTS_LIST'); }}
-                        className={`group gap-2 h-11 w-full sm:w-[145px] px-2 sm:px-4 justify-center sm:justify-start rounded-xl font-medium transition-all duration-300 text-sm shrink-0 border ${selectedManagerId === 'CLIENTS_LIST'
+                        className={`group gap-2 h-10 sm:h-11 px-3 sm:px-4 rounded-xl font-medium transition-all duration-300 text-xs sm:text-sm shrink-0 border ${selectedManagerId === 'CLIENTS_LIST'
                           ? 'bg-[#8B5CF6]/10 text-[#8B5CF6] border-[#8B5CF6]/30 shadow-[0_0_15px_rgba(139,92,246,0.1)]'
                           : 'bg-secondary/40 text-muted-foreground border-transparent hover:bg-secondary/60 hover:text-foreground'}`}
                       >
-                        <Users className="w-4 h-4 shrink-0 transition-transform group-hover:scale-110" />
-                        <span className="truncate">Clients</span>
-                        <Badge variant="none" className={`ml-auto shrink-0 text-[10px] px-2 py-0.5 rounded-full ${selectedManagerId === 'CLIENTS_LIST' ? 'bg-[#8B5CF6]/20 text-[#8B5CF6]' : 'bg-muted/30 text-muted-foreground'}`}>{roleCounts.CLIENT}</Badge>
+                        <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 transition-transform group-hover:scale-110" />
+                        <span className="hidden sm:inline">Clients</span>
+                        <Badge variant="none" className={`ml-auto shrink-0 text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full ${selectedManagerId === 'CLIENTS_LIST' ? 'bg-[#8B5CF6]/20 text-[#8B5CF6]' : 'bg-muted/30 text-muted-foreground'}`}>{roleCounts.CLIENT}</Badge>
                       </Button>
                     )}
                     <Button
                       variant="none"
                       onClick={() => { setPage(1); setSelectedManagerId('MEMBERS_LIST'); }}
-                      className={`group gap-2 h-11 w-full sm:w-[145px] px-2 sm:px-4 justify-center sm:justify-start rounded-xl font-medium transition-all duration-300 text-sm shrink-0 border ${selectedManagerId === 'MEMBERS_LIST'
+                      className={`group gap-2 h-10 sm:h-11 px-3 sm:px-4 rounded-xl font-medium transition-all duration-300 text-xs sm:text-sm shrink-0 border ${selectedManagerId === 'MEMBERS_LIST'
                         ? 'bg-[#10B981]/10 text-[#10B981] border-[#10B981]/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
                         : 'bg-secondary/40 text-muted-foreground border-transparent hover:bg-secondary/60 hover:text-foreground'}`}
                     >
-                      <User className="w-4 h-4 shrink-0 transition-transform group-hover:scale-110" />
-                      <span className="truncate">Members</span>
-                      <Badge variant="none" className={`ml-auto shrink-0 text-[10px] px-2 py-0.5 rounded-full ${selectedManagerId === 'MEMBERS_LIST' ? 'bg-[#10B981]/20 text-[#10B981]' : 'bg-muted/30 text-muted-foreground'}`}>{roleCounts.MEMBER}</Badge>
+                      <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 transition-transform group-hover:scale-110" />
+                      <span className="hidden sm:inline">Members</span>
+                      <Badge variant="none" className={`ml-auto shrink-0 text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full ${selectedManagerId === 'MEMBERS_LIST' ? 'bg-[#10B981]/20 text-[#10B981]' : 'bg-muted/30 text-muted-foreground'}`}>{roleCounts.MEMBER}</Badge>
                     </Button>
                     {(pendingUsers.length > 0 || currentUser?.role === 'ADMIN') && (
                       <Button
                         variant="none"
                         onClick={() => { setPage(1); setSelectedManagerId('PENDING'); }}
-                        className={`group gap-2 h-11 w-full sm:w-[145px] px-2 sm:px-4 justify-center sm:justify-start rounded-xl font-medium transition-all duration-300 text-sm shrink-0 border ${selectedManagerId === 'PENDING'
+                        className={`group gap-2 h-10 sm:h-11 px-3 sm:px-4 rounded-xl font-medium transition-all duration-300 text-xs sm:text-sm shrink-0 border ${selectedManagerId === 'PENDING'
                           ? 'bg-orange-500/10 text-orange-500 border-orange-500/30 shadow-[0_0_15px_rgba(249,115,22,0.1)]'
                           : 'bg-secondary/40 text-orange-500/60 border-transparent hover:bg-secondary/60 hover:text-orange-500'}`}
                       >
-                        <UserCheck className="w-4 h-4 shrink-0 transition-transform group-hover:scale-110" />
-                        <span className="truncate">Pending</span>
-                        <Badge variant="none" className={`ml-auto shrink-0 text-[10px] px-2 py-0.5 rounded-full ${selectedManagerId === 'PENDING' ? 'bg-orange-500/20 text-orange-500' : 'bg-muted/30 text-muted-foreground'}`}>{pendingUsers.length}</Badge>
+                        <UserCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 transition-transform group-hover:scale-110" />
+                        <span className="hidden sm:inline">Pending</span>
+                        <Badge variant="none" className={`ml-auto shrink-0 text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full ${selectedManagerId === 'PENDING' ? 'bg-orange-500/20 text-orange-500' : 'bg-muted/30 text-muted-foreground'}`}>{pendingUsers.length}</Badge>
                       </Button>
                     )}
                   </>
                 )}
               </div>
 
-              {/* Desktop Add Member + Import Buttons — Far Right */}
-              <div className="hidden sm:flex items-center gap-2">
-                {(currentUser?.role === 'ADMIN' || currentUser?.role === 'MANAGER') && (
-                  <Button
-                    onClick={() => setShowImportDialog(true)}
-                    variant="outline"
-                    className="h-11 px-5 rounded-xl border-border/40 hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-primary font-medium transition-all flex items-center gap-2"
-                  >
-                    <FileSpreadsheet className="w-4 h-4" />
-                    <span>Import Excel</span>
-                  </Button>
-                )}
-                {currentUser?.role === 'ADMIN' && (
-                  <Button
-                    onClick={() => {
-                        setEditingUser(null);
-                        setFormData({
-                            name: '',
-                            email: '',
-                            role: 'MEMBER',
-                            password: generatePassword(),
-                            sendEmail: true,
-                        });
-                        setShowDialog(true);
-                    }}
-                    className="h-11 px-6 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Add Member</span>
-                  </Button>
-                )}
+              {/* Mobile Role Toggle Button */}
+              <div className="flex lg:hidden flex-1 min-w-0">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="w-full justify-between gap-2 h-10 rounded-xl bg-background/50 border-border/40 text-sm font-semibold">
+                      <div className="flex items-center gap-2 truncate">
+                        <Filter className="w-4 h-4 text-primary" />
+                        <span className="truncate">
+                          {selectedManagerId === 'ALL' ? 'All Members' : 
+                           selectedManagerId === 'MANAGERS_LIST' ? 'Managers' :
+                           selectedManagerId === 'CLIENTS_LIST' ? 'Clients' :
+                           selectedManagerId === 'MEMBERS_LIST' ? 'Members' :
+                           selectedManagerId === 'PENDING' ? 'Pending Approval' : 'Team Members'}
+                        </span>
+                      </div>
+                      <ChevronDown className="w-4 h-4 opacity-50 shrink-0" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-[200px] rounded-xl p-1.5 border-border/40 backdrop-blur-xl bg-background/95">
+                    <DropdownMenuItem onClick={() => setSelectedManagerId('ALL')} className="rounded-lg gap-3 py-2.5">
+                      <Layers className="w-4 h-4 text-primary" />
+                      <div className="flex-1 font-medium">All Members</div>
+                      <Badge variant="secondary" className="text-[10px]">{roleCounts.ALL}</Badge>
+                    </DropdownMenuItem>
+                    {currentUser?.role === 'ADMIN' && (
+                      <DropdownMenuItem onClick={() => setSelectedManagerId('MANAGERS_LIST')} className="rounded-lg gap-3 py-2.5">
+                        <Shield className="w-4 h-4 text-[#0EA5E9]" />
+                        <div className="flex-1 font-medium">Managers</div>
+                        <Badge variant="secondary" className="text-[10px]">{roleCounts.MANAGER}</Badge>
+                      </DropdownMenuItem>
+                    )}
+                    {currentUser?.role === 'ADMIN' && (
+                      <DropdownMenuItem onClick={() => setSelectedManagerId('CLIENTS_LIST')} className="rounded-lg gap-3 py-2.5">
+                        <Users className="w-4 h-4 text-[#8B5CF6]" />
+                        <div className="flex-1 font-medium">Clients</div>
+                        <Badge variant="secondary" className="text-[10px]">{roleCounts.CLIENT}</Badge>
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem onClick={() => setSelectedManagerId('MEMBERS_LIST')} className="rounded-lg gap-3 py-2.5">
+                      <User className="w-4 h-4 text-[#10B981]" />
+                      <div className="flex-1 font-medium">Members</div>
+                      <Badge variant="secondary" className="text-[10px]">{roleCounts.MEMBER}</Badge>
+                    </DropdownMenuItem>
+                    {(pendingUsers.length > 0 || currentUser?.role === 'ADMIN') && (
+                      <DropdownMenuItem onClick={() => setSelectedManagerId('PENDING')} className="rounded-lg gap-3 py-2.5 text-orange-500">
+                        <UserCheck className="w-4 h-4" />
+                        <div className="flex-1 font-medium">Pending</div>
+                        <Badge variant="secondary" className="text-[10px] bg-orange-500/10 text-orange-500 border-none">{pendingUsers.length}</Badge>
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
+
+            </div>
+
+            {/* Right side: Desktop Buttons */}
+            <div className="hidden lg:flex items-center gap-2 shrink-0">
+              {(currentUser?.role === 'ADMIN' || currentUser?.role === 'MANAGER') && (
+                <Button
+                  onClick={() => setShowImportDialog(true)}
+                  variant="outline"
+                  className="h-11 px-4 rounded-xl border-border/40 hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-primary font-medium transition-all flex items-center gap-2"
+                >
+                  <FileSpreadsheet className="w-4 h-4" />
+                  <span>Import</span>
+                </Button>
+              )}
+              {currentUser?.role === 'ADMIN' && (
+                <Button
+                  onClick={() => {
+                    setEditingUser(null);
+                    setFormData({
+                      name: '',
+                      email: '',
+                      role: 'MEMBER',
+                      password: generatePassword(),
+                      sendEmail: true,
+                    });
+                    setShowDialog(true);
+                  }}
+                  className="h-11 px-5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add Member</span>
+                </Button>
+              )}
             </div>
           </div>
         </div>
