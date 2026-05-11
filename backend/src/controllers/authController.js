@@ -265,6 +265,11 @@ export const signup = async (req, res) => {
     }
 
     const { passwordHash: _ph, ...userWithoutPassword } = mainUser;
+    
+    // Send signup confirmation email
+    const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
+    sendOrgSignupEmail(email, name, origin).catch(err => console.error('Failed to send org signup email:', err));
+
     return res.status(201).json({ user: userWithoutPassword, message: 'Signup successful. Your account is pending approval.' });
   }
 
@@ -340,7 +345,8 @@ export const signup = async (req, res) => {
 
       await Promise.all(superAdmins.map(async (admin) => {
         // 1. Send Email
-        await sendNewOrgSignupNotificationToSuperAdmin(admin.email, admin.name, orgDetails, adminDetails);
+        const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
+        await sendNewOrgSignupNotificationToSuperAdmin(admin.email, admin.name, orgDetails, adminDetails, origin);
         
         // 2. Create In-App Notification in MAIN DB (Using Raw SQL for compatibility)
         await prisma.$executeRaw`

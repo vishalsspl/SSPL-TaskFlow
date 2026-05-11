@@ -82,16 +82,14 @@ export const sendTaskAssignmentEmail = async (to, taskTitle, projectName, assign
       `,
     });
 
-    console.log('Task Email sent: %s', info.messageId);
-    if (nodemailer.getTestMessageUrl(info)) {
-      console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
-    }
+    console.log(`[EmailService] Task Assignment Email sent to ${to}: ${info.messageId}`);
     return info;
   } catch (error) {
-    console.error('Error sending email:', error);
+    console.error(`[EmailService] Error sending task assignment email to ${to}:`, error);
     return null;
   }
 };
+
 
 /**
  * Send an email notification when a task status is updated.
@@ -154,13 +152,14 @@ export const sendTaskStatusUpdateEmail = async (to, taskTitle, projectName, newS
       `,
     });
 
-    console.log('Status Update Email sent: %s', info.messageId);
+    console.log(`[EmailService] Task Status Update Email sent to ${to}: ${info.messageId}`);
     return info;
   } catch (error) {
-    console.error('Error sending status update email:', error);
+    console.error(`[EmailService] Error sending task status update email to ${to}:`, error);
     return null;
   }
 };
+
 
 /**
  * Send a rich project assignment email to the Manager.
@@ -241,16 +240,14 @@ export const sendProjectManagerEmail = async (to, project, manager, client, assi
 </div>`,
     });
 
-    console.log('Manager Project Email sent: %s', info.messageId);
-    if (nodemailer.getTestMessageUrl(info)) {
-      console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
-    }
+    console.log(`[EmailService] Project Manager Email sent to ${to}: ${info.messageId}`);
     return info;
   } catch (error) {
-    console.error('Error sending manager project email:', error);
+    console.error(`[EmailService] Error sending project manager email to ${to}:`, error);
     return null;
   }
 };
+
 
 /**
  * Send a rich project notification email to the Client.
@@ -403,13 +400,14 @@ export const sendOrgSignupEmail = async (to, userName, orgName) => {
       `,
     });
 
-    console.log('Org Signup Email sent: %s', info.messageId);
+    console.log(`[EmailService] Org Signup Email sent to ${to}: ${info.messageId}`);
     return info;
   } catch (error) {
-    console.error('Error sending org signup email:', error);
+    console.error(`[EmailService] Error sending org signup email to ${to}:`, error);
     return null;
   }
 };
+
 
 /**
  * Send an email notification when superadmin updates organization admin credentials.
@@ -441,13 +439,14 @@ export const sendCredentialsUpdatedEmail = async (to, userName, newPassword, bas
       `,
     });
 
-    console.log('Credentials Updated Email sent: %s', info.messageId);
+    console.log(`[EmailService] Credentials Updated Email sent to ${to}: ${info.messageId}`);
     return info;
   } catch (error) {
-    console.error('Error sending credentials updated email:', error);
+    console.error(`[EmailService] Error sending credentials updated email to ${to}:`, error);
     return null;
   }
 };
+
 
 /**
  * Send an email notification for a new support ticket.
@@ -473,12 +472,14 @@ export const sendNewTicketNotification = async (to, ticketTitle, description, pr
         </div>
       `,
     });
+    console.log(`[EmailService] New Ticket Notification Email sent to ${to}: ${info.messageId}`);
     return info;
   } catch (error) {
-    console.error('Error sending new ticket email:', error);
+    console.error(`[EmailService] Error sending new ticket notification email to ${to}:`, error);
     return null;
   }
 };
+
 
 /**
  * Send an email notification for ticket status update.
@@ -500,12 +501,14 @@ export const sendTicketStatusUpdateNotification = async (to, ticketTitle, newSta
         </div>
       `,
     });
+    console.log(`[EmailService] Ticket Status Update Email sent to ${to}: ${info.messageId}`);
     return info;
   } catch (error) {
-    console.error('Error sending ticket status update email:', error);
+    console.error(`[EmailService] Error sending ticket status update email to ${to}:`, error);
     return null;
   }
 };
+
 
 /**
  * Send an email notification for a new ticket comment.
@@ -529,12 +532,14 @@ export const sendTicketCommentNotification = async (to, ticketTitle, commentAuth
         </div>
       `,
     });
+    console.log(`[EmailService] Ticket Comment Email sent to ${to}: ${info.messageId}`);
     return info;
   } catch (error) {
-    console.error('Error sending ticket comment email:', error);
+    console.error(`[EmailService] Error sending ticket comment email to ${to}:`, error);
     return null;
   }
 };
+
 export const sendMemberInvitationEmail = async (to, userName, password, role, baseUrl) => {
   try {
     if (!to) return;
@@ -577,13 +582,14 @@ export const sendMemberInvitationEmail = async (to, userName, password, role, ba
       `,
     });
 
-    console.log('Invitation Email sent: %s', info.messageId);
+    console.log(`[EmailService] Invitation Email sent to ${to}: ${info.messageId}`);
     return info;
   } catch (error) {
-    console.error('Error sending invitation email:', error);
+    console.error(`[EmailService] Error sending invitation email to ${to}:`, error);
     return null;
   }
 };
+
 
 /**
  * Send an email notification when a user is added to a manager's team
