@@ -1,5 +1,5 @@
 import prisma from '../lib/prisma.js';
-import { sendProjectManagerEmail, sendProjectClientEmail } from '../services/emailService.js';
+import { sendProjectManagerEmail, sendProjectClientEmail, sendProjectMemberAssignmentEmail } from '../services/emailService.js';
 
 /** Fetch team members (MEMBER/MANAGER roles) assigned to a project via Workload */
 const getProjectTeamMembers = async (db, projectId) => {
@@ -1135,6 +1135,20 @@ export const addProjectMember = async (req, res) => {
       message: `You have been added to project: ${project.name}`,
       type: 'PROJECT_ASSIGNED',
     });
+
+    // Send email notification
+    const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
+    if (hasEmailSupport && workload.user.email) {
+      const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
+      sendProjectMemberAssignmentEmail(
+        workload.user.email,
+        workload.user.name,
+        project.name,
+        project.description,
+        req.user.name,
+        origin
+      ).catch(err => console.error('Failed to send project member email:', err));
+    }
 
     res.status(201).json(workload.user);
   } catch (error) {

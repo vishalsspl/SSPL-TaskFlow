@@ -646,6 +646,52 @@ export const sendTeamAssignmentEmail = async (to, userName, managerName, teamMem
 };
 
 /**
+ * Send an email notification when a user is added as a member to a project
+ */
+export const sendProjectMemberAssignmentEmail = async (to, userName, projectName, projectDescription, managerName, baseUrl) => {
+  try {
+    if (!to) return;
+
+    const info = await transporter.sendMail({
+      from: DEFAULT_FROM,
+      to,
+      subject: `Added to Project: ${projectName}`,
+      text: `Hello ${userName},\n\nYou have been added as a member to the project "${projectName}" by ${managerName}.\n\nProject Description: ${projectDescription || 'No description provided'}\n\nPlease log in to TaskFlow to view the project details.\n\nBest regards,\nTaskFlow Team`,
+      html: `
+<div style="font-family:Arial,sans-serif;max-width:620px;margin:0 auto;color:#1F2937;">
+  <div style="background:linear-gradient(135deg,#10B981,#059669);padding:32px 28px;border-radius:12px 12px 0 0;">
+    <h1 style="margin:0;color:#fff;font-size:22px;">🚀 New Project Assignment</h1>
+    <p style="color:#A7F3D0;margin:6px 0 0;">You have been added to a new project team.</p>
+  </div>
+
+  <div style="background:#F9FAFB;padding:28px;border-radius:0 0 12px 12px;border:1px solid #E5E7EB;">
+    <p>Hello <strong>${userName}</strong>,</p>
+    <p>You have been added as a member to the project <strong>${projectName}</strong> by <strong>${managerName}</strong>.</p>
+
+    <div style="background:#fff;border-radius:8px;padding:20px;margin:20px 0;border-left:4px solid #10B981;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
+      <h3 style="margin:0 0 10px;font-size:16px;color:#111827;">Project: ${projectName}</h3>
+      <p style="margin:0;color:#6B7280;font-size:14px;line-height:1.5;">${projectDescription || 'No description provided'}</p>
+    </div>
+
+    <div style="margin:28px 0 8px;">
+      <a href="${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/projects" style="background:#10B981;color:#fff;padding:13px 26px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;">View Projects →</a>
+    </div>
+    <hr style="border:1px solid #E5E7EB;margin:24px 0 12px;">
+    <p style="color:#9CA3AF;font-size:12px;">This is an automated message from TaskFlow. Do not reply to this email.</p>
+  </div>
+</div>`,
+    });
+
+    console.log('Project Member Assignment Email sent: %s', info.messageId);
+    return info;
+  } catch (error) {
+    console.error('Error sending project member email:', error);
+    return null;
+  }
+};
+
+
+/**
  * Send a password reset email.
  * @param {string} to - User's email
  * @param {string} userName - User's name
