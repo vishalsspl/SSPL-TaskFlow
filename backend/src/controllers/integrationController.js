@@ -1,6 +1,8 @@
 import axios from 'axios';
 import { Octokit } from '@octokit/rest';
 import prisma from '../lib/prisma.js';
+import tenantDbManager from '../lib/tenantDbManager.js';
+
 
 const createNotification = async (req, { userId, title, message, type }) => {
   try {
@@ -23,30 +25,145 @@ const createNotification = async (req, { userId, title, message, type }) => {
   }
 };
 
-export const getGitHubAuthUrl = async (req, res) => {
-  const clientId = process.env.GITHUB_CLIENT_ID;
-  const redirectUri = process.env.GITHUB_CALLBACK_URL;
-  const scope = 'repo,user';
+// ── Helper: Get org's GitHub config from DB ──────────────────────────────
+const getOrgGitHubConfig = async (organizationId) => {
+  const integration = await prisma.integration.findUnique({
+    where: {
+      organizationId_provider: {
+        organizationId,
+        provider: 'github'
+      }
+    }
+  });
+  return integration?.config || null;
+};
 
-  const url = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scope}&state=${req.user.organizationId}`;
+// ── Save GitHub OAuth credentials for an organization ────────────────────
+export const saveGitHubConfig = async (req, res) => {
+  const { clientId, clientSecret, callbackUrl } = req.body;
+  const organizationId = req.user.organizationId;
+
+  if (!clientId || !clientSecret || !callbackUrl) {
+    return res.status(400).json({ error: 'Client ID, Client Secret, and Callback URL are required.' });
+  }
+
+  try {
+    await prisma.integration.upsert({
+      where: {
+        organizationId_provider: {
+          organizationId,
+          provider: 'github'
+        }
+      },
+      update: {
+        config: { clientId, clientSecret, callbackUrl },
+        accessToken: '', // Clear old token so user must re-authenticate
+        refreshToken: null,
+      },
+      create: {
+        organizationId,
+        provider: 'github',
+        accessToken: '', // Will be filled after OAuth connect
+        config: { clientId, clientSecret, callbackUrl }
+      }
+    });
+
+    res.json({ message: 'GitHub credentials saved successfully.' });
+  } catch (error) {
+    console.error('Save GitHub Config Error:', error.message);
+    res.status(500).json({ error: 'Failed to save GitHub credentials.' });
+  }
+};
+
+// ── Get GitHub config (safe — never returns client secret) ───────────────
+export const getGitHubConfig = async (req, res) => {
+  const organizationId = req.user.organizationId;
+  const config = await getOrgGitHubConfig(organizationId);
+
+  if (!config || !config.clientId) {
+    return res.json({ configured: false });
+  }
+
+  // Check if the org has completed the OAuth flow (has a real access token)
+  const integration = await prisma.integration.findUnique({
+    where: {
+      organizationId_provider: {
+        organizationId,
+        provider: 'github'
+      }
+    }
+  });
+
+  const isConnected = integration?.accessToken && integration.accessToken !== '';
+
+  res.json({
+    configured: true,
+    connected: isConnected,
+    clientId: config.clientId,
+    callbackUrl: config.callbackUrl
+    // Never send clientSecret to the frontend
+  });
+};
+
+// ── Generate GitHub OAuth URL using org-specific credentials ─────────────
+export const getGitHubAuthUrl = async (req, res) => {
+  const organizationId = req.user.organizationId;
+  const config = await getOrgGitHubConfig(organizationId);
+
+  if (!config || !config.clientId) {
+    return res.status(400).json({ error: 'GitHub is not configured for this organization. Please save your credentials first.' });
+  }
+
+  const scope = 'repo,user';
+  const state = `${req.user.id}:${organizationId}`;
+  const url = `https://github.com/login/oauth/authorize?client_id=${config.clientId}&redirect_uri=${encodeURIComponent(config.callbackUrl)}&scope=${scope}&state=${state}&prompt=consent`;
 
   res.json({ url });
 };
 
+// ── Handle GitHub OAuth callback using org-specific credentials ──────────
 export const handleGitHubCallback = async (req, res) => {
-  const { code, state } = req.query; // state is organizationId
-  const organizationId = state;
+  const { code, state } = req.query; 
+  
+  if (!code || !state) {
+    return res.status(400).json({ error: 'No code or state provided' });
+  }
 
-  if (!code) {
-    return res.status(400).json({ error: 'No code provided' });
+  const [userId, organizationId] = state.split(':');
+
+  if (!userId || !organizationId) {
+    return res.status(400).json({ error: 'Invalid state parameter' });
+  }
+
+  // Populate req.user for logging/notifications since this is a public callback route
+  if (!req.user) {
+    req.user = { id: userId, organizationId };
+  }
+
+  // Ensure req.db is available for the callback
+  if (!req.db) {
+    try {
+      const org = await prisma.organization.findUnique({ where: { id: organizationId } });
+      if (org?.dbUrl) {
+        req.db = await tenantDbManager.getClient(org.dbUrl);
+      }
+    } catch (dbErr) {
+      console.error('[GitHub Callback] Failed to attach tenant DB:', dbErr.message);
+    }
   }
 
   try {
+    // Read this org's GitHub credentials from DB
+    const config = await getOrgGitHubConfig(organizationId);
+    if (!config || !config.clientId || !config.clientSecret) {
+      return res.status(400).json({ error: 'GitHub credentials not configured for this organization.' });
+    }
+
     const response = await axios.post('https://github.com/login/oauth/access_token', {
-      client_id: process.env.GITHUB_CLIENT_ID,
-      client_secret: process.env.GITHUB_CLIENT_SECRET,
+      client_id: config.clientId,
+      client_secret: config.clientSecret,
       code,
-      redirect_uri: process.env.GITHUB_CALLBACK_URL,
+      redirect_uri: config.callbackUrl,
     }, {
       headers: { Accept: 'application/json' }
     });
@@ -66,26 +183,21 @@ export const handleGitHubCallback = async (req, res) => {
 
     const expiresAt = expires_in ? new Date(Date.now() + expires_in * 1000) : null;
 
-    await prisma.integration.upsert({
+    // Update the existing integration (created during saveGitHubConfig) with the real token
+    await prisma.integration.update({
       where: {
         organizationId_provider: {
           organizationId,
           provider: 'github'
         }
       },
-      update: {
-        accessToken: access_token,
-        refreshToken: refresh_token,
-        expiresAt,
-      },
-      create: {
-        organizationId,
-        provider: 'github',
+      data: {
         accessToken: access_token,
         refreshToken: refresh_token,
         expiresAt,
       }
     });
+
 
     // Log activity
     const logData = {
@@ -110,10 +222,17 @@ export const handleGitHubCallback = async (req, res) => {
 
     res.send('<script>window.close();</script>'); // Close the popup
   } catch (error) {
-    console.error('GitHub OAuth Error:', error.response?.data || error.message);
-    res.status(500).json({ error: 'Failed to authenticate with GitHub' });
+    console.error('GitHub OAuth Error FULL:', error.response?.data || error.message);
+    if (error.response?.data) {
+      console.error('GitHub Error Details:', JSON.stringify(error.response.data));
+    }
+    res.status(500).json({ 
+      error: 'Failed to authenticate with GitHub', 
+      details: error.response?.data?.error_description || error.message 
+    });
   }
 };
+
 
 export const getGitHubRepos = async (req, res) => {
   const integration = await prisma.integration.findUnique({

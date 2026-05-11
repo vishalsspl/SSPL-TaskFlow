@@ -44,6 +44,12 @@ const Integrations = () => {
   const [selectedBranch, setSelectedBranch] = useState('');
   const [fetchingBranches, setFetchingBranches] = useState(false);
 
+  // GitHub config state
+  const [isConfigured, setIsConfigured] = useState(false);
+  const [configData, setConfigData] = useState({ clientId: '', clientSecret: '', callbackUrl: '' });
+  const [savingConfig, setSavingConfig] = useState(false);
+  const [showConfigForm, setShowConfigForm] = useState(false);
+
   // Link modal state
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [repoToLink, setRepoToLink] = useState(null);
@@ -58,8 +64,50 @@ const Integrations = () => {
 
   useEffect(() => {
     setHeader("Integrations", "Connect third-party tools to enhance your workflow", false);
-    checkConnection();
+    fetchGitHubConfig();
   }, [setHeader]);
+
+  const fetchGitHubConfig = async () => {
+    try {
+      const res = await api.get('/integrations/github/config');
+      if (res.data.configured) {
+        setIsConfigured(true);
+        setConfigData(prev => ({ ...prev, clientId: res.data.clientId, callbackUrl: res.data.callbackUrl }));
+        if (res.data.connected) {
+          // Config exists and OAuth completed — fetch repos
+          await checkConnection();
+        } else {
+          setLoading(false);
+        }
+      } else {
+        setIsConfigured(false);
+        setShowConfigForm(true);
+        setLoading(false);
+      }
+    } catch (error) {
+      setIsConfigured(false);
+      setShowConfigForm(true);
+      setLoading(false);
+    }
+  };
+
+  const handleSaveConfig = async () => {
+    if (!configData.clientId || !configData.clientSecret || !configData.callbackUrl) {
+      toast({ title: 'Validation Error', description: 'All three fields are required.', variant: 'destructive' });
+      return;
+    }
+    setSavingConfig(true);
+    try {
+      await api.post('/integrations/github/config', configData);
+      toast({ title: 'Saved', description: 'GitHub credentials saved successfully.' });
+      setIsConfigured(true);
+      setShowConfigForm(false);
+    } catch (error) {
+      toast({ title: 'Error', description: error.response?.data?.error || 'Failed to save credentials.', variant: 'destructive' });
+    } finally {
+      setSavingConfig(false);
+    }
+  };
 
   const checkConnection = async () => {
     try {
@@ -67,7 +115,6 @@ const Integrations = () => {
       if (response.data && Array.isArray(response.data)) {
         setIsConnected(true);
         setRepos(response.data);
-        // Fetch linked projects for all roles
         fetchLinkedProjects();
       }
     } catch (error) {
@@ -76,6 +123,7 @@ const Integrations = () => {
       setLoading(false);
     }
   };
+
 
   const fetchLinkedProjects = async () => {
     try {
@@ -218,7 +266,16 @@ const Integrations = () => {
 
       const response = await api.get(`/integrations/github/commits/${owner}/${repoName}`);
       setCommits(response.data);
+
+      // Scroll to commits section
+      setTimeout(() => {
+        const commitsSection = document.getElementById('repo-commits-timeline');
+        if (commitsSection) {
+          commitsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
     } catch (error) {
+
       toast({
         title: "Error",
         description: "Failed to fetch commits for this repository.",
@@ -289,6 +346,14 @@ const Integrations = () => {
 
       const response = await api.get(`/integrations/github/commits/${owner}/${repoName}`);
       setProjectCommits(response.data);
+
+      // Scroll to commits section
+      setTimeout(() => {
+        const commitsSection = document.getElementById('repo-commits-timeline');
+        if (commitsSection) {
+          commitsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
     } catch (error) {
       toast({
         title: "Error",
@@ -302,7 +367,8 @@ const Integrations = () => {
 
   // Render the commit timeline (shared between repo commits & project commits)
   const renderCommitTimeline = (commitList, isLoading, label, onClose) => (
-    <Card className="border-none shadow-xl overflow-hidden animate-in slide-in-from-top-2 duration-300">
+    <div id="repo-commits-timeline" className="scroll-mt-6">
+      <Card className="border-none shadow-xl overflow-hidden animate-in slide-in-from-top-2 duration-300">
       <CardHeader className="pb-4 bg-gradient-to-r from-primary/5 to-transparent">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -422,6 +488,7 @@ const Integrations = () => {
         )}
       </CardContent>
     </Card>
+    </div>
   );
 
   return (
@@ -452,24 +519,87 @@ const Integrations = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           {!isConnected ? (
-            <div className="flex flex-col items-center py-10 text-center space-y-4">
+            <div className="flex flex-col items-center py-8 text-center space-y-6">
               <div className="p-6 bg-primary/5 rounded-full ring-8 ring-primary/5 mb-2">
                 <Github className="w-12 h-12 text-primary" />
               </div>
-              <div className="max-w-md">
-                <h3 className="text-lg font-bold">Connect your GitHub account</h3>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Once connected, you can link repositories to your projects to automatically sync activity logs and track progress.
-                </p>
-              </div>
-              {isAdmin ? (
-                <Button onClick={handleConnect} size="lg" className="rounded-xl px-8 shadow-lg shadow-primary/20 hover:scale-105 transition-all">
-                  Connect GitHub
-                </Button>
-              ) : (
+
+              {!isAdmin ? (
                 <p className="text-sm text-muted-foreground italic">Ask your Admin to connect GitHub for the organization.</p>
+              ) : !isConfigured || showConfigForm ? (
+                /* ─── Step 1: Configure Credentials ─── */
+                <div className="w-full max-w-lg space-y-4 text-left">
+                  <div className="text-center mb-2">
+                    <h3 className="text-lg font-bold">Configure GitHub OAuth App</h3>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Create an OAuth App at{' '}
+                      <a href="https://github.com/settings/developers" target="_blank" rel="noopener noreferrer" className="text-primary underline">
+                        github.com/settings/developers
+                      </a>{' '}
+                      and paste the credentials below.
+                    </p>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Client ID</label>
+                    <input
+                      type="text"
+                      value={configData.clientId}
+                      onChange={(e) => setConfigData({ ...configData, clientId: e.target.value })}
+                      placeholder="Ov23li..."
+                      className="w-full h-10 px-3 rounded-xl border border-border bg-background text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Client Secret</label>
+                    <input
+                      type="password"
+                      value={configData.clientSecret}
+                      onChange={(e) => setConfigData({ ...configData, clientSecret: e.target.value })}
+                      placeholder="••••••••••••••••"
+                      className="w-full h-10 px-3 rounded-xl border border-border bg-background text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Callback URL</label>
+                    <input
+                      type="text"
+                      value={configData.callbackUrl}
+                      onChange={(e) => setConfigData({ ...configData, callbackUrl: e.target.value })}
+                      placeholder="http://your-server/api/integrations/github/callback"
+                      className="w-full h-10 px-3 rounded-xl border border-border bg-background text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                    />
+                  </div>
+                  <div className="flex gap-2 justify-center pt-2">
+                    {isConfigured && (
+                      <Button variant="ghost" onClick={() => setShowConfigForm(false)} className="rounded-xl">Cancel</Button>
+                    )}
+                    <Button onClick={handleSaveConfig} disabled={savingConfig} className="rounded-xl px-8 shadow-lg shadow-primary/20">
+                      {savingConfig ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                      Save Credentials
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                /* ─── Step 2: Connect (credentials already saved) ─── */
+                <div className="space-y-4">
+                  <div className="max-w-md">
+                    <h3 className="text-lg font-bold">Connect your GitHub account</h3>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Credentials configured. Click below to authorize TaskFlow to access your GitHub repositories.
+                    </p>
+                  </div>
+                  <div className="flex gap-2 justify-center">
+                    <Button variant="outline" size="sm" onClick={() => setShowConfigForm(true)} className="rounded-xl text-xs">
+                      Reconfigure
+                    </Button>
+                    <Button onClick={handleConnect} size="lg" className="rounded-xl px-8 shadow-lg shadow-primary/20 hover:scale-105 transition-all">
+                      Connect GitHub
+                    </Button>
+                  </div>
+                </div>
               )}
             </div>
+
           ) : (
             <div className="space-y-6">
               {/* ─── Available Repositories (Admin only) ─── */}
@@ -526,9 +656,9 @@ const Integrations = () => {
                                     <GitCommit className="w-2.5 h-2.5 mr-1" /> Viewing
                                   </Badge>
                                 ) : (
-                                  <span className="text-[10px] text-primary font-bold opacity-0 group-hover:opacity-100 transition-all flex items-center gap-1 translate-x-[-4px] group-hover:translate-x-0">
-                                    View activity <ChevronRight className="w-3 h-3" />
-                                  </span>
+                                  <Badge variant="secondary" className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest py-0.5 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                                    <GitCommit className="w-2.5 h-2.5 mr-1" /> View Commits
+                                  </Badge>
                                 )}
                                 <Button 
                                   variant="outline" 

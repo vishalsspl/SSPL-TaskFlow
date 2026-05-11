@@ -8,7 +8,9 @@ import {
   linkProjectToRepo,
   getRepoActivity,
   getRepoBranches,
-  disconnectGitHub
+  disconnectGitHub,
+  saveGitHubConfig,
+  getGitHubConfig
 } from '../controllers/integrationController.js';
 import { authenticate } from '../middleware/auth.js';
 import attachTenantDb from '../middleware/tenantMiddleware.js';
@@ -22,6 +24,10 @@ router.get('/github/callback', handleGitHubCallback);
 router.use(authenticate);
 router.use(attachTenantDb);
 
+// GitHub config (per-org credentials)
+router.get('/github/config', getGitHubConfig);
+router.post('/github/config', saveGitHubConfig);
+
 router.get('/github/auth', getGitHubAuthUrl);
 router.get('/github/repos', getGitHubRepos);
 router.post('/github/link/:projectId', linkProjectToRepo);
@@ -32,3 +38,4 @@ router.get('/github/linked-projects', getLinkedProjects);
 router.delete('/github', disconnectGitHub);
 
 export default router;
+
