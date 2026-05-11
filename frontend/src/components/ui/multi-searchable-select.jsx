@@ -113,7 +113,14 @@ export function MultiSearchableSelect({
                                             value.includes(option.value) ? "opacity-100" : "opacity-0"
                                         )}
                                     />
-                                    {option.label}
+                                    <div className="flex flex-col flex-1 min-w-0">
+                                        <span className="truncate">{option.label}</span>
+                                        {option.email && (
+                                            <span className="text-[10px] text-muted-foreground/60 font-normal truncate">
+                                                {option.email}
+                                            </span>
+                                        )}
+                                    </div>
                                 </CommandItem>
                             ))}
                         </CommandGroup>
