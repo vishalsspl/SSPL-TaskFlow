@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Users, Mail, Shield, Plus, Edit2, Trash2, UserCheck, Clock, Layers, Lock, User, Search, BarChart2, FileSpreadsheet } from 'lucide-react';
+import { Users, Mail, Shield, Plus, Edit2, Trash2, UserCheck, Clock, Layers, Lock, User, Search, BarChart2, FileSpreadsheet, UserMinus } from 'lucide-react';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import MemberProgress from '@/components/MemberProgress';
 import TablePagination from '@/components/ui/table-pagination';
@@ -80,6 +80,8 @@ const Team = () => {
   const [loadingTeam, setLoadingTeam] = useState(false);
   const [showAddToTeamDialog, setShowAddToTeamDialog] = useState(false);
   const [addToTeamMemberId, setAddToTeamMemberId] = useState('');
+  const [showRemoveFromTeamDialog, setShowRemoveFromTeamDialog] = useState(false);
+  const [userToRemoveFromTeam, setUserToRemoveFromTeam] = useState(null);
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
   // Progress Panel State
@@ -336,7 +338,7 @@ const Team = () => {
       fetchManagerTeam(selectedManagerId);
       toast({
         title: "Team Updated",
-        description: "Member has been added to this manager's team.",
+        description: "Member has been added to the team.",
       });
     } catch (error) {
       toast({
@@ -346,6 +348,37 @@ const Team = () => {
       });
     }
   };
+
+  const confirmRemoveFromTeam = async () => {
+    if (!userToRemoveFromTeam) return;
+    try {
+      // Pass managerId: null to detach from the manager
+      await api.put(`/users/${userToRemoveFromTeam.id}`, { managerId: null });
+      await fetchUsers();
+      
+      if (selectedManagerId !== 'ALL' && selectedManagerId !== 'MANAGERS_LIST' && selectedManagerId !== 'CLIENTS_LIST' && selectedManagerId !== 'MEMBERS_LIST' && selectedManagerId !== 'PENDING') {
+        fetchManagerTeam(selectedManagerId);
+      } else if (currentUser?.role === 'MANAGER') {
+        fetchManagerTeam(currentUser.id);
+      }
+
+      toast({
+        title: "Removed from Team",
+        description: `${userToRemoveFromTeam.name} has been removed from the team.`,
+      });
+    } catch (error) {
+      console.error('Failed to remove user from team:', error);
+      toast({
+        title: "Update Failed",
+        description: error.response?.data?.error || "Failed to remove user from team.",
+        variant: "destructive",
+      });
+    } finally {
+      setShowRemoveFromTeamDialog(false);
+      setUserToRemoveFromTeam(null);
+    }
+  };
+
 
   const handleEdit = (user) => {
     setEditingUser(user);
@@ -361,8 +394,20 @@ const Team = () => {
   };
 
   const handleDelete = (user) => {
-    setUserToDelete(user);
-    setShowDeleteDialog(true);
+    // If viewing a specific manager's team, "Delete" means "Remove from Team"
+    const isSpecificManagerView = selectedManagerId !== 'ALL' && 
+                                  selectedManagerId !== 'MANAGERS_LIST' && 
+                                  selectedManagerId !== 'CLIENTS_LIST' && 
+                                  selectedManagerId !== 'MEMBERS_LIST' && 
+                                  selectedManagerId !== 'PENDING';
+                                  
+    if (isSpecificManagerView) {
+      setUserToRemoveFromTeam(user);
+      setShowRemoveFromTeamDialog(true);
+    } else {
+      setUserToDelete(user);
+      setShowDeleteDialog(true);
+    }
   };
 
   const confirmDelete = async () => {
@@ -469,6 +514,12 @@ const Team = () => {
   if (currentUser?.role === 'MANAGER' && selectedManagerId === 'ALL') {
     displayUsers = displayUsers.filter(u => u.role === 'MEMBER');
   }
+
+  const isSpecificManagerView = selectedManagerId !== 'ALL' && 
+                                selectedManagerId !== 'MANAGERS_LIST' && 
+                                selectedManagerId !== 'CLIENTS_LIST' && 
+                                selectedManagerId !== 'MEMBERS_LIST' && 
+                                selectedManagerId !== 'PENDING';
 
   return (
     <div className="flex-1 flex flex-col min-h-screen lg:min-h-0 p-0 pt-0 gap-4">
@@ -955,7 +1006,8 @@ const Team = () => {
                         </CardTitle>
                       </div>
                     </div>
-                    {currentUser?.role === 'ADMIN' && !['ALL', 'CLIENTS_LIST', 'MEMBERS_LIST', 'PENDING'].includes(selectedManagerId) && (
+                    {((currentUser?.role === 'ADMIN' && !['ALL', 'CLIENTS_LIST', 'MEMBERS_LIST', 'PENDING'].includes(selectedManagerId)) || 
+                      (currentUser?.role === 'MANAGER' && selectedManagerId === currentUser.id)) && (
                       <Button size="sm" onClick={() => setShowAddToTeamDialog(true)} className="flex items-center justify-center p-2 sm:px-3 sm:py-2">
                         <Plus className="w-4 h-4 sm:mr-2" />
                         <span className="hidden sm:inline">Add to Team</span>
@@ -1051,7 +1103,11 @@ const Team = () => {
                                         <Edit2 className="w-4 h-4" />
                                       </Button>
                                       <Button variant="ghost" size="icon" onClick={() => handleDelete(user)} className="text-destructive hover:text-destructive/90">
-                                        <Trash2 className="w-4 h-4" />
+                                        {isSpecificManagerView ? (
+                                          <UserMinus className="w-4 h-4" />
+                                        ) : (
+                                          <Trash2 className="w-4 h-4" />
+                                        )}
                                       </Button>
                                     </div>
                                   </TableCell>
@@ -1099,7 +1155,11 @@ const Team = () => {
                                   <Edit2 className="w-3 h-3 mr-1" /> Edit
                                 </Button>
                                 <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-destructive" onClick={() => handleDelete(user)}>
-                                  <Trash2 className="w-3 h-3 mr-1" /> Remove
+                                  {isSpecificManagerView ? (
+                                    <><UserMinus className="w-3 h-3 mr-1" /> Remove</>
+                                  ) : (
+                                    <><Trash2 className="w-3 h-3 mr-1" /> Remove</>
+                                  )}
                                 </Button>
                               </div>
                             )}
@@ -1129,13 +1189,22 @@ const Team = () => {
             confirmText="Yes, Remove"
           />
 
+          <ConfirmDialog
+            open={showRemoveFromTeamDialog}
+            onOpenChange={setShowRemoveFromTeamDialog}
+            onConfirm={confirmRemoveFromTeam}
+            title="Remove from Team?"
+            description={`Are you sure you want to remove "${userToRemoveFromTeam?.name}" from this manager's team? They will still be part of the organization.`}
+            confirmText="Yes, Remove"
+          />
+
           {/* Add to Manager Team Dialog */}
           <Dialog open={showAddToTeamDialog} onOpenChange={(open) => { setShowAddToTeamDialog(open); if (!open) setAddToTeamMemberId(''); }}>
             <DialogContent className="sm:max-w-[480px]">
               <DialogHeader>
-                <DialogTitle>Add Member to {managers.find(m => m.id === selectedManagerId)?.name}'s Team</DialogTitle>
+                <DialogTitle>Add Member to {selectedManagerId === currentUser?.id ? 'Your' : `${managers.find(m => m.id === selectedManagerId)?.name}'s`} Team</DialogTitle>
                 <DialogDescription>
-                  Select a member to assign to this manager. They will appear in the manager's team view.
+                  Select a member to assign to this team. They will appear in the manager's team view.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
