@@ -41,7 +41,7 @@ export const getUsers = async (req, res) => {
   }
 
   // If the requester is a MANAGER, restrict visibility
-  if (req.user.role === 'MANAGER' && pending !== 'true') {
+  if (req.user.role === 'MANAGER' && pending !== 'true' && req.query.orgMembersOnly !== 'true') {
     const managerProjectIds = await getManagerProjectIds(db, req.user.id, req.user.organizationId);
 
     if (teamOnly === 'true') {
@@ -130,7 +130,7 @@ export const getUsers = async (req, res) => {
   }
 
   // If the requester is a MEMBER, restrict visibility
-  if (req.user.role === 'MEMBER') {
+  if (req.user.role === 'MEMBER' && req.query.orgMembersOnly !== 'true') {
     const memberProjects = await db.project.findMany({
       where: {
         organizationId: req.user.organizationId,
@@ -167,6 +167,12 @@ export const getUsers = async (req, res) => {
     ];
   }
 
+  // Handle orgMembersOnly explicitly for Chat Search
+  if (req.query.orgMembersOnly === 'true') {
+    where.role = { in: ['ADMIN', 'MANAGER', 'MEMBER'] };
+    delete where.OR; // remove any previous strict visibility rules
+  }
+
   // Backend search filter
   if (search) {
     where.AND = [
@@ -189,6 +195,7 @@ export const getUsers = async (req, res) => {
     avatar: true,
     createdAt: true,
     managerId: true,
+    manager: { select: { id: true, name: true } },
     taskAssignments: {
       select: {
         task: {
@@ -220,19 +227,12 @@ export const getUsers = async (req, res) => {
     return users.map(user => {
       const managersMap = new Map();
 
-      user.taskAssignments?.forEach(ta => {
-        if (ta.task?.project?.manager) {
-          managersMap.set(ta.task.project.manager.id, ta.task.project.manager.name);
-        }
-      });
+      // Include direct manager if assigned
+      if (user.manager) {
+        managersMap.set(user.manager.id, user.manager.name);
+      }
 
-      user.workloads?.forEach(workload => {
-        if (workload.project?.manager) {
-          managersMap.set(workload.project.manager.id, workload.project.manager.name);
-        }
-      });
-
-      const { taskAssignments, workloads, ...userData } = user;
+      const { taskAssignments, workloads, manager, ...userData } = user;
 
       return {
         ...userData,
@@ -597,23 +597,7 @@ export const getManagedUsers = async (req, res) => {
     const where = {
       organizationId: req.user.organizationId,
       isApproved: true,
-      OR: [
-        {
-          taskAssignments: {
-            some: {
-              task: { projectId: { in: projectIds } },
-            },
-          },
-        },
-        {
-          workloads: {
-            some: {
-              projectId: { in: projectIds },
-            },
-          },
-        },
-        { managerId: id }
-      ],
+      managerId: id
     };
 
     if (search) {
@@ -702,7 +686,7 @@ export const getManagedUsers = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
   try {
-    const { name, avatar } = req.body;
+    const { name, avatar, email } = req.body;
     const userId = req.user.id;
     const db = req.db;
 
@@ -713,6 +697,20 @@ export const updateProfile = async (req, res) => {
     const updateData = {};
     if (name !== undefined) updateData.name = name;
     if (avatar !== undefined) updateData.avatar = avatar;
+
+    if (email !== undefined && req.user.role === 'ADMIN') {
+      if (!/^\S+@\S+\.\S+$/.test(email)) {
+        return res.status(400).json({ error: 'Invalid email address format' });
+      }
+      
+      // Check if email already in use in MAIN DB
+      const existingMainUser = await prisma.user.findUnique({ where: { email } });
+      if (existingMainUser && existingMainUser.id !== userId) {
+        return res.status(400).json({ error: 'Email is already in use by another account' });
+      }
+      
+      updateData.email = email;
+    }
 
     // Update in tenant DB
     const updatedUser = await db.user.update({
@@ -735,12 +733,16 @@ export const updateProfile = async (req, res) => {
       },
     });
 
-    // Sync name to MAIN DB
-    if (name !== undefined) {
+    // Sync to MAIN DB
+    const mainUpdate = {};
+    if (name !== undefined) mainUpdate.name = name;
+    if (updateData.email) mainUpdate.email = updateData.email;
+
+    if (Object.keys(mainUpdate).length > 0) {
       try {
         await prisma.user.update({
           where: { id: userId },
-          data: { name },
+          data: mainUpdate,
         });
       } catch (syncErr) {
         console.error('[UpdateProfile] Failed to sync to MAIN DB:', syncErr.message);

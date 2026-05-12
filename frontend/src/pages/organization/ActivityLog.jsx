@@ -54,7 +54,7 @@ const ActivityLog = () => {
       });
       const data = res.data;
       setLogs(data.data || []);
-      setTotal(data.pagination?.totalPages || 1);
+      setTotal(Math.min(data.pagination?.totalPages || 1, 50));
     } catch (error) {
       console.error('Failed to load logs:', error);
       toast({ title: 'Could not load activity logs', variant: 'destructive' });

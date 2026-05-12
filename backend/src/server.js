@@ -22,6 +22,7 @@ import superadminRoutes from './routes/superadmin.js';
 import settingsRoutes from './routes/settings.js';
 import notificationRoutes from './routes/notifications.js';
 import billingRoutes from './routes/billing.js';
+import paymentRoutes from './routes/payment.js';
 import integrationRoutes from './routes/integrations.js';
 import { getPublicSettings } from './controllers/settingsController.js';
 import { errorHandler } from './middleware/errorHandler.js';
@@ -65,6 +66,7 @@ app.use('/api/worklogs', worklogRoutes);
 app.use('/api/superadmin', superadminRoutes);
 app.use('/api/superadmin/settings', settingsRoutes);
 app.use('/api/superadmin/billing', billingRoutes);
+app.use('/api/billing', paymentRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/integrations', integrationRoutes);
 
@@ -132,7 +134,8 @@ io.on('connection', (socket) => {
       io.to(targetRoom).emit('new-message', message);
 
       // 4. Create persistent Notifications in bulk (in tenant DB)
-      const project = projectId ? await tenantDb.project.findUnique({
+      const isDM = projectId && projectId.startsWith('dm_');
+      const project = (projectId && !isDM) ? await tenantDb.project.findUnique({
         where: { id: projectId },
         include: {
           tasks: { include: { assignees: true } },
@@ -152,8 +155,8 @@ io.on('connection', (socket) => {
           entity: 'chat',
           entityId: message.id,
           details: {
-            room: projectId ? 'project' : 'global',
-            projectName: projectId ? (project?.name || 'Unknown') : 'General Channel',
+            room: isDM ? 'direct_message' : (projectId ? 'project' : 'global'),
+            projectName: isDM ? 'Direct Message' : (projectId ? (project?.name || 'Unknown') : 'General Channel'),
             snippet: snippet || 'encrypted message'
           }
         };
@@ -178,7 +181,10 @@ io.on('connection', (socket) => {
       });
 
       let targetUserIds = [];
-      if (projectId && project) {
+      if (isDM) {
+        const ids = projectId.replace('dm_', '').split('_');
+        targetUserIds = ids.filter(id => id !== userId);
+      } else if (projectId && project) {
         const assignees = new Set();
         project.tasks.forEach(t => t.assignees.forEach(a => assignees.add(a.userId)));
         targetUserIds = Array.from(assignees);
@@ -200,7 +206,7 @@ io.on('connection', (socket) => {
             userId: targetId,
             organizationId,
             type: 'CHAT_MESSAGE',
-            title: projectId ? `Message in ${project.name}` : 'General Message',
+            title: isDM ? 'Direct Message' : (projectId ? `Message in ${project.name}` : 'General Message'),
             message: `${message.user.name}: ${snippet || 'sent an encrypted message'}`,
           }
         });

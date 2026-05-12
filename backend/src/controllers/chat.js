@@ -11,31 +11,38 @@ export const getChatHistory = async (req, res) => {
             const isAdmin = req.user.role === 'ADMIN';
 
             if (!isAdmin) {
-                const project = await req.db.project.findFirst({
-                    where: {
-                        id: projId,
-                        organizationId,
+                if (projId.startsWith('dm_')) {
+                    const ids = projId.replace('dm_', '').split('_');
+                    if (!ids.includes(userId)) {
+                        return res.status(403).json({ error: 'Access denied to this direct message' });
                     }
-                });
+                } else {
+                    const project = await req.db.project.findFirst({
+                        where: {
+                            id: projId,
+                            organizationId,
+                        }
+                    });
 
-                if (!project) return res.status(404).json({ error: 'Project not found' });
+                    if (!project) return res.status(404).json({ error: 'Project not found' });
 
-                const isManager = project.managerId === userId;
-                const isClient = project.clientId === userId;
+                    const isManager = project.managerId === userId;
+                    const isClient = project.clientId === userId;
 
-                const taskAssignment = await req.db.task.findFirst({
-                    where: {
-                        projectId: projId,
-                        assignees: { some: { userId } }
+                    const taskAssignment = await req.db.task.findFirst({
+                        where: {
+                            projectId: projId,
+                            assignees: { some: { userId } }
+                        }
+                    });
+
+                    const workloadAssignment = await req.db.workload.findFirst({
+                        where: { projectId: projId, userId }
+                    });
+
+                    if (!isManager && !isClient && !taskAssignment && !workloadAssignment) {
+                        return res.status(403).json({ error: 'Access denied to this project chat' });
                     }
-                });
-
-                const workloadAssignment = await req.db.workload.findFirst({
-                    where: { projectId: projId, userId }
-                });
-
-                if (!isManager && !isClient && !taskAssignment && !workloadAssignment) {
-                    return res.status(403).json({ error: 'Access denied to this project chat' });
                 }
             }
         }
@@ -125,6 +132,19 @@ export const getChatRooms = async (req, res) => {
 
         const projectIds = projects.map(p => p.id);
 
+        // Fetch DM rooms
+        const dmRoomsData = await req.db.chatMessage.findMany({
+            where: {
+                organizationId,
+                projectId: { startsWith: 'dm_' },
+                projectId: { contains: userId }
+            },
+            select: { projectId: true },
+            distinct: ['projectId']
+        });
+
+        const dmProjectIds = dmRoomsData.map(dm => dm.projectId);
+
         // Fetch last seen timestamps
         const lastSeenRecords = await req.db.chatRoomLastSeen.findMany({
             where: {
@@ -132,7 +152,7 @@ export const getChatRooms = async (req, res) => {
                 organizationId,
                 OR: [
                     { projectId: null },
-                    { projectId: { in: projectIds } }
+                    { projectId: { in: [...projectIds, ...dmProjectIds] } }
                 ]
             }
         });
@@ -142,8 +162,8 @@ export const getChatRooms = async (req, res) => {
             lastSeenMap[rec.projectId || 'global'] = rec.lastSeen;
         });
 
-        // Fetch last message AND unread count for each room
-        const roomData = await Promise.all([null, ...projectIds].map(async (id) => {
+        // Fetch last message AND unread count for each room (global, projects, and DMs)
+        const roomData = await Promise.all([null, ...projectIds, ...dmProjectIds].map(async (id) => {
             const roomKey = id || 'global';
             const lastSeen = lastSeenMap[roomKey];
 
@@ -181,11 +201,33 @@ export const getChatRooms = async (req, res) => {
             return acc;
         }, {});
 
+        // Fetch other user names for DMs
+        const dmRooms = await Promise.all(dmProjectIds.map(async (dmId) => {
+            const ids = dmId.replace('dm_', '').split('_');
+            const otherUserId = ids.find(id => id !== userId);
+            let otherUserName = 'Unknown User';
+            
+            if (otherUserId) {
+                const otherUser = await req.db.user.findUnique({ where: { id: otherUserId }, select: { name: true } });
+                if (otherUser) otherUserName = otherUser.name;
+            }
+
+            return {
+                id: dmId,
+                name: otherUserName,
+                isGlobal: false,
+                isDM: true,
+                lastMsg: roomDataMap[dmId]?.lastMsg || null,
+                unreadCount: roomDataMap[dmId]?.unreadCount || 0
+            };
+        }));
+
         const response = [
             {
                 id: 'global',
                 name: 'General Channel',
                 isGlobal: true,
+                isDM: false,
                 lastMsg: roomDataMap['global']?.lastMsg || null,
                 unreadCount: roomDataMap['global']?.unreadCount || 0
             },
@@ -193,9 +235,11 @@ export const getChatRooms = async (req, res) => {
                 id: p.id,
                 name: p.name,
                 isGlobal: false,
+                isDM: false,
                 lastMsg: roomDataMap[p.id]?.lastMsg || null,
                 unreadCount: roomDataMap[p.id]?.unreadCount || 0
-            }))
+            })),
+            ...dmRooms
         ];
 
         res.json(response);

@@ -3,10 +3,13 @@ import crypto from 'crypto';
 import prisma from '../lib/prisma.js';
 
 // ─── Razorpay Instance ─────────────────────────────────────────────────────
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
+let razorpay = null;
+if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+  razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+  });
+}
 
 // ─── Plan Pricing (fallback, overridden by PlatformSettings) ────────────
 const DEFAULT_PRICES = {
@@ -88,6 +91,10 @@ export const createOrder = async (req, res) => {
 
     // Amount in paise (Razorpay uses smallest currency unit)
     const amountInPaise = Math.round(totalAmount * 100);
+
+    if (!razorpay) {
+      return res.status(500).json({ error: 'Payment gateway is not configured on the server.' });
+    }
 
     // Create Razorpay order
     const order = await razorpay.orders.create({

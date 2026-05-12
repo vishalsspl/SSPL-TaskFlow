@@ -71,6 +71,40 @@ const Settings = () => {
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef(null);
 
+  const [profileForm, setProfileForm] = useState({ name: '', email: '' });
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setProfileForm({ name: user.name || '', email: user.email || '' });
+    }
+  }, [user]);
+
+  const handleProfileSave = async () => {
+    setIsSavingProfile(true);
+    try {
+      const payload = { name: profileForm.name };
+      if (user?.role === 'ADMIN') {
+        payload.email = profileForm.email;
+      }
+      const response = await api.patch('/users/profile', payload);
+      updateUser(response.data);
+      toast({
+        title: "Profile Updated",
+        description: "Your profile details have been saved successfully.",
+      });
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+      toast({
+        title: "Update Failed",
+        description: error.response?.data?.error || "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
+
   const handleAvatarSelect = async (avatarUrl) => {
     setLoading(true);
     try {
@@ -199,14 +233,27 @@ const Settings = () => {
                         <Label className="text-foreground/90 font-semibold">Full Name</Label>
                         <div className="relative">
                           <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70" />
-                          <Input value={user?.name} readOnly className="!pl-10 bg-muted/30" />
+                          <Input 
+                            value={profileForm.name} 
+                            onChange={(e) => setProfileForm({...profileForm, name: e.target.value})} 
+                            className="!pl-10" 
+                          />
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-foreground/90 font-semibold">Email Address</Label>
+                        <Label className="text-foreground/90 font-semibold flex items-center justify-between">
+                          <span>Email Address</span>
+                          {user?.role !== 'ADMIN' && <span className="text-[10px] text-muted-foreground font-normal">Contact Admin to change</span>}
+                        </Label>
                         <div className="relative">
                           <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70" />
-                          <Input value={user?.email} readOnly className="!pl-10 bg-muted/30" />
+                          <Input 
+                            value={profileForm.email} 
+                            onChange={(e) => setProfileForm({...profileForm, email: e.target.value})} 
+                            readOnly={user?.role !== 'ADMIN'}
+                            className={`!pl-10 ${user?.role !== 'ADMIN' ? 'bg-muted/30 cursor-not-allowed opacity-70 border-dashed' : ''}`} 
+                            title={user?.role !== 'ADMIN' ? 'Only Admins can change their email address' : ''}
+                          />
                         </div>
                       </div>
                       <div className="space-y-2">
@@ -227,7 +274,16 @@ const Settings = () => {
                           </div>
                         </div>
                       </div>
-                    </div>
+                      </div>
+                      <div className="pt-4 flex justify-end">
+                        <Button 
+                          onClick={handleProfileSave} 
+                          disabled={isSavingProfile || (profileForm.name === user?.name && profileForm.email === user?.email)}
+                          className="px-8 font-bold Montserrat rounded-xl"
+                        >
+                          {isSavingProfile ? 'Saving...' : 'Save Changes'}
+                        </Button>
+                      </div>
                   </CardContent>
                 </Card>
 

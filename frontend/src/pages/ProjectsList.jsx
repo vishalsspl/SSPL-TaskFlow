@@ -653,7 +653,7 @@ const ProjectsList = () => {
                       {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && <TableHead>Budget</TableHead>}
                       <TableHead>Status</TableHead>
                       <TableHead>Tasks</TableHead>
-                      <TableHead className="text-center w-[140px]">Actions</TableHead>
+                      {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && <TableHead className="text-center w-[140px]">Actions</TableHead>}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -740,8 +740,8 @@ const ProjectsList = () => {
                               {project._count.tasks}
                             </span>
                           </TableCell>
-                          <TableCell className="text-center">
-                            {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
+                          {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
+                            <TableCell className="text-center">
                               <div className="flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
                                 <Button
                                   variant="ghost"
@@ -772,8 +772,8 @@ const ProjectsList = () => {
                                   <Trash2 className="w-4 h-4" />
                                 </Button>
                               </div>
-                            )}
-                          </TableCell>
+                            </TableCell>
+                          )}
                         </TableRow>
                       );
                     })}

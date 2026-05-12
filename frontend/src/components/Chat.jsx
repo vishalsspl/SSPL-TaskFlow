@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Send, User, UserPlus, Search, Loader2, ChevronLeft, Pencil, Trash2, Check, X } from 'lucide-react';
+import { Send, User, UserPlus, Search, Loader2, ChevronLeft, Pencil, Trash2, Check, X, Smile } from 'lucide-react';
+import EmojiPicker from 'emoji-picker-react';
 import { formatChatTimestamp } from '@/lib/utils';
 import {
     Dialog,
@@ -23,6 +24,7 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
     const { socket, setActiveRoom, joinRoom } = useChatStore();
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const messagesEndRef = useRef(null);
 
     // Add member state
@@ -194,6 +196,11 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
         });
 
         setNewMessage('');
+        setShowEmojiPicker(false);
+    };
+
+    const onEmojiClick = (emojiObject) => {
+        setNewMessage(prev => prev + emojiObject.emoji);
     };
 
     const handleUpdateMessage = async (e) => {
@@ -355,7 +362,28 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
                 </div>
             </ScrollArea>
 
-            <form onSubmit={handleSendMessage} className="p-4 bg-secondary/20 border-t border-border flex gap-2">
+            <form onSubmit={handleSendMessage} className="relative p-4 bg-secondary/20 border-t border-border flex gap-2 items-center">
+                {/* Emoji Picker Dropdown */}
+                {showEmojiPicker && (
+                    <div className="absolute bottom-[80px] left-4 z-50 shadow-2xl rounded-xl overflow-hidden border border-border">
+                        <EmojiPicker 
+                            onEmojiClick={onEmojiClick}
+                            theme="dark"
+                            autoFocusSearch={false}
+                        />
+                    </div>
+                )}
+
+                <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="icon" 
+                    className="shrink-0 text-muted-foreground hover:text-foreground h-11 w-11"
+                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                >
+                    <Smile className="w-5 h-5" />
+                </Button>
+
                 <Input
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}

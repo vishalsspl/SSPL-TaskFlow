@@ -70,7 +70,7 @@ const AuditLog = () => {
       });
       const data = res.data;
       setLogs(data.data || data || []);
-      setTotal(data.pagination?.totalPages || 1);
+      setTotal(Math.min(data.pagination?.totalPages || 1, 50));
     } catch {
       toast({ title: 'Could not load activity logs', variant: 'destructive' });
     } finally {
