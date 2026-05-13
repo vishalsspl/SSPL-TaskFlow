@@ -321,7 +321,7 @@ const Dashboard = () => {
         <Card className="bg-card border-border ring-1 ring-border shadow-2xl">
           <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border pb-4 gap-3">
             <div>
-              <CardTitle className="text-foreground Montserrat">Active Projects</CardTitle>
+              <CardTitle className="text-lg font-bold Montserrat text-foreground">Active Projects</CardTitle>
               <CardDescription className="text-gray-400 Montserrat">
                 Recently updated projects and their status.
               </CardDescription>
@@ -452,7 +452,7 @@ const Dashboard = () => {
           {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
             <Card className="bg-card border-border ring-1 ring-border shadow-2xl overflow-hidden">
               <CardHeader className="border-b border-border">
-                <CardTitle className="text-foreground Montserrat">Budget Distribution</CardTitle>
+                <CardTitle className="text-lg font-bold Montserrat text-foreground">Budget Distribution</CardTitle>
               </CardHeader>
               <CardContent className="p-3 sm:p-6">
                 {financialData && financialData.length > 0 ? (
