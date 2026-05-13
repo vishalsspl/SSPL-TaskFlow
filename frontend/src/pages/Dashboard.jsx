@@ -317,8 +317,8 @@ const Dashboard = () => {
         )}
       </div>
 
-      <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="md:col-span-2 lg:col-span-4 bg-card border-border ring-1 ring-border shadow-2xl">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-2">
+        <Card className="bg-card border-border ring-1 ring-border shadow-2xl">
           <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border pb-4 gap-3">
             <div>
               <CardTitle className="text-foreground Montserrat">Active Projects</CardTitle>
@@ -427,7 +427,7 @@ const Dashboard = () => {
         </Card>
 
         {/* Charts Section */}
-        <div className="md:col-span-2 lg:col-span-3 space-y-4 sm:space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <Card className="bg-card border-border ring-1 ring-border shadow-2xl overflow-hidden">
             <CardHeader className="border-b border-border">
               <CardTitle className="text-lg font-bold Montserrat">Team Performance</CardTitle>
