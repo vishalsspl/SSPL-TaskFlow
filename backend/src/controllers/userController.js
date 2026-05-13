@@ -1,7 +1,7 @@
 import prisma from '../lib/prisma.js';
 import bcrypt from 'bcryptjs';
 
-import { sendUserApprovalEmail, sendTeamAssignmentEmail } from '../services/emailService.js';
+import { sendUserApprovalEmail, sendTeamAssignmentEmail, sendUserRejectionEmail } from '../services/emailService.js';
 
 // Helper to get project IDs managed by a user
 const getManagerProjectIds = async (db, managerId, organizationId) => {
@@ -475,6 +475,16 @@ export const deleteUser = async (req, res) => {
       console.error('[DeleteUser] Failed to delete from MAIN DB:', mainErr.message);
     }
 
+    // ✅ Send Rejection Email if user was pending
+    if (!existingUser.isApproved && existingUser.email) {
+      console.log(`[DeleteUser] Triggering rejection email for: ${existingUser.email} (was pending)`);
+      try {
+        await sendUserRejectionEmail(existingUser.email, existingUser.name);
+      } catch (err) {
+        console.error('[DeleteUser] Critical failure sending rejection email:', err);
+      }
+    }
+
     res.json({ message: 'User deleted successfully' });
   } catch (error) {
     console.error('Error deleting user:', error);
@@ -549,9 +559,13 @@ export const approveUser = async (req, res) => {
     }
 
     if (approvedUser.email) {
+      console.log(`[ApproveUser] Triggering approval email for: ${approvedUser.email}`);
       const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
-      sendUserApprovalEmail(approvedUser.email, approvedUser.name, origin)
-        .catch(err => console.error('Failed to send approval email:', err));
+      try {
+        await sendUserApprovalEmail(approvedUser.email, approvedUser.name, origin);
+      } catch (err) {
+        console.error('[ApproveUser] Critical failure sending approval email:', err);
+      }
     }
 
     res.json(approvedUser);

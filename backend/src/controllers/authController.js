@@ -6,6 +6,24 @@ import { sendMemberInvitationEmail, sendPasswordResetEmail, sendOrgSignupEmail, 
 import { provisionTenantDatabase } from '../services/tenantProvisioner.js';
 import tenantDbManager from '../lib/tenantDbManager.js';
 
+// ── check-email (public) ──────────────────────────────────────────────────
+export const checkEmail = async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email is required.' });
+
+  try {
+    const user = await prisma.user.findFirst({
+      where: { email: email.toLowerCase().trim() },
+      select: { id: true }
+    });
+
+    return res.json({ exists: !!user });
+  } catch (error) {
+    console.error('[CheckEmail] Error:', error.message);
+    return res.status(500).json({ error: 'Server error while checking email.' });
+  }
+};
+
 // ── Helper: Resolve Active Features ───────────────────────────────────────
 export const getActiveFeatures = async (org) => {
   // ── SUPERADMIN / NO ORG: Full access to all features ────────────────────
@@ -290,8 +308,14 @@ export const signup = async (req, res) => {
     const { passwordHash: _ph, ...userWithoutPassword } = mainUser;
     
     // Send signup confirmation email
+    // Send signup confirmation email
     const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
-    sendOrgSignupEmail(email, name, origin).catch(err => console.error('Failed to send org signup email:', err));
+    console.log(`[Signup] Triggering welcome email for joining user: ${email}`);
+    try {
+      await sendOrgSignupEmail(email, name, existingOrg.name);
+    } catch (err) {
+      console.error('[Signup] Failed to send welcome email:', err);
+    }
 
     return res.status(201).json({ user: userWithoutPassword, message: 'Signup successful. Your account is pending approval.' });
   }
@@ -475,7 +499,14 @@ export const signup = async (req, res) => {
     { expiresIn: '7d' }
   );
 
-  const { passwordHash: _ph, ...userWithoutPassword } = mainUser;
+  // ✅ Send Welcome Email to the new Org Admin
+  console.log(`[Signup] Triggering welcome email for new org admin: ${email}`);
+  try {
+    await sendOrgSignupEmail(email, name, organizationName.trim());
+  } catch (err) {
+    console.error('[Signup] Failed to send admin welcome email:', err);
+  }
+
   res.status(201).json({ token, user: userWithoutPassword });
 
 };

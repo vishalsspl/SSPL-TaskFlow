@@ -7,7 +7,7 @@ import { User, Mail, Shield, Lock, Eye, EyeOff } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { useAuthStore } from '@/store/authStore';
 
-const UserForm = ({ formData, setFormData, editingUser, onSubmit, onCancel }) => {
+const UserForm = ({ formData, setFormData, editingUser, onSubmit, onCancel, onSendResetLink }) => {
   const { user: currentUser } = useAuthStore();
   const [showPassword, setShowPassword] = useState(!editingUser);
 
@@ -68,32 +68,49 @@ const UserForm = ({ formData, setFormData, editingUser, onSubmit, onCancel }) =>
           </div>
         </div>
 
-        {/* Password */}
+        {/* Password / Reset Link */}
         <div className="space-y-2">
-          <Label htmlFor="password" className="text-foreground/90 font-semibold mobile-reduce-label">{editingUser ? 'New Password' : 'Password *'}</Label>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70" />
-            <Input
-              id="password"
-              type={showPassword ? "text" : "password"}
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              placeholder={editingUser ? 'Leave empty to keep current' : '••••••••'}
-              required={!editingUser}
-              className="!pl-10 !pr-10 transition-all focus:ring-2 focus:ring-primary/20 mobile-reduce-input"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/70 hover:text-foreground transition-colors"
-            >
-              {showPassword ? (
-                <EyeOff className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
-            </button>
-          </div>
+          {editingUser ? (
+            <>
+              <Label className="text-foreground/90 font-semibold mobile-reduce-label">Password Management</Label>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full flex items-center gap-2 border-primary/20 text-primary hover:bg-primary/5 h-10"
+                onClick={() => onSendResetLink?.(formData.email)}
+              >
+                <Lock className="w-4 h-4" />
+                Send Password Reset Link
+              </Button>
+            </>
+          ) : (
+            <>
+              <Label htmlFor="password" news className="text-foreground/90 font-semibold mobile-reduce-label">Password *</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70" />
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  placeholder="••••••••"
+                  required
+                  className="!pl-10 !pr-10 transition-all focus:ring-2 focus:ring-primary/20 mobile-reduce-input"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/70 hover:text-foreground transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
 

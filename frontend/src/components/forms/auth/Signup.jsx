@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTheme } from '@/components/ThemeProvider';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '@/lib/api';
@@ -59,6 +59,7 @@ const Signup = () => {
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [errorTimestamp, setErrorTimestamp] = useState(0);
   const [fieldErrors, setFieldErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -66,6 +67,20 @@ const Signup = () => {
   const [verifiedOrgName, setVerifiedOrgName] = useState('');
   const [orgCheckError, setOrgCheckError] = useState('');
   const [checkingOrg, setCheckingOrg] = useState(false);
+  
+  const errorRef = useRef(null);
+
+  useEffect(() => {
+    if ((error || orgCheckError) && errorTimestamp > 0 && errorRef.current) {
+      errorRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [error, orgCheckError, errorTimestamp]);
+
+  const triggerError = (msg, isOrgError = false) => {
+    if (isOrgError) setOrgCheckError(msg);
+    else setError(msg);
+    setErrorTimestamp(Date.now());
+  };
 
   const [form, setForm] = useState({
     // step 0 — personal
@@ -104,35 +119,61 @@ const Signup = () => {
   // ── step 0 validation ──────────────────────────────────────────────────
   const validateStep0 = () => {
     const errs = {};
+    let emailFormatError = false;
+
     if (!form.name.trim()) errs.name = true;
     else if (!/^[a-zA-Z0-9\s]+$/.test(form.name)) {
-      setError('Name cannot contain special characters.');
+      triggerError('Name cannot contain special characters.');
       errs.name = true;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = true;
+
+    if (!form.email.trim()) {
+      errs.email = true;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      errs.email = true;
+      emailFormatError = true;
+    }
+
     if (form.password.length < 6) errs.password = true;
     if (form.password !== form.confirmPassword) errs.confirmPassword = true;
 
     if (Object.keys(errs).length) {
       setFieldErrors(errs);
-      
-      if (errs.name || errs.email) {
-        setError('Please fill in all mandatory fields.');
+
+      if (emailFormatError) {
+        triggerError('Invalid email format. Please check your work email.');
+      } else if (errs.name || errs.email) {
+        triggerError('Please fill in all mandatory fields.');
       } else if (errs.password) {
-        setError('Password must be at least 6 characters.');
+        triggerError('Password must be at least 6 characters.');
       } else if (errs.confirmPassword) {
-        setError('Passwords do not match.');
+        triggerError('Passwords do not match.');
       } else {
-        setError('Please fix the highlighted fields.');
+        triggerError('Please fix the highlighted fields.');
       }
       return false;
     }
     return true;
   };
 
-  const nextStep = () => {
+  const nextStep = async () => {
     setError('');
-    if (validateStep0()) setStep(1);
+    if (!validateStep0()) return;
+
+    setLoading(true);
+    try {
+      const { data } = await api.post('/auth/check-email', { email: form.email.trim() });
+      if (data.exists) {
+        triggerError('You are already registered with this email.');
+        setFieldErrors(p => ({ ...p, email: true }));
+        return;
+      }
+      setStep(1);
+    } catch (err) {
+      triggerError('Error checking email. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const validateStep1 = () => {
@@ -141,12 +182,11 @@ const Signup = () => {
     if (form.role === 'ADMIN') {
       if (!form.industry) errs.industry = true;
       if (!form.size) errs.size = true;
-      if (!form.website.trim()) errs.website = true;
       if (!form.country) errs.country = true;
     }
     if (Object.keys(errs).length) {
       setFieldErrors(errs);
-      setError('Please fill in all mandatory fields.');
+      triggerError('Please fill in all mandatory fields.');
       return false;
     }
     return true;
@@ -165,7 +205,7 @@ const Signup = () => {
       if (form.role !== 'ADMIN') {
         const { data: orgData } = await api.post('/auth/check-org', { organizationName: form.organizationName.trim() });
         if (!orgData.exists) {
-          setOrgCheckError('Organisation not found. Please check the name or contact your admin.');
+          triggerError('Organisation not found. Please check the name or contact your admin.', true);
           setLoading(false);
           return;
         }
@@ -194,7 +234,7 @@ const Signup = () => {
       }
     } catch (err) {
       const msg = err.response?.data?.error || 'Signup failed. Please try again.';
-      setError(msg);
+      triggerError(msg);
       if (msg.toLowerCase().includes('email')) {
         setStep(0);
         setFieldErrors({ email: true });
@@ -214,7 +254,7 @@ const Signup = () => {
 
   return (
     <div className={cn(
-      "min-h-screen flex flex-col items-center justify-start relative overflow-y-auto pt-32 pb-20 px-4 selection:bg-primary/30 transition-colors duration-500",
+      "min-h-screen flex flex-col items-center justify-start relative overflow-y-auto pt-16 pb-20 px-4 selection:bg-primary/30 transition-colors duration-500",
       isDarkMode ? "bg-[#0A0A0A] text-white" : "bg-[#F8FCF6] text-slate-900"
     )}>
       {/* Back button */}
@@ -233,10 +273,10 @@ const Signup = () => {
 
       {/* Background */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-          <div className={`absolute inset-0 transition-opacity duration-500 ${!isDarkMode ? 'bg-[url("data:image/svg+xml,%3Csvg width=%2720%27 height=%2720%27 viewBox=%270 0 20%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cg fill=%27%2348a111%27 fill-opacity=%270.05%27 fill-rule=%27evenodd%27%3E%3Ccircle cx=%273%27 cy=%273%27 r=%273%27/%3E%3Ccircle cx=%2713%27 cy=%2713%27 r=%273%27/%3E%3C/g%3E%3C/svg%3E")]' : ''}`} />
-          <div className={`absolute inset-0 bg-gradient-to-br transition-all duration-500 ${isDarkMode ? 'from-[#102A04] via-[#050505] to-[#0A0A0A]' : 'from-[#DDF2D1]/80 via-[#F8FCF6]/90 to-[#E9F7E1]/80'}`} />
-          <div className={`absolute top-[-10%] left-[-10%] w-[50%] h-[50%] blur-[150px] rounded-full transition-all duration-500 ${isDarkMode ? 'bg-primary/20' : 'bg-[#48A111]/15'}`} />
-          <div className={`absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] blur-[150px] rounded-full transition-all duration-500 ${isDarkMode ? 'bg-primary/5' : 'bg-[#48A111]/10'}`} />
+        <div className={`absolute inset-0 transition-opacity duration-500 ${!isDarkMode ? 'bg-[url("data:image/svg+xml,%3Csvg width=%2720%27 height=%2720%27 viewBox=%270 0 20%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cg fill=%27%2348a111%27 fill-opacity=%270.05%27 fill-rule=%27evenodd%27%3E%3Ccircle cx=%273%27 cy=%273%27 r=%273%27/%3E%3Ccircle cx=%2713%27 cy=%2713%27 r=%273%27/%3E%3C/g%3E%3C/svg%3E")]' : ''}`} />
+        <div className={`absolute inset-0 bg-gradient-to-br transition-all duration-500 ${isDarkMode ? 'from-[#102A04] via-[#050505] to-[#0A0A0A]' : 'from-[#DDF2D1]/80 via-[#F8FCF6]/90 to-[#E9F7E1]/80'}`} />
+        <div className={`absolute top-[-10%] left-[-10%] w-[50%] h-[50%] blur-[150px] rounded-full transition-all duration-500 ${isDarkMode ? 'bg-primary/20' : 'bg-[#48A111]/15'}`} />
+        <div className={`absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] blur-[150px] rounded-full transition-all duration-500 ${isDarkMode ? 'bg-primary/5' : 'bg-[#48A111]/10'}`} />
       </div>
 
       <Card className={cn(
@@ -257,10 +297,17 @@ const Signup = () => {
         <CardContent className="pt-2">
           <StepDots current={step} isDarkMode={isDarkMode} />
 
-          {error && (
-            <div className="mb-4 p-4 text-sm font-medium rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300 bg-red-500/10 border border-red-500/20 text-red-200">
-              <AlertCircle className="h-5 w-5 shrink-0 text-red-400 mt-0.5" />
-              <span className="tracking-tight">{error}</span>
+          {(error || orgCheckError) && (
+            <div 
+              ref={errorRef}
+              className={cn(
+              "mb-4 p-4 text-sm font-semibold rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300 border",
+              isDarkMode
+                ? "bg-red-500/10 border-red-500/20 text-red-200"
+                : "bg-red-50 border-red-200 text-red-700 shadow-sm shadow-red-100"
+            )}>
+              <AlertCircle className={cn("h-5 w-5 shrink-0 mt-0.5", isDarkMode ? "text-red-400" : "text-red-600")} />
+              <span className="tracking-tight">{error || orgCheckError}</span>
             </div>
           )}
 
@@ -278,8 +325,8 @@ const Signup = () => {
                       onClick={() => setForm(p => ({ ...p, role: r.id }))}
                       className={cn(
                         'flex flex-col items-start p-4 rounded-xl border transition-all text-left group relative backdrop-blur-md',
-                        form.role === r.id 
-                          ? 'bg-[#48A111]/10 border-[#48A111] shadow-lg shadow-[#48A111]/5' 
+                        form.role === r.id
+                          ? 'bg-[#48A111]/10 border-[#48A111] shadow-lg shadow-[#48A111]/5'
                           : (isDarkMode ? 'bg-white/5 border-white/10 hover:border-white/20 hover:bg-white/10' : 'bg-white border-slate-200 hover:border-[#48A111]/30 hover:bg-[#48A111]/5 shadow-sm')
                       )}
                     >
@@ -345,9 +392,9 @@ const Signup = () => {
                   </Field>
                 </div>
 
-                <Button type="button" onClick={nextStep}
+                <Button type="button" onClick={nextStep} disabled={loading}
                   className="w-full bg-[#48A111] hover:bg-[#48A111]/90 text-white font-bold h-12 rounded-xl shadow-lg shadow-[#48A111]/10 mt-2">
-                  Continue <ChevronRight className="w-4 h-4 ml-1" />
+                  {loading ? 'Checking email...' : <span className="flex items-center">Continue <ChevronRight className="w-4 h-4 ml-1" /></span>}
                 </Button>
 
                 <p className={cn("text-center text-sm font-medium transition-colors", isDarkMode ? "text-white/60" : "text-slate-600")}>
@@ -375,9 +422,14 @@ const Signup = () => {
 
                   {/* Org not found error */}
                   {orgCheckError && (
-                    <div className="mt-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                      <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
-                      <p className="text-sm font-medium text-red-300">{orgCheckError}</p>
+                    <div className={cn(
+                      "mt-3 p-3 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300 border",
+                      isDarkMode
+                        ? "bg-red-500/10 border-red-500/20 text-red-300"
+                        : "bg-red-50 border-red-200 text-red-600 shadow-sm"
+                    )}>
+                      <AlertCircle className={cn("w-5 h-5 shrink-0", isDarkMode ? "text-red-400" : "text-red-500")} />
+                      <p className="text-sm font-medium">{orgCheckError}</p>
                     </div>
                   )}
 
@@ -419,7 +471,7 @@ const Signup = () => {
                       </Select>
                     </Field>
 
-                    <Field label="Website *" id="website" error={fieldErrors.website} isDarkMode={isDarkMode}>
+                    <Field label="Website (Optional)" id="website" error={fieldErrors.website} isDarkMode={isDarkMode}>
                       <div className="relative">
                         <Globe className={cn("absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors", isDarkMode ? "text-white/40" : "text-slate-400")} />
                         <Input id="website" placeholder="https://yourcompany.com" value={form.website}
@@ -454,7 +506,7 @@ const Signup = () => {
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v4a1 1 0 102 0V7zm-1 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
                 </svg>
                 <p className="text-xs font-medium text-[#48A111]/90">
-                  {form.role === 'ADMIN' 
+                  {form.role === 'ADMIN'
                     ? <span>Your organisation starts on a <strong>14-day FREE trial</strong> with up to 10 users and 5 projects.</span>
                     : <span>You will be added to the organisation as a <strong>{form.role}</strong> pending administrator approval.</span>
                   }

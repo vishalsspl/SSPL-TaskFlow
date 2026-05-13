@@ -152,10 +152,10 @@ export const sendTaskStatusUpdateEmail = async (to, taskTitle, projectName, newS
       `,
     });
 
-    console.log(`[EmailService] Task Status Update Email sent to ${to}: ${info.messageId}`);
+    console.log(`[EmailService] ✅ Task Status Update Email sent to ${to}: ${info.messageId}`);
     return info;
   } catch (error) {
-    console.error(`[EmailService] Error sending task status update email to ${to}:`, error);
+    console.error(`[EmailService] ❌ Error sending task status update email to ${to}:`, error);
     return null;
   }
 };
@@ -342,8 +342,12 @@ export const sendProjectAssignmentEmail = sendProjectManagerEmail;
 
 
 export const sendUserApprovalEmail = async (to, userName, baseUrl) => {
+  console.log(`[EmailService] 📧 Initiating Approval Email for: ${to}`);
   try {
-    if (!to) return;
+    if (!to) {
+      console.warn('[EmailService] ⚠️ No recipient email provided for approval notification');
+      return;
+    }
 
     const info = await transporter.sendMail({
       from: DEFAULT_FROM,
@@ -365,13 +369,47 @@ export const sendUserApprovalEmail = async (to, userName, baseUrl) => {
       `,
     });
 
-    console.log('Approval Email sent: %s', info.messageId);
+    console.log(`[EmailService] ✅ Approval Email sent to ${to}: ${info.messageId}`);
     if (nodemailer.getTestMessageUrl(info)) {
-      console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+      console.log(`[EmailService] Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
     }
     return info;
   } catch (error) {
-    console.error('Error sending email:', error);
+    console.error(`[EmailService] ❌ Error sending approval email to ${to}:`, error);
+    return null;
+  }
+};
+
+export const sendUserRejectionEmail = async (to, userName) => {
+  console.log(`[EmailService] 📧 Initiating Rejection Email for: ${to}`);
+  try {
+    if (!to) {
+      console.warn('[EmailService] ⚠️ No recipient email provided for rejection notification');
+      return;
+    }
+
+    const info = await transporter.sendMail({
+      from: DEFAULT_FROM,
+      to,
+      subject: 'Update on Your TaskFlow Registration',
+      text: `Hello ${userName},\n\nThank you for your interest in TaskFlow. We regret to inform you that your registration request has been declined at this time.\n\nIf you have any questions, please contact your organization administrator.\n\nBest regards,\nTaskFlow Team`,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px;">
+          <h2 style="color: #EF4444;">Registration Update</h2>
+          <p>Hello <strong>${userName}</strong>,</p>
+          <p>Thank you for your interest in TaskFlow.</p>
+          <p>We regret to inform you that your registration request has been <strong>declined</strong> at this time.</p>
+          <p style="color: #6B7280; font-size: 14px; margin-top: 20px;">If you believe this was a mistake or have any questions, please contact your organization's administrator.</p>
+          <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+          <p style="color: #6B7280; font-size: 12px; text-align: center;">This is an automated message from TaskFlow.</p>
+        </div>
+      `,
+    });
+
+    console.log(`[EmailService] Rejection Email sent to ${to}: ${info.messageId}`);
+    return info;
+  } catch (error) {
+    console.error(`[EmailService] Error sending rejection email to ${to}:`, error);
     return null;
   }
 };
@@ -383,16 +421,16 @@ export const sendOrgSignupEmail = async (to, userName, orgName) => {
     const info = await transporter.sendMail({
       from: DEFAULT_FROM,
       to,
-      subject: 'Welcome to TaskFlow - Account Pending Approval',
-      text: `Hello ${userName},\n\nThank you for signing up ${orgName} on TaskFlow.\n\nYour account has been created and is currently pending administrator approval. You will receive another email once your account is approved and ready to use.\n\nBest regards,\nTaskFlow Team`,
+      subject: `Welcome to TaskFlow - Joining ${orgName}`,
+      text: `Hello ${userName},\n\nThank you for registering with ${orgName} on TaskFlow.\n\nYour account has been created and is currently pending administrator approval. You will receive another email once your account is approved and ready to use.\n\nBest regards,\nTaskFlow Team`,
       html: `
         <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #2563eb;">Welcome to TaskFlow!</h2>
           <p>Hello <strong>${userName}</strong>,</p>
-          <p>Thank you for registering <strong>${orgName}</strong> on TaskFlow.</p>
+          <p>Thank you for registering with <strong>${orgName}</strong> on TaskFlow.</p>
           <div style="background: #FFFBEB; border-left: 4px solid #F59E0B; padding: 15px; margin: 20px 0; border-radius: 4px;">
             <p style="margin: 0; color: #B45309;"><strong>Status: Pending Approval</strong></p>
-            <p style="margin: 5px 0 0 0; font-size: 14px;">Your organization account is currently under review by our administrators. We will notify you via email as soon as it is approved.</p>
+            <p style="margin: 5px 0 0 0; font-size: 14px;">Your account is currently under review by the organization administrator. We will notify you via email as soon as it is approved.</p>
           </div>
           <hr style="border: 1px solid #eee; margin: 20px 0;">
           <p style="color: #666; font-size: 12px;">This is an automated message from TaskFlow.</p>
@@ -731,10 +769,10 @@ export const sendPasswordResetEmail = async (to, userName, resetLink) => {
       `,
     });
 
-    console.log('Password Reset Email sent: %s', info.messageId);
+    console.log(`[EmailService] ✅ Password Reset Email sent to ${to}: ${info.messageId}`);
     return info;
   } catch (error) {
-    console.error('Error sending password reset email:', error);
+    console.error(`[EmailService] ❌ Error sending password reset email to ${to}:`, error);
     return null;
   }
 };

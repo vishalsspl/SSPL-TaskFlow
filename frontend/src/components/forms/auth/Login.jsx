@@ -76,7 +76,7 @@ const Login = () => {
   };
 
   return (
-    <div className={cn("min-h-screen flex flex-col items-center justify-start relative overflow-y-auto pt-32 pb-20 px-4 transition-colors duration-500", isDarkMode ? "bg-[#0A0A0A]" : "bg-[#F8FCF6]")}>
+    <div className={cn("min-h-screen flex flex-col items-center justify-center relative overflow-y-auto pb-20 px-4 transition-colors duration-500", isDarkMode ? "bg-[#0A0A0A]" : "bg-[#F8FCF6]")}>
       {/* Back to Landing Page Button */}
       <Button
         variant="ghost"
@@ -119,8 +119,13 @@ const Login = () => {
             )}
 
             {error && (
-              <div className="mb-4 p-4 text-sm font-medium rounded-xl flex items-center gap-3 bg-red-500/10 border border-red-500/20 text-red-200 animate-in fade-in slide-in-from-top-2 duration-300">
-                <AlertCircle className="h-5 w-5 shrink-0 text-red-400" />
+              <div className={cn(
+                "mb-4 p-4 text-sm font-semibold rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300 border",
+                isDarkMode 
+                  ? "bg-red-500/10 border-red-500/20 text-red-200" 
+                  : "bg-red-50 border-red-200 text-red-700 shadow-sm shadow-red-100"
+              )}>
+                <AlertCircle className={cn("h-5 w-5 shrink-0", isDarkMode ? "text-red-400" : "text-red-600")} />
                 <div className="tracking-tight">
                   {error === "Invalid credentials" || error.toLowerCase().includes("credentials")
                     ? "Invalid email or password. Please try again."

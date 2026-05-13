@@ -87,6 +87,8 @@ const Team = () => {
   // Progress Panel State
   const [viewingProgressUserId, setViewingProgressUserId] = useState(null);
   const [showProgressPanel, setShowProgressPanel] = useState(false);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [selectedPendingUser, setSelectedPendingUser] = useState(null);
 
   // Pagination state
   const [page, setPage] = useState(1);
@@ -246,6 +248,29 @@ const Team = () => {
     } finally {
       setApproving(null);
     }
+  };
+
+  const handleReject = async (userId) => {
+    try {
+      await api.delete(`/users/${userId}`);
+      setPendingUsers(pendingUsers.filter(u => u.id !== userId));
+      toast({
+        title: "Registration Declined",
+        description: "The user's signup request has been removed.",
+      });
+    } catch (error) {
+      console.error('Error rejecting user:', error);
+      toast({
+        title: "Action Failed",
+        description: "Failed to decline signup request.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleViewDetails = (user) => {
+    setSelectedPendingUser(user);
+    setShowDetailsDialog(true);
   };
 
   const handleSubmit = async (e) => {
@@ -446,6 +471,23 @@ const Team = () => {
     });
   };
 
+  const handleSendResetLink = async (email) => {
+    try {
+      await api.post('/auth/forgot-password', { email });
+      toast({
+        title: "Reset Link Sent",
+        description: `A password reset link has been sent to ${email}.`,
+      });
+    } catch (error) {
+      console.error('Failed to send reset link:', error);
+      toast({
+        title: "Request Failed",
+        description: error.response?.data?.error || "Failed to send reset link.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const ROLE_CONFIG = {
     ADMIN: {
       color: '#8B5CF6',
@@ -542,6 +584,7 @@ const Team = () => {
                 editingUser={editingUser}
                 onSubmit={handleSubmit}
                 onCancel={handleCancel}
+                onSendResetLink={handleSendResetLink}
               />
             </div>
           </DialogContent>
@@ -959,14 +1002,32 @@ const Team = () => {
                             {new Date(pendingUser.createdAt).toLocaleDateString()}
                           </div>
                         </div>
-                        <Button
-                          onClick={() => handleApprove(pendingUser.id)}
-                          disabled={approving === pendingUser.id}
-                          size="sm"
-                          className="w-full sm:w-auto"
-                        >
-                          {approving === pendingUser.id ? 'Approving...' : 'Approve'}
-                        </Button>
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewDetails(pendingUser)}
+                            className="flex-1 sm:flex-none border-border/40 hover:bg-secondary/40"
+                          >
+                            <User className="w-3.5 h-3.5 mr-1.5" /> Details
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleReject(pendingUser.id)}
+                            className="flex-1 sm:flex-none text-destructive hover:text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 mr-1.5" /> Decline
+                          </Button>
+                          <Button
+                            onClick={() => handleApprove(pendingUser.id)}
+                            disabled={approving === pendingUser.id}
+                            size="sm"
+                            className="flex-1 sm:flex-none bg-[#48A111] hover:bg-[#48A111]/90 text-white font-bold"
+                          >
+                            {approving === pendingUser.id ? 'Approving...' : 'Approve'}
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1028,7 +1089,7 @@ const Team = () => {
                             {selectedManagerId !== 'CLIENTS_LIST' && (
                               <TableHead>{selectedManagerId !== 'ALL' && selectedManagerId !== 'MEMBERS_LIST' ? 'Clients' : 'Managers'}</TableHead>
                             )}
-                            {currentUser?.role !== 'CLIENT' && currentUser?.role !== 'MEMBER' && <TableHead className="text-right">Actions</TableHead>}
+                            {currentUser?.role !== 'CLIENT' && currentUser?.role !== 'MEMBER' && <TableHead className="text-center">Actions</TableHead>}
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -1083,8 +1144,8 @@ const Team = () => {
                                   </TableCell>
                                 )}
                                 {currentUser?.role !== 'CLIENT' && currentUser?.role !== 'MEMBER' && (
-                                  <TableCell className="text-right">
-                                    <div className="flex items-center justify-end gap-2">
+                                  <TableCell className="text-center">
+                                    <div className="flex items-center justify-center gap-2">
                                       {user.role !== 'CLIENT' && (
                                         <Button
                                           variant="ghost"
@@ -1264,6 +1325,77 @@ const Team = () => {
           fetchAllMembers();
         }}
       />
+
+      {/* User Details Dialog */}
+      <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle>User Registration Details</DialogTitle>
+            <DialogDescription>
+              Review the details of the pending registration request.
+            </DialogDescription>
+          </DialogHeader>
+          {selectedPendingUser && (
+            <div className="space-y-6 py-4">
+              <div className="flex items-center gap-4 p-4 rounded-xl bg-secondary/20 border border-border/40">
+                <Avatar className="h-14 w-14 border border-border ring-2 ring-background">
+                  <AvatarFallback className="text-xl" style={{ backgroundColor: getRoleBadgeStyle(selectedPendingUser.role).backgroundColor, color: getRoleBadgeStyle(selectedPendingUser.role).color }}>
+                    {selectedPendingUser.name.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="font-bold text-lg">{selectedPendingUser.name}</h3>
+                  <p className="text-sm text-muted-foreground">{selectedPendingUser.email}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Requested Role</p>
+                  <Badge 
+                    className="text-[10px] font-bold tracking-tight px-2 py-0.5"
+                    style={getRoleBadgeStyle(selectedPendingUser.role)}
+                  >
+                    {selectedPendingUser.role}
+                  </Badge>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Signed Up On</p>
+                  <p className="text-sm font-medium flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-muted-foreground" />
+                    {new Date(selectedPendingUser.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-4 flex flex-col gap-2">
+                <Button 
+                  onClick={() => { handleApprove(selectedPendingUser.id); setShowDetailsDialog(false); }}
+                  className="w-full bg-[#48A111] hover:bg-[#48A111]/90 text-white font-bold h-11"
+                >
+                  Approve Registration
+                </Button>
+                <div className="grid grid-cols-2 gap-2">
+                   <Button 
+                    variant="outline" 
+                    onClick={() => setShowDetailsDialog(false)}
+                    className="h-11"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => { handleReject(selectedPendingUser.id); setShowDetailsDialog(false); }}
+                    className="h-11 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  >
+                    Decline Request
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
