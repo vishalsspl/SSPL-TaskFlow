@@ -147,6 +147,20 @@ export const useChatStore = create((set, get) => ({
             }
         });
 
+        // When Admin updates org profile (logo, name), refresh user branding data.
+        socket.on('org-profile-updated', async (payload) => {
+            try {
+                const state = get();
+                if (!state.organizationId) return;
+                if (String(payload?.organizationId) !== String(state.organizationId)) return;
+
+                console.log('[Socket] org-profile-updated received. Re-syncing /auth/me...');
+                await useAuthStore.getState().syncUser(api);
+            } catch (err) {
+                console.error('[Socket] Failed to re-sync profile after org update:', err);
+            }
+        });
+
         set({ socket });
 
         // Also fetch initial counts immediately

@@ -1,6 +1,7 @@
 import prisma from '../lib/prisma.js';
 import { sendUserApprovalEmail, sendCredentialsUpdatedEmail } from '../services/emailService.js';
 import bcrypt from 'bcryptjs';
+import fs from 'fs';
 
 // ── GET /api/organizations/me ──────────────────────────────────────────────
 // Returns the current user's organisation with user + project counts
@@ -56,6 +57,11 @@ export const updateMyOrganization = async (req, res) => {
         sessionTimeoutMinutes,
     } = req.body;
 
+    // DEBUG: Log to file
+    try {
+        fs.appendFileSync('org_update_debug.log', `[${new Date().toISOString()}] Org: ${organizationId}, Keys: ${Object.keys(req.body).join(', ')}, logoLen: ${logoUrl?.length || 0}\n`);
+    } catch (err) {}
+
     if (name !== undefined && (!name.trim() || name.trim().length < 2)) {
         return res.status(400).json({ error: 'Organisation name must be at least 2 characters' });
     }
@@ -64,56 +70,58 @@ export const updateMyOrganization = async (req, res) => {
         return res.status(400).json({ error: 'Invalid billing email address' });
     }
 
+    const updateData = {
+        ...(name !== undefined && { name: name.trim() }),
+        ...(logoUrl !== undefined && { logoUrl }),
+        ...(themeColor !== undefined && { themeColor }),
+        ...(industry !== undefined && { industry }),
+        ...(size !== undefined && { size }),
+        ...(website !== undefined && { website: website?.trim() || null }),
+        ...(country !== undefined && { country }),
+        ...(timezone !== undefined && { timezone }),
+        ...(billingEmail !== undefined && { billingEmail: billingEmail?.trim() || null }),
+        ...(primaryContactName !== undefined && { primaryContactName: primaryContactName?.trim() || null }),
+        ...(primaryContactPhone !== undefined && { primaryContactPhone: primaryContactPhone?.trim() || null }),
+        ...(address !== undefined && { address: address?.trim() || null }),
+        ...(allowClientSignup !== undefined && { allowClientSignup: Boolean(allowClientSignup) }),
+        ...(requireApproval !== undefined && { requireApproval: Boolean(requireApproval) }),
+        ...(sessionTimeoutMinutes !== undefined && { sessionTimeoutMinutes: parseInt(sessionTimeoutMinutes) }),
+    };
+
+    // ── 🔄 SYNC: Propagate profile changes to Main DB FIRST for safety ────────────────────────
+    try {
+        await prisma.organization.update({
+            where: { id: organizationId },
+            data: updateData
+        });
+    } catch (syncErr) {
+        console.error(`[OrgUpdateSync] Main DB update failed:`, syncErr.message);
+        try {
+            fs.appendFileSync('sync_error.log', `[${new Date().toISOString()}] Main DB Fail: ${syncErr.message}\n`);
+        } catch (e) {}
+    }
+
+    // ── 🗄️ TENANT: Update Tenant DB ──────────────────────────────────────────────────────────
     const updated = await req.db.organization.update({
         where: { id: organizationId },
-        data: {
-            ...(name !== undefined && { name: name.trim() }),
-            ...(logoUrl !== undefined && { logoUrl }),
-            ...(themeColor !== undefined && { themeColor }),
-            ...(industry !== undefined && { industry }),
-            ...(size !== undefined && { size }),
-            ...(website !== undefined && { website: website?.trim() || null }),
-            ...(country !== undefined && { country }),
-            ...(timezone !== undefined && { timezone }),
-            ...(billingEmail !== undefined && { billingEmail: billingEmail?.trim() || null }),
-            ...(primaryContactName !== undefined && { primaryContactName: primaryContactName?.trim() || null }),
-            ...(primaryContactPhone !== undefined && { primaryContactPhone: primaryContactPhone?.trim() || null }),
-            ...(address !== undefined && { address: address?.trim() || null }),
-            ...(allowClientSignup !== undefined && { allowClientSignup: Boolean(allowClientSignup) }),
-            ...(requireApproval !== undefined && { requireApproval: Boolean(requireApproval) }),
-            ...(sessionTimeoutMinutes !== undefined && { sessionTimeoutMinutes: parseInt(sessionTimeoutMinutes) }),
-        },
+        data: updateData,
         include: {
             _count: { select: { users: true } },
         },
     });
 
-    // ── 🔄 SYNC: Propagate branding & profile to Main DB for consistency ─────────────────────────
-    if (req.db !== prisma) {
-        try {
-            await prisma.organization.update({
-                where: { id: organizationId },
-                data: {
-                    ...(name !== undefined && { name: name.trim() }),
-                    ...(logoUrl !== undefined && { logoUrl }),
-                    ...(themeColor !== undefined && { themeColor }),
-                    ...(industry !== undefined && { industry }),
-                    ...(size !== undefined && { size }),
-                    ...(website !== undefined && { website: website?.trim() || null }),
-                    ...(country !== undefined && { country }),
-                    ...(timezone !== undefined && { timezone }),
-                    ...(billingEmail !== undefined && { billingEmail: billingEmail?.trim() || null }),
-                    ...(primaryContactName !== undefined && { primaryContactName: primaryContactName?.trim() || null }),
-                    ...(primaryContactPhone !== undefined && { primaryContactPhone: primaryContactPhone?.trim() || null }),
-                    ...(address !== undefined && { address: address?.trim() || null }),
-                    ...(allowClientSignup !== undefined && { allowClientSignup: Boolean(allowClientSignup) }),
-                    ...(requireApproval !== undefined && { requireApproval: Boolean(requireApproval) }),
-                    ...(sessionTimeoutMinutes !== undefined && { sessionTimeoutMinutes: parseInt(sessionTimeoutMinutes) }),
-                }
+    // ── 📢 BROADCAST: Notify all org users to refresh their branding ─────────────────────────
+    try {
+        if (req.io) {
+            req.io.to(`org-${organizationId}`).emit('org-profile-updated', {
+                organizationId,
+                logoUrl: updated.logoUrl,
+                name: updated.name,
+                themeColor: updated.themeColor,
             });
-        } catch (syncErr) {
-            console.error('[OrgUpdateSync] Failed to propagate to Main DB:', syncErr.message);
         }
+    } catch (err) {
+        console.error('[OrgUpdate] Failed to emit socket event:', err.message);
     }
 
     res.json(updated);
