@@ -209,7 +209,7 @@ const Dashboard = () => {
             <FolderKanban size={120} />
           </div>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-[10px] sm:text-sm font-black text-white/80 uppercase tracking-widest Montserrat truncate">Total Projects</CardTitle>
+            <CardTitle className="text-[9px] sm:text-xs font-black text-white/80 uppercase tracking-widest Montserrat leading-tight">Total Projects</CardTitle>
             <div className="p-2 bg-white/10 backdrop-blur-md rounded-xl ring-1 ring-white/20">
               <FolderKanban className="h-5 w-5 text-white" />
             </div>
@@ -231,7 +231,7 @@ const Dashboard = () => {
             <Activity size={120} />
           </div>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-[10px] sm:text-sm font-black text-white/80 uppercase tracking-widest Montserrat truncate">Active Work</CardTitle>
+            <CardTitle className="text-[9px] sm:text-xs font-black text-white/80 uppercase tracking-widest Montserrat leading-tight">Active Work</CardTitle>
             <div className="p-2 bg-white/10 backdrop-blur-md rounded-xl ring-1 ring-white/20">
               <Activity className="h-5 w-5 text-white" />
             </div>
@@ -254,7 +254,7 @@ const Dashboard = () => {
             <CheckCircle size={120} />
           </div>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-[10px] sm:text-sm font-black text-white/80 uppercase tracking-widest Montserrat truncate">Total Tasks</CardTitle>
+            <CardTitle className="text-[9px] sm:text-xs font-black text-white/80 uppercase tracking-widest Montserrat leading-tight">Total Tasks</CardTitle>
             <div className="p-2 bg-white/10 backdrop-blur-md rounded-xl ring-1 ring-white/20">
               <CheckCircle className="h-5 w-5 text-white" />
             </div>
@@ -277,7 +277,7 @@ const Dashboard = () => {
               <BarChart3 size={120} />
             </div>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-[10px] sm:text-sm font-black text-white/80 uppercase tracking-widest Montserrat truncate">Net Budget</CardTitle>
+              <CardTitle className="text-[9px] sm:text-xs font-black text-white/80 uppercase tracking-widest Montserrat leading-tight">Net Budget</CardTitle>
               <div className="p-2 bg-white/10 backdrop-blur-md rounded-xl ring-1 ring-white/20">
                 <BarChart3 className="h-5 w-5 text-white" />
               </div>
@@ -304,7 +304,7 @@ const Dashboard = () => {
               <UserCheck size={120} />
             </div>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-[10px] sm:text-sm font-black text-white/80 uppercase tracking-widest Montserrat truncate">Pending</CardTitle>
+              <CardTitle className="text-[9px] sm:text-xs font-black text-white/80 uppercase tracking-widest Montserrat leading-tight">Pending</CardTitle>
               <div className="p-2 bg-white/10 backdrop-blur-md rounded-xl ring-1 ring-white/20">
                 <UserCheck className="h-5 w-5 text-white" />
               </div>
