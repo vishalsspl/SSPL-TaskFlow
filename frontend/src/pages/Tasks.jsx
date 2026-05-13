@@ -58,6 +58,7 @@ import TablePagination from '@/components/ui/table-pagination';
 import { useToast } from "@/hooks/use-toast";
 import { useTimerStore } from '@/store/timerStore';
 import { Clock } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import ImportTasksDialog from '@/components/ImportTasksDialog';
 
 const PROJECT_COLORS = [
@@ -469,52 +470,58 @@ const Tasks = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredTasks.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
-                        No tasks found
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredTasks.map((task) => (
-                      <TableRow
-                        key={task.id}
-                        className="cursor-pointer hover:bg-accent transition-colors group border-b border-border"
-                        onClick={() => handleTaskClick(task)}
-                      >
-                        <TableCell className="relative">
-                          <div className="flex items-center justify-center text-center px-6 w-full min-h-[2rem]">
-                            <div
-                              className="absolute left-4 w-1.5 h-1.5 rounded-full shadow-[0_0_8px] shrink-0"
-                              style={{
-                                backgroundColor: task.status === 'TODO' ? '#F59E0B' :
-                                  task.status === 'IN_PROGRESS' ? '#00A3FF' :
-                                    task.status === 'IN_REVIEW' ? '#D946EF' :
-                                      task.status === 'COMPLETED' ? '#48A111' : '#EF4444'
-                              }}
-                            />
-                            <p className="font-bold Montserrat leading-tight text-foreground group-hover:text-primary transition-colors">{task.title}</p>
-
-                            {/* Styled Custom Tooltip */}
-                            {task.description && (
-                              <div className="absolute left-6 bottom-full mb-2 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 translate-y-1 pointer-events-none transition-all duration-300 z-[100] invisible group-hover:visible">
-                                <div 
-                                  className="text-xs rounded-xl shadow-2xl p-3 w-64 break-words whitespace-normal text-left font-bold leading-relaxed tracking-wide border border-white/10"
-                                  style={{ 
-                                    backgroundColor: getProjectColor(task.project?.id, projects),
-                                    color: getContrastColor(getProjectColor(task.project?.id, projects))
-                                  }}
-                                >
-                                  {task.description.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ')}
-                                </div>
-                                <div 
-                                  className="absolute -bottom-1.5 left-6 w-3 h-3 border-b border-r border-white/10 rotate-45"
-                                  style={{ backgroundColor: getProjectColor(task.project?.id, projects) }}
-                                ></div>
-                              </div>
-                            )}
-                          </div>
+                    {filteredTasks.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                          No tasks found
                         </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredTasks.map((task, index) => (
+                        <TableRow
+                          key={task.id}
+                          className="cursor-pointer hover:bg-accent transition-colors group border-b border-border hover:z-50 relative"
+                          onClick={() => handleTaskClick(task)}
+                        >
+                          <TableCell className="relative">
+                            <div className="flex items-center justify-center text-center px-6 w-full min-h-[2rem]">
+                              <div
+                                className="absolute left-4 w-1.5 h-1.5 rounded-full shadow-[0_0_8px] shrink-0"
+                                style={{
+                                  backgroundColor: task.status === 'TODO' ? '#F59E0B' :
+                                    task.status === 'IN_PROGRESS' ? '#00A3FF' :
+                                      task.status === 'IN_REVIEW' ? '#D946EF' :
+                                        task.status === 'COMPLETED' ? '#48A111' : '#EF4444'
+                                }}
+                              />
+                              <p className="font-bold Montserrat leading-tight text-foreground group-hover:text-primary transition-colors">{task.title}</p>
+  
+                              {/* Styled Custom Tooltip */}
+                              {task.description && (
+                                <div className={cn(
+                                  "absolute left-6 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 translate-y-1 pointer-events-none transition-all duration-300 z-[100] invisible group-hover:visible",
+                                  index === 0 ? "top-full mt-2" : "bottom-full mb-2"
+                                )}>
+                                  <div 
+                                    className="text-xs rounded-xl shadow-2xl p-3 w-64 break-words whitespace-normal text-left font-bold leading-relaxed tracking-wide border border-white/10"
+                                    style={{ 
+                                      backgroundColor: getProjectColor(task.project?.id, projects),
+                                      color: getContrastColor(getProjectColor(task.project?.id, projects))
+                                    }}
+                                  >
+                                    {task.description.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ')}
+                                  </div>
+                                  <div 
+                                    className={cn(
+                                      "absolute w-3 h-3 border-white/10 rotate-45",
+                                      index === 0 ? "-top-1.5 left-6 border-t border-l" : "-bottom-1.5 left-6 border-b border-r"
+                                    )}
+                                    style={{ backgroundColor: getProjectColor(task.project?.id, projects) }}
+                                  ></div>
+                                </div>
+                              )}
+                            </div>
+                          </TableCell>
                         <TableCell className="text-xs font-medium Montserrat text-gray-400">{task.project.name}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">

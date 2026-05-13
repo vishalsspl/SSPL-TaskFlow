@@ -88,6 +88,34 @@ export const updateMyOrganization = async (req, res) => {
         },
     });
 
+    // ── 🔄 SYNC: Propagate branding & profile to Main DB for consistency ─────────────────────────
+    if (req.db !== prisma) {
+        try {
+            await prisma.organization.update({
+                where: { id: organizationId },
+                data: {
+                    ...(name !== undefined && { name: name.trim() }),
+                    ...(logoUrl !== undefined && { logoUrl }),
+                    ...(themeColor !== undefined && { themeColor }),
+                    ...(industry !== undefined && { industry }),
+                    ...(size !== undefined && { size }),
+                    ...(website !== undefined && { website: website?.trim() || null }),
+                    ...(country !== undefined && { country }),
+                    ...(timezone !== undefined && { timezone }),
+                    ...(billingEmail !== undefined && { billingEmail: billingEmail?.trim() || null }),
+                    ...(primaryContactName !== undefined && { primaryContactName: primaryContactName?.trim() || null }),
+                    ...(primaryContactPhone !== undefined && { primaryContactPhone: primaryContactPhone?.trim() || null }),
+                    ...(address !== undefined && { address: address?.trim() || null }),
+                    ...(allowClientSignup !== undefined && { allowClientSignup: Boolean(allowClientSignup) }),
+                    ...(requireApproval !== undefined && { requireApproval: Boolean(requireApproval) }),
+                    ...(sessionTimeoutMinutes !== undefined && { sessionTimeoutMinutes: parseInt(sessionTimeoutMinutes) }),
+                }
+            });
+        } catch (syncErr) {
+            console.error('[OrgUpdateSync] Failed to propagate to Main DB:', syncErr.message);
+        }
+    }
+
     res.json(updated);
 };
 

@@ -33,7 +33,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Plus, FolderKanban, Eye, Edit2, Trash2, Search, Filter, Layers, FileText, Users, Briefcase, Target, Calendar, FileSpreadsheet, UserPlus, RefreshCw } from 'lucide-react';
-import { formatCurrency, formatDate } from '@/lib/utils';
+import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import RichTextEditor from '@/components/ui/RichTextEditor';
@@ -657,38 +657,44 @@ const ProjectsList = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredProjects.map((project, idx) => {
-                      const rowColor = PROJECT_COLORS[idx % PROJECT_COLORS.length];
-                      const statusStyle = STATUS_STYLES[project.status] || STATUS_STYLES.PLANNING;
-                      return (
-                        <TableRow
-                          key={project.id}
-                          className="cursor-pointer transition-all hover:scale-[1.002] relative group/row"
-                          style={{ borderLeft: `4px solid ${rowColor} `, background: `${rowColor} 0d` }}
-                          onClick={() => {
-                            setSelectedOverviewProject(project);
-                            setShowOverviewDialog(true);
-                          }}
-                        >
-                          <TableCell className="relative">
-                            <div>
-                              <p className="font-semibold text-foreground">{project.name}</p>
-                            </div>
-                            
-                            {/* Styled Custom Tooltip */}
-                            <div className="absolute left-6 bottom-full mb-2 opacity-0 group-hover/row:opacity-100 group-hover/row:translate-y-0 translate-y-1 pointer-events-none transition-all duration-300 z-[100] invisible group-hover/row:visible">
-                              <div 
-                                className="text-xs rounded-xl shadow-2xl border border-white/10 p-3 w-max break-words whitespace-normal text-left font-bold leading-relaxed tracking-wide"
-                                style={{ backgroundColor: rowColor, color: getContrastColor(rowColor) }}
-                              >
-                                Click to view project details
-                              </div>
-                              <div 
-                                className="absolute -bottom-1.5 left-6 w-3 h-3 border-b border-r border-white/10 rotate-45"
-                                style={{ backgroundColor: rowColor }}
-                              ></div>
-                            </div>
-                          </TableCell>
+                        {filteredProjects.map((project, idx) => {
+                          const rowColor = PROJECT_COLORS[idx % PROJECT_COLORS.length];
+                          const statusStyle = STATUS_STYLES[project.status] || STATUS_STYLES.PLANNING;
+                          return (
+                            <TableRow
+                              key={project.id}
+                              className="cursor-pointer transition-all hover:scale-[1.002] relative group/row hover:z-50"
+                              style={{ borderLeft: `4px solid ${rowColor} `, background: `${rowColor} 0d` }}
+                              onClick={() => {
+                                setSelectedOverviewProject(project);
+                                setShowOverviewDialog(true);
+                              }}
+                            >
+                              <TableCell className="relative">
+                                <div>
+                                  <p className="font-semibold text-foreground">{project.name}</p>
+                                </div>
+                                
+                                {/* Styled Custom Tooltip */}
+                                <div className={cn(
+                                  "absolute left-6 opacity-0 group-hover/row:opacity-100 group-hover/row:translate-y-0 translate-y-1 pointer-events-none transition-all duration-300 z-[100] invisible group-hover/row:visible",
+                                  idx === 0 ? "top-full mt-2" : "bottom-full mb-2"
+                                )}>
+                                  <div 
+                                    className="text-xs rounded-xl shadow-2xl border border-white/10 p-3 w-max break-words whitespace-normal text-left font-bold leading-relaxed tracking-wide"
+                                    style={{ backgroundColor: rowColor, color: getContrastColor(rowColor) }}
+                                  >
+                                    Click to view project details
+                                  </div>
+                                  <div 
+                                    className={cn(
+                                      "absolute w-3 h-3 border-white/10 rotate-45",
+                                      idx === 0 ? "-top-1.5 left-6 border-t border-l" : "-bottom-1.5 left-6 border-b border-r"
+                                    )}
+                                    style={{ backgroundColor: rowColor }}
+                                  ></div>
+                                </div>
+                              </TableCell>
                           <TableCell>
                             {project.client ? (
                               <div className="text-sm">
