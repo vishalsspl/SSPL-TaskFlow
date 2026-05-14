@@ -205,7 +205,6 @@ const NotificationBell = () => {
       <PopoverContent className="w-80 sm:w-[420px] p-0 border border-border bg-popover text-popover-foreground backdrop-blur-2xl shadow-lg rounded-3xl overflow-hidden" align="end">
         <div className="flex items-center justify-between p-6 bg-muted/30 border-b border-border">
           <div className="flex flex-col">
-             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary Montserrat mb-0.5">Alert Center</span>
              <h3 className="text-lg font-bold Montserrat tracking-tight">Notifications</h3>
           </div>
           {unreadCount > 0 && (
