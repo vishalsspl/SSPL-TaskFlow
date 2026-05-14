@@ -78,6 +78,16 @@ const KanbanBoard = ({ tasks, onTaskUpdate, isReadOnly, onEdit, onDelete, onStat
             const currentTask = tasks.find(t => t.id === activeTaskId);
             if (currentTask && currentTask.status !== newStatus) {
                 setRecentlyMovedId(activeTaskId);
+                
+                // Auto-scroll on mobile
+                if (window.innerWidth < 768) {
+                    setTimeout(() => {
+                        const element = document.getElementById(newStatus);
+                        if (element) {
+                            element.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                        }
+                    }, 100);
+                }
             }
             onTaskUpdate(activeTaskId, newStatus);
         }
@@ -97,7 +107,7 @@ const KanbanBoard = ({ tasks, onTaskUpdate, isReadOnly, onEdit, onDelete, onStat
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
         >
-            <div className="flex h-full w-full gap-4 overflow-x-auto pb-4 px-1 sm:px-0 no-scrollbar scroll-smooth snap-x snap-mandatory">
+            <div className="flex h-full w-full gap-2 sm:gap-4 overflow-x-auto pb-4 px-1 sm:px-0 no-scrollbar scroll-smooth snap-x snap-mandatory">
                 <KanbanColumn id="TODO" title="To Do" tasks={columns.TODO} isReadOnly={isReadOnly} onEdit={onEdit} onDelete={onDelete} onStatusChange={onStatusChange} recentlyMovedId={recentlyMovedId} />
                 <KanbanColumn id="IN_PROGRESS" title="In Progress" tasks={columns.IN_PROGRESS} isReadOnly={isReadOnly} onEdit={onEdit} onDelete={onDelete} onStatusChange={onStatusChange} recentlyMovedId={recentlyMovedId} />
                 <KanbanColumn id="IN_REVIEW" title="In Review" tasks={columns.IN_REVIEW} isReadOnly={isReadOnly} onEdit={onEdit} onDelete={onDelete} onStatusChange={onStatusChange} recentlyMovedId={recentlyMovedId} />

@@ -104,9 +104,11 @@ const TaskKanban = () => {
     const confirmDelete = async () => {
         if (!taskToDelete) return;
         try {
-            await api.delete(`/tasks/${taskId}`);
+            await api.delete(`/tasks/${taskToDelete}`);
             toast({ title: 'Task Deleted', description: 'The task has been removed.' });
             fetchData();
+        } catch (error) {
+            console.error('Failed to delete task:', error);
             toast({ title: 'Error', description: 'Failed to delete task.', variant: 'destructive' });
         } finally {
             setShowDeleteDialog(false);
@@ -247,9 +249,8 @@ const TaskKanban = () => {
 
     return (
         <div className="p-2 sm:p-4 h-full flex flex-col bg-background no-scrollbar overflow-hidden">
-            <div className="flex flex-col gap-3 sm:gap-4 mb-3 sm:mb-4">
-                <div className="flex flex-col gap-3 sm:gap-4">
-                    <div className="px-1 sm:px-0">
+            <div className="flex flex-col gap-2 sm:gap-3 mb-2 sm:mb-3">
+                <div className="flex flex-col gap-2 sm:gap-3">
                         <div className="flex items-center gap-2">
                             {projects.length > 1 && (
                                 <Button
@@ -275,7 +276,7 @@ const TaskKanban = () => {
                         </p>
                     </div>
 
-                    <div className="bg-secondary/30 border border-border/60 p-1.5 sm:p-2 rounded-xl sm:rounded-2xl flex flex-wrap items-center gap-2 sm:gap-3">
+                    <div className="bg-secondary/30 border border-border/60 p-1 sm:p-1.5 rounded-lg sm:rounded-xl flex flex-wrap items-center gap-1.5 sm:gap-2">
                         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                             <SearchableSelect
                                 options={projects.map(p => ({ value: p.id, label: p.name }))}
@@ -306,9 +307,8 @@ const TaskKanban = () => {
                         )}
                     </div>
                 </div>
-            </div>
 
-            <div className="flex-1 overflow-hidden rounded-2xl sm:rounded-3xl bg-card/50 border border-border p-3 sm:p-6 glass">
+            <div className="flex-1 overflow-hidden rounded-xl sm:rounded-3xl bg-card/50 border border-border p-1.5 sm:p-3 md:p-4 glass">
                 <KanbanBoard
                     tasks={filteredTasks}
                     onTaskUpdate={async (taskId, newStatus) => {

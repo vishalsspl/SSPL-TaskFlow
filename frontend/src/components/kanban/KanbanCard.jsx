@@ -63,28 +63,28 @@ const KanbanCard = ({ task, isReadOnly, onEdit, onDelete, onStatusChange, isHigh
     }
 
     return (
-        <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="mb-1 touch-none group">
+        <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="mb-3 touch-none group w-full max-w-[550px] sm:max-w-none mx-auto overflow-hidden px-2 sm:px-0">
             <Card
-                className={`bg-card/60 backdrop-blur-sm border-border ring-1 cursor-grab active:cursor-grabbing hover:ring-primary/40 hover:bg-accent/50 transition-all duration-300 rounded-xl overflow-hidden shadow-xl ${isHighlighted ? 'ring-2 ring-primary shadow-[0_0_20px_rgba(var(--primary-rgb),0.4)] animate-pulse' : 'ring-border/80'}`}
+                className={`bg-card/60 backdrop-blur-sm border-border ring-1 cursor-grab active:cursor-grabbing hover:ring-primary/40 hover:bg-accent/50 transition-all duration-300 rounded-xl sm:rounded-2xl overflow-hidden shadow-xl ${isHighlighted ? 'ring-2 ring-primary shadow-[0_0_20px_rgba(var(--primary-rgb),0.4)] animate-pulse' : 'ring-border/80'}`}
             >
-                <div className="p-3 space-y-2">
+                <div className="p-3 sm:p-2.5 space-y-2 sm:space-y-1.5">
                     <div className="flex justify-between items-start">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                            <Badge className={`${taskTypeColors[task.type || 'TASK']} border-0 px-2 py-0.5 text-[9px] font-black tracking-widest uppercase rounded-sm flex items-center gap-1`}>
-                                {task.type === 'BUG' && <Bug className="w-2.5 h-2.5" />}
-                                {task.type === 'STORY' && <BookOpen className="w-2.5 h-2.5" />}
-                                {task.type === 'EPIC' && <Zap className="w-2.5 h-2.5" />}
-                                {task.type === 'SUBTASK' && <GitBranch className="w-2.5 h-2.5" />}
-                                {(task.type === 'TASK' || !task.type) && <CheckSquare className="w-2.5 h-2.5" />}
+                            <Badge className={`${taskTypeColors[task.type || 'TASK']} border-0 px-1.5 py-0 text-[8px] sm:text-[9px] font-black tracking-widest uppercase rounded-sm flex items-center gap-0.5 sm:gap-1`}>
+                                {task.type === 'BUG' && <Bug className="w-2 h-2 sm:w-2.5 sm:h-2.5" />}
+                                {task.type === 'STORY' && <BookOpen className="w-2 h-2 sm:w-2.5 sm:h-2.5" />}
+                                {task.type === 'EPIC' && <Zap className="w-2 h-2 sm:w-2.5 sm:h-2.5" />}
+                                {task.type === 'SUBTASK' && <GitBranch className="w-2 h-2 sm:w-2.5 sm:h-2.5" />}
+                                {(task.type === 'TASK' || !task.type) && <CheckSquare className="w-2 h-2 sm:w-2.5 sm:h-2.5" />}
                                 {task.type || 'TASK'}
                             </Badge>
-                            <Badge className={`${priorityColors[task.priority] || 'bg-muted text-muted-foreground'} border-0 px-2 py-0.5 text-[9px] font-black tracking-widest uppercase rounded-sm`}>
+                            <Badge className={`${priorityColors[task.priority] || 'bg-muted text-muted-foreground'} border-0 px-1.5 py-0 text-[8px] sm:text-[9px] font-black tracking-widest uppercase rounded-sm`}>
                                 {task.priority || 'NORMAL'}
                             </Badge>
                         </div>
                         <div className="flex items-center gap-1">
                             {task.storyPoints > 0 && (
-                                <span className="text-[10px] font-black Montserrat text-primary/80 px-1.5 py-0.5 bg-primary/10 rounded tracking-tighter">
+                                <span className="text-[8px] sm:text-[10px] font-black Montserrat text-primary/80 px-1 sm:px-1.5 py-0 sm:py-0.5 bg-primary/10 rounded tracking-tighter">
                                     {task.storyPoints} PTS
                                 </span>
                             )}
@@ -157,7 +157,7 @@ const KanbanCard = ({ task, isReadOnly, onEdit, onDelete, onStatusChange, isHigh
                     </div>
 
                     <h4
-                        className="text-sm font-bold text-foreground Montserrat leading-snug group-hover:text-primary transition-colors line-clamp-2 cursor-pointer"
+                        className="text-[10px] sm:text-[11px] md:text-sm font-bold text-foreground Montserrat leading-tight group-hover:text-primary transition-colors line-clamp-2 cursor-pointer"
                         onClick={() => onEdit && onEdit(task)}
                     >
                         {task.title}
@@ -169,37 +169,37 @@ const KanbanCard = ({ task, isReadOnly, onEdit, onDelete, onStatusChange, isHigh
                         </p>
                     )}
 
-                    <div className="pt-2 flex items-center justify-between border-t border-border">
-                        <div className="flex items-center gap-2">
+                    <div className="pt-1 sm:pt-2 flex items-center justify-between border-t border-border">
+                        <div className="flex items-center gap-1 sm:gap-2">
                             {task.assignees && task.assignees.length > 0 ? (
-                                <div className="flex -space-x-1.5">
+                                <div className="flex -space-x-1 sm:-space-x-1.5">
                                     {task.assignees.slice(0, 3).map(({ user }) => (
-                                        <div key={user.id} className="w-5 h-5 rounded-full border-2 border-card ring-1 ring-border overflow-hidden bg-muted">
+                                        <div key={user.id} className="w-3.5 h-3.5 sm:w-5 sm:h-5 rounded-full border-2 border-card ring-1 ring-border overflow-hidden bg-muted">
                                             {user.avatar ? (
                                                 <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-[7px] font-black text-muted-foreground Montserrat">
+                                                <div className="w-full h-full flex items-center justify-center text-[5px] sm:text-[7px] font-black text-muted-foreground Montserrat">
                                                     {user.name.charAt(0)}
                                                 </div>
                                             )}
                                         </div>
                                     ))}
                                     {task.assignees.length > 3 && (
-                                        <div className="w-5 h-5 rounded-full bg-muted border-2 border-card flex items-center justify-center text-[7px] text-foreground font-black Montserrat">
+                                        <div className="w-3.5 h-3.5 sm:w-5 sm:h-5 rounded-full bg-muted border-2 border-card flex items-center justify-center text-[5px] sm:text-[7px] text-foreground font-black Montserrat">
                                             +{task.assignees.length - 3}
                                         </div>
                                     )}
                                 </div>
                             ) : (
-                                <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center border border-border">
-                                    <User className="w-2.5 h-2.5 text-muted-foreground" />
+                                <div className="w-3.5 h-3.5 sm:w-5 sm:h-5 rounded-full bg-muted flex items-center justify-center border border-border">
+                                    <User className="w-1.5 sm:w-2.5 h-1.5 sm:h-2.5 text-muted-foreground" />
                                 </div>
                             )}
                         </div>
 
                         {task.dueDate && (
-                            <div className={`flex items-center gap-1.5 text-[10px] font-black Montserrat tracking-tighter ${new Date(task.dueDate) < new Date() ? 'text-destructive' : 'text-muted-foreground'}`}>
-                                <Calendar className="w-3 h-3" />
+                            <div className={`flex items-center gap-0.5 sm:gap-1.5 text-[7px] sm:text-[10px] font-black Montserrat tracking-tighter ${new Date(task.dueDate) < new Date() ? 'text-destructive' : 'text-muted-foreground'}`}>
+                                <Calendar className="w-2 h-2 sm:w-3 sm:h-3" />
                                 <span>{new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
                             </div>
                         )}
