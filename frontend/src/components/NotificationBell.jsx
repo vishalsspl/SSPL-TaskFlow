@@ -97,31 +97,31 @@ const NotificationBell = () => {
   const getIcon = (type) => {
     switch (type) {
       case 'PROJECT_ASSIGNED':
-        return <div className="p-2 bg-primary/10 rounded-full"><FolderKanban className="w-4 h-4 text-primary" /></div>;
+        return <div className="p-1.5 bg-primary/10 rounded-full"><FolderKanban className="w-3.5 h-3.5 text-primary" /></div>;
       case 'TASK_ASSIGNED':
-        return <div className="p-2 bg-primary/10 rounded-full"><ListTodo className="w-4 h-4 text-primary" /></div>;
+        return <div className="p-1.5 bg-primary/10 rounded-full"><ListTodo className="w-3.5 h-3.5 text-primary" /></div>;
       case 'TASK_STATUS_UPDATED':
-        return <div className="p-2 bg-amber-500/10 rounded-full"><Activity className="w-4 h-4 text-amber-500" /></div>;
+        return <div className="p-1.5 bg-amber-500/10 rounded-full"><Activity className="w-3.5 h-3.5 text-amber-500" /></div>;
       case 'TASK_APPROVED':
       case 'TIMESHEET_APPROVED':
-        return <div className="p-2 bg-primary/20 rounded-full"><CheckCircle2 className="w-4 h-4 text-primary" /></div>;
+        return <div className="p-1.5 bg-primary/20 rounded-full"><CheckCircle2 className="w-3.5 h-3.5 text-primary" /></div>;
       case 'TASK_REJECTED':
       case 'TIMESHEET_REJECTED':
-        return <div className="p-2 bg-destructive/10 rounded-full"><XCircle className="w-4 h-4 text-destructive" /></div>;
+        return <div className="p-1.5 bg-destructive/10 rounded-full"><XCircle className="w-3.5 h-3.5 text-destructive" /></div>;
       case 'CHAT_MESSAGE':
-        return <div className="p-2 bg-sky-500/10 rounded-full"><MessageSquare className="w-4 h-4 text-sky-500" /></div>;
+        return <div className="p-1.5 bg-sky-500/10 rounded-full"><MessageSquare className="w-3.5 h-3.5 text-sky-500" /></div>;
       case 'WORKLOG_SUBMITTED':
-        return <div className="p-2 bg-amber-500/10 rounded-full"><Clock className="w-4 h-4 text-amber-500" /></div>;
+        return <div className="p-1.5 bg-amber-500/10 rounded-full"><Clock className="w-3.5 h-3.5 text-amber-500" /></div>;
       case 'NEW_ORG_SIGNUP':
-        return <div className="p-2 bg-[#48A111]/20 rounded-full shadow-[0_0_10px_rgba(72,161,17,0.2)]"><Building2 className="w-4 h-4 text-[#48A111]" /></div>;
+        return <div className="p-1.5 bg-[#48A111]/20 rounded-full shadow-[0_0_10px_rgba(72,161,17,0.2)]"><Building2 className="w-3.5 h-3.5 text-[#48A111]" /></div>;
       case 'TICKET_CREATED':
-        return <div className="p-2 bg-blue-500/10 rounded-full"><MessageSquare className="w-4 h-4 text-blue-500" /></div>;
+        return <div className="p-1.5 bg-blue-500/10 rounded-full"><MessageSquare className="w-3.5 h-3.5 text-blue-500" /></div>;
       case 'TICKET_STATUS_UPDATED':
-        return <div className="p-2 bg-orange-500/10 rounded-full"><Clock className="w-4 h-4 text-orange-500" /></div>;
+        return <div className="p-1.5 bg-orange-500/10 rounded-full"><Clock className="w-3.5 h-3.5 text-orange-500" /></div>;
       case 'TICKET_COMMENT':
-        return <div className="p-2 bg-indigo-500/10 rounded-full"><MessageSquare className="w-4 h-4 text-indigo-500" /></div>;
+        return <div className="p-1.5 bg-indigo-500/10 rounded-full"><MessageSquare className="w-3.5 h-3.5 text-indigo-500" /></div>;
       default:
-        return <div className="p-2 bg-gray-500/10 rounded-full"><Info className="w-4 h-4 text-gray-500" /></div>;
+        return <div className="p-1.5 bg-gray-500/10 rounded-full"><Info className="w-3.5 h-3.5 text-gray-500" /></div>;
     }
   };
 
@@ -129,8 +129,8 @@ const NotificationBell = () => {
     <div
       key={notification.id}
       className={cn(
-        "p-4 flex gap-4 hover:bg-muted transition-all group relative border-l-[3px] sm:border-l-4 cursor-pointer",
-        !notification.isRead ? "bg-primary/[0.08] dark:bg-primary/[0.12] border-primary shadow-sm" : "border-transparent opacity-80"
+        "p-3 flex gap-3 hover:bg-muted/50 transition-all group relative border-l-[3px] cursor-pointer",
+        !notification.isRead ? "bg-primary/[0.05] dark:bg-primary/[0.1] border-primary" : "border-transparent opacity-70"
       )}
       onClick={() => handleNotificationClick(notification)}
     >
@@ -202,8 +202,8 @@ const NotificationBell = () => {
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 sm:w-[420px] p-0 border border-border bg-popover text-popover-foreground backdrop-blur-2xl shadow-lg rounded-3xl overflow-hidden" align="end">
-        <div className="flex items-center justify-between p-6 bg-muted/30 border-b border-border">
+      <PopoverContent className="w-80 sm:w-[350px] p-0 border border-border/50 bg-popover/95 backdrop-blur-xl shadow-2xl rounded-2xl overflow-hidden" align="end">
+        <div className="flex items-center justify-between p-4 bg-muted/20 border-b border-border/40">
           <div className="flex flex-col">
              <h3 className="text-lg font-bold Montserrat tracking-tight">Notifications</h3>
           </div>
@@ -219,7 +219,7 @@ const NotificationBell = () => {
           )}
         </div>
 
-        <ScrollArea className="h-[480px]">
+        <ScrollArea className="h-[380px]">
           {loading ? (
             <div className="flex flex-col">
               <div className="p-8 bg-muted/10 border-b border-border/50 flex flex-col items-center justify-center gap-3">
