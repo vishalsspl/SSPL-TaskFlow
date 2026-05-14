@@ -372,6 +372,20 @@ export const signup = async (req, res) => {
     }
   });
 
+  // 2. Create admin user in MAIN DB (auth lookup)
+  const mainUser = await prisma.user.create({
+    data: {
+      organizationId: org.id,
+      name,
+      email,
+      passwordHash,
+      role: 'ADMIN',
+      isApproved: true,
+      mustChangePassword: false
+    },
+    include: { organization: true },
+  });
+
   // ── Notify SuperAdmins about the new organization ────────────────────────
   try {
     const superAdmins = await prisma.user.findMany({
@@ -425,20 +439,6 @@ export const signup = async (req, res) => {
     // Non-blocking error: we still want the user to get their response
   }
 
-  // 2. Create admin user in MAIN DB (auth lookup)
-  const mainUser = await prisma.user.create({
-    data: {
-      organizationId: org.id,
-      name,
-      email,
-      passwordHash,
-      role: 'ADMIN',
-      isApproved: true,
-      mustChangePassword: false
-    },
-    include: { organization: true },
-  });
-
   // 3. Provision tenant database (create DB, run migrations, seed)
   let tenantDbUrl = null;
   try {
@@ -489,8 +489,6 @@ export const signup = async (req, res) => {
     console.log(`[Signup] ✅ Tenant DB provisioned for org "${org.name}"`);
   } catch (provisionErr) {
     console.error('[Signup] ❌ Tenant provisioning failed:', provisionErr.message);
-    // The org and user are created in MAIN DB but without a tenant DB.
-    // SuperAdmin can manually provision later via the CLI tool.
   }
 
   const token = jwt.sign(
@@ -507,6 +505,7 @@ export const signup = async (req, res) => {
     console.error('[Signup] Failed to send admin welcome email:', err);
   }
 
+  const { passwordHash: _ph, ...userWithoutPassword } = mainUser;
   res.status(201).json({ token, user: userWithoutPassword });
 
 };

@@ -219,11 +219,10 @@ const Layout = () => {
         {(isMobile || isSidebarOpen) && (
           <div className="flex flex-col items-center text-center px-1 max-w-[120px] overflow-visible">
             <span
-              className={`font-extrabold bg-gradient-to-r from-[#48A111] via-[#A3E635] to-[#48A111] bg-clip-text text-transparent tracking-tight whitespace-normal break-words leading-tight ${
-                (user?.organization?.name?.length || 0) > 25 ? 'text-[10px]' : 
-                (user?.organization?.name?.length || 0) > 15 ? 'text-xs' : 
-                'text-sm'
-              }`}
+              className={`font-extrabold bg-gradient-to-r from-[#48A111] via-[#A3E635] to-[#48A111] bg-clip-text text-transparent tracking-tight whitespace-normal break-words leading-tight ${(user?.organization?.name?.length || 0) > 25 ? 'text-[10px]' :
+                  (user?.organization?.name?.length || 0) > 15 ? 'text-xs' :
+                    'text-sm'
+                }`}
               title={user?.organization?.name || 'TaskFlow'}
             >
               {user?.organization?.name || 'TaskFlow'}

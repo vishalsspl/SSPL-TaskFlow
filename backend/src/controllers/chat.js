@@ -1,10 +1,14 @@
 import prisma from '../lib/prisma.js';
+import { ensureChatSchema } from '../lib/schemaValidator.js';
 
 export const getChatHistory = async (req, res) => {
     const { projectId } = req.query;
     const userId = req.user.id;
     const organizationId = req.user.organizationId;
     const projId = projectId || null;
+
+    // ── Lazy Migration ────────────────────────────────────────────────────────
+    await ensureChatSchema(req.db);
 
     try {
         if (projId) {
@@ -80,6 +84,13 @@ export const getChatHistory = async (req, res) => {
                         avatar: true,
                     },
                 },
+                parent: {
+                    include: {
+                        user: {
+                            select: { id: true, name: true }
+                        }
+                    }
+                }
             },
             orderBy: {
                 createdAt: 'asc',
@@ -95,6 +106,9 @@ export const getChatHistory = async (req, res) => {
 };
 
 export const getChatRooms = async (req, res) => {
+    // ── Lazy Migration ────────────────────────────────────────────────────────
+    await ensureChatSchema(req.db);
+
     try {
         const userId = req.user.id;
         const organizationId = req.user.organizationId;

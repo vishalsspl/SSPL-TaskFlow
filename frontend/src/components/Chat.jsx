@@ -7,9 +7,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Send, User, UserPlus, Search, Loader2, ChevronLeft, Pencil, Trash2, Check, X, Smile } from 'lucide-react';
+import { Send, User, UserPlus, Search, Loader2, ChevronLeft, Pencil, Trash2, Check, X, Smile, Reply, Forward, MoreVertical } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
 import { formatChatTimestamp } from '@/lib/utils';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
 import {
     Dialog,
     DialogContent,
@@ -35,9 +40,12 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
     const [invitingId, setInvitingId] = useState(null);
     const [projectMembers, setProjectMembers] = useState([]);
 
-    // Edit/Delete state
+    // Edit/Delete/Reply/Forward state
     const [editingMsgId, setEditingMsgId] = useState(null);
     const [editContent, setEditContent] = useState('');
+    const [replyingTo, setReplyingTo] = useState(null);
+    const [forwardingMsg, setForwardingMsg] = useState(null);
+    const [reactions, setReactions] = useState({}); // { messageId: { emoji: count } }
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -54,11 +62,36 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
         const fetchHistory = async () => {
             try {
                 const response = await api.get(`/chat/history${projectId ? `?projectId=${projectId}` : ''}`);
-                // Decrypt all historical messages in parallel
-                const decryptedHistory = await Promise.all(response.data.map(async (msg) => ({
-                    ...msg,
-                    content: await decrypt(msg.content)
-                })));
+                // Decrypt and extract reactions
+                const initialReactions = {};
+                const decryptedHistory = await Promise.all(response.data.map(async (msg) => {
+                    if (msg.reactions) initialReactions[msg.id] = msg.reactions;
+                    let decryptedContent;
+                    try {
+                        decryptedContent = await decrypt(msg.content);
+                    } catch (err) {
+                        console.error('Decryption failed for msg:', msg.id, err);
+                        decryptedContent = '[Decryption Failed]';
+                    }
+                    const decryptedMsg = {
+                        ...msg,
+                        content: decryptedContent
+                    };
+                    if (msg.parent) {
+                        let parentDecryptedContent;
+                        try {
+                            parentDecryptedContent = await decrypt(msg.parent.content);
+                        } catch (err) {
+                            parentDecryptedContent = '[Decryption Failed]';
+                        }
+                        decryptedMsg.replyTo = {
+                            ...msg.parent,
+                            content: parentDecryptedContent
+                        };
+                    }
+                    return decryptedMsg;
+                }));
+                setReactions(initialReactions);
                 setMessages(decryptedHistory);
             } catch (error) {
                 console.error('Failed to fetch chat history:', error);
@@ -73,11 +106,32 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
                 const msgRoomId = message.projectId || `global-${message.organizationId}`;
                 if (msgRoomId === roomId) {
                     // Decrypt new incoming message
+                    let decryptedContent;
+                    try {
+                        decryptedContent = await decrypt(message.content);
+                    } catch (err) {
+                        decryptedContent = '[Decryption Failed]';
+                    }
                     const decryptedMessage = {
                         ...message,
-                        content: await decrypt(message.content)
+                        content: decryptedContent
                     };
+                    if (message.parent && message.parent.content) {
+                        let parentDecryptedContent;
+                        try {
+                            parentDecryptedContent = await decrypt(message.parent.content);
+                        } catch (err) {
+                            parentDecryptedContent = '[Decryption Failed]';
+                        }
+                        decryptedMessage.replyTo = {
+                            ...message.parent,
+                            content: parentDecryptedContent,
+                            user: message.parent.user || { name: 'Unknown' }
+                        };
+                    }
                     setMessages((prev) => [...prev, decryptedMessage]);
+                    // Auto scroll on new message
+                    setTimeout(scrollToBottom, 100);
                 }
             };
 
@@ -86,8 +140,26 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
             socket.on('message-updated', async (updatedMsg) => {
                 const msgRoomId = updatedMsg.projectId || `global-${updatedMsg.organizationId}`;
                 if (msgRoomId === roomId) {
-                    const decryptedContent = await decrypt(updatedMsg.content);
-                    setMessages((prev) => prev.map(m => m.id === updatedMsg.id ? { ...updatedMsg, content: decryptedContent } : m));
+                    let decryptedContent;
+                    try {
+                        decryptedContent = await decrypt(updatedMsg.content);
+                    } catch (err) {
+                        decryptedContent = '[Decryption Failed]';
+                    }
+                    const decryptedMsg = { ...updatedMsg, content: decryptedContent };
+                    if (updatedMsg.parent) {
+                        let parentDecryptedContent;
+                        try {
+                            parentDecryptedContent = await decrypt(updatedMsg.parent.content);
+                        } catch (err) {
+                            parentDecryptedContent = '[Decryption Failed]';
+                        }
+                        decryptedMsg.replyTo = {
+                            ...updatedMsg.parent,
+                            content: parentDecryptedContent
+                        };
+                    }
+                    setMessages((prev) => prev.map(m => m.id === updatedMsg.id ? decryptedMsg : m));
                 }
             });
 
@@ -95,10 +167,18 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
                 setMessages((prev) => prev.filter(m => m.id !== messageId));
             });
 
+            socket.on('message-reacted', ({ messageId, reactions: updatedReactions }) => {
+                setReactions(prev => ({
+                    ...prev,
+                    [messageId]: updatedReactions
+                }));
+            });
+
             return () => {
                 socket.off('new-message');
                 socket.off('message-updated');
                 socket.off('message-deleted');
+                socket.off('message-reacted');
                 setActiveRoom(null);
             };
         }
@@ -181,9 +261,23 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
         }
     };
 
+    const scrollToMessage = (msgId) => {
+        const element = document.getElementById(`msg-${msgId}`);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            element.classList.add('ring-2', 'ring-primary', 'ring-offset-2');
+            setTimeout(() => element.classList.remove('ring-2', 'ring-primary', 'ring-offset-2'), 2000);
+        }
+    };
+
     const handleSendMessage = async (e) => {
         e.preventDefault();
-        if (!newMessage.trim() || !socket) return;
+        if (!newMessage.trim()) return;
+        if (!socket) {
+            console.warn('Socket not connected');
+            toast({ title: "Connection Error", description: "Chat is not connected. Please refresh.", variant: "destructive" });
+            return;
+        }
 
         const encryptedContent = await encrypt(newMessage);
 
@@ -192,11 +286,51 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
             userId: user.id,
             projectId: projectId,
             organizationId: user.organizationId,
-            snippet: newMessage.substring(0, 100)
+            snippet: newMessage.substring(0, 100),
+            replyToId: replyingTo?.id,
+            isForwarded: !!forwardingMsg
         });
 
         setNewMessage('');
         setShowEmojiPicker(false);
+        setReplyingTo(null);
+        setForwardingMsg(null);
+    };
+
+    const handleReaction = (messageId, emoji) => {
+        // Optimistic update
+        setReactions(prev => {
+            const msgReactions = prev[messageId] || {};
+            const userIds = Array.isArray(msgReactions[emoji]) ? msgReactions[emoji] : [];
+
+            let updatedUserIds;
+            if (userIds.includes(user.id)) {
+                updatedUserIds = userIds.filter(id => id !== user.id);
+            } else {
+                updatedUserIds = [...userIds, user.id];
+            }
+
+            const updatedMsgReactions = { ...msgReactions, [emoji]: updatedUserIds };
+            if (updatedUserIds.length === 0) {
+                delete updatedMsgReactions[emoji];
+            }
+
+            return {
+                ...prev,
+                [messageId]: updatedMsgReactions
+            };
+        });
+
+        // In a real app, we would emit a socket event here
+        if (socket) {
+            socket.emit('react-message', {
+                messageId,
+                emoji,
+                userId: user.id,
+                projectId,
+                organizationId: user.organizationId
+            });
+        }
     };
 
     const onEmojiClick = (emojiObject) => {
@@ -298,29 +432,8 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
                                             {formatChatTimestamp(msg.createdAt)}
                                             {msg.isEdited && <span className="ml-1 opacity-70">(edited)</span>}
                                         </span>
-                                        
-                                        {/* Action Buttons */}
-                                        <div className={`flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-2 ${msg.userId === user.id ? 'flex-row-reverse' : 'flex-row'}`}>
-                                            {msg.userId === user.id && (
-                                                <button 
-                                                    onClick={() => {
-                                                        setEditingMsgId(msg.id);
-                                                        setEditContent(msg.content);
-                                                    }}
-                                                    className="p-1 hover:bg-white/10 rounded transition-colors text-gray-400 hover:text-primary"
-                                                >
-                                                    <Pencil className="w-3 h-3" />
-                                                </button>
-                                            )}
-                                            {(msg.userId === user.id || isManagerOrAdmin) && (
-                                                <button 
-                                                    onClick={() => handleDeleteMessage(msg.id)}
-                                                    className="p-1 hover:bg-white/10 rounded transition-colors text-gray-400 hover:text-red-500"
-                                                >
-                                                    <Trash2 className="w-3 h-3" />
-                                                </button>
-                                            )}
-                                        </div>
+
+
                                     </div>
 
                                     {editingMsgId === msg.id ? (
@@ -345,13 +458,109 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
                                             </div>
                                         </div>
                                     ) : (
-                                        <div
-                                            className={`p-3 rounded-2xl text-sm Montserrat ${msg.userId === user.id
-                                                ? 'bg-primary text-primary-foreground rounded-tr-none shadow-lg'
-                                                : 'bg-secondary/50 text-foreground rounded-tl-none'
-                                                }`}
-                                        >
-                                            {msg.content}
+                                        <div className="relative group/bubble" id={`msg-${msg.id}`}>
+                                            {/* Hover Actions Bar */}
+                                            <div className={`absolute bottom-full mb-1 flex items-center gap-0.5 bg-card border border-border shadow-xl rounded-lg p-0.5 opacity-0 group-hover/bubble:opacity-100 transition-all duration-200 z-10 ${msg.userId === user.id ? 'right-0' : 'left-0'}`}>
+                                                <Popover>
+                                                    <PopoverTrigger asChild>
+                                                        <button className="p-1.5 hover:bg-white/10 rounded text-gray-400 hover:text-primary transition-colors" title="React">
+                                                            <Smile className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </PopoverTrigger>
+                                                    <PopoverContent className="w-auto p-1 bg-card border-border shadow-2xl flex gap-1">
+                                                        {['👍', '❤️', '😂', '😮', '😢', '🔥'].map(emoji => (
+                                                            <button
+                                                                key={emoji}
+                                                                onClick={() => handleReaction(msg.id, emoji)}
+                                                                className="p-1.5 hover:bg-white/10 rounded transition-all hover:scale-125"
+                                                            >
+                                                                {emoji}
+                                                            </button>
+                                                        ))}
+                                                    </PopoverContent>
+                                                </Popover>
+
+                                                <button
+                                                    onClick={() => setReplyingTo(msg)}
+                                                    className="p-1.5 hover:bg-white/10 rounded text-gray-400 hover:text-primary transition-colors"
+                                                    title="Reply"
+                                                >
+                                                    <Reply className="w-3.5 h-3.5" />
+                                                </button>
+
+                                                <button
+                                                    onClick={() => {
+                                                        setForwardingMsg(msg);
+                                                        toast({ title: "Forwarding", description: "Select a chat to forward this message to." });
+                                                    }}
+                                                    className="p-1.5 hover:bg-white/10 rounded text-gray-400 hover:text-primary transition-colors"
+                                                    title="Forward"
+                                                >
+                                                    <Forward className="w-3.5 h-3.5" />
+                                                </button>
+
+                                                {msg.userId === user.id && (
+                                                    <button
+                                                        onClick={() => {
+                                                            setEditingMsgId(msg.id);
+                                                            setEditContent(msg.content);
+                                                        }}
+                                                        className="p-1.5 hover:bg-white/10 rounded text-gray-400 hover:text-primary transition-colors"
+                                                        title="Edit"
+                                                    >
+                                                        <Pencil className="w-3.5 h-3.5" />
+                                                    </button>
+                                                )}
+
+                                                {(msg.userId === user.id || isManagerOrAdmin) && (
+                                                    <button
+                                                        onClick={() => handleDeleteMessage(msg.id)}
+                                                        className="p-1.5 hover:bg-white/10 rounded text-gray-400 hover:text-red-500 transition-colors"
+                                                        title="Delete"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    </button>
+                                                )}
+                                            </div>
+
+                                            {msg.replyTo && (
+                                                <div
+                                                    onClick={() => scrollToMessage(msg.replyTo.id)}
+                                                    className={`mb-1 p-2 rounded-lg bg-black/40 border-l-4 border-primary/70 text-[10px] Montserrat max-w-full cursor-pointer hover:bg-black/60 transition-all opacity-80 group/reply ${msg.userId === user.id ? 'mr-1' : 'ml-1'}`}
+                                                >
+                                                    <span className="font-black text-primary uppercase tracking-tighter block mb-0.5">
+                                                        <Reply className="w-2 h-2 inline mr-1" /> {msg.replyTo.user?.name}
+                                                    </span>
+                                                    <p className="line-clamp-2 italic opacity-70">{msg.replyTo.content}</p>
+                                                </div>
+                                            )}
+                                            <div
+                                                className={`p-3 rounded-2xl text-sm Montserrat relative transition-all duration-300 ${msg.userId === user.id
+                                                    ? 'bg-primary text-primary-foreground rounded-tr-none shadow-lg'
+                                                    : 'bg-secondary text-foreground rounded-tl-none border border-white/5'
+                                                    }`}
+                                            >
+                                                {msg.content}
+                                            </div>
+
+                                            {/* Render Reactions */}
+                                            {reactions[msg.id] && Object.keys(reactions[msg.id]).length > 0 && (
+                                                <div className={`flex flex-wrap gap-1 mt-1 ${msg.userId === user.id ? 'justify-end' : 'justify-start'}`}>
+                                                    {Object.entries(reactions[msg.id]).map(([emoji, userIds]) => (
+                                                        <button
+                                                            key={emoji}
+                                                            onClick={() => handleReaction(msg.id, emoji)}
+                                                            className={`flex items-center gap-1 border rounded-full px-2 py-0.5 text-[10px] Montserrat transition-all ${Array.isArray(userIds) && userIds.includes(user.id)
+                                                                    ? 'bg-primary/20 border-primary/50 text-primary'
+                                                                    : 'bg-white/5 border-white/10 text-muted-foreground hover:bg-white/10'
+                                                                }`}
+                                                        >
+                                                            <span>{emoji}</span>
+                                                            <span className="font-bold opacity-70">{userIds.length}</span>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -362,37 +571,57 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
                 </div>
             </ScrollArea>
 
-            <form onSubmit={handleSendMessage} className="relative p-4 bg-secondary/20 border-t border-border flex gap-2 items-center">
-                {/* Emoji Picker Dropdown */}
-                {showEmojiPicker && (
-                    <div className="absolute bottom-[80px] left-4 z-50 shadow-2xl rounded-xl overflow-hidden border border-border">
-                        <EmojiPicker 
-                            onEmojiClick={onEmojiClick}
-                            theme="dark"
-                            autoFocusSearch={false}
-                        />
+            <form onSubmit={handleSendMessage} className="relative p-4 bg-secondary/20 border-t border-border flex flex-col gap-2">
+                {/* Reply Preview */}
+                {replyingTo && (
+                    <div className="flex items-center justify-between p-3 bg-primary/10 rounded-2xl border-2 border-primary/30 mb-2 animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-300 backdrop-blur-md">
+                        <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-1 h-8 bg-primary rounded-full shrink-0" />
+                            <div className="flex flex-col min-w-0">
+                                <span className="text-[10px] font-black Montserrat text-primary uppercase tracking-widest flex items-center gap-1.5">
+                                    <Reply className="w-3 h-3" /> Replying to {replyingTo.user?.name}
+                                </span>
+                                <p className="text-[12px] text-foreground/80 truncate Montserrat italic">{replyingTo.content}</p>
+                            </div>
+                        </div>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-white/10" onClick={() => setReplyingTo(null)}>
+                            <X className="w-4 h-4" />
+                        </Button>
                     </div>
                 )}
 
-                <Button 
-                    type="button" 
-                    variant="ghost" 
-                    size="icon" 
-                    className="shrink-0 text-muted-foreground hover:text-foreground h-11 w-11"
-                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                >
-                    <Smile className="w-5 h-5" />
-                </Button>
+                <div className="flex gap-2 items-center">
+                    {/* Emoji Picker Dropdown */}
+                    {showEmojiPicker && (
+                        <div className="absolute bottom-[80px] left-4 z-50 shadow-2xl rounded-xl overflow-hidden border border-border">
+                            <EmojiPicker
+                                onEmojiClick={onEmojiClick}
+                                theme="dark"
+                                autoFocusSearch={false}
+                            />
+                        </div>
+                    )}
 
-                <Input
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="Type your message..."
-                    className="bg-background border-border text-foreground Montserrat focus-visible:ring-primary h-11"
-                />
-                <Button type="submit" size="icon" className="shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground h-11 w-11">
-                    <Send className="w-4 h-4" />
-                </Button>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="shrink-0 text-muted-foreground hover:text-foreground h-11 w-11"
+                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                    >
+                        <Smile className="w-5 h-5" />
+                    </Button>
+
+                    <Input
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder={replyingTo ? "Type your reply..." : "Type your message..."}
+                        className="bg-background border-border text-foreground Montserrat focus-visible:ring-primary h-11"
+                    />
+                    <Button type="submit" size="icon" className="shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground h-11 w-11">
+                        <Send className="w-4 h-4" />
+                    </Button>
+                </div>
             </form>
 
             {/* Add Member Dialog */}

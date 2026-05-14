@@ -1,0 +1,43 @@
+2026-05-14T06:54:05.014Z [GLOBAL_ERROR] userWithoutPassword is not defined
+Stack: ReferenceError: userWithoutPassword is not defined
+    at signup (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/authController.js:510:39)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+Path: /api/auth/signup
+User: undefined
+---
+2026-05-14T07:13:37.014Z [GLOBAL_ERROR] 
+Invalid `prisma.project.findFirst()` invocation:
+
+
+The column `Project.githubRepo` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.project.findFirst()` invocation:
+
+
+The column `Project.githubRepo` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async createProject (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/projectController.js:441:27)
+Path: /api/projects
+User: 47e9714e-26de-4b08-a452-d06e18c3d858
+---
+2026-05-14T07:13:40.392Z [GLOBAL_ERROR] 
+Invalid `prisma.project.findFirst()` invocation:
+
+
+The column `Project.githubRepo` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.project.findFirst()` invocation:
+
+
+The column `Project.githubRepo` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async createProject (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/projectController.js:441:27)
+Path: /api/projects
+User: 47e9714e-26de-4b08-a452-d06e18c3d858
+---

@@ -99,10 +99,10 @@ const ChatPage = () => {
     }, [isAddDMOpen]);
 
     const startDM = (otherUser) => {
-        // Sort IDs to ensure consistency if needed, but the backend allows any order `dm_id1_id2`
-        // We'll just generate one format
-        const dmId = `dm_${user.id}_${otherUser.id}`;
-        const existing = rooms.find(r => r.id === dmId || r.id === `dm_${otherUser.id}_${user.id}`);
+        // Sort IDs to ensure consistency: dm_minId_maxId
+        const ids = [user.id, otherUser.id].sort();
+        const dmId = `dm_${ids[0]}_${ids[1]}`;
+        const existing = rooms.find(r => r.id === dmId);
         
         if (existing) {
             handleRoomSelect(existing);

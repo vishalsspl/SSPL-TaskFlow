@@ -295,9 +295,18 @@ model ChatMessage {
   projectId      String?
   organizationId String?
   isEdited       Boolean  @default(false)
+  
+  // New fields
+  parentId       String?
+  reactions      Json?    // { emoji: [userIds] } or { emoji: count }
+  isForwarded    Boolean  @default(false)
 
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Self relation for replies
+  parent       ChatMessage?  @relation("MessageReplies", fields: [parentId], references: [id], onDelete: SetNull)
+  replies      ChatMessage[] @relation("MessageReplies")
 
   createdAt DateTime @default(now())
 }

@@ -283,6 +283,9 @@ exports.Prisma.ChatMessageScalarFieldEnum = {
   projectId: 'projectId',
   organizationId: 'organizationId',
   isEdited: 'isEdited',
+  parentId: 'parentId',
+  reactions: 'reactions',
+  isForwarded: 'isForwarded',
   createdAt: 'createdAt'
 };
 

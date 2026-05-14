@@ -42,6 +42,8 @@ const Dashboard = () => {
   const [selectedProjectId, setSelectedProjectId] = useState('');
   const [pendingUsersCount, setPendingUsersCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isRetrying, setIsRetrying] = useState(false);
   const [stats, setStats] = useState({
     totalProjects: 0,
     activeProjects: 0,
@@ -70,7 +72,9 @@ const Dashboard = () => {
     }
   }, [user, setHeader]);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = async (silent = false) => {
+    if (!silent) setLoading(true);
+    setError(null);
     try {
       const response = await api.get('/projects');
       const projectsData = Array.isArray(response.data) ? response.data : response.data.data || [];
@@ -94,9 +98,16 @@ const Dashboard = () => {
       });
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
+      setError(error.response?.data?.message || error.response?.data?.error || 'Failed to connect to your workspace database.');
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
+      setIsRetrying(false);
     }
+  };
+
+  const handleRetry = () => {
+    setIsRetrying(true);
+    fetchDashboardData();
   };
 
   const fetchPendingUsers = async () => {
@@ -161,6 +172,39 @@ const Dashboard = () => {
 
   if (loading) {
     return <DashboardSkeleton />;
+  }
+
+  if (error && projects.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[80vh] p-4 text-center">
+        <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6 animate-pulse">
+          <Building2 className="w-10 h-10 text-primary" />
+        </div>
+        <h2 className="text-2xl font-bold mb-2">Setting up your workspace</h2>
+        <p className="text-muted-foreground max-w-md mb-8">
+          {error.includes('database connection failed') 
+            ? "We're currently provisioning your dedicated organization database. This usually takes less than a minute."
+            : error}
+        </p>
+        <Button 
+          onClick={handleRetry} 
+          disabled={isRetrying}
+          className="gap-2 px-8 py-6 text-lg rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all duration-300"
+        >
+          {isRetrying ? (
+            <>
+              <div className="h-5 w-5 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+              Initializing...
+            </>
+          ) : (
+            <>
+              <Zap className="w-5 h-5" />
+              Enter Dashboard
+            </>
+          )}
+        </Button>
+      </div>
+    );
   }
 
   // Client Dashboard View

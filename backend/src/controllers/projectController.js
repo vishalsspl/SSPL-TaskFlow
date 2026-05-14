@@ -12,6 +12,8 @@ const getProjectTeamMembers = async (db, projectId) => {
 };
 
 /** Create and emit an internal notification */
+import { ensureProjectSchema } from '../lib/schemaValidator.js';
+
 const createNotification = async (req, { userId, title, message, type }) => {
   try {
     const notification = await req.db.notification.create({
@@ -299,6 +301,9 @@ export const getAllProjects = async (req, res) => {
 export const getProject = async (req, res) => {
   const { id } = req.params;
 
+  // ── Lazy Migration ────────────────────────────────────────────────────────
+  await ensureProjectSchema(req.db);
+
   const project = await req.db.project.findFirst({
     where: {
       id,
@@ -406,6 +411,9 @@ export const createProject = async (req, res) => {
 
   const organizationId = req.user.organizationId;
 
+  // ── Lazy Migration ────────────────────────────────────────────────────────
+  await ensureProjectSchema(req.db);
+
   // ── Resource Limit Check ──────────────────────────────────────────────────
   const [org, currentProjectCount] = await Promise.all([
     req.db.organization.findUnique({ where: { id: organizationId } }),
@@ -442,7 +450,8 @@ export const createProject = async (req, res) => {
     where: {
       name: { equals: name.trim(), mode: 'insensitive' },
       organizationId: req.user.organizationId
-    }
+    },
+    select: { id: true } // Avoid fetching all columns which might crash if schema is old
   });
 
   if (existingProject) {
@@ -629,6 +638,9 @@ export const bulkCreateProjects = async (req, res) => {
   const { projects: projectList } = req.body;
   const organizationId = req.user.organizationId;
 
+  // ── Lazy Migration ────────────────────────────────────────────────────────
+  await ensureProjectSchema(req.db);
+
   if (!Array.isArray(projectList) || projectList.length === 0) {
     return res.status(400).json({ error: 'A non-empty array of projects is required.' });
   }
@@ -682,7 +694,8 @@ export const bulkCreateProjects = async (req, res) => {
 
     // Check duplicate name in org
     const existing = await req.db.project.findFirst({
-      where: { name: { equals: name.trim(), mode: 'insensitive' }, organizationId }
+      where: { name: { equals: name.trim(), mode: 'insensitive' }, organizationId },
+      select: { id: true }
     });
     if (existing) {
       results.push({ row: rowNum, name, status: 'FAILED', error: 'A project with this name already exists in your organization.' });
@@ -758,7 +771,9 @@ export const bulkCreateProjects = async (req, res) => {
           status: normalizedStatus,
           category: (category || 'INTERNAL').toUpperCase().trim(),
         },
-        include: {
+        select: {
+          id: true,
+          name: true,
           client: { select: { id: true, name: true, email: true } },
           manager: { select: { id: true, name: true, email: true } },
         }
@@ -844,12 +859,16 @@ export const updateProject = async (req, res) => {
     sendEmail = true,
   } = req.body;
 
+  // ── Lazy Migration ────────────────────────────────────────────────────────
+  await ensureProjectSchema(req.db);
+
   // Verify project belongs to user's organization
   const existingProject = await req.db.project.findFirst({
     where: {
       id,
       organizationId: req.user.organizationId,
     },
+    select: { id: true, name: true, managerId: true, clientId: true, startDate: true, endDate: true }
   });
 
   if (!existingProject) {
@@ -1023,12 +1042,16 @@ export const updateProject = async (req, res) => {
 export const deleteProject = async (req, res) => {
   const { id } = req.params;
 
+  // ── Lazy Migration ────────────────────────────────────────────────────────
+  await ensureProjectSchema(req.db);
+
   // Verify project belongs to user's organization
   const existingProject = await req.db.project.findFirst({
     where: {
       id,
       organizationId: req.user.organizationId,
     },
+    select: { id: true, name: true }
   });
 
   if (!existingProject) {
@@ -1065,6 +1088,9 @@ export const addProjectMember = async (req, res) => {
   const { id: projectId } = req.params;
   const { userId } = req.body;
 
+  // ── Lazy Migration ────────────────────────────────────────────────────────
+  await ensureProjectSchema(req.db);
+
   try {
     // Verify project belongs to user's organization and requester is manager/admin
     const project = await req.db.project.findFirst({
@@ -1072,6 +1098,7 @@ export const addProjectMember = async (req, res) => {
         id: projectId,
         organizationId: req.user.organizationId,
       },
+      select: { id: true, name: true, managerId: true }
     });
 
     if (!project) {
@@ -1160,13 +1187,14 @@ export const addProjectMember = async (req, res) => {
 export const removeProjectMember = async (req, res) => {
   const { id: projectId, userId } = req.params;
 
+  // ── Lazy Migration ────────────────────────────────────────────────────────
+  await ensureProjectSchema(req.db);
+
   try {
     // Verify project belongs to user's organization and requester is manager/admin
     const project = await req.db.project.findFirst({
-      where: {
-        id: projectId,
-        organizationId: req.user.organizationId,
-      },
+      where: { id: projectId, organizationId: req.user.organizationId },
+      select: { id: true, name: true, managerId: true }
     });
 
     if (!project) {

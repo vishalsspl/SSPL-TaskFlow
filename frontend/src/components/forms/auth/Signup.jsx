@@ -225,8 +225,17 @@ const Signup = () => {
         country: form.country || undefined,
       });
 
-      if (data.token) {
+      if (data.token && data.user) {
+        console.log('[Signup] Success! Storing login and navigating to dashboard...');
         storeLogin(data.token, data.user);
+        
+        // Delay slightly to ensure storage is committed
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 100);
+      } else if (data.token) {
+        // Fallback if user object is somehow missing but token is there
+        storeLogin(data.token, { ...form, role: 'ADMIN', isApproved: true });
         navigate('/dashboard');
       } else {
         toast({ title: 'Success', description: data.message });

@@ -1,5 +1,6 @@
 import prisma from '../lib/prisma.js';
 import { sendUserApprovalEmail, sendCredentialsUpdatedEmail } from '../services/emailService.js';
+import { ensureOrganizationSchema } from '../lib/schemaValidator.js';
 import bcrypt from 'bcryptjs';
 import fs from 'fs';
 
@@ -11,6 +12,9 @@ export const getMyOrganization = async (req, res) => {
     if (role === 'SUPERADMIN') {
         return res.status(403).json({ error: 'Superadmin does not belong to an organisation' });
     }
+
+    // ── Lazy Migration ────────────────────────────────────────────────────────
+    await ensureOrganizationSchema(req.db);
 
     const org = await req.db.organization.findUnique({
         where: { id: organizationId },
@@ -34,6 +38,9 @@ export const getPublicOrganization = async (req, res) => {
 // ADMIN only — update own org's profile + settings
 export const updateMyOrganization = async (req, res) => {
     const { organizationId } = req.user;
+
+    // ── Lazy Migration ────────────────────────────────────────────────────────
+    await ensureOrganizationSchema(req.db);
 
     const {
         // identity
