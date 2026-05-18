@@ -94,8 +94,12 @@ export const getTimeEntries = async (req, res) => {
 export const createTimeEntry = async (req, res) => {
     const { projectId, taskId, date, hours, description, billable = true } = req.body;
 
-    if (!projectId || !date || !hours) {
-        return res.status(400).json({ error: 'Project, date, and hours are required' });
+    if (!projectId || !taskId || !date || !hours) {
+        return res.status(400).json({ error: 'Project, task, date, and hours are required' });
+    }
+
+    if (new Date(date) > new Date()) {
+        return res.status(400).json({ error: 'Cannot log hours for future dates' });
     }
 
     // Verify project/task belongs to user's organization

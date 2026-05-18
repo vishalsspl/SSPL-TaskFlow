@@ -11,7 +11,7 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover"
 
-export function DatePicker({ date, setDate, className, placeholder = "Pick a date" }) {
+export function DatePicker({ date, setDate, className, placeholder = "Pick a date", ...props }) {
     const [open, setOpen] = React.useState(false)
 
     return (
@@ -38,6 +38,7 @@ export function DatePicker({ date, setDate, className, placeholder = "Pick a dat
                         setOpen(false)
                     }}
                     initialFocus
+                    {...props}
                 />
             </PopoverContent>
         </Popover>

@@ -124,11 +124,11 @@ const Timesheets = () => {
     const handleToday = () => setCurrentDate(new Date());
 
     const handleLogHours = async () => {
-        if (!newEntry.projectId || !newEntry.hours || !newEntry.date) {
+        if (!newEntry.projectId || !newEntry.taskId || !newEntry.hours || !newEntry.date) {
             toast({
                 variant: "destructive",
                 title: "Validation Error",
-                description: "Please fill in all required fields."
+                description: "Please select a project, a task, and fill in all required fields."
             });
             return;
         }
@@ -422,6 +422,7 @@ const Timesheets = () => {
                                     setDate={(date) => setNewEntry({ ...newEntry, date: date })}
                                     placeholder="Select date"
                                     className="bg-muted/30 border-border rounded-xl font-bold h-11"
+                                    disabled={(date) => date > new Date()}
                                 />
                             </div>
                             <div className="space-y-1.5">
@@ -457,7 +458,7 @@ const Timesheets = () => {
                         </div>
 
                         <div className="space-y-2">
-                            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Select Task (Optional)</Label>
+                            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Select Task</Label>
                             <SearchableSelect
                                 value={newEntry.taskId}
                                 onChange={(val) => setNewEntry({ ...newEntry, taskId: val })}

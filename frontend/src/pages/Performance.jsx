@@ -74,7 +74,12 @@ const PerformanceDashboardView = ({ data, hoursTitle = "Hours by Project" }) => 
                                 <BarChart data={hoursByProject}>
                                     <XAxis dataKey="name" tick={{ fontSize: 11, fontWeight: 700 }} />
                                     <YAxis tick={{ fontSize: 11 }} />
-                                    <Tooltip formatter={(v) => [`${v}h`, 'Hours']} />
+                                    <Tooltip 
+                                        formatter={(v) => [`${v}h`, 'Hours']} 
+                                        contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' }}
+                                        itemStyle={{ color: 'hsl(var(--foreground))', fontWeight: 700 }}
+                                        cursor={{ fill: 'hsl(var(--muted))', opacity: 0.2 }}
+                                    />
                                     <Bar dataKey="hours" fill="#48A111" radius={[6, 6, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
@@ -93,7 +98,10 @@ const PerformanceDashboardView = ({ data, hoursTitle = "Hours by Project" }) => 
                                 <Pie data={statusData.filter(d => d.value > 0)} dataKey="value" cx="50%" cy="50%" outerRadius={70}>
                                     {statusData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                                 </Pie>
-                                <Tooltip />
+                                <Tooltip 
+                                    contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' }}
+                                    itemStyle={{ color: 'hsl(var(--foreground))', fontWeight: 700 }}
+                                />
                             </PieChart>
                         </ResponsiveContainer>
                         <div className="space-y-2 flex-1">

@@ -101,7 +101,7 @@ const ProjectOverview = ({ projectId }) => {
                     )}
                 </div>
                 <div
-                    className="text-sm text-muted-foreground prose prose-sm max-w-none leading-relaxed p-3 sm:p-4 bg-muted/20 rounded-lg"
+                    className="text-sm text-muted-foreground prose prose-sm dark:prose-invert max-w-none leading-relaxed p-3 sm:p-4 bg-muted/20 rounded-lg"
                     dangerouslySetInnerHTML={{ __html: project.description }}
                 />
                 {project.client && (

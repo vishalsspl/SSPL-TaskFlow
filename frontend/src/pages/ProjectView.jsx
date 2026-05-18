@@ -423,7 +423,7 @@ const ProjectView = () => {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-sm text-foreground Montserrat leading-relaxed prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: project.description }} />
+            <div className="text-sm text-foreground Montserrat leading-relaxed prose dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: project.description }} />
           </CardContent>
         </Card>
       )}
