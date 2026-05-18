@@ -19,8 +19,8 @@ import { useToast } from '@/hooks/use-toast';
 const REQUIRED_FIELDS = [
   { key: 'name', label: 'Project Name', description: 'Unique name for the project', example: 'Web Redesign 2024', required: true },
   { key: 'startDate', label: 'Start Date', description: 'YYYY-MM-DD format', example: '2024-05-01', required: true },
-  { key: 'managerEmail', label: 'Manager Email', description: 'Email of the manager (must exist)', example: 'manager@company.com', required: false },
-  { key: 'clientEmail', label: 'Client Email', description: 'Email of the client (must exist)', example: 'client@company.com', required: false },
+  { key: 'managerEmail', label: 'Manager Email', description: 'Email of the manager (optional)', example: 'manager@company.com', required: false },
+  { key: 'clientEmail', label: 'Client Email', description: 'Email of the client (optional)', example: 'client@company.com', required: false },
 ];
 
 const STEPS = {
@@ -58,11 +58,11 @@ const ImportProjectsDialog = ({ open, onOpenChange, onImportComplete }) => {
   const downloadTemplate = () => {
     const wb = XLSX.utils.book_new();
     const sampleData = [
-      { 'Project Name': 'Website Development', 'Description': 'Build a new corporate site', 'Start Date': '2024-06-01', 'End Date': '2024-12-31', 'Budget': 50000, 'Manager Email': 'admin@demo.com', 'Client Email': 'client@demo.com', 'Status': 'PLANNING', 'Category': 'EXTERNAL' },
-      { 'Project Name': 'Mobile App Update', 'Description': 'v2.0 security patches', 'Start Date': '2024-07-15', 'End Date': '', 'Budget': 15000, 'Manager Email': '', 'Client Email': '', 'Status': 'ACTIVE', 'Category': 'INTERNAL' },
+      { 'Project Name': 'Website Development', 'Description': 'Build a new corporate site', 'Start Date': '2024-06-01', 'End Date': '2024-12-31', 'Budget': 50000, 'Manager Email': 'admin@demo.com', 'Client Email': 'client@demo.com', 'Status': 'PLANNING' },
+      { 'Project Name': 'Mobile App Update', 'Description': 'v2.0 security patches', 'Start Date': '2024-07-15', 'End Date': '', 'Budget': 15000, 'Manager Email': '', 'Client Email': '', 'Status': 'ACTIVE' },
     ];
     const ws = XLSX.utils.json_to_sheet(sampleData);
-    ws['!cols'] = [{ wch: 25 }, { wch: 30 }, { wch: 15 }, { wch: 15 }, { wch: 12 }, { wch: 20 }, { wch: 20 }, { wch: 12 }, { wch: 12 }];
+    ws['!cols'] = [{ wch: 25 }, { wch: 30 }, { wch: 15 }, { wch: 15 }, { wch: 12 }, { wch: 20 }, { wch: 20 }, { wch: 12 }];
     XLSX.utils.book_append_sheet(wb, ws, 'Projects');
     XLSX.writeFile(wb, 'TaskFlow_Projects_Template.xlsx');
   };

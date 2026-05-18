@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useNotificationStore } from '@/store/notificationStore';
 import { useAuthStore } from '@/store/authStore';
@@ -41,6 +41,8 @@ const NotificationBell = () => {
     deleteNotification,
     loading
   } = useNotificationStore();
+
+  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -91,6 +93,7 @@ const NotificationBell = () => {
     const link = getNotificationLink(notification);
     if (link) {
       navigate(link);
+      setIsOpen(false);
     }
   };
 
@@ -181,7 +184,7 @@ const NotificationBell = () => {
   );
 
   return (
-    <Popover>
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="ghost"

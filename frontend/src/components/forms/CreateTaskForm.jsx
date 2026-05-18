@@ -19,7 +19,7 @@ import {
     Mail,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
-import { MultiSearchableSelect } from '@/components/ui/multi-searchable-select';
+// Removed MultiSearchableSelect import as it is no longer used
 import RichTextEditor from '@/components/ui/RichTextEditor';
 import { DatePicker } from '@/components/ui/date-picker';
 import api from '@/lib/api';
@@ -35,7 +35,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
         phaseId: task?.phaseId || '',
         title: task?.title || '',
         description: task?.description || '',
-        assigneeIds: task?.assignees?.map(a => a.userId) || [],
+        assigneeId: task?.assignees?.[0]?.userId || '',
         status: task?.status || 'TODO',
         priority: task?.priority || 'MEDIUM',
         completionPercentage: task?.completionPercentage || 0,
@@ -122,7 +122,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                 title: trimmedTitle,
                 tags: formData.tags ? (typeof formData.tags === 'string' ? formData.tags.split(',').map(t => t.trim()) : formData.tags) : [],
                 completionPercentage: Number(formData.completionPercentage),
-                assigneeIds: formData.assigneeIds,
+                assigneeIds: formData.assigneeId ? [formData.assigneeId] : [],
                 storyPoints: Number(formData.storyPoints),
             };
 
@@ -138,7 +138,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                     phaseId: '',
                     title: '',
                     description: '',
-                    assigneeIds: [],
+                    assigneeId: '',
                     status: 'TODO',
                     priority: 'MEDIUM',
                     completionPercentage: 0,
@@ -246,17 +246,29 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                     <Label htmlFor="assignee" className="text-foreground/90 font-semibold mobile-reduce-label">Assign To</Label>
                     <div className="relative">
                         <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70 z-10" />
-                        <MultiSearchableSelect
+                        <SearchableSelect
                             options={Array.from(new Map(users.map(u => [u.id, { 
                                 value: u.id, 
-                                label: `${u.name} (${u.role})`,
-                                email: u.email 
+                                label: u.name,
+                                sublabel: `${u.email} (${u.role})`,
+                                initial: u.name.charAt(0)
                             }])).values())}
-                            value={formData.assigneeIds}
-                            onChange={(ids) => setFormData({ ...formData, assigneeIds: ids })}
-                            placeholder="Select assignees..."
+                            value={formData.assigneeId}
+                            onChange={(id) => setFormData({ ...formData, assigneeId: id })}
+                            placeholder="Select assignee..."
                             searchPlaceholder="Search team members..."
                             className="!pl-10 mobile-reduce-input"
+                            renderOption={(option) => (
+                                <div className="flex items-center gap-3 py-1">
+                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
+                                        {option.initial}
+                                    </div>
+                                    <div className="flex flex-col min-w-0">
+                                        <span className="text-sm font-bold truncate">{option.label}</span>
+                                        <span className="text-[10px] text-muted-foreground truncate">{option.sublabel}</span>
+                                    </div>
+                                </div>
+                            )}
                         />
                     </div>
                 </div>
@@ -293,7 +305,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                                 { label: 'Low', value: 'LOW' },
                                 { label: 'Medium', value: 'MEDIUM' },
                                 { label: 'High', value: 'HIGH' },
-                                { label: 'Critical', value: 'CRITICAL' }
+                                { label: 'Urgent', value: 'URGENT' }
                             ]}
                             placeholder="Medium"
                             className="!pl-10 relative mobile-reduce-input"

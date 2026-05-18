@@ -13,8 +13,8 @@ import KanbanColumn from './KanbanColumn';
 import KanbanCard from './KanbanCard';
 import { createPortal } from 'react-dom';
 
-// Priority order: URGENT > CRITICAL > HIGH > MEDIUM > LOW
-const PRIORITY_ORDER = { URGENT: 0, CRITICAL: 1, HIGH: 2, MEDIUM: 3, LOW: 4 };
+// Priority order: URGENT > HIGH > MEDIUM > LOW
+const PRIORITY_ORDER = { URGENT: 0, HIGH: 2, MEDIUM: 3, LOW: 4 };
 
 const sortByPriority = (tasks) => {
     return [...tasks].sort((a, b) => {

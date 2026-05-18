@@ -15,6 +15,7 @@ const ResetPassword = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [orgInfo, setOrgInfo] = useState(null);
 
   useEffect(() => {
@@ -121,13 +122,16 @@ const ResetPassword = () => {
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70" />
                     <Input
                       id="confirmPassword"
-                      type={showPassword ? "text" : "password"}
+                      type={showConfirmPassword ? "text" : "password"}
                       placeholder="••••••••"
                       value={formData.confirmPassword}
                       onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                       required
-                      className="!pl-10"
+                      className="!pl-10 pr-10"
                     />
+                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
                   </div>
                 </div>
               </div>

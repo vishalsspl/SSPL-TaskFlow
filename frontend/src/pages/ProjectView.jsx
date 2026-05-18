@@ -377,9 +377,9 @@ const ProjectView = () => {
           const isComp = phase.status === 'COMPLETED';
           const isProd = phase.status === 'IN_PROGRESS';
           return (
-            <Card key={phase.id} className={`border-0 relative overflow-hidden group transition-all duration-500 ${isComp ? 'bg-gradient-to-br from-[#10B981] to-[#047857]' : isProd ? 'bg-gradient-to-br from-[#0EA5E9] to-[#0369A1]' : 'bg-[#0A0A0A] ring-1 ring-white/10'}`}>
+            <Card key={phase.id} className={`border-0 relative overflow-hidden group transition-all duration-500 ${isComp ? 'bg-gradient-to-br from-[#10B981] to-[#047857]' : isProd ? 'bg-gradient-to-br from-[#0EA5E9] to-[#0369A1]' : 'bg-card border border-border shadow-sm'}`}>
               <CardContent className="p-6 flex flex-col items-center justify-center text-center space-y-3 relative z-10">
-                <h4 className={`font-black text-[10px] uppercase tracking-widest Montserrat ${isComp || isProd ? 'text-white/80' : 'text-gray-500'}`}>{phase.name}</h4>
+                <h4 className={`font-black text-[10px] uppercase tracking-widest Montserrat ${isComp || isProd ? 'text-white/80' : 'text-muted-foreground'}`}>{phase.name}</h4>
                 {isComp ? (
                   <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-md shadow-[0_0_20px_rgba(255,255,255,0.2)]">
                     <CheckCircle className="w-8 h-8 text-white" />
@@ -389,11 +389,11 @@ const ProjectView = () => {
                     <div className="text-2xl font-black text-white Montserrat">{phase.completionPercentage}%</div>
                   </div>
                 ) : (
-                  <div className="p-3 bg-white/5 rounded-2xl">
-                    <Clock className="w-8 h-8 text-gray-700" />
+                  <div className="p-3 bg-secondary/50 rounded-2xl">
+                    <Clock className="w-8 h-8 text-muted-foreground" />
                   </div>
                 )}
-                <Badge variant="none" className={`text-[9px] font-black tracking-widest uppercase px-2 py-0.5 rounded-md ${isComp || isProd ? 'bg-white/20 text-white' : 'bg-white/5 text-gray-500 border border-white/10'}`}>
+                <Badge variant="none" className={`text-[9px] font-black tracking-widest uppercase px-2 py-0.5 rounded-md ${isComp || isProd ? 'bg-white/20 text-white' : 'bg-secondary text-muted-foreground border border-border'}`}>
                   {phase.status.replace('_', ' ')}
                 </Badge>
               </CardContent>
@@ -417,13 +417,13 @@ const ProjectView = () => {
       {project.description && (
         <Card className="bg-card border-border ring-1 ring-border shadow-2xl relative overflow-hidden group border-l-4 border-l-primary/50 hover:border-l-primary transition-all duration-500">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-[10px] font-black text-gray-500 uppercase tracking-widest Montserrat">Project Scope & Description</CardTitle>
+            <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-widest Montserrat">Project Scope & Description</CardTitle>
             <div className="p-2 bg-primary/10 rounded-xl group-hover:scale-110 transition-transform duration-500">
               <FileText className="h-4 w-4 text-primary" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-sm text-gray-300 Montserrat leading-relaxed prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: project.description }} />
+            <div className="text-sm text-foreground Montserrat leading-relaxed prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: project.description }} />
           </CardContent>
         </Card>
       )}
@@ -433,12 +433,12 @@ const ProjectView = () => {
         {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
           <Card className="bg-card border-border ring-1 ring-border shadow-2xl relative overflow-hidden group lg:col-span-2">
             <CardHeader className="flex flex-row items-center justify-between pb-4">
-              <CardTitle className="text-[10px] font-black text-gray-500 uppercase tracking-widest Montserrat">Total Commitment</CardTitle>
+              <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-widest Montserrat">Total Commitment</CardTitle>
               <div className="p-2 bg-white/5 rounded-xl"><DollarSign className="h-4 w-4 text-[#F59E0B]" /></div>
             </CardHeader>
             <CardContent className="min-w-0 pb-8">
               <div className="text-3xl lg:text-4xl font-black text-foreground Montserrat truncate">{formatCurrency(project.totalBudget)}</div>
-              <p className="text-[11px] text-gray-400 mt-2 Montserrat font-bold italic tracking-wide">Primary Project Investment</p>
+              <p className="text-[11px] text-muted-foreground mt-2 Montserrat font-bold italic tracking-wide">Primary Project Investment</p>
               <div className="mt-6 h-2 w-full bg-white/5 rounded-full overflow-hidden">
                 <div className="h-full bg-[#F59E0B] w-full shadow-[0_0_15px_rgba(245,158,11,0.5)]" />
               </div>
@@ -448,12 +448,12 @@ const ProjectView = () => {
         {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
           <Card className="bg-card border-border ring-1 ring-border shadow-2xl relative overflow-hidden group">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-[10px] font-black text-gray-500 uppercase tracking-widest Montserrat">Current Utilization</CardTitle>
+              <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-widest Montserrat">Current Utilization</CardTitle>
               <div className="p-1.5 bg-white/5 rounded-lg"><Clock className="h-3.5 w-3.5 text-[#00A3FF]" /></div>
             </CardHeader>
             <CardContent className="min-w-0">
               <div className="text-xl font-black text-foreground Montserrat truncate">{formatCurrency(budget.used)}</div>
-              <p className="text-[10px] text-gray-500 mt-1 Montserrat font-bold italic">{budget.usedPercentage.toFixed(1)}% of total consumed</p>
+              <p className="text-[10px] text-muted-foreground mt-1 Montserrat font-bold italic">{budget.usedPercentage.toFixed(1)}% of total consumed</p>
               <div className="mt-4 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
                 <div className="h-full bg-[#00A3FF] shadow-[0_0_8px_rgba(0,163,255,0.5)] transition-all duration-1000" style={{ width: `${budget.usedPercentage}%` }} />
               </div>
@@ -463,14 +463,14 @@ const ProjectView = () => {
         {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
           <Card className="bg-card border-border ring-1 ring-border shadow-2xl relative overflow-hidden group">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-[10px] font-black text-gray-500 uppercase tracking-widest Montserrat">NET Balance (Remaining)</CardTitle>
+              <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-widest Montserrat">NET Balance (Remaining)</CardTitle>
               <div className="p-1.5 bg-white/5 rounded-lg">
                 <div className="w-3.5 h-3.5 rounded-full bg-[#48A111]/20 flex items-center justify-center"><CheckCircle className="h-3 w-3 text-[#48A111]" /></div>
               </div>
             </CardHeader>
             <CardContent className="min-w-0">
               <div className="text-xl font-black text-[#48A111] Montserrat truncate">{formatCurrency(budget.remaining)}</div>
-              <p className="text-[10px] text-gray-500 mt-1 Montserrat font-bold italic">Available for allocation</p>
+              <p className="text-[10px] text-muted-foreground mt-1 Montserrat font-bold italic">Available for allocation</p>
               <div className="mt-4 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
                 <div className="h-full bg-[#48A111] shadow-[0_0_8px_rgba(72,161,17,0.5)] transition-all duration-1000" style={{ width: `${Math.max(0, 100 - budget.usedPercentage)}%` }} />
               </div>
@@ -479,12 +479,12 @@ const ProjectView = () => {
         )}
         <Card className="bg-card border-border ring-1 ring-border shadow-2xl relative overflow-hidden group">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-[10px] font-black text-gray-500 uppercase tracking-widest Montserrat">Effort Completion</CardTitle>
+            <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-widest Montserrat">Effort Completion</CardTitle>
             <div className="p-1.5 bg-white/5 rounded-lg"><Layers className="h-3.5 w-3.5 text-[#8B5CF6]" /></div>
           </CardHeader>
           <CardContent className="min-w-0">
             <div className="text-xl font-black text-foreground Montserrat truncate">{overview.progressPercentage}%</div>
-            <p className="text-[10px] text-gray-500 mt-1 Montserrat font-bold italic">{overview.completedStoryPoints} of {overview.totalStoryPoints} pts done</p>
+            <p className="text-[10px] text-muted-foreground mt-1 Montserrat font-bold italic">{overview.completedStoryPoints} of {overview.totalStoryPoints} pts done</p>
             <div className="mt-4 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
               <div className="h-full bg-[#8B5CF6] shadow-[0_0_8px_rgba(139,92,246,0.5)] transition-all duration-1000" style={{ width: `${overview.progressPercentage}%` }} />
             </div>
@@ -743,7 +743,7 @@ const ProjectView = () => {
       )}
 
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="sm:max-w-[700px] max-h-[95vh] p-0 overflow-hidden flex flex-col">
+        <DialogContent className="w-[calc(100%-2rem)] sm:w-full sm:max-w-[700px] max-h-[95vh] p-0 overflow-hidden flex flex-col">
           <div className="overflow-y-auto p-4 sm:p-6 flex-1 w-full relative">
             <DialogHeader className="mb-2 sm:mb-4">
               <DialogTitle>Create New Task</DialogTitle>
@@ -761,7 +761,7 @@ const ProjectView = () => {
       </Dialog>
 
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="sm:max-w-[700px] max-h-[95vh] p-0 overflow-hidden flex flex-col">
+        <DialogContent className="w-[calc(100%-2rem)] sm:w-full sm:max-w-[700px] max-h-[95vh] p-0 overflow-hidden flex flex-col">
           <div className="overflow-y-auto p-4 sm:p-6 flex-1 w-full relative">
             <DialogHeader className="mb-2 sm:mb-4">
               <DialogTitle>Edit Task</DialogTitle>

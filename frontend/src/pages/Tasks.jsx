@@ -284,7 +284,7 @@ const Tasks = () => {
     { value: 'LOW', label: 'Low' },
     { value: 'MEDIUM', label: 'Medium' },
     { value: 'HIGH', label: 'High' },
-    { value: 'CRITICAL', label: 'Critical' },
+    { value: 'URGENT', label: 'Urgent' },
   ];
 
   const typeOptions = [
@@ -317,7 +317,7 @@ const Tasks = () => {
     <div className="flex-1 flex flex-col min-h-screen lg:min-h-0 p-0 pt-0 gap-4">
 
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="sm:max-w-[700px] max-h-[95vh] p-0 overflow-hidden flex flex-col">
+        <DialogContent className="w-[calc(100%-2rem)] sm:w-full sm:max-w-[700px] max-h-[95vh] p-0 overflow-hidden flex flex-col">
           <div className="overflow-y-auto p-4 sm:p-6 flex-1 w-full relative">
             <DialogHeader className="mb-2 sm:mb-4">
               <DialogTitle>Create New Task</DialogTitle>
@@ -336,7 +336,7 @@ const Tasks = () => {
       </Dialog>
 
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="sm:max-w-[700px] max-h-[95vh] p-0 overflow-hidden flex flex-col">
+        <DialogContent className="w-[calc(100%-2rem)] sm:w-full sm:max-w-[700px] max-h-[95vh] p-0 overflow-hidden flex flex-col">
           <div className="overflow-y-auto p-4 sm:p-6 flex-1 w-full relative">
             <DialogHeader className="mb-2 sm:mb-4">
               <DialogTitle>Edit Task</DialogTitle>

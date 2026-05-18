@@ -86,8 +86,18 @@ const Dashboard = () => {
 
       const totalProjects = projectsData.length;
       const activeProjects = projectsData.filter(p => ['ACTIVE', 'PLANNING', 'ON_HOLD'].includes(p.status)).length;
-      const totalTasks = projectsData.reduce((sum, p) => sum + (p._count?.tasks || 0), 0);
+      let totalTasks = projectsData.reduce((sum, p) => sum + (p._count?.tasks || 0), 0);
       const totalBudget = projectsData.reduce((sum, p) => sum + Number(p.totalBudget || 0), 0);
+
+      // If MEMBER, only show their specific assigned tasks count
+      if (user?.role === 'MEMBER') {
+        try {
+          const tasksRes = await api.get('/tasks', { params: { assignedTo: user.id, page: 1, limit: 1 } });
+          totalTasks = tasksRes.data.pagination?.total || 0;
+        } catch (e) {
+          console.error('Failed to fetch member tasks count', e);
+        }
+      }
 
       setStats({
         totalProjects,

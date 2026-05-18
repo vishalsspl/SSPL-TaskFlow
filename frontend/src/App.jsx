@@ -194,12 +194,11 @@ function App() {
               <Route path="settings" element={<PlatformSettings />} />
             </Route>
 
-            {/* ── Protected & Public root ─────────────────────────── */}
-            <Route
-              path="/"
-              element={token ? <Layout /> : <LandingPage />}
-            >
-              <Route index element={<RoleBasedRedirect />} />
+            {/* ── Public Landing Page ─────────────────────────────── */}
+            <Route path="/" element={token ? <RoleBasedRedirect /> : <LandingPage />} />
+
+            {/* ── Protected Routes ────────────────────────────────── */}
+            <Route element={token ? <Layout /> : <Navigate to="/login" replace />}>
               <Route path="dashboard" element={<Dashboard />} />
               <Route
                 path="projects"

@@ -146,6 +146,20 @@
     -webkit-appearance: none;
     display: none;
   }
+
+  /* Hide native password reveal button in Edge/Chrome */
+  input[type="password"]::-ms-reveal,
+  input[type="password"]::-ms-clear {
+    display: none;
+  }
+
+  /* Hide Safari's native auto-fill icons which can clash with custom icons */
+  input::-webkit-contacts-auto-fill-button,
+  input::-webkit-credentials-auto-fill-button {
+    visibility: hidden;
+    display: none !important;
+    pointer-events: none;
+  }
 }
 
 /* ── CKEditor Overrides — scoped to themes ── */
@@ -269,13 +283,13 @@
 
   /* Reduce space between form groups */
   .mobile-reduce-spacing>*+* {
-    margin-top: 0.5rem !important;
-    /* Equivalent to space-y-2 */
+    margin-top: 0.75rem !important;
+    /* Increased from 0.5rem for better breathing room */
   }
 
   .mobile-reduce-grid {
-    gap: 0.5rem !important;
-    /* Equivalent to gap-2 */
+    gap: 0.75rem !important;
+    /* Increased from 0.5rem */
   }
 }
 

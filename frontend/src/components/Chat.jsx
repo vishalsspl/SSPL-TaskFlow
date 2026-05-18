@@ -526,12 +526,12 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
                                             {msg.replyTo && (
                                                 <div
                                                     onClick={() => scrollToMessage(msg.replyTo.id)}
-                                                    className={`mb-1 p-2 rounded-lg bg-black/40 border-l-4 border-primary/70 text-[10px] Montserrat max-w-full cursor-pointer hover:bg-black/60 transition-all opacity-80 group/reply ${msg.userId === user.id ? 'mr-1' : 'ml-1'}`}
+                                                    className={`mb-1 p-2 rounded-lg bg-foreground/5 border-l-4 border-primary/70 text-[10px] Montserrat max-w-full cursor-pointer hover:bg-foreground/10 transition-all ${msg.userId === user.id ? 'mr-1' : 'ml-1'}`}
                                                 >
                                                     <span className="font-black text-primary uppercase tracking-tighter block mb-0.5">
                                                         <Reply className="w-2 h-2 inline mr-1" /> {msg.replyTo.user?.name}
                                                     </span>
-                                                    <p className="line-clamp-2 italic opacity-70">{msg.replyTo.content}</p>
+                                                    <p className="line-clamp-2 italic text-foreground/70">{msg.replyTo.content}</p>
                                                 </div>
                                             )}
                                             <div

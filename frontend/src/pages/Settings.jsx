@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useHeaderStore } from '@/store/headerStore';
 import { useTheme } from '@/components/ThemeProvider';
-import { Monitor, Moon, Sun, Upload, User, Check, Mail, Shield, Building2 } from 'lucide-react';
+import { Monitor, Moon, Sun, Upload, User, Check, Mail, Shield, Building2, KeyRound, Eye, EyeOff, Lock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -74,6 +74,13 @@ const Settings = () => {
   const [profileForm, setProfileForm] = useState({ name: '', email: '' });
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
+  // Change Password state
+  const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [showCurrentPw, setShowCurrentPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
+
   useEffect(() => {
     if (user) {
       setProfileForm({ name: user.name || '', email: user.email || '' });
@@ -140,6 +147,42 @@ const Settings = () => {
 
 
 
+  const handlePasswordChange = async () => {
+    if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+      toast({ title: 'All fields required', description: 'Please fill in all password fields.', variant: 'destructive' });
+      return;
+    }
+    if (passwordData.newPassword.length < 6) {
+      toast({ title: 'Password too short', description: 'New password must be at least 6 characters.', variant: 'destructive' });
+      return;
+    }
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast({ title: 'Mismatch', description: 'New passwords do not match.', variant: 'destructive' });
+      return;
+    }
+
+    setPasswordLoading(true);
+    try {
+      await api.post('/auth/change-password', {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword
+      });
+      toast({ title: 'Password updated', description: 'Your password has been changed successfully.' });
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setShowCurrentPw(false);
+      setShowNewPw(false);
+      setShowConfirmPw(false);
+    } catch (error) {
+      toast({ 
+        title: 'Error', 
+        description: error.response?.data?.error || 'Failed to change password. Please check your current password.', 
+        variant: 'destructive' 
+      });
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
   return (
     <div className="flex-1 p-0 sm:p-2 pt-2 overflow-y-auto h-full space-y-8">
       <div className="mt-2"></div>
@@ -182,6 +225,24 @@ const Settings = () => {
                 <Monitor className="w-4 h-4" />
               </div>
               <span className="text-sm">Appearance</span>
+            </Button>
+            <Button
+              variant="none"
+              className={`flex-1 lg:flex-none justify-start Montserrat font-bold h-12 px-5 rounded-xl transition-all duration-300 gap-3 ${activeTab === 'security'
+                ? 'shadow-xl'
+                : 'text-muted-foreground hover:bg-white/5 hover:text-foreground'}`}
+              style={activeTab === 'security' ? {
+                backgroundColor: 'rgba(239,68,68,0.15)',
+                color: '#EF4444',
+                boxShadow: '0 8px 20px -6px rgba(239,68,68,0.1)',
+                border: '1px solid rgba(239,68,68,0.3)'
+              } : {}}
+              onClick={() => setActiveTab('security')}
+            >
+              <div className={`p-1.5 rounded-lg transition-colors ${activeTab === 'security' ? 'bg-white/10' : ''}`}>
+                <Lock className="w-4 h-4" />
+              </div>
+              <span className="text-sm">Security</span>
             </Button>
           </nav>
         </aside>
@@ -232,11 +293,10 @@ const Settings = () => {
                       <div className="space-y-2">
                         <Label className="text-foreground/90 font-semibold">Full Name</Label>
                         <div className="relative">
-                          <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70" />
                           <Input 
                             value={profileForm.name} 
                             onChange={(e) => setProfileForm({...profileForm, name: e.target.value})} 
-                            className="!pl-10" 
+                            className="px-4 h-12" 
                           />
                         </div>
                       </div>
@@ -246,12 +306,11 @@ const Settings = () => {
                           {user?.role !== 'ADMIN' && <span className="text-[10px] text-muted-foreground font-normal">Contact Admin to change</span>}
                         </Label>
                         <div className="relative">
-                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70" />
                           <Input 
                             value={profileForm.email} 
                             onChange={(e) => setProfileForm({...profileForm, email: e.target.value})} 
                             readOnly={user?.role !== 'ADMIN'}
-                            className={`!pl-10 ${user?.role !== 'ADMIN' ? 'bg-muted/30 cursor-not-allowed opacity-70 border-dashed' : ''}`} 
+                            className={`px-4 h-12 ${user?.role !== 'ADMIN' ? 'bg-muted/30 cursor-not-allowed opacity-70 border-dashed' : ''}`} 
                             title={user?.role !== 'ADMIN' ? 'Only Admins can change their email address' : ''}
                           />
                         </div>
@@ -259,8 +318,7 @@ const Settings = () => {
                       <div className="space-y-2">
                         <Label className="text-foreground/90 font-semibold">Account Role</Label>
                         <div className="relative">
-                          <Shield className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70" />
-                          <div className="!pl-10 h-10 flex items-center border border-input rounded-md bg-muted/30">
+                          <div className="px-4 h-12 flex items-center border border-input rounded-md bg-muted/30">
                             <Badge
                               className="text-[10px] font-black tracking-widest uppercase rounded-sm px-2.5 py-1"
                               style={{
@@ -406,6 +464,84 @@ const Settings = () => {
                           )}
                         </div>
                       </button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {activeTab === 'security' && (
+              <Card className="rounded-3xl border-border/40 shadow-2xl bg-white/40 dark:bg-black/40 backdrop-blur-3xl overflow-hidden group transition-all">
+                <CardHeader className="p-8 pb-6">
+                  <div className="flex items-center gap-5">
+                    <div className="w-14 h-14 rounded-2xl bg-red-500/5 border border-red-500/10 flex items-center justify-center text-red-500 shadow-inner transition-transform group-hover:scale-105">
+                      <KeyRound className="w-7 h-7" />
+                    </div>
+                    <div className="space-y-1">
+                      <CardTitle className="text-xl font-bold tracking-widest uppercase">Security Settings</CardTitle>
+                      <CardDescription className="text-[10px] font-bold tracking-widest opacity-60 leading-tight uppercase">Update your account password and security options</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <Separator className="bg-border/10" />
+                <CardContent className="p-8 space-y-8">
+                  <div className="space-y-6 max-w-xl">
+                    <div className="space-y-2">
+                      <Label className="text-sm font-bold text-foreground/90 Montserrat">Current Password</Label>
+                      <div className="relative group">
+                        <Input 
+                          type={showCurrentPw ? 'text' : 'password'}
+                          value={passwordData.currentPassword}
+                          onChange={e => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                          placeholder="••••••••"
+                          className="h-14 px-6 rounded-2xl bg-background/50 border-border/40 font-bold focus:ring-4 focus:ring-red-500/10 transition-all"
+                        />
+                        <button type="button" onClick={() => setShowCurrentPw(!showCurrentPw)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+                          {showCurrentPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-sm font-bold text-foreground/90 Montserrat">New Password</Label>
+                      <div className="relative group">
+                        <Input 
+                          type={showNewPw ? 'text' : 'password'}
+                          value={passwordData.newPassword}
+                          onChange={e => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                          placeholder="••••••••"
+                          className="h-14 px-6 rounded-2xl bg-background/50 border-border/40 font-bold focus:ring-4 focus:ring-red-500/10 transition-all"
+                        />
+                        <button type="button" onClick={() => setShowNewPw(!showNewPw)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+                          {showNewPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-sm font-bold text-foreground/90 Montserrat">Confirm New Password</Label>
+                      <div className="relative group">
+                        <Input 
+                          type={showConfirmPw ? 'text' : 'password'}
+                          value={passwordData.confirmPassword}
+                          onChange={e => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                          placeholder="••••••••"
+                          className="h-14 px-6 rounded-2xl bg-background/50 border-border/40 font-bold focus:ring-4 focus:ring-red-500/10 transition-all"
+                        />
+                        <button type="button" onClick={() => setShowConfirmPw(!showConfirmPw)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+                          {showConfirmPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 flex justify-end">
+                      <Button 
+                        onClick={handlePasswordChange}
+                        disabled={passwordLoading}
+                        className="h-14 rounded-2xl px-10 bg-red-500 hover:bg-red-600 text-white font-bold text-sm shadow-xl shadow-red-500/20 transition-all min-w-[180px]"
+                      >
+                        {passwordLoading ? 'Updating...' : 'Update Password'}
+                      </Button>
                     </div>
                   </div>
                 </CardContent>

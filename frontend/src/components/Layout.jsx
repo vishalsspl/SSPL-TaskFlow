@@ -56,6 +56,8 @@ import {
   Building2,
   History,
   CreditCard,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { useChatStore } from '@/store/chatStore';
 import { useHeaderStore } from '@/store/headerStore';
@@ -65,6 +67,7 @@ import GlobalTimer from '@/components/GlobalTimer';
 import { useTimerStore } from '@/store/timerStore';
 import api from '@/lib/api';
 import { Timer as TimerIcon } from 'lucide-react';
+import { useTheme } from '@/components/ThemeProvider';
 
 const Layout = () => {
   const { user, logout } = useAuthStore();
@@ -77,6 +80,7 @@ const Layout = () => {
   const { activeTaskId, isRunning, setRecorderOpen, autoSaveWorklog, saveWorklog } = useTimerStore();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const { theme, setTheme } = useTheme();
 
   // Timer protection: Handle window close/refresh
   useEffect(() => {
@@ -443,6 +447,15 @@ const Layout = () => {
                 )}
               </Button>
             )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="hover:bg-primary/10 rounded-xl transition-all text-muted-foreground hover:text-primary"
+              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            >
+              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </Button>
             {user?.role !== 'CLIENT' && <NotificationBell />}
           </div>
         </header>

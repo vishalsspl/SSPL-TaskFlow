@@ -13,7 +13,7 @@ import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from '@/components/ui/select';
 import {
-    CheckCircle2, Clock, AlertTriangle, TrendingUp,
+    CheckCircle2, Clock, AlertTriangle, TrendingUp, FolderKanban,
     Target, Zap, BarChart2, Users, DollarSign, User as UserIcon
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -38,52 +38,12 @@ const StatCard = ({ icon: Icon, label, value, sub, color = '#48A111' }) => (
     </Card>
 );
 
-const MyPerformance = ({ user, projects }) => {
-    const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [projectFilter, setProjectFilter] = useState('all');
-
-    useEffect(() => {
-        fetchPerformance();
-    }, [projectFilter]);
-
-    const fetchPerformance = async () => {
-        setLoading(true);
-        try {
-            const params = {};
-            if (projectFilter && projectFilter !== 'all') params.projectId = projectFilter;
-            const res = await api.get(`/performance/user/${user.id}`, { params });
-            setData(res.data);
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    if (loading) return <div className="text-center py-16 text-muted-foreground font-bold">Loading performance data...</div>;
-    if (!data) return null;
-
+const PerformanceDashboardView = ({ data, hoursTitle = "Hours by Project" }) => {
     const { summary = {}, tasksByStatus = {}, hoursByProject = [], recentTasks = [] } = data || {};
-
     const statusData = Object.entries(tasksByStatus || {}).map(([name, value]) => ({ name, value }));
 
     return (
         <div className="space-y-4 sm:space-y-6">
-            {/* Filter */}
-            <div className="flex items-center gap-3">
-                <SearchableSelect
-                    value={projectFilter}
-                    onChange={setProjectFilter}
-                    options={[
-                        { label: 'All Projects', value: 'all' },
-                        ...projects.map(p => ({ label: p.name, value: p.id || 'unknown' }))
-                    ]}
-                    placeholder="All Projects"
-                    className="w-full sm:w-52 h-10 rounded-xl bg-background border-border/60 font-bold"
-                />
-            </div>
-
             {/* Summary Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
                 <StatCard icon={CheckCircle2} label="Completion Rate" value={`${summary.completionRate}%`} sub={`${summary.completedTasks}/${summary.totalTasks} tasks`} color="#48A111" />
@@ -101,10 +61,10 @@ const MyPerformance = ({ user, projects }) => {
 
             {/* Charts */}
             <div className="grid md:grid-cols-2 gap-6">
-                {/* Hours by Project */}
+                {/* Hours by Project/Member */}
                 <Card className="border border-border">
                     <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-black uppercase tracking-wider text-muted-foreground">Hours by Project</CardTitle>
+                        <CardTitle className="text-sm font-black uppercase tracking-wider text-muted-foreground">{hoursTitle}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {hoursByProject.length === 0 ? (
@@ -186,6 +146,99 @@ const MyPerformance = ({ user, projects }) => {
                     )}
                 </CardContent>
             </Card>
+        </div>
+    );
+};
+
+const MyPerformance = ({ user, projects }) => {
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [projectFilter, setProjectFilter] = useState('all');
+
+    useEffect(() => {
+        fetchPerformance();
+    }, [projectFilter]);
+
+    const fetchPerformance = async () => {
+        setLoading(true);
+        try {
+            const params = {};
+            if (projectFilter && projectFilter !== 'all') params.projectId = projectFilter;
+            const res = await api.get(`/performance/user/${user.id}`, { params });
+            setData(res.data);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (loading) return <div className="text-center py-16 text-muted-foreground font-bold">Loading performance data...</div>;
+    if (!data) return null;
+
+    return (
+        <div className="space-y-4 sm:space-y-6">
+            <div className="flex items-center gap-3">
+                <SearchableSelect
+                    value={projectFilter}
+                    onChange={setProjectFilter}
+                    options={[
+                        { label: 'All Projects', value: 'all' },
+                        ...projects.map(p => ({ label: p.name, value: p.id || 'unknown' }))
+                    ]}
+                    placeholder="All Projects"
+                    className="w-full sm:w-52 h-10 rounded-xl bg-background border-border/60 font-bold"
+                />
+            </div>
+            <PerformanceDashboardView data={data} hoursTitle="Hours by Project" />
+        </div>
+    );
+};
+
+const ProjectPerformance = ({ projects }) => {
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [projectFilter, setProjectFilter] = useState('');
+
+    useEffect(() => {
+        if (projectFilter && projectFilter !== 'all') {
+            fetchPerformance();
+        } else {
+            setData(null);
+        }
+    }, [projectFilter]);
+
+    const fetchPerformance = async () => {
+        setLoading(true);
+        try {
+            const res = await api.get(`/performance/project/${projectFilter}`);
+            setData(res.data);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="space-y-4 sm:space-y-6">
+            <div className="flex items-center gap-3">
+                <SearchableSelect
+                    value={projectFilter}
+                    onChange={setProjectFilter}
+                    options={projects.map(p => ({ label: p.name, value: p.id || 'unknown' }))}
+                    placeholder="Select a project"
+                    className="w-full sm:w-52 h-10 rounded-xl bg-background border-border/60 font-bold"
+                />
+            </div>
+            
+            {loading ? (
+                <div className="text-center py-16 text-muted-foreground font-bold">Loading project data...</div>
+            ) : !data ? (
+                <div className="text-center py-16 text-muted-foreground font-bold">Please select a project to view its performance.</div>
+            ) : (
+                <PerformanceDashboardView data={data} hoursTitle="Hours by Member" />
+            )}
         </div>
     );
 };
@@ -308,22 +361,32 @@ const Performance = () => {
     return (
         <div className="flex-1 flex flex-col h-full overflow-hidden p-0 sm:p-2 pt-2 gap-4">
             {canViewTeam ? (
-                <Tabs defaultValue="mine" className="flex-1 flex flex-col min-h-0 w-full">
+                <Tabs defaultValue={user?.role === 'ADMIN' ? 'project' : 'mine'} className="flex-1 flex flex-col min-h-0 w-full">
                     <div className="px-3 sm:px-6 w-full shrink-0">
                         <TabsList className="bg-secondary/40 border border-border/60 rounded-xl flex-wrap h-auto w-full sm:w-fit justify-start bg-clip-padding">
-                            <TabsTrigger value="mine" className="rounded-lg font-black text-[11px] sm:text-sm px-2 sm:px-4 py-1.5 flex-1 sm:flex-none">
-                                <UserIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2 shrink-0" /> My Performance
-                            </TabsTrigger>
+                            {user?.role !== 'ADMIN' && (
+                                <TabsTrigger value="mine" className="rounded-lg font-black text-[11px] sm:text-sm px-2 sm:px-4 py-1.5 flex-1 sm:flex-none">
+                                    <UserIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2 shrink-0" /> My Performance
+                                </TabsTrigger>
+                            )}
                             <TabsTrigger value="team" className="rounded-lg font-black text-[11px] sm:text-sm px-2 sm:px-4 py-1.5 flex-1 sm:flex-none">
                                 <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2 shrink-0" /> Team Performance
                             </TabsTrigger>
+                            <TabsTrigger value="project" className="rounded-lg font-black text-[11px] sm:text-sm px-2 sm:px-4 py-1.5 flex-1 sm:flex-none">
+                                <FolderKanban className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2 shrink-0" /> Project Performance
+                            </TabsTrigger>
                         </TabsList>
                     </div>
-                    <TabsContent value="mine" className="flex-1 overflow-y-auto overflow-x-hidden mt-4 px-3 sm:px-6 pb-8">
-                        <MyPerformance user={user} projects={projects} />
-                    </TabsContent>
+                    {user?.role !== 'ADMIN' && (
+                        <TabsContent value="mine" className="flex-1 overflow-y-auto overflow-x-hidden mt-4 px-3 sm:px-6 pb-8">
+                            <MyPerformance user={user} projects={projects} />
+                        </TabsContent>
+                    )}
                     <TabsContent value="team" className="flex-1 overflow-y-auto overflow-x-hidden mt-4 px-3 sm:px-6 pb-8">
                         <TeamPerformance projects={projects} />
+                    </TabsContent>
+                    <TabsContent value="project" className="flex-1 overflow-y-auto overflow-x-hidden mt-4 px-3 sm:px-6 pb-8">
+                        <ProjectPerformance projects={projects} />
                     </TabsContent>
                 </Tabs>
             ) : (

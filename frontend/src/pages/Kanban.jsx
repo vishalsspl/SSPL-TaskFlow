@@ -263,7 +263,7 @@ const Kanban = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 items-start">
           {STATUSES.map((status) => {
             const cfg = STATUS_CONFIG[status];
-            const PRIORITY_ORDER = { URGENT: 0, CRITICAL: 1, HIGH: 2, MEDIUM: 3, LOW: 4 };
+            const PRIORITY_ORDER = { URGENT: 0, HIGH: 2, MEDIUM: 3, LOW: 4 };
             const colTasks = tasks.filter(t => t.status === status).sort((a, b) => (PRIORITY_ORDER[a.priority] ?? 99) - (PRIORITY_ORDER[b.priority] ?? 99));
             const isOver = dragOverCol === status;
 

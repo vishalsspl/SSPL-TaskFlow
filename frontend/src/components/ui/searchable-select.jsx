@@ -53,7 +53,7 @@ export function SearchableSelect({
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+            <PopoverContent className="min-w-[var(--radix-popover-trigger-width)] w-auto max-w-[400px] p-0" align="start">
                 <Command filter={(value, search) => {
                     if (value.toLowerCase().includes(search.toLowerCase())) return 1
                     return 0
@@ -80,9 +80,9 @@ export function SearchableSelect({
                                         )}
                                     />
                                     {renderOption ? renderOption(option) : (
-                                        <div className="flex items-center gap-2 truncate">
+                                        <div className="flex items-center gap-2">
                                             {option.icon && <span className="shrink-0">{option.icon}</span>}
-                                            <span className="truncate">{option.label}</span>
+                                            <span className="whitespace-normal break-words">{option.label}</span>
                                         </div>
                                     )}
                                 </CommandItem>

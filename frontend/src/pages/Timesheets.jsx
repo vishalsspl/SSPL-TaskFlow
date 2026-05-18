@@ -45,6 +45,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DatePicker } from '@/components/ui/date-picker';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import DeleteConfirmDialog from '@/components/ui/delete-confirm-dialog';
+import { Switch } from '@/components/ui/switch';
 
 const Timesheets = () => {
     const { user } = useAuthStore();
@@ -68,7 +69,8 @@ const Timesheets = () => {
         taskId: '',
         hours: '',
         description: '',
-        date: new Date()
+        date: new Date(),
+        billable: false
     });
 
     const weekStart = useMemo(() => startOfWeek(currentDate, { weekStartsOn: 1 }), [currentDate]);
@@ -100,12 +102,16 @@ const Timesheets = () => {
     const fetchTasks = useCallback(async (projectId) => {
         if (!projectId) return;
         try {
-            const response = await api.get(`/tasks?projectId=${projectId}`);
+            const params = { projectId };
+            if (user?.role === 'MEMBER') {
+                params.assignedTo = user.id;
+            }
+            const response = await api.get('/tasks', { params });
             setTasks(response.data);
         } catch (error) {
             console.error('Failed to fetch tasks:', error);
         }
-    }, []);
+    }, [user?.id, user?.role]);
 
     useEffect(() => {
         setHeader("Timesheets", "Log and track your project hours");
@@ -143,7 +149,8 @@ const Timesheets = () => {
                 taskId: '',
                 hours: '',
                 description: '',
-                date: new Date()
+                date: new Date(),
+                billable: false
             });
             fetchEntries();
         } catch (error) {
@@ -469,6 +476,18 @@ const Timesheets = () => {
                                 onChange={(e) => setNewEntry({ ...newEntry, description: e.target.value })}
                                 className="bg-muted/30 border-border rounded-xl font-medium h-11 pb-2"
                             />
+                        </div>
+
+                        <div className="flex items-center space-x-3 pt-2">
+                            <Switch 
+                                id="billable-toggle" 
+                                checked={newEntry.billable}
+                                onCheckedChange={(checked) => setNewEntry({ ...newEntry, billable: checked })}
+                            />
+                            <div className="space-y-0.5 cursor-pointer" onClick={() => setNewEntry({ ...newEntry, billable: !newEntry.billable })}>
+                                <Label htmlFor="billable-toggle" className="text-sm font-bold cursor-pointer">Billable Time</Label>
+                                <p className="text-[10px] text-muted-foreground">Is this work chargeable to a client?</p>
+                            </div>
                         </div>
                     </div>
 

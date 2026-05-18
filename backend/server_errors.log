@@ -41,3 +41,237 @@ The column `Project.githubRepo` does not exist in the current database.
 Path: /api/projects
 User: 47e9714e-26de-4b08-a452-d06e18c3d858
 ---
+2026-05-15T06:22:56.389Z [GLOBAL_ERROR] 
+Invalid `prisma.task.create()` invocation:
+
+{
+  data: {
+    projectId: "214fc384-2599-4a35-b2b6-03c7ef535dad",
+    phaseId: "3389195b-d428-4e32-8d91-a622c66aacc0",
+    title: "Billing Page",
+    description: "",
+    status: "TODO",
+    priority: "CRITICAL",
+              ~~~~~~~~~~
+    completionPercentage: 0,
+    dueDate: new Date("2026-05-19T18:30:00.000Z"),
+    tags: [],
+    storyPoints: 21,
+    type: "TASK",
+    assignees: {
+      create: [
+        {
+          userId: "e6765c92-8ec7-4ce1-843d-1cfe93736993"
+        }
+      ]
+    }
+  },
+  include: {
+    assignees: {
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true
+          }
+        }
+      }
+    },
+    project: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    phase: {
+      select: {
+        id: true,
+        name: true
+      }
+    }
+  }
+}
+
+Invalid value for argument `priority`. Expected Priority.
+Stack: PrismaClientValidationError: 
+Invalid `prisma.task.create()` invocation:
+
+{
+  data: {
+    projectId: "214fc384-2599-4a35-b2b6-03c7ef535dad",
+    phaseId: "3389195b-d428-4e32-8d91-a622c66aacc0",
+    title: "Billing Page",
+    description: "",
+    status: "TODO",
+    priority: "CRITICAL",
+              ~~~~~~~~~~
+    completionPercentage: 0,
+    dueDate: new Date("2026-05-19T18:30:00.000Z"),
+    tags: [],
+    storyPoints: 21,
+    type: "TASK",
+    assignees: {
+      create: [
+        {
+          userId: "e6765c92-8ec7-4ce1-843d-1cfe93736993"
+        }
+      ]
+    }
+  },
+  include: {
+    assignees: {
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true
+          }
+        }
+      }
+    },
+    project: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    phase: {
+      select: {
+        id: true,
+        name: true
+      }
+    }
+  }
+}
+
+Invalid value for argument `priority`. Expected Priority.
+    at wn (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:1363)
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6958)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async createTask (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/taskController.js:225:16)
+Path: /api/tasks
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-05-15T06:23:01.340Z [GLOBAL_ERROR] 
+Invalid `prisma.task.create()` invocation:
+
+{
+  data: {
+    projectId: "214fc384-2599-4a35-b2b6-03c7ef535dad",
+    phaseId: "3389195b-d428-4e32-8d91-a622c66aacc0",
+    title: "Billing Page",
+    description: "",
+    status: "TODO",
+    priority: "CRITICAL",
+              ~~~~~~~~~~
+    completionPercentage: 0,
+    dueDate: new Date("2026-05-19T18:30:00.000Z"),
+    tags: [],
+    storyPoints: 21,
+    type: "TASK",
+    assignees: {
+      create: [
+        {
+          userId: "e6765c92-8ec7-4ce1-843d-1cfe93736993"
+        }
+      ]
+    }
+  },
+  include: {
+    assignees: {
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true
+          }
+        }
+      }
+    },
+    project: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    phase: {
+      select: {
+        id: true,
+        name: true
+      }
+    }
+  }
+}
+
+Invalid value for argument `priority`. Expected Priority.
+Stack: PrismaClientValidationError: 
+Invalid `prisma.task.create()` invocation:
+
+{
+  data: {
+    projectId: "214fc384-2599-4a35-b2b6-03c7ef535dad",
+    phaseId: "3389195b-d428-4e32-8d91-a622c66aacc0",
+    title: "Billing Page",
+    description: "",
+    status: "TODO",
+    priority: "CRITICAL",
+              ~~~~~~~~~~
+    completionPercentage: 0,
+    dueDate: new Date("2026-05-19T18:30:00.000Z"),
+    tags: [],
+    storyPoints: 21,
+    type: "TASK",
+    assignees: {
+      create: [
+        {
+          userId: "e6765c92-8ec7-4ce1-843d-1cfe93736993"
+        }
+      ]
+    }
+  },
+  include: {
+    assignees: {
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true
+          }
+        }
+      }
+    },
+    project: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    phase: {
+      select: {
+        id: true,
+        name: true
+      }
+    }
+  }
+}
+
+Invalid value for argument `priority`. Expected Priority.
+    at wn (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:1363)
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6958)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async createTask (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/taskController.js:225:16)
+Path: /api/tasks
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---

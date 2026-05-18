@@ -405,7 +405,8 @@ exports.Priority = exports.$Enums.Priority = {
   LOW: 'LOW',
   MEDIUM: 'MEDIUM',
   HIGH: 'HIGH',
-  URGENT: 'URGENT'
+  URGENT: 'URGENT',
+  CRITICAL: 'CRITICAL'
 };
 
 exports.TaskType = exports.$Enums.TaskType = {

@@ -157,11 +157,9 @@ export const getUserPerformance = async (req, res) => {
     }
 };
 
-/**
- * Get performance metrics for a specific project
- */
 export const getProjectPerformance = async (req, res) => {
     const { projectId } = req.params;
+    const { dateFrom, dateTo } = req.query;
 
     try {
         const project = await req.db.project.findFirst({
@@ -170,28 +168,74 @@ export const getProjectPerformance = async (req, res) => {
 
         if (!project) return res.status(404).json({ error: 'Project not found' });
 
-        const tasks = await req.db.task.findMany({
-            where: { projectId },
-            select: { status: true, storyPoints: true }
+        const dateFilter = {};
+        if (dateFrom) dateFilter.gte = new Date(dateFrom);
+        if (dateTo) dateFilter.lte = new Date(dateTo);
+
+        const timeWhere = { projectId };
+        if (dateFrom || dateTo) timeWhere.date = dateFilter;
+
+        const [tasks, timeEntries] = await Promise.all([
+            req.db.task.findMany({
+                where: { projectId },
+                select: {
+                    id: true, title: true, status: true, priority: true,
+                    dueDate: true, storyPoints: true, completionPercentage: true,
+                    createdAt: true, updatedAt: true,
+                    project: { select: { id: true, name: true } },
+                },
+            }),
+            req.db.timeEntry.findMany({
+                where: timeWhere,
+                select: { hours: true, date: true, billable: true, status: true, user: { select: { id: true, name: true } } },
+            })
+        ]);
+
+        const totalTasks = tasks.length;
+        const completedTasks = tasks.filter(t => t.status === 'COMPLETED').length;
+        const inProgressTasks = tasks.filter(t => t.status === 'IN_PROGRESS').length;
+        const overdueTasks = tasks.filter(t => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'COMPLETED').length;
+        const onTimeTasks = tasks.filter(t => t.status === 'COMPLETED' && t.dueDate && new Date(t.updatedAt) <= new Date(t.dueDate)).length;
+
+        const totalHours = timeEntries.reduce((sum, e) => sum + parseFloat(e.hours), 0);
+        const billableHours = timeEntries.filter(e => e.billable).reduce((sum, e) => sum + parseFloat(e.hours), 0);
+        const approvedHours = timeEntries.filter(e => e.status === 'APPROVED').reduce((sum, e) => sum + parseFloat(e.hours), 0);
+
+        const totalStoryPoints = tasks.reduce((sum, t) => sum + (t.storyPoints || 0), 0);
+        const completedStoryPoints = tasks.filter(t => t.status === 'COMPLETED').reduce((sum, t) => sum + (t.storyPoints || 0), 0);
+
+        const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+        const onTimeRate = completedTasks > 0 ? Math.round((onTimeTasks / completedTasks) * 100) : 0;
+
+        const hoursByUserMap = {};
+        timeEntries.forEach(e => {
+            const key = e.user.name;
+            hoursByUserMap[key] = (hoursByUserMap[key] || 0) + parseFloat(e.hours);
         });
 
-        const completedTasks = tasks.filter(t => t.status === 'COMPLETED').length;
-        const totalStoryPoints = tasks.reduce((sum, t) => sum + (t.storyPoints || 0), 0);
-        const completedStoryPoints = tasks
-            .filter(t => t.status === 'COMPLETED')
-            .reduce((sum, t) => sum + (t.storyPoints || 0), 0);
-
-        const progress = tasks.length > 0 ? (completedTasks / tasks.length) * 100 : 0;
+        const tasksByStatus = {
+            TODO: tasks.filter(t => t.status === 'TODO').length,
+            IN_PROGRESS: inProgressTasks,
+            IN_REVIEW: tasks.filter(t => t.status === 'IN_REVIEW').length,
+            COMPLETED: completedTasks,
+            BLOCKED: tasks.filter(t => t.status === 'BLOCKED').length,
+        };
 
         res.json({
             projectId,
             projectName: project.name,
-            totalTasks: tasks.length,
-            completedTasks,
-            totalStoryPoints,
-            completedStoryPoints,
-            progress: Math.round(progress * 100) / 100,
-            status: project.status
+            summary: {
+                totalTasks, completedTasks, inProgressTasks, overdueTasks,
+                completionRate, onTimeRate,
+                totalHours: parseFloat(totalHours.toFixed(2)),
+                billableHours: parseFloat(billableHours.toFixed(2)),
+                approvedHours: parseFloat(approvedHours.toFixed(2)),
+                totalStoryPoints, completedStoryPoints,
+                velocity: completedStoryPoints,
+            },
+            tasksByStatus,
+            hoursByProject: Object.entries(hoursByUserMap).map(([name, hours]) => ({ name, hours: parseFloat(hours.toFixed(2)) })),
+            recentTasks: tasks.slice(0, 10)
         });
     } catch (error) {
         console.error('Error fetching project performance:', error);

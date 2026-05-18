@@ -30,10 +30,13 @@ import {
   Search,
   CreditCard,
   Zap,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { useHeaderStore } from '@/store/headerStore';
 import api from '@/lib/api';
 import NotificationBell from '@/components/NotificationBell';
+import { useTheme } from '@/components/ThemeProvider';
 
 const SuperAdminLayout = () => {
   const { user, logout } = useAuthStore();
@@ -42,6 +45,7 @@ const SuperAdminLayout = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const { title, description, searchTerm, setSearchTerm, showSearch, searchPlaceholder } = useHeaderStore();
+  const { theme, setTheme } = useTheme();
 
   if (user?.role !== 'SUPERADMIN') {
     return <Navigate to="/dashboard" replace />;
@@ -237,6 +241,16 @@ const SuperAdminLayout = () => {
                 <span className="text-[9px] font-bold text-primary/80 tracking-widest">Live</span>
               </div>
               
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="hover:bg-primary/10 rounded-xl transition-all text-muted-foreground hover:text-primary"
+                title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+              >
+                {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              </Button>
+
               <NotificationBell />
             </div>
           </div>

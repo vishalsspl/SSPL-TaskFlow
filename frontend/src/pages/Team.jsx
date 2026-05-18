@@ -630,13 +630,13 @@ const Team = () => {
               </div>
 
               {/* Scrollable Tabs (Desktop) */}
-              <div className="hidden lg:flex items-center gap-2 flex-1 overflow-x-auto no-scrollbar">
+              <div className="hidden lg:flex items-center gap-1.5 xl:gap-2 flex-1 overflow-x-auto no-scrollbar">
                 {(currentUser?.role === 'ADMIN' || currentUser?.role === 'MANAGER') && (
                   <>
                     <Button
                       variant="none"
                       onClick={() => { setPage(1); setSelectedManagerId('ALL'); }}
-                      className={`group gap-2 h-10 sm:h-11 px-3 sm:px-4 rounded-xl font-medium transition-all duration-300 text-xs sm:text-sm shrink-0 border ${selectedManagerId === 'ALL'
+                      className={`group gap-1.5 sm:gap-2 h-10 sm:h-11 px-2.5 xl:px-4 rounded-xl font-medium transition-all duration-300 text-xs sm:text-sm shrink-0 border ${selectedManagerId === 'ALL'
                         ? 'bg-primary/10 text-primary border-primary/30 shadow-[0_0_15px_rgba(var(--primary),0.1)]'
                         : 'bg-secondary/40 text-muted-foreground border-transparent hover:bg-secondary/60 hover:text-foreground'}`}
                       style={selectedManagerId !== 'ALL' ? { borderColor: 'var(--input-border)' } : {}}
@@ -650,7 +650,7 @@ const Team = () => {
                       <Button
                         variant="none"
                         onClick={() => { setPage(1); setSelectedManagerId('MANAGERS_LIST'); }}
-                        className={`group gap-2 h-10 sm:h-11 px-3 sm:px-4 rounded-xl font-medium transition-all duration-300 text-xs sm:text-sm shrink-0 border ${selectedManagerId === 'MANAGERS_LIST'
+                        className={`group gap-1.5 sm:gap-2 h-10 sm:h-11 px-2.5 xl:px-4 rounded-xl font-medium transition-all duration-300 text-xs sm:text-sm shrink-0 border ${selectedManagerId === 'MANAGERS_LIST'
                           ? 'bg-[#0EA5E9]/10 text-[#0EA5E9] border-[#0EA5E9]/30 shadow-[0_0_15px_rgba(14,165,233,0.1)]'
                           : 'bg-secondary/40 text-muted-foreground border-transparent hover:bg-secondary/60 hover:text-foreground'}`}
                       >
@@ -663,7 +663,7 @@ const Team = () => {
                       <Button
                         variant="none"
                         onClick={() => { setPage(1); setSelectedManagerId('CLIENTS_LIST'); }}
-                        className={`group gap-2 h-10 sm:h-11 px-3 sm:px-4 rounded-xl font-medium transition-all duration-300 text-xs sm:text-sm shrink-0 border ${selectedManagerId === 'CLIENTS_LIST'
+                        className={`group gap-1.5 sm:gap-2 h-10 sm:h-11 px-2.5 xl:px-4 rounded-xl font-medium transition-all duration-300 text-xs sm:text-sm shrink-0 border ${selectedManagerId === 'CLIENTS_LIST'
                           ? 'bg-[#8B5CF6]/10 text-[#8B5CF6] border-[#8B5CF6]/30 shadow-[0_0_15px_rgba(139,92,246,0.1)]'
                           : 'bg-secondary/40 text-muted-foreground border-transparent hover:bg-secondary/60 hover:text-foreground'}`}
                       >
@@ -675,7 +675,7 @@ const Team = () => {
                     <Button
                       variant="none"
                       onClick={() => { setPage(1); setSelectedManagerId('MEMBERS_LIST'); }}
-                      className={`group gap-2 h-10 sm:h-11 px-3 sm:px-4 rounded-xl font-medium transition-all duration-300 text-xs sm:text-sm shrink-0 border ${selectedManagerId === 'MEMBERS_LIST'
+                      className={`group gap-1.5 sm:gap-2 h-10 sm:h-11 px-2.5 xl:px-4 rounded-xl font-medium transition-all duration-300 text-xs sm:text-sm shrink-0 border ${selectedManagerId === 'MEMBERS_LIST'
                         ? 'bg-[#10B981]/10 text-[#10B981] border-[#10B981]/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
                         : 'bg-secondary/40 text-muted-foreground border-transparent hover:bg-secondary/60 hover:text-foreground'}`}
                     >
@@ -687,7 +687,7 @@ const Team = () => {
                       <Button
                         variant="none"
                         onClick={() => { setPage(1); setSelectedManagerId('PENDING'); }}
-                        className={`group gap-2 h-10 sm:h-11 px-3 sm:px-4 rounded-xl font-medium transition-all duration-300 text-xs sm:text-sm shrink-0 border ${selectedManagerId === 'PENDING'
+                        className={`group gap-1.5 sm:gap-2 h-10 sm:h-11 px-2.5 xl:px-4 rounded-xl font-medium transition-all duration-300 text-xs sm:text-sm shrink-0 border ${selectedManagerId === 'PENDING'
                           ? 'bg-orange-500/10 text-orange-500 border-orange-500/30 shadow-[0_0_15px_rgba(249,115,22,0.1)]'
                           : 'bg-secondary/40 text-orange-500/60 border-transparent hover:bg-secondary/60 hover:text-orange-500'}`}
                       >
@@ -762,7 +762,7 @@ const Team = () => {
                 <Button
                   onClick={() => setShowImportDialog(true)}
                   variant="outline"
-                  className="h-11 px-4 rounded-xl border-border/40 hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-primary font-medium transition-all flex items-center gap-2"
+                  className="h-11 px-3 xl:px-4 rounded-xl border-border/40 hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-primary font-medium transition-all flex items-center gap-1.5 xl:gap-2"
                 >
                   <FileSpreadsheet className="w-4 h-4" />
                   <span>Import</span>
@@ -781,7 +781,7 @@ const Team = () => {
                     });
                     setShowDialog(true);
                   }}
-                  className="h-11 px-5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center gap-2"
+                  className="h-11 px-3 xl:px-5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center gap-1.5 xl:gap-2"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Add Member</span>
@@ -1144,35 +1144,41 @@ const Team = () => {
                                   </TableCell>
                                 )}
                                 {currentUser?.role !== 'CLIENT' && currentUser?.role !== 'MEMBER' && (
-                                  <TableCell className="text-center">
-                                    <div className="flex items-center justify-center gap-2">
-                                      {user.role !== 'CLIENT' && (
-                                        <Button
-                                          variant="ghost"
-                                          size="icon"
-                                          className="text-primary hover:text-primary hover:bg-primary/10"
-                                          onClick={() => {
-                                            setViewingProgressUserId(user.id);
-                                            setShowProgressPanel(true);
-                                          }}
-                                          title="View Progress"
-                                        >
-                                          <BarChart2 className="w-4 h-4" />
-                                        </Button>
-                                      )}
-                                      <Button variant="ghost" size="icon" onClick={() => handleEdit(user)}>
-                                        <Edit2 className="w-4 h-4" />
-                                      </Button>
-                                      <Button variant="ghost" size="icon" onClick={() => handleDelete(user)} className="text-destructive hover:text-destructive/90">
-                                        {isSpecificManagerView ? (
-                                          <UserMinus className="w-4 h-4" />
-                                        ) : (
-                                          <Trash2 className="w-4 h-4" />
-                                        )}
-                                      </Button>
-                                    </div>
-                                  </TableCell>
-                                )}
+                                    <TableCell className="text-center">
+                                      <div className="grid grid-cols-3 gap-1 w-max mx-auto">
+                                        <div className="w-8 h-8 flex items-center justify-center">
+                                          {user.role !== 'CLIENT' && (
+                                            <Button
+                                              variant="ghost"
+                                              size="icon"
+                                              className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10"
+                                              onClick={() => {
+                                                setViewingProgressUserId(user.id);
+                                                setShowProgressPanel(true);
+                                              }}
+                                              title="View Progress"
+                                            >
+                                              <BarChart2 className="w-4 h-4" />
+                                            </Button>
+                                          )}
+                                        </div>
+                                        <div className="w-8 h-8 flex items-center justify-center">
+                                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(user)}>
+                                            <Edit2 className="w-4 h-4" />
+                                          </Button>
+                                        </div>
+                                        <div className="w-8 h-8 flex items-center justify-center">
+                                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive/90" onClick={() => handleDelete(user)}>
+                                            {isSpecificManagerView ? (
+                                              <UserMinus className="w-4 h-4" />
+                                            ) : (
+                                              <Trash2 className="w-4 h-4" />
+                                            )}
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    </TableCell>
+                                  )}
                               </TableRow>
                             ))
                           )}
