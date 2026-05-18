@@ -76,7 +76,7 @@ const PerformanceDashboardView = ({ data, hoursTitle = "Hours by Project" }) => 
                                     <YAxis tick={{ fontSize: 11 }} />
                                     <Tooltip 
                                         formatter={(v) => [`${v}h`, 'Hours']} 
-                                        contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' }}
+                                        contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))', fontSize: '12px', padding: '8px 12px' }}
                                         itemStyle={{ color: 'hsl(var(--foreground))', fontWeight: 700 }}
                                         cursor={{ fill: 'hsl(var(--muted))', opacity: 0.2 }}
                                     />
@@ -99,7 +99,8 @@ const PerformanceDashboardView = ({ data, hoursTitle = "Hours by Project" }) => 
                                     {statusData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                                 </Pie>
                                 <Tooltip 
-                                    contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))' }}
+                                    formatter={(value, name) => [value, name.replace('_', ' ')]}
+                                    contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))', fontSize: '12px', padding: '8px 12px' }}
                                     itemStyle={{ color: 'hsl(var(--foreground))', fontWeight: 700 }}
                                 />
                             </PieChart>
