@@ -528,7 +528,7 @@ const Integrations = () => {
                 <div className="max-w-md space-y-2">
                   <p className="text-sm text-foreground font-bold Montserrat">GitHub Integration Pending</p>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    GitHub integration has not been set up for the organization yet. Once your Administrator connects GitHub and links repositories to your assigned projects, you will be able to view repository updates and commit history here.
+                    GitHub integration has not been set up for the organization yet. Once your Administrator connects GitHub and your Manager adds you to a project linked with a repository, you will be able to view repository updates and commit history here.
                   </p>
                 </div>
               ) : !isConfigured || showConfigForm ? (
@@ -788,8 +788,8 @@ const Integrations = () => {
               {!isAdmin && linkedProjects.length === 0 && (
                 <div className="flex flex-col items-center py-10 text-center space-y-3 text-muted-foreground">
                   <FolderGit2 className="w-10 h-10 opacity-30" />
-                  <p className="text-sm">No projects linked to GitHub repositories yet.</p>
-                  <p className="text-xs">Ask your Admin to link a repository to your projects.</p>
+                  <p className="text-sm">No linked repositories found for your projects.</p>
+                  <p className="text-xs">Once your manager assigns you to a project that is linked to a GitHub repository, you will see it here.</p>
                 </div>
               )}
             </div>
