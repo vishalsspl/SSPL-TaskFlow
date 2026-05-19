@@ -76,12 +76,11 @@ const Timesheets = () => {
         billable: false
     });
 
-    const weekStart = useMemo(() => startOfWeek(currentDate, { weekStartsOn: 1 }), [currentDate]);
-    const weekDays = useMemo(() => [...Array(7)].map((_, i) => addDays(weekStart, i)), [weekStart]);
+    const weekDays = useMemo(() => [...Array(7)].map((_, i) => addDays(currentDate, -6 + i)), [currentDate]);
 
     const fetchEntries = useCallback(async () => {
         try {
-            const startDate = format(weekStart, 'yyyy-MM-dd');
+            const startDate = format(weekDays[0], 'yyyy-MM-dd');
             const endDate = format(weekDays[6], 'yyyy-MM-dd');
             const response = await api.get(`/timesheets?startDate=${startDate}&endDate=${endDate}`);
             setEntries(response.data.entries || response.data);
@@ -91,7 +90,7 @@ const Timesheets = () => {
         } finally {
             setLoading(false);
         }
-    }, [weekStart]);
+    }, [weekDays]);
 
     const fetchProjects = useCallback(async () => {
         try {
@@ -361,7 +360,7 @@ const Timesheets = () => {
                         <ChevronRight className="h-4 w-4" />
                     </Button>
                     <h2 className="ml-1 sm:ml-2 font-black Montserrat text-sm sm:text-lg text-foreground whitespace-nowrap">
-                        {format(weekStart, 'MMM d')} – {format(weekDays[6], 'MMM d')}
+                        {format(weekDays[0], 'MMM d')} – {format(weekDays[6], 'MMM d')}
                         <span className="hidden sm:inline">, {format(weekDays[6], 'yyyy')}</span>
                     </h2>
                 </div>
