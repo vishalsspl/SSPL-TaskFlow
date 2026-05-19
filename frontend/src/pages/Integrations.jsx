@@ -525,7 +525,12 @@ const Integrations = () => {
               </div>
 
               {!isAdmin ? (
-                <p className="text-sm text-muted-foreground italic">Ask your Admin to connect GitHub for the organization.</p>
+                <div className="max-w-md space-y-2">
+                  <p className="text-sm text-foreground font-bold Montserrat">GitHub Integration Pending</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    GitHub integration has not been set up for the organization yet. Once your Administrator connects GitHub and links repositories to your assigned projects, you will be able to view repository updates and commit history here.
+                  </p>
+                </div>
               ) : !isConfigured || showConfigForm ? (
                 /* ─── Step 1: Configure Credentials ─── */
                 <div className="w-full max-w-lg space-y-4 text-left">
