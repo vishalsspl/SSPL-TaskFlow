@@ -56,8 +56,27 @@ export const getAllTasks = async (req, res) => {
         OR: [
           { project: { managerId: req.user.id } },
           { assignees: { some: { userId: req.user.id } } },
+          { assignees: { some: { user: { managerId: req.user.id } } } },
         ],
       },
+    ];
+  }
+
+  // If Member, restrict visibility for General project tasks to only their own
+  if (req.user.role === 'MEMBER') {
+    where.AND = [
+      ...(where.AND || []),
+      {
+        OR: [
+          { project: { name: { notIn: ['General', 'General Tasks'] } } },
+          {
+            AND: [
+              { project: { name: { in: ['General', 'General Tasks'] } } },
+              { assignees: { some: { userId: req.user.id } } }
+            ]
+          }
+        ]
+      }
     ];
   }
 
@@ -145,7 +164,7 @@ export const getTask = async (req, res) => {
 
 
 export const createTask = async (req, res) => {
-  const {
+  let {
     projectId,
     phaseId,
     title,
@@ -161,8 +180,36 @@ export const createTask = async (req, res) => {
     sendEmail = true,
   } = req.body;
 
-  if (!projectId || !title) {
-    return res.status(400).json({ error: 'Project ID and title are required' });
+  if (!title) {
+    return res.status(400).json({ error: 'Title is required' });
+  }
+
+  // Handle optional project
+  if (!projectId) {
+     let generalProject = await req.db.project.findFirst({
+         where: { 
+           name: { in: ['General', 'General Tasks'] }, 
+           organizationId: req.user.organizationId 
+         }
+     });
+     if (!generalProject) {
+         generalProject = await req.db.project.create({
+             data: {
+                 name: 'General Tasks',
+                 description: 'General organization tasks',
+                 organizationId: req.user.organizationId,
+                 status: 'ACTIVE',
+                 managerId: (req.user.role === 'MANAGER') ? req.user.id : null,
+             }
+         });
+     } else if (!generalProject.managerId && req.user.role === 'MANAGER') {
+         // If a General project exists but has no manager, assign this manager
+         await req.db.project.update({
+             where: { id: generalProject.id },
+             data: { managerId: req.user.id }
+         });
+     }
+     projectId = generalProject.id;
   }
 
   // Check if title starts with a number
@@ -200,6 +247,13 @@ export const createTask = async (req, res) => {
     where: { id: projectId, organizationId: req.user.organizationId },
   });
   if (!project) return res.status(404).json({ error: 'Project not found in your organization' });
+
+  // If MEMBER, check if this project allows member task creation
+  if (req.user.role === 'MEMBER' && !project.allowMemberTaskCreation) {
+    return res.status(403).json({ 
+      error: 'You do not have permission to create tasks in this project. Please ask your Manager or Admin to enable task creation for members.' 
+    });
+  }
 
   // Validate phaseId belongs to the same project (and thus same org)
   if (phaseId) {
@@ -275,27 +329,28 @@ export const createTask = async (req, res) => {
   const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
   console.log(`[TaskController] Email support active: ${hasEmailSupport}, sendEmail flag: ${sendEmail}`);
 
-  if (hasEmailSupport && sendEmail) {
-    const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
-    const senderName = req.user.name;
-    for (const { user } of task.assignees) {
-      if (user?.email) {
+  const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
+  const senderName = req.user.name;
 
-        sendTaskAssignmentEmail(
-          user.email,
-          task.title,
-          task.project.name,
-          senderName,
-          { priority: task.priority, dueDate: task.dueDate, status: task.status, description: task.description, baseUrl: origin }
-        ).catch(err => console.error('Failed to send task assignment email:', err));
-      }
+  for (const { user } of task.assignees) {
+    // 1. Always send in-app notification
+    createNotification(req, {
+      userId: user.id,
+      title: 'New Task Assigned',
+      message: `You have been assigned to task: ${task.title} in project: ${task.project.name}`,
+      type: 'TASK_ASSIGNED',
+      link: '/task-board'
+    });
 
-      createNotification(req, {
-        userId: user.id,
-        title: 'New Task Assigned',
-        message: `You have been assigned to task: ${task.title} in project: ${task.project.name}`,
-        type: 'TASK_ASSIGNED',
-      });
+    // 2. Only send email if enabled and supported
+    if (hasEmailSupport && sendEmail && user?.email) {
+      sendTaskAssignmentEmail(
+        user.email,
+        task.title,
+        task.project.name,
+        senderName,
+        { priority: task.priority, dueDate: task.dueDate, status: task.status, description: task.description, baseUrl: origin }
+      ).catch(err => console.error('Failed to send task assignment email:', err));
     }
   }
 
@@ -647,6 +702,7 @@ export const updateTask = async (req, res) => {
         title: 'New Task Assigned',
         message: `You have been assigned to task: ${task.title} in project: ${task.project.name}`,
         type: 'TASK_ASSIGNED',
+        link: '/task-board'
       });
     }
   }
@@ -904,9 +960,22 @@ export const updateTaskStatus = async (req, res) => {
   try {
     // Verify task belongs to user's organization
     const existingTask = await req.db.task.findFirst({
-      where: { id, project: { organizationId: req.user.organizationId } }
+      where: { id, project: { organizationId: req.user.organizationId } },
+      include: { project: true }
     });
     if (!existingTask) return res.status(404).json({ error: 'Task not found' });
+
+    let updatedTags = existingTask.tags || [];
+    if (req.user.role === 'MEMBER') {
+      const existingPendingTag = updatedTags.find(t => t.startsWith('PENDING_APPROVAL:'));
+      if (existingPendingTag) {
+        // Already pending — keep the original old status, just let the task move to new column
+        // Don't add a duplicate tag; the original rollback status is preserved
+      } else {
+        // First move — record the original status to roll back to if rejected
+        updatedTags = [...updatedTags, `PENDING_APPROVAL:${existingTask.status}`];
+      }
+    }
 
     let completionPercentage = undefined;
     if (status === 'COMPLETED') completionPercentage = 100;
@@ -916,6 +985,7 @@ export const updateTaskStatus = async (req, res) => {
       where: { id },
       data: {
         status,
+        tags: updatedTags,
         ...(completionPercentage !== undefined && { completionPercentage })
       },
       include: {
@@ -924,7 +994,7 @@ export const updateTaskStatus = async (req, res) => {
             user: { select: { id: true, name: true, email: true } },
           },
         },
-        project: { select: { name: true } },
+        project: { select: { name: true, managerId: true } },
       },
     });
 
@@ -996,7 +1066,33 @@ export const updateTaskStatus = async (req, res) => {
           title: notificationTitle,
           message: notificationMessage,
           type: notificationType,
+          link: '/task-board'
         });
+      }
+    }
+
+    // Notify Manager for Approval if requested by Member
+    if (req.user.role === 'MEMBER') {
+      const managerId = existingTask.project?.managerId;
+      if (managerId) {
+        createNotification(req, {
+          userId: managerId,
+          title: 'Status Approval Required',
+          message: `${req.user.name} moved task "${task.title}" to ${status}. Approval required.`,
+          type: 'TASK_APPROVAL_REQUEST',
+          link: '/task-board'
+        });
+      } else {
+        const admins = await req.db.user.findMany({ where: { organizationId: req.user.organizationId, role: 'ADMIN' } });
+        for (const admin of admins) {
+          createNotification(req, {
+            userId: admin.id,
+            title: 'Status Approval Required',
+            message: `${req.user.name} moved task "${task.title}" to ${status}. Approval required.`,
+            type: 'TASK_APPROVAL_REQUEST',
+            link: '/task-board'
+          });
+        }
       }
     }
 
@@ -1004,5 +1100,107 @@ export const updateTaskStatus = async (req, res) => {
   } catch (error) {
     console.error('Error updating task status:', error);
     res.status(500).json({ error: 'Failed to update task status' });
+  }
+};
+
+export const approveTaskStatus = async (req, res) => {
+  const { id } = req.params;
+  try {
+    if (req.user.role !== 'ADMIN' && req.user.role !== 'MANAGER') {
+      return res.status(403).json({ error: 'Only managers can approve status changes.' });
+    }
+
+    const task = await req.db.task.findFirst({
+      where: { id, project: { organizationId: req.user.organizationId } },
+      include: { assignees: { include: { user: true } }, project: true }
+    });
+
+    if (!task) return res.status(404).json({ error: 'Task not found' });
+
+    const newTags = task.tags.filter(t => !t.startsWith('PENDING_APPROVAL:'));
+    
+    if (newTags.length === task.tags.length) {
+      return res.status(400).json({ error: 'Task is not pending approval' });
+    }
+
+    const updatedTask = await req.db.task.update({
+      where: { id },
+      data: { tags: newTags },
+      include: {
+        assignees: { include: { user: { select: { id: true, name: true, email: true } } } },
+        project: { select: { name: true } }
+      }
+    });
+
+    for (const { user } of updatedTask.assignees) {
+      createNotification(req, {
+        userId: user.id,
+        title: 'Status Change Approved 🎉',
+        message: `Your status change for "${task.title}" was approved by ${req.user.name}.`,
+        type: 'TASK_APPROVED',
+        link: '/task-board'
+      });
+    }
+
+    res.json(updatedTask);
+  } catch (error) {
+    console.error('Error approving task status:', error);
+    res.status(500).json({ error: 'Failed to approve task status' });
+  }
+};
+
+export const rejectTaskStatus = async (req, res) => {
+  const { id } = req.params;
+  try {
+    if (req.user.role !== 'ADMIN' && req.user.role !== 'MANAGER') {
+      return res.status(403).json({ error: 'Only managers can reject status changes.' });
+    }
+
+    const task = await req.db.task.findFirst({
+      where: { id, project: { organizationId: req.user.organizationId } },
+      include: { assignees: { include: { user: true } }, project: true }
+    });
+
+    if (!task) return res.status(404).json({ error: 'Task not found' });
+
+    const pendingTag = task.tags.find(t => t.startsWith('PENDING_APPROVAL:'));
+    if (!pendingTag) {
+      return res.status(400).json({ error: 'Task is not pending approval' });
+    }
+
+    const oldStatus = pendingTag.split(':')[1] || 'TODO';
+    const newTags = task.tags.filter(t => t !== pendingTag);
+
+    let completionPercentage = undefined;
+    if (oldStatus === 'COMPLETED') completionPercentage = 100;
+    else if (oldStatus === 'TODO') completionPercentage = 0;
+
+    const updatedTask = await req.db.task.update({
+      where: { id },
+      data: { 
+        status: oldStatus, 
+        tags: newTags,
+        ...(completionPercentage !== undefined && { completionPercentage })
+      },
+      include: {
+        assignees: { include: { user: { select: { id: true, name: true, email: true } } } },
+        project: { select: { name: true } }
+      }
+    });
+
+    for (const { user } of updatedTask.assignees) {
+      createNotification(req, {
+        userId: user.id,
+        title: 'Status Change Rejected ⚠️',
+        message: `Your status change for "${task.title}" was rejected by ${req.user.name}. It has been moved back.`,
+        type: 'TASK_REJECTED',
+        link: '/task-board'
+      });
+    }
+
+    res.json(updatedTask);
+  } catch (error) {
+    console.error('Error rejecting task status:', error);
+    res.status(500).json({ error: 'Failed to reject task status' });
   }
 };

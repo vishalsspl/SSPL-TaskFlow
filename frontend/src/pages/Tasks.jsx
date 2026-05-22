@@ -57,7 +57,7 @@ import CreateTaskForm from '@/components/forms/CreateTaskForm';
 import TablePagination from '@/components/ui/table-pagination';
 import { useToast } from "@/hooks/use-toast";
 import { useTimerStore } from '@/store/timerStore';
-import { Clock } from 'lucide-react';
+import { Edit2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ImportTasksDialog from '@/components/ImportTasksDialog';
 
@@ -326,7 +326,7 @@ const Tasks = () => {
               </DialogDescription>
             </DialogHeader>
             <CreateTaskForm
-              projects={projects}
+              projects={projects.filter(p => user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.role === 'MEMBER')}
               users={users}
               onSuccess={handleTaskCreated}
               onCancel={() => setShowCreateDialog(false)}
@@ -345,7 +345,7 @@ const Tasks = () => {
               </DialogDescription>
             </DialogHeader>
             <CreateTaskForm
-              projects={projects}
+              projects={projects.filter(p => user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.role === 'MEMBER')}
               users={users}
               task={selectedTask}
               onSuccess={handleTaskUpdated}
@@ -371,7 +371,7 @@ const Tasks = () => {
                   <Filter className="w-4 h-4" />
                 </Button>
                 {/* Mobile Action Button */}
-                {user?.role !== 'CLIENT' && (
+                {(user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.role === 'MEMBER') && (
                   <Button
                     onClick={() => setShowCreateDialog(true)}
                     className="w-10 h-10 p-0 md:hidden rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shrink-0"
@@ -427,18 +427,19 @@ const Tasks = () => {
                 </div>
 
                 {/* Desktop Action Buttons */}
-                {user?.role !== 'CLIENT' && (
+                {(() => {
+                  const canCreate = user?.role === 'ADMIN' || user?.role === 'MANAGER' || 
+                    (user?.role === 'MEMBER' && projects.some(p => p.allowMemberTaskCreation));
+                  return canCreate ? (
                   <div className="hidden md:flex items-center gap-2 shrink-0">
-                    {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
-                      <Button
-                        onClick={() => setShowImportDialog(true)}
-                        variant="outline"
-                        className="h-10 px-4 rounded-xl border-border/40 hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-primary font-medium transition-all flex items-center gap-2"
-                      >
-                        <FileSpreadsheet className="w-4 h-4" />
-                        <span className="hidden xl:inline">Import Excel</span>
-                      </Button>
-                    )}
+                    <Button
+                      onClick={() => setShowImportDialog(true)}
+                      variant="outline"
+                      className="h-10 px-4 rounded-xl border-border/40 hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-primary font-medium transition-all flex items-center gap-2"
+                    >
+                      <FileSpreadsheet className="w-4 h-4" />
+                      <span className="hidden xl:inline">Import Excel</span>
+                    </Button>
                     <Button
                       onClick={() => setShowCreateDialog(true)}
                       className="min-w-[130px] px-5 h-10 rounded-xl flex items-center justify-center bg-primary hover:bg-primary/90 text-primary-foreground transition-all shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] font-bold Montserrat text-sm whitespace-nowrap"
@@ -447,7 +448,8 @@ const Tasks = () => {
                       <span>New Task</span>
                     </Button>
                   </div>
-                )}
+                  ) : null;
+                })()}
               </div>
             </div>
           </div>
@@ -484,7 +486,7 @@ const Tasks = () => {
                           onClick={() => handleTaskClick(task)}
                         >
                           <TableCell className="relative">
-                            <div className="flex items-center justify-center text-center px-6 w-full min-h-[2rem]">
+                            <div className="flex items-center justify-start text-left pl-10 pr-6 w-full min-h-[2rem]">
                               <div
                                 className="absolute left-4 w-1.5 h-1.5 rounded-full shadow-[0_0_8px] shrink-0"
                                 style={{
@@ -591,16 +593,16 @@ const Tasks = () => {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10 transition-colors"
+                                className="h-8 w-8 text-muted-foreground hover:text-white hover:bg-white/10 transition-colors"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  startTimer(task.id, task.project.id, task.title);
+                                  handleTaskClick(task);
                                 }}
                               >
-                                <Clock className="h-4 w-4" />
+                                <Edit2 className="h-4 w-4" />
                               </Button>
                             )}
-                            {user?.role !== 'CLIENT' && (
+                            {(user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.role === 'MEMBER') && (
                               <Button
                                 variant="ghost"
                                 size="icon"
@@ -610,7 +612,7 @@ const Tasks = () => {
                                   handleDelete(task);
                                 }}
                               >
-                                <Trash2 className="h-4 w-4" />
+                                <Trash2 className="w-4 h-4" />
                               </Button>
                             )}
                           </div>
@@ -651,16 +653,16 @@ const Tasks = () => {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 text-primary hover:text-primary hover:bg-primary/10 transition-colors"
+                            className="h-8 w-8 text-muted-foreground hover:text-white hover:bg-white/10 transition-colors"
                             onClick={(e) => {
                               e.stopPropagation();
-                              startTimer(task.id, task.project.id, task.title);
+                              handleTaskClick(task);
                             }}
                           >
-                            <Clock className="h-4 w-4" />
+                            <Edit2 className="h-4 w-4" />
                           </Button>
                         )}
-                        {user?.role !== 'CLIENT' && (
+                        {(user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.role === 'MEMBER') && (
                           <Button
                             variant="ghost"
                             size="icon"
@@ -670,7 +672,7 @@ const Tasks = () => {
                               handleDelete(task);
                             }}
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="w-4 h-4" />
                           </Button>
                         )}
                         <Badge className={`${priorityColors[task.priority]} border-0 px-2 py-0.5 text-[9px] font-black tracking-widest uppercase shrink-0`}>

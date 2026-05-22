@@ -101,13 +101,13 @@ const AuditLog = () => {
       const csvContent = [
         headers.join(','),
         ...exportData.map(log => [
-          new Date(log.createdAt).toLocaleString(),
-          log.user?.name || 'System',
-          log.user?.role || 'N/A',
-          log.organization?.name || 'Global',
-          log.action,
-          log.entity,
-          JSON.stringify(log.details || {}).replace(/,/g, ';') // Simple CSV escaping
+          `"${new Date(log.createdAt).toLocaleString()}"`,
+          `"${log.user?.name || 'System'}"`,
+          `"${log.user?.role || 'N/A'}"`,
+          `"${log.organization?.name || 'Global'}"`,
+          `"${log.action}"`,
+          `"${log.entity}"`,
+          `"${JSON.stringify(log.details || {}).replace(/"/g, '""')}"`
         ].join(','))
       ].join('\n');
 

@@ -35,7 +35,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
         phaseId: task?.phaseId || '',
         title: task?.title || '',
         description: task?.description || '',
-        assigneeId: task?.assignees?.[0]?.userId || '',
+        assigneeId: task?.assignees?.[0]?.userId || (user?.role === 'MEMBER' ? user.id : ''),
         status: task?.status || 'TODO',
         priority: task?.priority || 'MEDIUM',
         completionPercentage: task?.completionPercentage || 0,
@@ -91,7 +91,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
             return;
         }
 
-        if (!formData.phaseId) {
+        if (formData.projectId && !formData.phaseId) {
             toast({ title: "Validation Error", description: "Please select a project phase.", variant: "destructive" });
             return;
         }
@@ -138,7 +138,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                     phaseId: '',
                     title: '',
                     description: '',
-                    assigneeId: '',
+                    assigneeId: user?.role === 'MEMBER' ? user.id : '',
                     status: 'TODO',
                     priority: 'MEDIUM',
                     completionPercentage: 0,
@@ -190,14 +190,14 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
 
                 {/* Project */}
                 <div className="space-y-2">
-                    <Label htmlFor="project" className="text-foreground/90 font-semibold mobile-reduce-label">Project <span className="text-red-500">*</span></Label>
+                    <Label htmlFor="project" className="text-foreground/90 font-semibold mobile-reduce-label">Project</Label>
                     <div className="relative">
                         <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70 z-10" />
                         <SearchableSelect
                             value={formData.projectId}
                             onChange={(value) => handleProjectChange(value)}
                             disabled={!!initialProjectId || isEdit}
-                            options={projects.map((p) => ({ label: p.name, value: p.id }))}
+                            options={[{ label: 'None (General Tasks)', value: '' }, ...projects.filter(p => p.name !== 'General' && p.name !== 'General Tasks' && (user?.role === 'ADMIN' || user?.role === 'MANAGER' || p.allowMemberTaskCreation)).map((p) => ({ label: p.name, value: p.id }))]}
                             placeholder="Select Project"
                             className="!pl-10 relative mobile-reduce-input"
                         />
@@ -206,7 +206,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
 
                 {/* Phase */}
                 <div className="space-y-2">
-                    <Label htmlFor="phase" className="text-foreground/90 font-semibold mobile-reduce-label">Phase <span className="text-red-500">*</span></Label>
+                    <Label htmlFor="phase" className="text-foreground/90 font-semibold mobile-reduce-label">Phase {formData.projectId && <span className="text-red-500">*</span>}</Label>
                     <div className="relative">
                         <Layers className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70 z-10" />
                         <SearchableSelect
@@ -247,7 +247,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                     <div className="relative">
                         <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70 z-10" />
                         <SearchableSelect
-                            options={Array.from(new Map(users.map(u => [u.id, { 
+                            options={Array.from(new Map((user?.role === 'ADMIN' || user?.role === 'MANAGER' ? users : users.filter(u => u.id === user?.id)).map(u => [u.id, { 
                                 value: u.id, 
                                 label: u.name,
                                 sublabel: `${u.email} (${u.role})`,
@@ -255,6 +255,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                             }])).values())}
                             value={formData.assigneeId}
                             onChange={(id) => setFormData({ ...formData, assigneeId: id })}
+                            disabled={user?.role === 'MEMBER'}
                             placeholder="Select assignee..."
                             searchPlaceholder="Search team members..."
                             className="!pl-10 mobile-reduce-input"

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 
 export const useAuthStore = create((set) => ({
   token: null,
+  isInitialized: false,
   user: null,
   login: (token, user) => {
     set({ token, user });
@@ -48,13 +49,14 @@ export const useAuthStore = create((set) => ({
       if (stored) {
         const { state } = JSON.parse(stored);
         if (state?.token && state?.user) {
-          set({ token: state.token, user: state.user });
+          set({ token: state.token, user: state.user, isInitialized: true });
           return state.token; // Return token for App.jsx sync
         }
       }
     } catch (error) {
       console.error('Failed to load auth state:', error);
     }
+    set({ isInitialized: true });
     return null;
   },
 }));

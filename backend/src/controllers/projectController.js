@@ -128,9 +128,12 @@ export const getAllProjects = async (req, res) => {
        delete where.organizationId;
     }
 
-  // If Manager, only show projects they manage
+  // If Manager, show projects they manage + the General project
   if (req.user.role === 'MANAGER') {
-    where.managerId = req.user.id;
+    where.OR = [
+      { managerId: req.user.id },
+      { name: { in: ['General', 'General Tasks'] } }
+    ];
   }
 
   // If Client, only show projects they are assigned to
@@ -165,7 +168,8 @@ export const getAllProjects = async (req, res) => {
             }
           }
         }
-      }
+      },
+      { name: { in: ['General', 'General Tasks'] } }
     ];
   }
 
@@ -192,6 +196,29 @@ export const getAllProjects = async (req, res) => {
     where.category = category;
   }
 
+  let taskWhereFilter = {};
+  if (req.user.role === 'MANAGER') {
+    taskWhereFilter = {
+      OR: [
+        { project: { managerId: req.user.id } },
+        { assignees: { some: { userId: req.user.id } } },
+        { assignees: { some: { user: { managerId: req.user.id } } } },
+      ]
+    };
+  } else if (req.user.role === 'MEMBER') {
+    taskWhereFilter = {
+      OR: [
+        { project: { name: { notIn: ['General', 'General Tasks'] } } },
+        {
+          AND: [
+            { project: { name: { in: ['General', 'General Tasks'] } } },
+            { assignees: { some: { userId: req.user.id } } }
+          ]
+        }
+      ]
+    };
+  }
+
   const projectSelect = {
     id: true,
     organizationId: true,
@@ -205,17 +232,18 @@ export const getAllProjects = async (req, res) => {
     endDate: true,
     totalBudget: true,
     usedBudget: true,
+    allowMemberTaskCreation: true,
     createdAt: true,
     updatedAt: true,
     // Relations
     manager: { select: { id: true, name: true, email: true, role: true, avatar: true } },
     client: { select: { id: true, name: true, email: true, role: true, avatar: true } },
-    _count: { select: { tasks: true, phases: true } },
-    tasks: { select: { status: true, storyPoints: true } }
+    _count: { select: { tasks: { where: taskWhereFilter }, phases: true } },
+    tasks: { where: taskWhereFilter, select: { status: true, storyPoints: true } }
   };
 
   const addProgress = (projects) => {
-    return projects.map(project => {
+    const withProgress = projects.map(project => {
       const tasks = project.tasks || [];
       const totalStoryPoints = tasks.reduce((sum, t) => sum + (t.storyPoints || 0), 0);
       const completedStoryPoints = tasks
@@ -232,6 +260,15 @@ export const getAllProjects = async (req, res) => {
 
       const { tasks: _, ...projectWithoutTasks } = project;
       return { ...projectWithoutTasks, progress };
+    });
+
+    // Always sort General or General Tasks to the very top
+    return withProgress.sort((a, b) => {
+      const aIsGeneral = a.name === 'General' || a.name === 'General Tasks';
+      const bIsGeneral = b.name === 'General' || b.name === 'General Tasks';
+      if (aIsGeneral && !bIsGeneral) return -1;
+      if (!aIsGeneral && bIsGeneral) return 1;
+      return 0;
     });
   };
 
@@ -321,6 +358,7 @@ export const getProject = async (req, res) => {
       endDate: true,
       totalBudget: true,
       usedBudget: true,
+      allowMemberTaskCreation: true,
       createdAt: true,
       updatedAt: true,
       client: {
@@ -403,6 +441,7 @@ export const createProject = async (req, res) => {
     status,
     category,
     sendEmail = true,
+    allowMemberTaskCreation = false,
   } = req.body;
 
   if (!name || name.trim().length < 3 || name.trim().length > 100) {
@@ -502,6 +541,7 @@ export const createProject = async (req, res) => {
       managerId: managerId || null,
       status: status || 'PLANNING',
       category: category || 'INTERNAL',
+      allowMemberTaskCreation: Boolean(allowMemberTaskCreation),
     },
     select: {
       id: true,
@@ -857,6 +897,7 @@ export const updateProject = async (req, res) => {
     status,
     category,
     sendEmail = true,
+    allowMemberTaskCreation,
   } = req.body;
 
   // ── Lazy Migration ────────────────────────────────────────────────────────
@@ -873,6 +914,13 @@ export const updateProject = async (req, res) => {
 
   if (!existingProject) {
     return res.status(404).json({ error: 'Project not found' });
+  }
+
+  // Prevent renaming the General project
+  if (existingProject.name === 'General' || existingProject.name === 'General Tasks') {
+    if (name !== undefined && name.trim() !== existingProject.name) {
+      return res.status(400).json({ error: 'The name of the General project cannot be changed.' });
+    }
   }
 
   const organizationId = req.user.organizationId;
@@ -946,6 +994,7 @@ export const updateProject = async (req, res) => {
       managerId: managerId !== undefined ? (managerId || null) : undefined,
       status,
       category,
+      ...(allowMemberTaskCreation !== undefined && { allowMemberTaskCreation: Boolean(allowMemberTaskCreation) }),
     },
     select: {
       id: true,

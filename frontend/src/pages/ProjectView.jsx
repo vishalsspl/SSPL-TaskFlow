@@ -404,11 +404,16 @@ const ProjectView = () => {
         <Card className="border-0 bg-gradient-to-br from-[#F59E0B] to-[#B45309] shadow-[0_10px_40px_-10px_rgba(245,158,11,0.3)] relative overflow-hidden group">
           <CardContent className="p-6 flex flex-col items-center justify-center text-center space-y-1">
             <h4 className="font-black text-[10px] text-white/80 uppercase tracking-widest Montserrat">Target Launch</h4>
-            <div className="text-4xl font-black text-white Montserrat">{overview.daysToLaunch}</div>
-            <span className="text-[10px] font-black text-white/60 uppercase tracking-widest Montserrat">Days Remaining</span>
-            <div className="absolute bottom-0 left-0 w-full h-1 bg-white/20">
-              <div className="h-full bg-white shadow-[0_0_10px_white]" style={{ width: '60%' }} />
+            <div className="text-4xl font-black text-white Montserrat">
+              {overview.daysToLaunch !== null && overview.daysToLaunch !== undefined 
+                ? Math.abs(overview.daysToLaunch) 
+                : 'TBD'}
             </div>
+            <span className="text-[10px] font-black text-white/60 uppercase tracking-widest Montserrat">
+              {overview.daysToLaunch !== null && overview.daysToLaunch !== undefined 
+                ? (overview.daysToLaunch < 0 ? 'Days Overdue' : 'Days Remaining')
+                : 'No Deadline'}
+            </span>
           </CardContent>
         </Card>
       </div>
@@ -526,7 +531,8 @@ const ProjectView = () => {
                 <RefreshCw className={`w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 ${refreshing ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
-              {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
+              {/* New Task Button */}
+              {(user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.role === 'MEMBER') && (
                 <Button size="sm" onClick={() => setShowCreateDialog(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground Montserrat font-bold rounded-lg sm:rounded-xl px-2 sm:px-4 text-[10px] sm:text-sm h-7 sm:h-9">
                   <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                   New Task

@@ -275,3 +275,387 @@ Invalid value for argument `priority`. Expected Priority.
 Path: /api/tasks
 User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
 ---
+2026-05-18T10:36:19.220Z [GLOBAL_ERROR] 
+Invalid `prisma.timeEntry.create()` invocation:
+
+{
+  data: {
+    userId: "168ff0b0-b2a7-493e-91a3-59fa595209d8",
+    projectId: "214fc384-2599-4a35-b2b6-03c7ef535dad",
+    taskId: null,
+    date: new Date("2026-05-18T00:00:00.000Z"),
+    hours: 1,
+    description: "",
+    status: "PENDING",
+    billable: false,
+    isManual: true,
++   user: {
++     create: UserCreateWithoutTimeEntriesInput | UserUncheckedCreateWithoutTimeEntriesInput,
++     connectOrCreate: UserCreateOrConnectWithoutTimeEntriesInput,
++     connect: UserWhereUniqueInput
++   }
+  },
+  include: {
+    user: {
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatar: true
+      }
+    },
+    project: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    task: {
+      select: {
+        id: true,
+        title: true
+      }
+    }
+  }
+}
+
+Argument `user` is missing.
+Stack: PrismaClientValidationError: 
+Invalid `prisma.timeEntry.create()` invocation:
+
+{
+  data: {
+    userId: "168ff0b0-b2a7-493e-91a3-59fa595209d8",
+    projectId: "214fc384-2599-4a35-b2b6-03c7ef535dad",
+    taskId: null,
+    date: new Date("2026-05-18T00:00:00.000Z"),
+    hours: 1,
+    description: "",
+    status: "PENDING",
+    billable: false,
+    isManual: true,
++   user: {
++     create: UserCreateWithoutTimeEntriesInput | UserUncheckedCreateWithoutTimeEntriesInput,
++     connectOrCreate: UserCreateOrConnectWithoutTimeEntriesInput,
++     connect: UserWhereUniqueInput
++   }
+  },
+  include: {
+    user: {
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatar: true
+      }
+    },
+    project: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    task: {
+      select: {
+        id: true,
+        title: true
+      }
+    }
+  }
+}
+
+Argument `user` is missing.
+    at wn (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:1363)
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6958)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async createTimeEntry (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/timesheetController.js:118:19)
+Path: /api/timesheets
+User: 168ff0b0-b2a7-493e-91a3-59fa595209d8
+---
+2026-05-18T10:36:23.499Z [GLOBAL_ERROR] 
+Invalid `prisma.timeEntry.create()` invocation:
+
+{
+  data: {
+    userId: "168ff0b0-b2a7-493e-91a3-59fa595209d8",
+    projectId: "214fc384-2599-4a35-b2b6-03c7ef535dad",
+    taskId: null,
+    date: new Date("2026-05-18T00:00:00.000Z"),
+    hours: 1,
+    description: "",
+    status: "PENDING",
+    billable: false,
+    isManual: true,
++   user: {
++     create: UserCreateWithoutTimeEntriesInput | UserUncheckedCreateWithoutTimeEntriesInput,
++     connectOrCreate: UserCreateOrConnectWithoutTimeEntriesInput,
++     connect: UserWhereUniqueInput
++   }
+  },
+  include: {
+    user: {
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatar: true
+      }
+    },
+    project: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    task: {
+      select: {
+        id: true,
+        title: true
+      }
+    }
+  }
+}
+
+Argument `user` is missing.
+Stack: PrismaClientValidationError: 
+Invalid `prisma.timeEntry.create()` invocation:
+
+{
+  data: {
+    userId: "168ff0b0-b2a7-493e-91a3-59fa595209d8",
+    projectId: "214fc384-2599-4a35-b2b6-03c7ef535dad",
+    taskId: null,
+    date: new Date("2026-05-18T00:00:00.000Z"),
+    hours: 1,
+    description: "",
+    status: "PENDING",
+    billable: false,
+    isManual: true,
++   user: {
++     create: UserCreateWithoutTimeEntriesInput | UserUncheckedCreateWithoutTimeEntriesInput,
++     connectOrCreate: UserCreateOrConnectWithoutTimeEntriesInput,
++     connect: UserWhereUniqueInput
++   }
+  },
+  include: {
+    user: {
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatar: true
+      }
+    },
+    project: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    task: {
+      select: {
+        id: true,
+        title: true
+      }
+    }
+  }
+}
+
+Argument `user` is missing.
+    at wn (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:1363)
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6958)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async createTimeEntry (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/timesheetController.js:118:19)
+Path: /api/timesheets
+User: 168ff0b0-b2a7-493e-91a3-59fa595209d8
+---
+2026-05-18T10:40:05.578Z [GLOBAL_ERROR] 
+Invalid `prisma.timeEntry.create()` invocation:
+
+
+Null constraint violation on the fields: (`taskId`)
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.timeEntry.create()` invocation:
+
+
+Null constraint violation on the fields: (`taskId`)
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async createTimeEntry (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/timesheetController.js:118:19)
+Path: /api/timesheets
+User: 168ff0b0-b2a7-493e-91a3-59fa595209d8
+---
+2026-05-18T10:40:20.668Z [GLOBAL_ERROR] 
+Invalid `prisma.timeEntry.create()` invocation:
+
+
+Null constraint violation on the fields: (`taskId`)
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.timeEntry.create()` invocation:
+
+
+Null constraint violation on the fields: (`taskId`)
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async createTimeEntry (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/timesheetController.js:118:19)
+Path: /api/timesheets
+User: 168ff0b0-b2a7-493e-91a3-59fa595209d8
+---
+2026-05-18T10:40:26.914Z [GLOBAL_ERROR] 
+Invalid `prisma.timeEntry.create()` invocation:
+
+
+Null constraint violation on the fields: (`taskId`)
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.timeEntry.create()` invocation:
+
+
+Null constraint violation on the fields: (`taskId`)
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async createTimeEntry (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/timesheetController.js:118:19)
+Path: /api/timesheets
+User: 168ff0b0-b2a7-493e-91a3-59fa595209d8
+---
+2026-05-21T09:30:59.051Z [GLOBAL_ERROR] Assignment to constant variable.
+Stack: TypeError: Assignment to constant variable.
+    at createTask (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/taskController.js:183:16)
+Path: /api/tasks
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-05-21T09:31:11.611Z [GLOBAL_ERROR] Assignment to constant variable.
+Stack: TypeError: Assignment to constant variable.
+    at createTask (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/taskController.js:183:16)
+Path: /api/tasks
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-05-21T09:31:15.761Z [GLOBAL_ERROR] Assignment to constant variable.
+Stack: TypeError: Assignment to constant variable.
+    at createTask (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/taskController.js:183:16)
+Path: /api/tasks
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-05-21T09:31:30.755Z [GLOBAL_ERROR] Assignment to constant variable.
+Stack: TypeError: Assignment to constant variable.
+    at createTask (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/taskController.js:183:16)
+Path: /api/tasks
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-05-21T09:31:31.664Z [GLOBAL_ERROR] Assignment to constant variable.
+Stack: TypeError: Assignment to constant variable.
+    at createTask (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/taskController.js:183:16)
+Path: /api/tasks
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-05-21T09:31:33.527Z [GLOBAL_ERROR] Assignment to constant variable.
+Stack: TypeError: Assignment to constant variable.
+    at createTask (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/taskController.js:183:16)
+Path: /api/tasks
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-05-21T09:31:35.581Z [GLOBAL_ERROR] Assignment to constant variable.
+Stack: TypeError: Assignment to constant variable.
+    at createTask (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/taskController.js:183:16)
+Path: /api/tasks
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-05-21T13:05:41.632Z [GLOBAL_ERROR] 
+Invalid `prisma.project.create()` invocation:
+
+
+The column `allowMemberTaskCreation` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.project.create()` invocation:
+
+
+The column `allowMemberTaskCreation` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async createProject (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/projectController.js:497:19)
+Path: /api/projects
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-05-21T13:05:49.061Z [GLOBAL_ERROR] 
+Invalid `prisma.project.create()` invocation:
+
+
+The column `allowMemberTaskCreation` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.project.create()` invocation:
+
+
+The column `allowMemberTaskCreation` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async createProject (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/projectController.js:497:19)
+Path: /api/projects
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-05-21T13:06:55.715Z [GLOBAL_ERROR] 
+Invalid `prisma.project.create()` invocation:
+
+
+The column `allowMemberTaskCreation` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.project.create()` invocation:
+
+
+The column `allowMemberTaskCreation` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async createProject (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/projectController.js:497:19)
+Path: /api/projects
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-05-21T13:06:59.095Z [GLOBAL_ERROR] 
+Invalid `prisma.project.create()` invocation:
+
+
+The column `allowMemberTaskCreation` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.project.create()` invocation:
+
+
+The column `allowMemberTaskCreation` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async createProject (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/projectController.js:497:19)
+Path: /api/projects
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-05-21T13:07:01.993Z [GLOBAL_ERROR] 
+Invalid `prisma.project.create()` invocation:
+
+
+The column `allowMemberTaskCreation` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.project.create()` invocation:
+
+
+The column `allowMemberTaskCreation` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async createProject (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/projectController.js:497:19)
+Path: /api/projects
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---

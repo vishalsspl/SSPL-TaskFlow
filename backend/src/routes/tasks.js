@@ -8,6 +8,8 @@ import {
   getMyTasks,
   updateTaskProgress,
   updateTaskStatus,
+  approveTaskStatus,
+  rejectTaskStatus,
   bulkCreateTasks,
 } from '../controllers/taskController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
@@ -31,6 +33,8 @@ router.post('/bulk-create', authorize('ADMIN', 'MANAGER', 'MEMBER'), bulkCreateT
 router.put('/:id', authorize('ADMIN', 'MANAGER', 'MEMBER'), updateTask);
 router.patch('/:id/progress', authorize('ADMIN', 'MANAGER', 'MEMBER'), updateTaskProgress);
 router.patch('/:id/status', authorize('ADMIN', 'MANAGER', 'MEMBER'), updateTaskStatus);
+router.post('/:id/approve-status', authorize('ADMIN', 'MANAGER'), approveTaskStatus);
+router.post('/:id/reject-status', authorize('ADMIN', 'MANAGER'), rejectTaskStatus);
 router.delete('/:id', authorize('ADMIN', 'MANAGER', 'MEMBER'), deleteTask);
 
 export default router;

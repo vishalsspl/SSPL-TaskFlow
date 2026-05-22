@@ -105,7 +105,7 @@ function FeatureGuard({ feature, children }) {
 }
 
 function App() {
-  const { token, initialize, syncUser, user } = useAuthStore();
+  const { token, initialize, syncUser, user, isInitialized } = useAuthStore();
 
   useEffect(() => {
     const init = async () => {
@@ -144,6 +144,14 @@ function App() {
       rejoinRooms(api);
     }
   }, [socket, isConnected, token, user?.role, rejoinRooms]);
+
+  if (!isInitialized) {
+    return (
+      <ThemeProvider defaultTheme="light" storageKey="taskflow-theme">
+        <PageLoader />
+      </ThemeProvider>
+    );
+  }
 
   return (
     <ThemeProvider defaultTheme="light" storageKey="taskflow-theme">

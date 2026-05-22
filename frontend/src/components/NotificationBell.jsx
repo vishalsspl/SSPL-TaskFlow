@@ -71,6 +71,8 @@ const NotificationBell = () => {
       case 'TASK_APPROVED':
       case 'TASK_REJECTED':
         return '/tasks';
+      case 'TASK_APPROVAL_REQUEST':
+        return '/task-board';
       case 'PROJECT_ASSIGNED':
         return '/projects';
       case 'CHAT_MESSAGE':
@@ -104,6 +106,7 @@ const NotificationBell = () => {
       case 'TASK_ASSIGNED':
         return <div className="p-1.5 bg-primary/10 rounded-full"><ListTodo className="w-3.5 h-3.5 text-primary" /></div>;
       case 'TASK_STATUS_UPDATED':
+      case 'TASK_APPROVAL_REQUEST':
         return <div className="p-1.5 bg-amber-500/10 rounded-full"><Activity className="w-3.5 h-3.5 text-amber-500" /></div>;
       case 'TASK_APPROVED':
       case 'TIMESHEET_APPROVED':

@@ -10,13 +10,29 @@ import {
   TableRow 
 } from '@/components/ui/table';
 
-const safeJson = (v) => {
-  try {
-    if (!v) return '-';
-    return JSON.stringify(v, null, 2);
-  } catch {
-    return String(v);
+const formatAction = (action) => {
+  if (!action) return '-';
+  if (action === 'LOGIN_CLOCK_IN') return 'User Login';
+  if (action === 'LOGOUT_CLOCK_OUT') return 'User Logout';
+  return action.toLowerCase().replace(/_/g, ' ');
+};
+
+const formatDetails = (details) => {
+  if (!details || (typeof details === 'object' && Object.keys(details).length === 0)) return <span className="text-muted-foreground/50 italic">-</span>;
+  
+  if (typeof details === 'object') {
+    return (
+      <div className="flex flex-col gap-1.5">
+        {Object.entries(details).map(([key, val]) => (
+          <div key={key} className="flex flex-col gap-0.5">
+            <span className="text-[9px] font-black text-primary/70 uppercase tracking-widest">{key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}</span>
+            <span className="text-xs font-semibold text-foreground/90 break-words leading-tight">{typeof val === 'object' ? JSON.stringify(val) : String(val)}</span>
+          </div>
+        ))}
+      </div>
+    );
   }
+  return <span className="text-xs font-medium">{String(details)}</span>;
 };
 
 const AuditTable = ({ logs, getActionIcon, getStatusBadge, getSeverity, showOrganization = true }) => {
@@ -74,7 +90,7 @@ const AuditTable = ({ logs, getActionIcon, getStatusBadge, getSeverity, showOrga
                     </div>
                     <div className="text-left w-[120px]">
                       <div className="text-sm font-bold tracking-tight text-foreground/90 capitalize truncate">
-                        {log.action.toLowerCase().replace(/_/g, ' ')}
+                        {formatAction(log.action)}
                       </div>
                       <div className="text-[10px] font-medium text-muted-foreground/60 mt-0.5 truncate">
                         {log.entity} {log.entityId ? `#${log.entityId.slice(-6)}` : ''}
@@ -130,8 +146,8 @@ const AuditTable = ({ logs, getActionIcon, getStatusBadge, getSeverity, showOrga
 
                 {/* Details Column */}
                 <TableCell className="text-left max-w-[300px] hidden xl:table-cell align-top py-3">
-                  <div className="text-[10px] font-mono text-muted-foreground/70 whitespace-pre-wrap break-all max-h-20 overflow-y-auto custom-scrollbar bg-secondary/5 p-2 rounded-lg">
-                    {safeJson(log.details)}
+                  <div className="max-h-24 overflow-y-auto custom-scrollbar bg-secondary/5 p-3 rounded-xl border border-border/10 shadow-inner">
+                    {formatDetails(log.details)}
                   </div>
                 </TableCell>
 

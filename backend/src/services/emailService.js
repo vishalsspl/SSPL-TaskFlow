@@ -808,6 +808,37 @@ export const sendTimesheetSubmissionEmail = async (to, managerName, userName, pr
 };
 
 /**
+ * Send an email when a leave is submitted for approval.
+ */
+export const sendLeaveSubmissionEmail = async (to, managerName, userName, leaveType, hours, date, baseUrl) => {
+  try {
+    if (!to) return;
+    const info = await transporter.sendMail({
+      from: DEFAULT_FROM,
+      to,
+      subject: `Leave Application Submitted: ${userName}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px;">
+          <h2 style="color: #2563eb;">Leave Requires Approval</h2>
+          <p>Hello <strong>${managerName}</strong>,</p>
+          <p><strong>${userName}</strong> has submitted a Leave Application that requires your review.</p>
+          <div style="background: #F9FAFB; padding: 15px; border-radius: 8px; border-left: 4px solid #2563eb; margin: 20px 0;">
+            <p style="margin: 0;"><strong>Leave Type:</strong> ${leaveType}</p>
+            <p style="margin: 5px 0 0 0;"><strong>Hours Logged:</strong> ${hours}h</p>
+            <p style="margin: 5px 0 0 0;"><strong>Date:</strong> ${new Date(date).toLocaleDateString()}</p>
+          </div>
+          <a href="${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/timesheets" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Review Leave Application</a>
+        </div>
+      `,
+    });
+    return info;
+  } catch (error) {
+    console.error('Error sending leave submission email:', error);
+    return null;
+  }
+};
+
+/**
  * Send an email when a timesheet is approved or rejected.
  */
 export const sendTimesheetStatusEmail = async (to, userName, projectName, status, managerName, hours, baseUrl) => {

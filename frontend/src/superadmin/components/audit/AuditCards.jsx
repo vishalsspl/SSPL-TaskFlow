@@ -1,13 +1,29 @@
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
-const safeJson = (v) => {
-  try {
-    if (!v) return '';
-    return JSON.stringify(v, null, 2);
-  } catch {
-    return String(v);
+const formatAction = (action) => {
+  if (!action) return '-';
+  if (action === 'LOGIN_CLOCK_IN') return 'User Login';
+  if (action === 'LOGOUT_CLOCK_OUT') return 'User Logout';
+  return action.toLowerCase().replace(/_/g, ' ');
+};
+
+const formatDetails = (details) => {
+  if (!details || (typeof details === 'object' && Object.keys(details).length === 0)) return <span className="text-muted-foreground/50 italic">-</span>;
+  
+  if (typeof details === 'object') {
+    return (
+      <div className="flex flex-col gap-1.5">
+        {Object.entries(details).map(([key, val]) => (
+          <div key={key} className="flex flex-col gap-0.5">
+            <span className="text-[9px] font-black text-primary/70 uppercase tracking-widest">{key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}</span>
+            <span className="text-xs font-semibold text-foreground/90 break-words leading-tight">{typeof val === 'object' ? JSON.stringify(val) : String(val)}</span>
+          </div>
+        ))}
+      </div>
+    );
   }
+  return <span className="text-xs font-medium">{String(details)}</span>;
 };
 
 const AuditCards = ({ logs, getActionIcon, getStatusBadge, getSeverity, showOrganization = true }) => {
@@ -21,7 +37,7 @@ const AuditCards = ({ logs, getActionIcon, getStatusBadge, getSeverity, showOrga
               <div className="flex items-center gap-3 min-w-0">
                 <div className="shrink-0">{getActionIcon(log.action)}</div>
                 <div className="min-w-0">
-                  <div className="text-sm font-bold truncate">{log.action}</div>
+                  <div className="text-sm font-bold capitalize truncate">{formatAction(log.action)}</div>
                   <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
                     {log.createdAt ? new Date(log.createdAt).toLocaleString() : '-'}
                   </div>
@@ -54,8 +70,8 @@ const AuditCards = ({ logs, getActionIcon, getStatusBadge, getSeverity, showOrga
               </div>
               <div className="pt-2 border-t border-border/10">
                 <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 mb-1.5">Details</div>
-                <div className="text-[9px] text-muted-foreground font-mono bg-secondary/10 p-2 rounded-lg max-h-24 overflow-y-auto whitespace-pre-wrap break-all custom-scrollbar">
-                  {safeJson(log.details)}
+                <div className="bg-secondary/5 p-3 rounded-xl border border-border/10 shadow-inner max-h-24 overflow-y-auto custom-scrollbar">
+                  {formatDetails(log.details)}
                 </div>
               </div>
             </div>

@@ -16,16 +16,26 @@ export const getMyOrganization = async (req, res) => {
     // ── Lazy Migration ────────────────────────────────────────────────────────
     await ensureOrganizationSchema(req.db);
 
-    const org = await req.db.organization.findUnique({
-        where: { id: organizationId },
-        include: {
-            _count: { select: { users: true } },
-        },
+    const mainOrg = await prisma.organization.findUnique({
+        where: { id: organizationId }
     });
 
-    if (!org) return res.status(404).json({ error: 'Organisation not found' });
+    if (!mainOrg) return res.status(404).json({ error: 'Organisation not found' });
 
-    res.json(org);
+    // Try to get user count from tenant DB if it exists
+    let userCount = 0;
+    try {
+        if (req.db) {
+            userCount = await req.db.user.count();
+        }
+    } catch (err) {
+        console.error('[getMyOrganization] Could not get user count from tenant DB:', err.message);
+    }
+
+    res.json({
+        ...mainOrg,
+        _count: { users: userCount }
+    });
 };
 
 // ── GET /api/organizations/public ─────────────────────────────────────────
@@ -62,6 +72,7 @@ export const updateMyOrganization = async (req, res) => {
         allowClientSignup,
         requireApproval,
         sessionTimeoutMinutes,
+        shiftSettings,
     } = req.body;
 
     // DEBUG: Log to file
@@ -94,6 +105,15 @@ export const updateMyOrganization = async (req, res) => {
         ...(requireApproval !== undefined && { requireApproval: Boolean(requireApproval) }),
         ...(sessionTimeoutMinutes !== undefined && { sessionTimeoutMinutes: parseInt(sessionTimeoutMinutes) }),
     };
+
+    if (shiftSettings !== undefined) {
+        const currentOrg = await req.db.organization.findUnique({ where: { id: organizationId }, select: { customFeatures: true } });
+        const existingFeatures = (currentOrg?.customFeatures && typeof currentOrg.customFeatures === 'object') ? currentOrg.customFeatures : {};
+        updateData.customFeatures = {
+            ...existingFeatures,
+            shiftSettings
+        };
+    }
 
     // ── 🔄 SYNC: Propagate profile changes to Main DB FIRST for safety ────────────────────────
     try {

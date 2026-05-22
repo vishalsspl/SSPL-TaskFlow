@@ -49,7 +49,7 @@ const PerformanceDashboardView = ({ data, hoursTitle = "Hours by Project" }) => 
                 <StatCard icon={CheckCircle2} label="Completion Rate" value={`${summary.completionRate}%`} sub={`${summary.completedTasks}/${summary.totalTasks} tasks`} color="#48A111" />
                 <StatCard icon={Target} label="On-Time Rate" value={`${summary.onTimeRate}%`} sub="Finished before due" color="#0EA5E9" />
                 <StatCard icon={Clock} label="Total Hours" value={`${summary.totalHours}h`} sub={`${summary.billableHours}h billable`} color="#F59E0B" />
-                <StatCard icon={Zap} label="Velocity" value={summary.velocity} sub="Points completed" color="#8B5CF6" />
+                <StatCard icon={Zap} label="Velocity" value={`${summary.velocity} sp/hr`} sub="Points per logged hour" color="#8B5CF6" />
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
@@ -324,7 +324,7 @@ const TeamPerformance = ({ projects }) => {
                                                     <p className="text-[8px] sm:text-[10px] text-muted-foreground font-bold mt-0.5 uppercase tracking-tight truncate">Hours</p>
                                                 </div>
                                                 <div className="flex flex-col items-center justify-center bg-secondary/30 sm:bg-transparent py-1.5 px-1 sm:px-2 rounded-lg min-w-0">
-                                                    <p className="font-black text-[12px] sm:text-lg text-purple-500 truncate">{member.velocity}</p>
+                                                    <p className="font-black text-[12px] sm:text-lg text-purple-500 truncate">{member.velocity}/hr</p>
                                                     <p className="text-[8px] sm:text-[10px] text-muted-foreground font-bold mt-0.5 uppercase tracking-tight truncate">Velocity</p>
                                                 </div>
                                                 <div className={`flex flex-col items-center justify-center py-1.5 px-1 sm:px-2 rounded-lg min-w-0 transition-colors ${member.overdueTasks > 0 ? 'bg-red-500/10 sm:bg-transparent' : 'bg-secondary/30 sm:bg-transparent opacity-50'}`}>

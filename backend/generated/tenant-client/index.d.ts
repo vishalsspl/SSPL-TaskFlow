@@ -164,8 +164,7 @@ export const Priority: {
   LOW: 'LOW',
   MEDIUM: 'MEDIUM',
   HIGH: 'HIGH',
-  URGENT: 'URGENT',
-  CRITICAL: 'CRITICAL'
+  URGENT: 'URGENT'
 };
 
 export type Priority = (typeof Priority)[keyof typeof Priority]
@@ -5588,6 +5587,7 @@ export namespace Prisma {
     usedBudget: Decimal | null
     githubRepo: string | null
     githubInstallationId: string | null
+    allowMemberTaskCreation: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -5607,6 +5607,7 @@ export namespace Prisma {
     usedBudget: Decimal | null
     githubRepo: string | null
     githubInstallationId: string | null
+    allowMemberTaskCreation: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -5626,6 +5627,7 @@ export namespace Prisma {
     usedBudget: number
     githubRepo: number
     githubInstallationId: number
+    allowMemberTaskCreation: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -5657,6 +5659,7 @@ export namespace Prisma {
     usedBudget?: true
     githubRepo?: true
     githubInstallationId?: true
+    allowMemberTaskCreation?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -5676,6 +5679,7 @@ export namespace Prisma {
     usedBudget?: true
     githubRepo?: true
     githubInstallationId?: true
+    allowMemberTaskCreation?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -5695,6 +5699,7 @@ export namespace Prisma {
     usedBudget?: true
     githubRepo?: true
     githubInstallationId?: true
+    allowMemberTaskCreation?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -5801,6 +5806,7 @@ export namespace Prisma {
     usedBudget: Decimal
     githubRepo: string | null
     githubInstallationId: string | null
+    allowMemberTaskCreation: boolean
     createdAt: Date
     updatedAt: Date
     _count: ProjectCountAggregateOutputType | null
@@ -5839,6 +5845,7 @@ export namespace Prisma {
     usedBudget?: boolean
     githubRepo?: boolean
     githubInstallationId?: boolean
+    allowMemberTaskCreation?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
@@ -5867,6 +5874,7 @@ export namespace Prisma {
     usedBudget?: boolean
     githubRepo?: boolean
     githubInstallationId?: boolean
+    allowMemberTaskCreation?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
@@ -5889,6 +5897,7 @@ export namespace Prisma {
     usedBudget?: boolean
     githubRepo?: boolean
     githubInstallationId?: boolean
+    allowMemberTaskCreation?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -5937,6 +5946,7 @@ export namespace Prisma {
       usedBudget: Prisma.Decimal
       githubRepo: string | null
       githubInstallationId: string | null
+      allowMemberTaskCreation: boolean
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["project"]>
@@ -6354,6 +6364,7 @@ export namespace Prisma {
     readonly usedBudget: FieldRef<"Project", 'Decimal'>
     readonly githubRepo: FieldRef<"Project", 'String'>
     readonly githubInstallationId: FieldRef<"Project", 'String'>
+    readonly allowMemberTaskCreation: FieldRef<"Project", 'Boolean'>
     readonly createdAt: FieldRef<"Project", 'DateTime'>
     readonly updatedAt: FieldRef<"Project", 'DateTime'>
   }
@@ -20067,6 +20078,7 @@ export namespace Prisma {
     usedBudget: 'usedBudget',
     githubRepo: 'githubRepo',
     githubInstallationId: 'githubInstallationId',
+    allowMemberTaskCreation: 'allowMemberTaskCreation',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -20878,6 +20890,7 @@ export namespace Prisma {
     usedBudget?: DecimalFilter<"Project"> | Decimal | DecimalJsLike | number | string
     githubRepo?: StringNullableFilter<"Project"> | string | null
     githubInstallationId?: StringNullableFilter<"Project"> | string | null
+    allowMemberTaskCreation?: BoolFilter<"Project"> | boolean
     createdAt?: DateTimeFilter<"Project"> | Date | string
     updatedAt?: DateTimeFilter<"Project"> | Date | string
     organization?: XOR<OrganizationRelationFilter, OrganizationWhereInput>
@@ -20905,6 +20918,7 @@ export namespace Prisma {
     usedBudget?: SortOrder
     githubRepo?: SortOrderInput | SortOrder
     githubInstallationId?: SortOrderInput | SortOrder
+    allowMemberTaskCreation?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     organization?: OrganizationOrderByWithRelationInput
@@ -20935,6 +20949,7 @@ export namespace Prisma {
     usedBudget?: DecimalFilter<"Project"> | Decimal | DecimalJsLike | number | string
     githubRepo?: StringNullableFilter<"Project"> | string | null
     githubInstallationId?: StringNullableFilter<"Project"> | string | null
+    allowMemberTaskCreation?: BoolFilter<"Project"> | boolean
     createdAt?: DateTimeFilter<"Project"> | Date | string
     updatedAt?: DateTimeFilter<"Project"> | Date | string
     organization?: XOR<OrganizationRelationFilter, OrganizationWhereInput>
@@ -20962,6 +20977,7 @@ export namespace Prisma {
     usedBudget?: SortOrder
     githubRepo?: SortOrderInput | SortOrder
     githubInstallationId?: SortOrderInput | SortOrder
+    allowMemberTaskCreation?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: ProjectCountOrderByAggregateInput
@@ -20989,6 +21005,7 @@ export namespace Prisma {
     usedBudget?: DecimalWithAggregatesFilter<"Project"> | Decimal | DecimalJsLike | number | string
     githubRepo?: StringNullableWithAggregatesFilter<"Project"> | string | null
     githubInstallationId?: StringNullableWithAggregatesFilter<"Project"> | string | null
+    allowMemberTaskCreation?: BoolWithAggregatesFilter<"Project"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"Project"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Project"> | Date | string
   }
@@ -22411,6 +22428,7 @@ export namespace Prisma {
     usedBudget?: Decimal | DecimalJsLike | number | string
     githubRepo?: string | null
     githubInstallationId?: string | null
+    allowMemberTaskCreation?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
@@ -22438,6 +22456,7 @@ export namespace Prisma {
     usedBudget?: Decimal | DecimalJsLike | number | string
     githubRepo?: string | null
     githubInstallationId?: string | null
+    allowMemberTaskCreation?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     phases?: PhaseUncheckedCreateNestedManyWithoutProjectInput
@@ -22459,6 +22478,7 @@ export namespace Prisma {
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
+    allowMemberTaskCreation?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
@@ -22486,6 +22506,7 @@ export namespace Prisma {
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
+    allowMemberTaskCreation?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     phases?: PhaseUncheckedUpdateManyWithoutProjectNestedInput
@@ -22510,6 +22531,7 @@ export namespace Prisma {
     usedBudget?: Decimal | DecimalJsLike | number | string
     githubRepo?: string | null
     githubInstallationId?: string | null
+    allowMemberTaskCreation?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -22526,6 +22548,7 @@ export namespace Prisma {
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
+    allowMemberTaskCreation?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -22545,6 +22568,7 @@ export namespace Prisma {
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
+    allowMemberTaskCreation?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -24208,6 +24232,7 @@ export namespace Prisma {
     usedBudget?: SortOrder
     githubRepo?: SortOrder
     githubInstallationId?: SortOrder
+    allowMemberTaskCreation?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -24232,6 +24257,7 @@ export namespace Prisma {
     usedBudget?: SortOrder
     githubRepo?: SortOrder
     githubInstallationId?: SortOrder
+    allowMemberTaskCreation?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -24251,6 +24277,7 @@ export namespace Prisma {
     usedBudget?: SortOrder
     githubRepo?: SortOrder
     githubInstallationId?: SortOrder
+    allowMemberTaskCreation?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -27490,6 +27517,7 @@ export namespace Prisma {
     usedBudget?: Decimal | DecimalJsLike | number | string
     githubRepo?: string | null
     githubInstallationId?: string | null
+    allowMemberTaskCreation?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     manager?: UserCreateNestedOneWithoutManagedProjectsInput
@@ -27515,6 +27543,7 @@ export namespace Prisma {
     usedBudget?: Decimal | DecimalJsLike | number | string
     githubRepo?: string | null
     githubInstallationId?: string | null
+    allowMemberTaskCreation?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     phases?: PhaseUncheckedCreateNestedManyWithoutProjectInput
@@ -27792,6 +27821,7 @@ export namespace Prisma {
     usedBudget?: DecimalFilter<"Project"> | Decimal | DecimalJsLike | number | string
     githubRepo?: StringNullableFilter<"Project"> | string | null
     githubInstallationId?: StringNullableFilter<"Project"> | string | null
+    allowMemberTaskCreation?: BoolFilter<"Project"> | boolean
     createdAt?: DateTimeFilter<"Project"> | Date | string
     updatedAt?: DateTimeFilter<"Project"> | Date | string
   }
@@ -28202,6 +28232,7 @@ export namespace Prisma {
     usedBudget?: Decimal | DecimalJsLike | number | string
     githubRepo?: string | null
     githubInstallationId?: string | null
+    allowMemberTaskCreation?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
@@ -28227,6 +28258,7 @@ export namespace Prisma {
     usedBudget?: Decimal | DecimalJsLike | number | string
     githubRepo?: string | null
     githubInstallationId?: string | null
+    allowMemberTaskCreation?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     phases?: PhaseUncheckedCreateNestedManyWithoutProjectInput
@@ -28258,6 +28290,7 @@ export namespace Prisma {
     usedBudget?: Decimal | DecimalJsLike | number | string
     githubRepo?: string | null
     githubInstallationId?: string | null
+    allowMemberTaskCreation?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
@@ -28283,6 +28316,7 @@ export namespace Prisma {
     usedBudget?: Decimal | DecimalJsLike | number | string
     githubRepo?: string | null
     githubInstallationId?: string | null
+    allowMemberTaskCreation?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     phases?: PhaseUncheckedCreateNestedManyWithoutProjectInput
@@ -29796,6 +29830,7 @@ export namespace Prisma {
     usedBudget?: Decimal | DecimalJsLike | number | string
     githubRepo?: string | null
     githubInstallationId?: string | null
+    allowMemberTaskCreation?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
@@ -29822,6 +29857,7 @@ export namespace Prisma {
     usedBudget?: Decimal | DecimalJsLike | number | string
     githubRepo?: string | null
     githubInstallationId?: string | null
+    allowMemberTaskCreation?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     tasks?: TaskUncheckedCreateNestedManyWithoutProjectInput
@@ -29906,6 +29942,7 @@ export namespace Prisma {
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
+    allowMemberTaskCreation?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
@@ -29932,6 +29969,7 @@ export namespace Prisma {
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
+    allowMemberTaskCreation?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     tasks?: TaskUncheckedUpdateManyWithoutProjectNestedInput
@@ -29968,6 +30006,7 @@ export namespace Prisma {
     usedBudget?: Decimal | DecimalJsLike | number | string
     githubRepo?: string | null
     githubInstallationId?: string | null
+    allowMemberTaskCreation?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
@@ -29994,6 +30033,7 @@ export namespace Prisma {
     usedBudget?: Decimal | DecimalJsLike | number | string
     githubRepo?: string | null
     githubInstallationId?: string | null
+    allowMemberTaskCreation?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     phases?: PhaseUncheckedCreateNestedManyWithoutProjectInput
@@ -30147,6 +30187,7 @@ export namespace Prisma {
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
+    allowMemberTaskCreation?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
@@ -30173,6 +30214,7 @@ export namespace Prisma {
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
+    allowMemberTaskCreation?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     phases?: PhaseUncheckedUpdateManyWithoutProjectNestedInput
@@ -30571,6 +30613,7 @@ export namespace Prisma {
     usedBudget?: Decimal | DecimalJsLike | number | string
     githubRepo?: string | null
     githubInstallationId?: string | null
+    allowMemberTaskCreation?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
@@ -30597,6 +30640,7 @@ export namespace Prisma {
     usedBudget?: Decimal | DecimalJsLike | number | string
     githubRepo?: string | null
     githubInstallationId?: string | null
+    allowMemberTaskCreation?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     phases?: PhaseUncheckedCreateNestedManyWithoutProjectInput
@@ -30747,6 +30791,7 @@ export namespace Prisma {
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
+    allowMemberTaskCreation?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
@@ -30773,6 +30818,7 @@ export namespace Prisma {
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
+    allowMemberTaskCreation?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     phases?: PhaseUncheckedUpdateManyWithoutProjectNestedInput
@@ -30907,6 +30953,7 @@ export namespace Prisma {
     usedBudget?: Decimal | DecimalJsLike | number | string
     githubRepo?: string | null
     githubInstallationId?: string | null
+    allowMemberTaskCreation?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
@@ -30933,6 +30980,7 @@ export namespace Prisma {
     usedBudget?: Decimal | DecimalJsLike | number | string
     githubRepo?: string | null
     githubInstallationId?: string | null
+    allowMemberTaskCreation?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     phases?: PhaseUncheckedCreateNestedManyWithoutProjectInput
@@ -31083,6 +31131,7 @@ export namespace Prisma {
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
+    allowMemberTaskCreation?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
@@ -31109,6 +31158,7 @@ export namespace Prisma {
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
+    allowMemberTaskCreation?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     phases?: PhaseUncheckedUpdateManyWithoutProjectNestedInput
@@ -31243,6 +31293,7 @@ export namespace Prisma {
     usedBudget?: Decimal | DecimalJsLike | number | string
     githubRepo?: string | null
     githubInstallationId?: string | null
+    allowMemberTaskCreation?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
@@ -31269,6 +31320,7 @@ export namespace Prisma {
     usedBudget?: Decimal | DecimalJsLike | number | string
     githubRepo?: string | null
     githubInstallationId?: string | null
+    allowMemberTaskCreation?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     phases?: PhaseUncheckedCreateNestedManyWithoutProjectInput
@@ -31376,6 +31428,7 @@ export namespace Prisma {
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
+    allowMemberTaskCreation?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
@@ -31402,6 +31455,7 @@ export namespace Prisma {
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
+    allowMemberTaskCreation?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     phases?: PhaseUncheckedUpdateManyWithoutProjectNestedInput
@@ -33578,6 +33632,7 @@ export namespace Prisma {
     usedBudget?: Decimal | DecimalJsLike | number | string
     githubRepo?: string | null
     githubInstallationId?: string | null
+    allowMemberTaskCreation?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -33732,6 +33787,7 @@ export namespace Prisma {
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
+    allowMemberTaskCreation?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     manager?: UserUpdateOneWithoutManagedProjectsNestedInput
@@ -33757,6 +33813,7 @@ export namespace Prisma {
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
+    allowMemberTaskCreation?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     phases?: PhaseUncheckedUpdateManyWithoutProjectNestedInput
@@ -33780,6 +33837,7 @@ export namespace Prisma {
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
+    allowMemberTaskCreation?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -34004,6 +34062,7 @@ export namespace Prisma {
     usedBudget?: Decimal | DecimalJsLike | number | string
     githubRepo?: string | null
     githubInstallationId?: string | null
+    allowMemberTaskCreation?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -34022,6 +34081,7 @@ export namespace Prisma {
     usedBudget?: Decimal | DecimalJsLike | number | string
     githubRepo?: string | null
     githubInstallationId?: string | null
+    allowMemberTaskCreation?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -34218,6 +34278,7 @@ export namespace Prisma {
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
+    allowMemberTaskCreation?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
@@ -34243,6 +34304,7 @@ export namespace Prisma {
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
+    allowMemberTaskCreation?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     phases?: PhaseUncheckedUpdateManyWithoutProjectNestedInput
@@ -34266,6 +34328,7 @@ export namespace Prisma {
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
+    allowMemberTaskCreation?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -34282,6 +34345,7 @@ export namespace Prisma {
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
+    allowMemberTaskCreation?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
@@ -34307,6 +34371,7 @@ export namespace Prisma {
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
+    allowMemberTaskCreation?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     phases?: PhaseUncheckedUpdateManyWithoutProjectNestedInput
@@ -34330,6 +34395,7 @@ export namespace Prisma {
     usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
     githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
+    allowMemberTaskCreation?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

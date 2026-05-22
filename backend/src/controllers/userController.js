@@ -438,6 +438,10 @@ export const deleteUser = async (req, res) => {
     const { id } = req.params;
     const db = req.db;
 
+    if (req.user.role !== 'ADMIN') {
+      return res.status(403).json({ error: 'Unauthorized: Only administrators can delete users.' });
+    }
+
     const existingUser = await db.user.findUnique({
       where: { id },
     });

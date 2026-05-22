@@ -20,9 +20,11 @@ export const getWorklogs = async (req, res) => {
         if (projectId) where.projectId = projectId;
         
         if (startDate && endDate) {
+            const end = new Date(endDate);
+            end.setUTCHours(23, 59, 59, 999);
             where.loggedAt = {
                 gte: new Date(startDate),
-                lte: new Date(endDate)
+                lte: end
             };
         }
 

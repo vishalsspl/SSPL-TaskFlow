@@ -85,7 +85,7 @@ const TaskKanban = () => {
     };
 
     const handleTaskClick = (task) => {
-        if (user?.role === 'CLIENT') return;
+        if (user?.role === 'CLIENT' || user?.role === 'MEMBER') return;
         setSelectedTask(task);
         setShowEditDialog(true);
     };
@@ -123,7 +123,29 @@ const TaskKanban = () => {
             fetchData();
         } catch (error) {
             console.error('Failed to update status:', error);
-            toast({ title: 'Error', description: 'Failed to update task status.', variant: 'destructive' });
+            toast({ title: 'Error', description: error.response?.data?.error || 'Failed to update task status.', variant: 'destructive' });
+        }
+    };
+
+    const handleApproveStatus = async (taskId) => {
+        try {
+            await api.post(`/tasks/${taskId}/approve-status`);
+            toast({ title: 'Status Approved', description: 'The task status change has been approved.' });
+            fetchData();
+        } catch (error) {
+            console.error('Failed to approve status:', error);
+            toast({ title: 'Error', description: error.response?.data?.error || 'Failed to approve status.', variant: 'destructive' });
+        }
+    };
+
+    const handleRejectStatus = async (taskId) => {
+        try {
+            await api.post(`/tasks/${taskId}/reject-status`);
+            toast({ title: 'Status Rejected', description: 'The task has been reverted to its previous status.' });
+            fetchData();
+        } catch (error) {
+            console.error('Failed to reject status:', error);
+            toast({ title: 'Error', description: error.response?.data?.error || 'Failed to reject status.', variant: 'destructive' });
         }
     };
 
@@ -187,7 +209,7 @@ const TaskKanban = () => {
                             options={[
                                 { value: 'all', label: 'All Managers' },
                                 ...users
-                                    .filter(u => u.role === 'MANAGER' || u.role === 'ADMIN')
+                                    .filter(u => u.role === 'MANAGER')
                                     .map(u => ({ value: u.id, label: u.name }))
                             ]}
                             value={managerFilter}
@@ -296,7 +318,17 @@ const TaskKanban = () => {
                                 className="flex-1 sm:flex-none sm:w-[150px] h-9 sm:h-11 rounded-lg sm:rounded-xl"
                             />
                         </div>
-                        {!isReadOnly && (
+                        {(() => {
+                            let canCreate = user?.role === 'ADMIN' || user?.role === 'MANAGER';
+                            if (user?.role === 'MEMBER') {
+                                if (selectedProjectId) {
+                                    const selectedProject = projects.find(p => p.id === selectedProjectId);
+                                    canCreate = selectedProject?.allowMemberTaskCreation;
+                                } else {
+                                    canCreate = projects.some(p => p.allowMemberTaskCreation);
+                                }
+                            }
+                            return canCreate ? (
                             <Button
                                 onClick={() => setShowCreateDialog(true)}
                                 className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground Montserrat font-black uppercase tracking-widest rounded-lg sm:rounded-xl h-9 sm:h-11 px-6 sm:px-8 shadow-[0_4px_15px_rgba(var(--primary-rgb),0.3)] transition-all hover:scale-[1.02] active:scale-95 text-xs sm:text-sm"
@@ -304,7 +336,8 @@ const TaskKanban = () => {
                                 <Plus className="w-4 h-4 sm:w-5 h-5 mr-1.5 sm:mr-2 stroke-[3]" />
                                 New Task
                             </Button>
-                        )}
+                            ) : null;
+                        })()}
                     </div>
                 </div>
 
@@ -320,9 +353,11 @@ const TaskKanban = () => {
                         }
                     }}
                     isReadOnly={isReadOnly}
-                    onEdit={handleTaskClick}
-                    onDelete={isReadOnly ? undefined : handleDeleteTask}
+                    onEdit={(user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.role === 'MEMBER') ? handleTaskClick : undefined}
+                    onDelete={(user?.role === 'ADMIN' || user?.role === 'MANAGER') ? handleDeleteTask : undefined}
                     onStatusChange={isReadOnly ? undefined : handleStatusChange}
+                    onApprove={handleApproveStatus}
+                    onReject={handleRejectStatus}
                 />
             </div>
 
@@ -336,7 +371,7 @@ const TaskKanban = () => {
                             </DialogDescription>
                         </DialogHeader>
                         <CreateTaskForm
-                            projects={projects}
+                            projects={projects.filter(p => user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.role === 'MEMBER')}
                             users={users}
                             task={selectedTask}
                             onSuccess={handleTaskUpdated}
@@ -359,7 +394,7 @@ const TaskKanban = () => {
                             </DialogDescription>
                         </DialogHeader>
                         <CreateTaskForm
-                            projects={projects}
+                            projects={projects.filter(p => user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.role === 'MEMBER')}
                             users={users}
                             initialProjectId={selectedProjectId !== 'all' ? selectedProjectId : ''}
                             onSuccess={() => {

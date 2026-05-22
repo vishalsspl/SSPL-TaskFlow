@@ -24,7 +24,7 @@ const sortByPriority = (tasks) => {
     });
 };
 
-const KanbanBoard = ({ tasks, onTaskUpdate, isReadOnly, onEdit, onDelete, onStatusChange }) => {
+const KanbanBoard = ({ tasks, onTaskUpdate, isReadOnly, onEdit, onDelete, onStatusChange, onApprove, onReject }) => {
     const [activeId, setActiveId] = useState(null);
     const [recentlyMovedId, setRecentlyMovedId] = useState(null);
     const activeTask = activeId ? tasks.find(t => t.id === activeId) : null;
@@ -108,10 +108,10 @@ const KanbanBoard = ({ tasks, onTaskUpdate, isReadOnly, onEdit, onDelete, onStat
             onDragEnd={handleDragEnd}
         >
             <div className="flex h-full w-full gap-2 sm:gap-4 overflow-x-auto pb-4 px-1 sm:px-0 no-scrollbar scroll-smooth snap-x snap-mandatory">
-                <KanbanColumn id="TODO" title="To Do" tasks={columns.TODO} isReadOnly={isReadOnly} onEdit={onEdit} onDelete={onDelete} onStatusChange={onStatusChange} recentlyMovedId={recentlyMovedId} />
-                <KanbanColumn id="IN_PROGRESS" title="In Progress" tasks={columns.IN_PROGRESS} isReadOnly={isReadOnly} onEdit={onEdit} onDelete={onDelete} onStatusChange={onStatusChange} recentlyMovedId={recentlyMovedId} />
-                <KanbanColumn id="IN_REVIEW" title="In Review" tasks={columns.IN_REVIEW} isReadOnly={isReadOnly} onEdit={onEdit} onDelete={onDelete} onStatusChange={onStatusChange} recentlyMovedId={recentlyMovedId} />
-                <KanbanColumn id="COMPLETED" title="Completed" tasks={columns.COMPLETED} isReadOnly={isReadOnly} onEdit={onEdit} onDelete={onDelete} onStatusChange={onStatusChange} recentlyMovedId={recentlyMovedId} />
+                <KanbanColumn id="TODO" title="To Do" tasks={columns.TODO} isReadOnly={isReadOnly} onEdit={onEdit} onDelete={onDelete} onStatusChange={onStatusChange} recentlyMovedId={recentlyMovedId} onApprove={onApprove} onReject={onReject} />
+                <KanbanColumn id="IN_PROGRESS" title="In Progress" tasks={columns.IN_PROGRESS} isReadOnly={isReadOnly} onEdit={onEdit} onDelete={onDelete} onStatusChange={onStatusChange} recentlyMovedId={recentlyMovedId} onApprove={onApprove} onReject={onReject} />
+                <KanbanColumn id="IN_REVIEW" title="In Review" tasks={columns.IN_REVIEW} isReadOnly={isReadOnly} onEdit={onEdit} onDelete={onDelete} onStatusChange={onStatusChange} recentlyMovedId={recentlyMovedId} onApprove={onApprove} onReject={onReject} />
+                <KanbanColumn id="COMPLETED" title="Completed" tasks={columns.COMPLETED} isReadOnly={isReadOnly} onEdit={onEdit} onDelete={onDelete} onStatusChange={onStatusChange} recentlyMovedId={recentlyMovedId} onApprove={onApprove} onReject={onReject} />
             </div>
 
             {createPortal(

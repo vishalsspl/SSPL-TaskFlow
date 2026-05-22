@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Building2, 
   MapPin, 
@@ -37,7 +38,9 @@ const OrganizationSettings = () => {
   const [formData, setFormData] = useState({
     name: user?.organization?.name || '',
     industry: user?.organization?.industry || '',
+    size: user?.organization?.size || '',
     website: user?.organization?.website || '',
+    country: user?.organization?.country || '',
     billingEmail: user?.organization?.billingEmail || '',
     primaryContactName: user?.organization?.primaryContactName || '',
     primaryContactPhone: user?.organization?.primaryContactPhone || '',
@@ -56,7 +59,9 @@ const OrganizationSettings = () => {
         ...prev,
         name: user.organization.name || prev.name,
         industry: user.organization.industry || prev.industry,
+        size: user.organization.size || prev.size,
         website: user.organization.website || prev.website,
+        country: user.organization.country || prev.country,
         billingEmail: user.organization.billingEmail || prev.billingEmail,
         primaryContactName: user.organization.primaryContactName || prev.primaryContactName,
         primaryContactPhone: user.organization.primaryContactPhone || prev.primaryContactPhone,
@@ -74,7 +79,9 @@ const OrganizationSettings = () => {
       setFormData({
         name: org.name || '',
         industry: org.industry || '',
+        size: org.size || '',
         website: org.website || '',
+        country: org.country || '',
         billingEmail: org.billingEmail || '',
         primaryContactName: org.primaryContactName || '',
         primaryContactPhone: org.primaryContactPhone || '',
@@ -229,12 +236,54 @@ const OrganizationSettings = () => {
                 </div>
                 <div className="space-y-2">
                   <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Industry</Label>
-                  <Input 
-                    name="industry"
-                    value={formData.industry}
-                    onChange={handleChange}
-                    className="rounded-xl border-border/40 h-11" 
-                  />
+                  <Select 
+                    value={formData.industry} 
+                    onValueChange={(val) => setFormData(prev => ({ ...prev, industry: val }))}
+                  >
+                    <SelectTrigger className="w-full h-11 rounded-xl border-border/40 bg-background focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+                      <SelectValue placeholder="Select industry" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {['Technology', 'Healthcare', 'Finance', 'Education', 'Retail', 'Manufacturing', 'Real Estate', 'Media', 'Other'].map(i => (
+                        <SelectItem key={i} value={i} className="focus:bg-[#48A111]/10 focus:text-inherit cursor-pointer">{i}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Company Size</Label>
+                  <Select 
+                    value={formData.size} 
+                    onValueChange={(val) => setFormData(prev => ({ ...prev, size: val }))}
+                  >
+                    <SelectTrigger className="w-full h-11 rounded-xl border-border/40 bg-background focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+                      <SelectValue placeholder="Select size" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {['1-10', '11-50', '51-200', '201-500', '500+'].map(s => (
+                        <SelectItem key={s} value={s} className="focus:bg-[#48A111]/10 focus:text-inherit cursor-pointer">{s} employees</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Country</Label>
+                  <Select 
+                    value={formData.country} 
+                    onValueChange={(val) => setFormData(prev => ({ ...prev, country: val }))}
+                  >
+                    <SelectTrigger className="w-full h-11 rounded-xl border-border/40 bg-background focus:ring-2 focus:ring-primary/20 outline-none transition-all">
+                      <SelectValue placeholder="Select country" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {['India', 'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 'Singapore', 'UAE', 'Other'].map(c => (
+                        <SelectItem key={c} value={c} className="focus:bg-[#48A111]/10 focus:text-inherit cursor-pointer">{c}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 

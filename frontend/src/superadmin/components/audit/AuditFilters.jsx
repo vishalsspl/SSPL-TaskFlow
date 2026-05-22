@@ -28,6 +28,7 @@ const ACTIONS = [
   { value: 'INTEGRATION_DISCONNECTED', label: 'DISCONNECTED' },
   { value: 'REPO_LINKED', label: 'REPO_LINKED' },
   { value: 'REPO_UNLINKED', label: 'REPO_UNLINKED' },
+  { value: 'LOGIN_CLOCK_IN', label: 'USER LOGIN' },
 ];
 
 const ENTITIES = [

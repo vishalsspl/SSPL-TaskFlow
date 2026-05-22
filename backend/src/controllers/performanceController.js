@@ -35,7 +35,7 @@ export const getPerformanceStats = async (req, res) => {
             const [tasks, timeEntries] = await Promise.all([
                 req.db.task.findMany({ 
                     where: taskWhere, 
-                    select: { status: true, dueDate: true, storyPoints: true, updatedAt: true } 
+                    select: { status: true, dueDate: true, storyPoints: true, createdAt: true, updatedAt: true } 
                 }),
                 req.db.timeEntry.findMany({ 
                     where: timeWhere, 
@@ -46,7 +46,8 @@ export const getPerformanceStats = async (req, res) => {
             const completed = tasks.filter(t => t.status === 'COMPLETED').length;
             const overdue = tasks.filter(t => t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'COMPLETED').length;
             const totalHours = timeEntries.reduce((sum, e) => sum + parseFloat(e.hours), 0);
-            const velocity = tasks.filter(t => t.status === 'COMPLETED').reduce((sum, t) => sum + (t.storyPoints || 0), 0);
+            const completedStoryPoints = tasks.filter(t => t.status === 'COMPLETED').reduce((sum, t) => sum + (t.storyPoints || 0), 0);
+            const velocity = totalHours > 0 ? parseFloat((completedStoryPoints / totalHours).toFixed(2)) : 0;
             const completionRate = tasks.length > 0 ? Math.round((completed / tasks.length) * 100) : 0;
 
             return {
@@ -119,6 +120,7 @@ export const getUserPerformance = async (req, res) => {
 
         const totalStoryPoints = tasks.reduce((sum, t) => sum + (t.storyPoints || 0), 0);
         const completedStoryPoints = tasks.filter(t => t.status === 'COMPLETED').reduce((sum, t) => sum + (t.storyPoints || 0), 0);
+        const velocity = totalHours > 0 ? parseFloat((completedStoryPoints / totalHours).toFixed(2)) : 0;
 
         const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
         const onTimeRate = completedTasks > 0 ? Math.round((onTimeTasks / completedTasks) * 100) : 0;
@@ -145,7 +147,7 @@ export const getUserPerformance = async (req, res) => {
                 billableHours: parseFloat(billableHours.toFixed(2)),
                 approvedHours: parseFloat(approvedHours.toFixed(2)),
                 totalStoryPoints, completedStoryPoints,
-                velocity: completedStoryPoints,
+                velocity,
             },
             tasksByStatus,
             hoursByProject: Object.entries(hoursByProjectMap).map(([name, hours]) => ({ name, hours: parseFloat(hours.toFixed(2)) })),
@@ -203,6 +205,7 @@ export const getProjectPerformance = async (req, res) => {
 
         const totalStoryPoints = tasks.reduce((sum, t) => sum + (t.storyPoints || 0), 0);
         const completedStoryPoints = tasks.filter(t => t.status === 'COMPLETED').reduce((sum, t) => sum + (t.storyPoints || 0), 0);
+        const velocity = totalHours > 0 ? parseFloat((completedStoryPoints / totalHours).toFixed(2)) : 0;
 
         const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
         const onTimeRate = completedTasks > 0 ? Math.round((onTimeTasks / completedTasks) * 100) : 0;
@@ -231,7 +234,7 @@ export const getProjectPerformance = async (req, res) => {
                 billableHours: parseFloat(billableHours.toFixed(2)),
                 approvedHours: parseFloat(approvedHours.toFixed(2)),
                 totalStoryPoints, completedStoryPoints,
-                velocity: completedStoryPoints,
+                velocity,
             },
             tasksByStatus,
             hoursByProject: Object.entries(hoursByUserMap).map(([name, hours]) => ({ name, hours: parseFloat(hours.toFixed(2)) })),

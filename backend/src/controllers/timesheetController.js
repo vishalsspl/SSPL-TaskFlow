@@ -1,6 +1,6 @@
 import prisma from '../lib/prisma.js';
 import { createNotification } from '../utils/notifications.js';
-import { sendTimesheetSubmissionEmail, sendTimesheetStatusEmail } from '../services/emailService.js';
+import { sendTimesheetSubmissionEmail, sendLeaveSubmissionEmail, sendTimesheetStatusEmail } from '../services/emailService.js';
 const include = {
     user: { select: { id: true, name: true, email: true, avatar: true } },
     project: { select: { id: true, name: true } },
@@ -33,7 +33,9 @@ export const getTimeEntries = async (req, res) => {
         };
 
     if (startDate && endDate) {
-        where.date = { gte: new Date(startDate), lte: new Date(endDate) };
+        const end = new Date(endDate);
+        end.setUTCHours(23, 59, 59, 999);
+        where.date = { gte: new Date(startDate), lte: end };
     }
     if (projectId) where.projectId = projectId;
     if (status) where.status = status;
@@ -98,8 +100,21 @@ export const createTimeEntry = async (req, res) => {
         return res.status(400).json({ error: 'Project, task, date, and hours are required' });
     }
 
-    if (new Date(date) > new Date()) {
-        return res.status(400).json({ error: 'Cannot log hours for future dates' });
+    // Allow future dates (up to 31 days) for leave entries only
+    const LEAVE_TAGS = ['[Sick Leave]', '[Casual Leave]', '[Paid Leave]', '[Unpaid Leave]'];
+    const isLeaveEntry = description && LEAVE_TAGS.some(tag => description.includes(tag));
+    const entryDate = new Date(date);
+    const now = new Date();
+
+    if (entryDate > now) {
+        if (!isLeaveEntry) {
+            return res.status(400).json({ error: 'Cannot log work hours for future dates. Only leave entries are allowed for future dates.' });
+        }
+        const maxFutureDate = new Date();
+        maxFutureDate.setDate(maxFutureDate.getDate() + 31);
+        if (entryDate > maxFutureDate) {
+            return res.status(400).json({ error: 'Cannot log leave more than 31 days in advance.' });
+        }
     }
 
     // Verify project/task belongs to user's organization
@@ -114,6 +129,27 @@ export const createTimeEntry = async (req, res) => {
         });
         if (!task) return res.status(400).json({ error: 'Invalid task for this project' });
     }
+
+    // --- Validation: Prevent logging more than 24 hours per day ---
+    const startOfDay = new Date(entryDate);
+    startOfDay.setUTCHours(0, 0, 0, 0);
+    const endOfDay = new Date(entryDate);
+    endOfDay.setUTCHours(23, 59, 59, 999);
+
+    const existingEntries = await req.db.timeEntry.findMany({
+        where: {
+            userId: req.user.id,
+            date: { gte: startOfDay, lte: endOfDay }
+        }
+    });
+    const totalLoggedHours = existingEntries.reduce((sum, e) => sum + parseFloat(e.hours), 0);
+    const requestedHours = parseFloat(hours);
+
+    if (totalLoggedHours + requestedHours > 24) {
+        return res.status(400).json({ error: "You can't add hours above 24 hours in a single day." });
+    }
+    // --------------------------------------------------------------
+
 
     const entry = await req.db.timeEntry.create({
         data: {
@@ -166,7 +202,14 @@ export const createTimeEntry = async (req, res) => {
             });
 
             const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
-            await sendTimesheetSubmissionEmail(manager.email, manager.name, req.user.name, project.name, hours, date, origin);
+            if (isLeaveEntry) {
+                // Extract leave type from description e.g. "[Sick Leave] - [Full Day]"
+                const match = description.match(/\[(.*?)\]/);
+                const leaveType = match ? match[1] : 'Leave';
+                await sendLeaveSubmissionEmail(manager.email, manager.name, req.user.name, leaveType, hours, date, origin);
+            } else {
+                await sendTimesheetSubmissionEmail(manager.email, manager.name, req.user.name, project.name, hours, date, origin);
+            }
         }
     }
 
@@ -192,7 +235,33 @@ export const updateTimeEntry = async (req, res) => {
     }
 
     const data = {};
-    if (hours !== undefined) data.hours = parseFloat(hours);
+    if (hours !== undefined) {
+        const requestedHours = parseFloat(hours);
+        
+        // --- Validation: Prevent logging more than 24 hours per day ---
+        const entryDate = new Date(existingEntry.date);
+        const startOfDay = new Date(entryDate);
+        startOfDay.setUTCHours(0, 0, 0, 0);
+        const endOfDay = new Date(entryDate);
+        endOfDay.setUTCHours(23, 59, 59, 999);
+
+        const otherEntries = await req.db.timeEntry.findMany({
+            where: {
+                userId: existingEntry.userId,
+                date: { gte: startOfDay, lte: endOfDay },
+                id: { not: id } // exclude the current entry
+            }
+        });
+        
+        const totalLoggedHours = otherEntries.reduce((sum, e) => sum + parseFloat(e.hours), 0);
+        
+        if (totalLoggedHours + requestedHours > 24) {
+            return res.status(400).json({ error: "You can't add hours above 24 hours in a single day." });
+        }
+        // --------------------------------------------------------------
+        
+        data.hours = requestedHours;
+    }
     if (description !== undefined) data.description = description;
     if (billable !== undefined) data.billable = billable;
 

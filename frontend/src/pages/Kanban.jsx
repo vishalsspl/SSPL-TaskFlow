@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { DatePicker } from '@/components/ui/date-picker';
+import { format } from 'date-fns';
 import { RefreshCw, Plus, X, MoreVertical, Clock, AlertCircle, User, ClipboardList, Filter, Pencil, Trash2, ArrowRightLeft } from 'lucide-react';
 import {
   DropdownMenu,
@@ -140,7 +141,7 @@ const Kanban = () => {
       await api.post('/tasks', {
         ...formData, status,
         assignedTo: formData.assignedTo || undefined,
-        dueDate: formData.dueDate ? new Date(formData.dueDate).toISOString().split('T')[0] : undefined,
+        dueDate: formData.dueDate ? format(new Date(formData.dueDate), 'yyyy-MM-dd') : undefined,
       });
       setFormData({ title: '', description: '', projectId: '', assignedTo: '', priority: 'MEDIUM', dueDate: null });
       setShowCreateForm(null);
@@ -288,12 +289,18 @@ const Kanban = () => {
                     </Badge>
                   </div>
                   <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => setShowCreateForm(status)}
-                      className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all text-gray-400 hover:text-white"
-                    >
-                      {showCreateForm === status ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-                    </button>
+                    {(() => {
+                      const canCreate = user?.role === 'ADMIN' || user?.role === 'MANAGER' || 
+                        (user?.role === 'MEMBER' && projects.some(p => p.allowMemberTaskCreation));
+                      return canCreate ? (
+                      <button
+                        onClick={() => setShowCreateForm(status)}
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all text-gray-400 hover:text-white"
+                      >
+                        {showCreateForm === status ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                      </button>
+                      ) : null;
+                    })()}
                     <button className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all">
                       <MoreVertical className="w-4 h-4" />
                     </button>
@@ -316,7 +323,7 @@ const Kanban = () => {
                         className="w-full text-sm border border-gray-100 rounded-xl px-3 py-2 bg-gray-50 text-gray-700 outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                       >
                         <option value="">Select project *</option>
-                        {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                        {projects.filter(p => user?.role === 'ADMIN' || user?.role === 'MANAGER' || p.allowMemberTaskCreation).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                       </select>
                       <select
                         value={formData.assignedTo}
@@ -426,11 +433,15 @@ const Kanban = () => {
                                     ))}
                                   </DropdownMenuSubContent>
                                 </DropdownMenuSub>
-                                <DropdownMenuSeparator className="bg-border" />
-                                <DropdownMenuItem onClick={() => handleDeleteTask(task.id)} className="text-destructive focus:text-destructive cursor-pointer">
-                                  <Trash2 className="w-4 h-4 mr-2" />
-                                  Delete Task
-                                </DropdownMenuItem>
+                                {(user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.role === 'MEMBER') && (
+                                  <>
+                                    <DropdownMenuSeparator className="bg-border" />
+                                    <DropdownMenuItem onClick={() => handleDeleteTask(task.id)} className="text-destructive focus:text-destructive cursor-pointer">
+                                      <Trash2 className="w-4 h-4 mr-2" />
+                                      Delete Task
+                                    </DropdownMenuItem>
+                                  </>
+                                )}
                               </DropdownMenuContent>
                             </DropdownMenu>
                             <span

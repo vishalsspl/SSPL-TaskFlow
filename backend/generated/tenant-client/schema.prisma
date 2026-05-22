@@ -76,7 +76,7 @@ model User {
 
   // Self relation (manager)
   managerId String?
-  manager   User?   @relation("ManagerRelation", fields: [managerId], references: [id])
+  manager   User?   @relation("ManagerRelation", fields: [managerId], references: [id], onDelete: SetNull)
   members   User[]  @relation("ManagerRelation")
 
   managedProjects Project[]  @relation("ProjectManager")
@@ -133,6 +133,8 @@ model Project {
 
   githubRepo           String? // e.g., "owner/repo"
   githubInstallationId String?
+
+  allowMemberTaskCreation Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -264,7 +266,7 @@ model Ticket {
   priority    Priority     @default(MEDIUM)
 
   clientId String
-  client   User   @relation("UserTickets", fields: [clientId], references: [id])
+  client   User   @relation("UserTickets", fields: [clientId], references: [id], onDelete: Cascade)
 
   comments TicketComment[]
 
@@ -281,7 +283,7 @@ model TicketComment {
   message String
 
   ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

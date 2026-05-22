@@ -58,7 +58,7 @@ const generatePassword = () => {
 };
 
 const Team = () => {
-  const { toast } = useToast();
+  const { toast, dismiss } = useToast();
   const { user: currentUser } = useAuthStore();
   const { setHeader, searchTerm: globalSearch } = useHeaderStore();
   const [users, setUsers] = useState([]);
@@ -68,6 +68,7 @@ const Team = () => {
   const [approving, setApproving] = useState(null);
   const [showDialog, setShowDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showSecondDeleteDialog, setShowSecondDeleteDialog] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [userToDelete, setUserToDelete] = useState(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -418,6 +419,25 @@ const Team = () => {
     setShowDialog(true);
   };
 
+  const executeDelete = async (user) => {
+    try {
+      await api.delete(`/users/${user.id}`);
+      toast({
+        title: "User Deleted",
+        description: `${user.name} has been removed successfully.`,
+      });
+      fetchUsers();
+      fetchAllMembers();
+    } catch (error) {
+      console.error('Failed to delete user:', error);
+      toast({
+        title: "Delete Failed",
+        description: error.response?.data?.error || "Failed to delete user.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleDelete = (user) => {
     // If viewing a specific manager's team, "Delete" means "Remove from Team"
     const isSpecificManagerView = selectedManagerId !== 'ALL' && 
@@ -432,30 +452,6 @@ const Team = () => {
     } else {
       setUserToDelete(user);
       setShowDeleteDialog(true);
-    }
-  };
-
-  const confirmDelete = async () => {
-    if (!userToDelete) return;
-
-    try {
-      await api.delete(`/users/${userToDelete.id}`);
-      toast({
-        title: "User Deleted",
-        description: `${userToDelete.name} has been removed successfully.`,
-      });
-      fetchUsers();
-      fetchAllMembers();
-    } catch (error) {
-      console.error('Failed to delete user:', error);
-      toast({
-        title: "Delete Failed",
-        description: error.response?.data?.error || "Failed to delete user.",
-        variant: "destructive",
-      });
-    } finally {
-      setShowDeleteDialog(false);
-      setUserToDelete(null);
     }
   };
 
@@ -1168,13 +1164,15 @@ const Team = () => {
                                           </Button>
                                         </div>
                                         <div className="w-8 h-8 flex items-center justify-center">
-                                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive/90" onClick={() => handleDelete(user)}>
-                                            {isSpecificManagerView ? (
-                                              <UserMinus className="w-4 h-4" />
-                                            ) : (
-                                              <Trash2 className="w-4 h-4" />
-                                            )}
-                                          </Button>
+                                          {!(currentUser?.role === 'MANAGER' && !isSpecificManagerView) && (
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive/90" onClick={() => handleDelete(user)}>
+                                              {isSpecificManagerView ? (
+                                                <UserMinus className="w-4 h-4" />
+                                              ) : (
+                                                <Trash2 className="w-4 h-4" />
+                                              )}
+                                            </Button>
+                                          )}
                                         </div>
                                       </div>
                                     </TableCell>
@@ -1221,13 +1219,15 @@ const Team = () => {
                                 <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => handleEdit(user)}>
                                   <Edit2 className="w-3 h-3 mr-1" /> Edit
                                 </Button>
-                                <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-destructive" onClick={() => handleDelete(user)}>
-                                  {isSpecificManagerView ? (
-                                    <><UserMinus className="w-3 h-3 mr-1" /> Remove</>
-                                  ) : (
-                                    <><Trash2 className="w-3 h-3 mr-1" /> Remove</>
-                                  )}
-                                </Button>
+                                {!(currentUser?.role === 'MANAGER' && !isSpecificManagerView) && (
+                                  <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-destructive" onClick={() => handleDelete(user)}>
+                                    {isSpecificManagerView ? (
+                                      <><UserMinus className="w-3 h-3 mr-1" /> Remove</>
+                                    ) : (
+                                      <><Trash2 className="w-3 h-3 mr-1" /> Remove</>
+                                    )}
+                                  </Button>
+                                )}
                               </div>
                             )}
                           </div>
@@ -1247,14 +1247,7 @@ const Team = () => {
               </Card>
             )))
           }
-          <ConfirmDialog
-            open={showDeleteDialog}
-            onOpenChange={setShowDeleteDialog}
-            onConfirm={confirmDelete}
-            title="Delete Member?"
-            description={`Are you sure you want to remove "${userToDelete?.name}" from the organization?`}
-            confirmText="Yes, Remove"
-          />
+
 
           <ConfirmDialog
             open={showRemoveFromTeamDialog}
@@ -1263,6 +1256,33 @@ const Team = () => {
             title="Remove from Team?"
             description={`Are you sure you want to remove "${userToRemoveFromTeam?.name}" from this manager's team? They will still be part of the organization.`}
             confirmText="Yes, Remove"
+          />
+
+          <ConfirmDialog
+            open={showDeleteDialog}
+            onOpenChange={setShowDeleteDialog}
+            onConfirm={() => {
+              setShowDeleteDialog(false);
+              setShowSecondDeleteDialog(true);
+            }}
+            title="Warning: Permanent Deletion"
+            description={`Are you sure you want to delete "${userToDelete?.name}"?`}
+            confirmText="Yes, Delete"
+          />
+
+          <ConfirmDialog
+            open={showSecondDeleteDialog}
+            onOpenChange={setShowSecondDeleteDialog}
+            onConfirm={() => {
+              if (userToDelete) {
+                executeDelete(userToDelete);
+                setShowSecondDeleteDialog(false);
+                setUserToDelete(null);
+              }
+            }}
+            title="Final Confirmation"
+            description={`Are you absolutely sure you want to permanently delete "${userToDelete?.name}"? This action cannot be undone.`}
+            confirmText="Yes, I am sure"
           />
 
           {/* Add to Manager Team Dialog */}

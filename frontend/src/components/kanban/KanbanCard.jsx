@@ -3,7 +3,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, User, MoreVertical, Pencil, Trash2, ArrowRightLeft, Bug, Zap, BookOpen, GitBranch, CheckSquare, Clock } from 'lucide-react';
+import { Calendar, User, MoreVertical, Pencil, Trash2, ArrowRightLeft, Bug, Zap, BookOpen, GitBranch, CheckSquare, Clock, CheckCircle2, XCircle } from 'lucide-react';
 import { priorityColors, taskTypeColors } from '@/lib/utils';
 import { useTimerStore } from '@/store/timerStore';
 import { useAuthStore } from '@/store/authStore';
@@ -25,7 +25,12 @@ const STATUS_OPTIONS = [
     { value: 'COMPLETED', label: 'Completed', color: '#48A111' },
 ];
 
-const KanbanCard = ({ task, isReadOnly, onEdit, onDelete, onStatusChange, isHighlighted }) => {
+const KanbanCard = ({ task, isReadOnly, onEdit, onDelete, onStatusChange, isHighlighted, onApprove, onReject }) => {
+    const { user } = useAuthStore();
+    const canTrackTime = user?.role !== 'CLIENT';
+    const pendingTag = task.tags?.find(t => t.startsWith('PENDING_APPROVAL:'));
+    const isPendingApproval = !!pendingTag;
+
     const {
         attributes,
         listeners,
@@ -43,8 +48,6 @@ const KanbanCard = ({ task, isReadOnly, onEdit, onDelete, onStatusChange, isHigh
     });
 
     const startTimer = useTimerStore(state => state.startTimer);
-    const { user } = useAuthStore();
-    const canTrackTime = user?.role !== 'CLIENT';
 
     const style = {
         transform: CSS.Transform.toString(transform),
@@ -88,7 +91,7 @@ const KanbanCard = ({ task, isReadOnly, onEdit, onDelete, onStatusChange, isHigh
                                     {task.storyPoints} PTS
                                 </span>
                             )}
-                            {!isReadOnly && (onEdit || onDelete || onStatusChange) && (
+                            {!isReadOnly && (onEdit || onDelete || onStatusChange || canTrackTime) && (
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <button
@@ -129,18 +132,21 @@ const KanbanCard = ({ task, isReadOnly, onEdit, onDelete, onStatusChange, isHigh
                                                 </DropdownMenuSubContent>
                                             </DropdownMenuSub>
                                         )}
-                                        {onDelete && (
+                                        {canTrackTime && (
                                             <>
                                                 <DropdownMenuSeparator className="bg-border" />
-                                                {canTrackTime && (
-                                                    <DropdownMenuItem
-                                                        onClick={(e) => { e.stopPropagation(); startTimer(task.id, task.projectId || task.project?.id, task.title); }}
-                                                        className="text-primary focus:text-primary cursor-pointer"
-                                                    >
-                                                        <Clock className="w-4 h-4 mr-2" />
-                                                        Start Timer
-                                                    </DropdownMenuItem>
-                                                )}
+                                                <DropdownMenuItem
+                                                    onClick={(e) => { e.stopPropagation(); startTimer(task.id, task.projectId || task.project?.id, task.title); }}
+                                                    className="text-primary focus:text-primary cursor-pointer"
+                                                >
+                                                    <Clock className="w-4 h-4 mr-2" />
+                                                    Start Timer
+                                                </DropdownMenuItem>
+                                            </>
+                                        )}
+                                        {onDelete && (
+                                            <>
+                                                {!canTrackTime && <DropdownMenuSeparator className="bg-border" />}
                                                 <DropdownMenuItem
                                                     onClick={(e) => { e.stopPropagation(); onDelete(task.id); }}
                                                     className="text-destructive focus:text-destructive cursor-pointer"
@@ -162,6 +168,32 @@ const KanbanCard = ({ task, isReadOnly, onEdit, onDelete, onStatusChange, isHigh
                     >
                         {task.title}
                     </h4>
+
+                    {isPendingApproval && (
+                        <div className="flex items-center justify-between mt-2 mb-1">
+                            <Badge variant="outline" className="text-amber-500 border-amber-500/50 bg-amber-500/10 text-[9px] font-bold py-0 uppercase tracking-wider">
+                                Pending Approval
+                            </Badge>
+                            {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
+                                <div className="flex gap-1">
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); onApprove && onApprove(task.id); }}
+                                        className="p-1 rounded bg-green-500/10 text-green-500 hover:bg-green-500/20 transition-colors"
+                                        title="Approve Status Change"
+                                    >
+                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); onReject && onReject(task.id); }}
+                                        className="p-1 rounded bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors"
+                                        title="Reject Status Change"
+                                    >
+                                        <XCircle className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     {task.project && (
                         <p className="text-[10px] font-black Montserrat text-muted-foreground uppercase tracking-widest truncate">

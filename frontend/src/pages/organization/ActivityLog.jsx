@@ -84,13 +84,13 @@ const ActivityLog = () => {
       const csvContent = [
         headers.join(','),
         ...exportData.map(log => [
-          new Date(log.createdAt).toLocaleString(),
-          log.user?.name || 'System',
-          log.user?.role || 'N/A',
-          log.action,
-          log.entity,
-          log.project?.name || 'Platform',
-          JSON.stringify(log.details || {}).replace(/,/g, ';')
+          `"${new Date(log.createdAt).toLocaleString()}"`,
+          `"${log.user?.name || 'System'}"`,
+          `"${log.user?.role || 'N/A'}"`,
+          `"${log.action}"`,
+          `"${log.entity}"`,
+          `"${log.project?.name || 'Platform'}"`,
+          `"${JSON.stringify(log.details || {}).replace(/"/g, '""')}"`
         ].join(','))
       ].join('\n');
 

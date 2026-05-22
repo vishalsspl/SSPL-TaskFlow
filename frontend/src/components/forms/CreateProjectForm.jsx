@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { format } from 'date-fns';
 import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
 import { useToast } from "@/hooks/use-toast";
@@ -38,6 +39,7 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
         status: 'PLANNING',
         category: 'INTERNAL',
         sendEmail: true,
+        allowMemberTaskCreation: false,
     });
     const [loading, setLoading] = useState(false);
     const [existingProjectNames, setExistingProjectNames] = useState([]);
@@ -158,8 +160,9 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
                 ...formData,
                 category: formData.clientId ? 'CLIENT' : 'INTERNAL',
                 totalBudget: formData.totalBudget ? parseFloat(formData.totalBudget) : null,
-                startDate: formData.startDate ? new Date(formData.startDate).toISOString().split('T')[0] : null,
-                endDate: formData.endDate ? new Date(formData.endDate).toISOString().split('T')[0] : null,
+                startDate: formData.startDate ? format(new Date(formData.startDate), 'yyyy-MM-dd') : null,
+                endDate: formData.endDate ? format(new Date(formData.endDate), 'yyyy-MM-dd') : null,
+                allowMemberTaskCreation: formData.allowMemberTaskCreation,
             };
 
             const response = await api.post('/projects', payload);
@@ -316,6 +319,24 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
                 </div>
             </div>
 
+            {/* Member Task Creation Toggle */}
+            <div className="flex items-center justify-between p-4 bg-secondary/20 rounded-xl border border-border/50 mt-4">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Users className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                        <Label htmlFor="allowMemberTaskCreation" className="text-sm font-semibold cursor-pointer">Allow Members to Create Tasks</Label>
+                        <p className="text-xs text-muted-foreground">Members of this project can create tasks</p>
+                    </div>
+                </div>
+                <Switch
+                    id="allowMemberTaskCreation"
+                    checked={formData.allowMemberTaskCreation}
+                    onCheckedChange={(checked) => setFormData({ ...formData, allowMemberTaskCreation: checked })}
+                />
+            </div>
+
             {/* Email Notification Toggle */}
             {user?.activeFeatures?.emailsupport !== false && (
                 <div className="flex items-center justify-between p-4 bg-secondary/20 rounded-xl border border-border/50">
@@ -335,6 +356,7 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
                     />
                 </div>
             )}
+
 
             <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 sm:pt-6 border-t mt-2">
                 <Button

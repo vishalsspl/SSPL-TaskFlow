@@ -183,6 +183,7 @@ exports.Prisma.ProjectScalarFieldEnum = {
   usedBudget: 'usedBudget',
   githubRepo: 'githubRepo',
   githubInstallationId: 'githubInstallationId',
+  allowMemberTaskCreation: 'allowMemberTaskCreation',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -405,8 +406,7 @@ exports.Priority = exports.$Enums.Priority = {
   LOW: 'LOW',
   MEDIUM: 'MEDIUM',
   HIGH: 'HIGH',
-  URGENT: 'URGENT',
-  CRITICAL: 'CRITICAL'
+  URGENT: 'URGENT'
 };
 
 exports.TaskType = exports.$Enums.TaskType = {

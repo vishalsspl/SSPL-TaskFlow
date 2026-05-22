@@ -17,7 +17,7 @@ async function main() {
                 execSync(`npx prisma db push --schema=prisma/tenant/schema.prisma --accept-data-loss`, {
                     env: { ...process.env, TENANT_DATABASE_URL: org.dbUrl },
                     stdio: 'inherit',
-                    cwd: path.resolve('..', 'backend')
+                    cwd: process.cwd()
                 });
                 console.log(`✅ Successfully updated schema for ${org.name}`);
             } catch (err) {

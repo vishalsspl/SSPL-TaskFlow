@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { format } from 'date-fns';
 import {
   Dialog,
   DialogContent,
@@ -44,7 +45,7 @@ import ProjectOverview from '@/components/ProjectOverview';
 import TablePagination from '@/components/ui/table-pagination';
 import { DatePicker } from '@/components/ui/date-picker';
 import ImportProjectsDialog from '@/components/ImportProjectsDialog';
-
+import { Switch } from '@/components/ui/switch';
 const getContrastColor = (hexColor) => {
   if (!hexColor || hexColor === '#111113') return '#FFFFFF';
   const r = parseInt(hexColor.slice(1, 3), 16);
@@ -164,6 +165,7 @@ const ProjectsList = () => {
       totalBudget: project.totalBudget || '',
       status: project.status,
       category: project.category,
+      allowMemberTaskCreation: project.allowMemberTaskCreation || false,
     });
     setShowEditDialog(true);
   };
@@ -216,8 +218,9 @@ const ProjectsList = () => {
         clientId: formData.clientId || undefined,
         managerId: formData.managerId || undefined,
         totalBudget: formData.totalBudget && formData.totalBudget !== '' ? formData.totalBudget : undefined,
-        startDate: formData.startDate ? new Date(formData.startDate).toISOString().split('T')[0] : null,
-        endDate: formData.endDate ? new Date(formData.endDate).toISOString().split('T')[0] : null,
+        startDate: formData.startDate ? format(new Date(formData.startDate), 'yyyy-MM-dd') : null,
+        endDate: formData.endDate ? format(new Date(formData.endDate), 'yyyy-MM-dd') : null,
+        allowMemberTaskCreation: formData.allowMemberTaskCreation,
       };
 
       await api.put(`/projects/${editingProject.id}`, payload);
@@ -233,6 +236,7 @@ const ProjectsList = () => {
         totalBudget: '',
         status: 'PLANNING',
         category: 'INTERNAL',
+        allowMemberTaskCreation: false,
       });
       toast({
         title: "Project Updated",
@@ -522,6 +526,24 @@ const ProjectsList = () => {
                 </div>
               </div>
 
+              {/* Member Task Creation Toggle */}
+              <div className="flex items-center justify-between p-4 bg-secondary/20 rounded-xl border border-border/50 mb-4 mx-4 sm:mx-0">
+                  <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Users className="w-5 h-5 text-primary" />
+                      </div>
+                      <div>
+                          <Label htmlFor="editAllowMemberTaskCreation" className="text-sm font-semibold cursor-pointer">Allow Members to Create Tasks</Label>
+                          <p className="text-xs text-muted-foreground">Members of this project can create tasks</p>
+                      </div>
+                  </div>
+                  <Switch
+                      id="editAllowMemberTaskCreation"
+                      checked={formData.allowMemberTaskCreation}
+                      onCheckedChange={(checked) => setFormData({ ...formData, allowMemberTaskCreation: checked })}
+                  />
+              </div>
+
                <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-4 sm:pt-6 border-t mt-1 px-4 sm:px-0">
                 <Button type="button" variant="outline" onClick={() => setShowEditDialog(false)} className="w-full sm:w-auto h-10 font-bold rounded-xl">
                   Cancel
@@ -663,14 +685,14 @@ const ProjectsList = () => {
                           return (
                             <TableRow
                               key={project.id}
-                              className="cursor-pointer transition-all hover:scale-[1.002] relative group/row hover:z-50"
+                              className="cursor-pointer transition-all relative group/row hover:z-50 hover:bg-accent/10"
                               style={{ borderLeft: `4px solid ${rowColor} `, background: `${rowColor} 0d` }}
                               onClick={() => {
                                 setSelectedOverviewProject(project);
                                 setShowOverviewDialog(true);
                               }}
                             >
-                              <TableCell className="relative">
+                              <TableCell className="relative text-left pl-6">
                                 <div>
                                   <p className="font-semibold text-foreground">{project.name}</p>
                                 </div>
