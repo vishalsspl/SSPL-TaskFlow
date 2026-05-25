@@ -46,6 +46,7 @@ export const getTimeEntries = async (req, res) => {
         where.OR = [
             { userId: req.user.id },
             { project: { managerId: req.user.id } },
+            { user: { managerId: req.user.id } }
         ];
         if (userId) where.userId = userId;
     } else if (req.user.role === 'ADMIN') {
@@ -62,8 +63,26 @@ export const getTimeEntries = async (req, res) => {
             req.db.timeEntry.count({ where }),
         ]);
 
+        const reviewerLogs = await req.db.activityLog.findMany({
+            where: {
+                entity: 'time_entry',
+                entityId: { in: entries.map(e => e.id) },
+                action: { in: ['APPROVED', 'REJECTED'] }
+            },
+            include: { user: { select: { id: true, name: true, avatar: true } } },
+            orderBy: { createdAt: 'desc' }
+        });
+        const reviewerMap = {};
+        for (const log of reviewerLogs) {
+            if (!reviewerMap[log.entityId]) reviewerMap[log.entityId] = log.user;
+        }
+        const entriesWithReviewer = entries.map(e => ({
+            ...e,
+            reviewer: reviewerMap[e.id] || null
+        }));
+
         return res.json({
-            data: entries,
+            data: entriesWithReviewer,
             pagination: { total, page: pageNum, limit, totalPages: Math.ceil(total / limit) },
         });
     }
@@ -80,8 +99,26 @@ export const getTimeEntries = async (req, res) => {
         })
     ]);
 
+        const reviewerLogs = await req.db.activityLog.findMany({
+            where: {
+                entity: 'time_entry',
+                entityId: { in: entries.map(e => e.id) },
+                action: { in: ['APPROVED', 'REJECTED'] }
+            },
+            include: { user: { select: { id: true, name: true, avatar: true } } },
+            orderBy: { createdAt: 'desc' }
+        });
+        const reviewerMap = {};
+        for (const log of reviewerLogs) {
+            if (!reviewerMap[log.entityId]) reviewerMap[log.entityId] = log.user;
+        }
+        const entriesWithReviewer = entries.map(e => ({
+            ...e,
+            reviewer: reviewerMap[e.id] || null
+        }));
+
         res.json({
-            entries,
+            entries: entriesWithReviewer,
             attendanceSummary: attendanceSummary.map(a => ({
                 date: a.clockIn,
                 hours: (a.durationMinutes || 0) / 60

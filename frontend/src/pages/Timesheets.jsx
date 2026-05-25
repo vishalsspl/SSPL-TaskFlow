@@ -166,7 +166,9 @@ const Timesheets = () => {
     const prevIsTimerRunning = useRef(isTimerRunning);
 
     const [currentDate, setCurrentDate] = useState(new Date());
+    const [activeTab, setActiveTab] = useState('my-entries');
     const [entries, setEntries] = useState([]);
+    const [pendingLeaves, setPendingLeaves] = useState([]);
     const [attendanceSummary, setAttendanceSummary] = useState([]);
     const [projects, setProjects] = useState([]);
     const [tasks, setTasks] = useState([]);
@@ -178,6 +180,16 @@ const Timesheets = () => {
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [selectedDateFilter, setSelectedDateFilter] = useState(new Date());
     const [loggingMode, setLoggingMode] = useState('direct');
+    const [selectedMemberFilter, setSelectedMemberFilter] = useState('all');
+
+    const isOrgAdmin = user?.role === 'ADMIN' || user?.role === 'SUPERADMIN';
+    const uniqueUsers = useMemo(() => {
+        const usersMap = new Map();
+        entries.forEach(e => {
+            if (e.user && e.user.id) usersMap.set(e.user.id, e.user);
+        });
+        return Array.from(usersMap.values());
+    }, [entries]);
 
     const [orgShiftSettings, setOrgShiftSettings] = useState({
         startTime: '10:00 AM',
@@ -238,6 +250,18 @@ const Timesheets = () => {
         }
     }, [weekDays]);
 
+    const fetchPendingLeaves = useCallback(async () => {
+        if (user?.role !== 'ADMIN' && user?.role !== 'SUPERADMIN' && user?.role !== 'MANAGER') return;
+        try {
+            const response = await api.get('/timesheets');
+            const data = response.data.entries || response.data;
+            const leaves = data.filter(e => e.userId !== user?.id && /\[.*Leave.*\]/i.test(e.description || ''));
+            setPendingLeaves(leaves);
+        } catch (error) {
+            console.error('Failed to fetch pending leaves:', error);
+        }
+    }, [user?.role, user?.id]);
+
     const fetchProjects = useCallback(async () => {
         try {
             const response = await api.get('/projects');
@@ -264,9 +288,10 @@ const Timesheets = () => {
     useEffect(() => {
         setHeader("Timesheets", "Log and track your project hours");
         fetchEntries();
+        fetchPendingLeaves();
         fetchProjects();
         fetchOrgShift();
-    }, [setHeader, fetchEntries, fetchProjects, fetchOrgShift]);
+    }, [setHeader, fetchEntries, fetchPendingLeaves, fetchProjects, fetchOrgShift]);
 
     useEffect(() => {
         if (prevIsTimerRunning.current && !isTimerRunning) {
@@ -494,6 +519,7 @@ const Timesheets = () => {
                 description: `Entry ${status.toLowerCase()} successfully.`
             });
             fetchEntries();
+            fetchPendingLeaves();
         } catch (error) {
             toast({
                 variant: "destructive",
@@ -529,10 +555,12 @@ const Timesheets = () => {
         }
     };
 
-    const getStatusBadge = (status) => {
+    const getStatusBadge = (entry) => {
+        const status = entry.status;
+        const reviewerText = entry.reviewer ? ` by ${entry.reviewer.name.split(' ')[0]}` : '';
         switch (status) {
-            case 'APPROVED': return <Badge className="bg-green-500/10 text-green-500 border-green-500/20 font-bold uppercase text-[10px] tracking-wider">Approved</Badge>;
-            case 'REJECTED': return <Badge variant="destructive" className="font-bold uppercase text-[10px] tracking-wider">Rejected</Badge>;
+            case 'APPROVED': return <Badge className="bg-green-500/10 text-green-500 border-green-500/20 font-bold uppercase text-[10px] tracking-wider">Approved{reviewerText}</Badge>;
+            case 'REJECTED': return <Badge variant="destructive" className="font-bold uppercase text-[10px] tracking-wider">Rejected{reviewerText}</Badge>;
             default: return <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20 font-bold uppercase text-[10px] tracking-wider">Pending</Badge>;
         }
     };
@@ -592,60 +620,87 @@ const Timesheets = () => {
     
     return (
         <div className="flex-1 space-y-4 p-0 sm:p-2 overflow-y-auto h-full">
-            <div className="flex flex-col sm:flex-row items-center justify-start gap-4 bg-card p-4 rounded-xl border border-border shadow-sm">
-                <Button 
-                    onClick={() => {
-                        setEditingEntryId(null);
-                        setLoggingMode('direct');
-                        setNewEntry({
-                            projectId: '',
-                            taskId: '',
-                            customHours: '',
-                            portion: '',
-                            leaveType: '',
-                            startTime: orgShiftSettings.startTime,
-                            endTime: orgShiftSettings.endTime,
-                            breakHours: orgShiftSettings.breakHours,
-                            description: '',
-                            date: selectedDateFilter || new Date(),
-                            billable: false
-                        });
-                        setIsLogDialogOpen(true);
-                    }} 
-                    className="bg-primary hover:bg-primary/90 text-white font-bold rounded-xl h-10 px-6 shadow-lg shadow-primary/20 transition-all active:scale-95"
-                >
-                    <Plus className="mr-2 h-4 w-4" /> Log Hours
-                </Button>
-                {(user?.role === 'ADMIN' || user?.role === 'SUPERADMIN') && (
-                    <Button 
-                        variant="outline" 
-                        onClick={() => setIsShiftDialogOpen(true)}
-                        className="rounded-xl h-10 px-4 font-bold border-primary/20 hover:bg-primary/5 text-primary"
-                    >
-                        <Settings className="mr-2 h-4 w-4" /> Set Org Shift
-                    </Button>
-                )}
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" size="icon" onClick={handlePrevWeek} className="rounded-lg h-9 w-9">
-                        <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" onClick={handleToday} className="rounded-lg h-9 font-bold px-4">
-                        Today
-                    </Button>
-                    <Button variant="outline" size="icon" onClick={handleNextWeek} className="rounded-lg h-9 w-9">
-                        <ChevronRight className="h-4 w-4" />
-                    </Button>
-                    <h2 className="ml-1 sm:ml-2 font-black Montserrat text-sm sm:text-lg text-foreground whitespace-nowrap">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-card p-4 rounded-xl border border-border shadow-sm">
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    {!isOrgAdmin && (
+                        <Button 
+                            onClick={() => {
+                                setEditingEntryId(null);
+                                setLoggingMode('direct');
+                                setNewEntry({
+                                    projectId: '',
+                                    taskId: '',
+                                    customHours: '',
+                                    portion: '',
+                                    leaveType: '',
+                                    startTime: orgShiftSettings.startTime,
+                                    endTime: orgShiftSettings.endTime,
+                                    breakHours: orgShiftSettings.breakHours,
+                                    description: '',
+                                    date: selectedDateFilter || new Date(),
+                                    billable: false
+                                });
+                                setIsLogDialogOpen(true);
+                            }} 
+                            className="bg-primary hover:bg-primary/90 text-white font-bold rounded-xl h-10 px-6 shadow-lg shadow-primary/20 transition-all active:scale-95 w-full sm:w-auto"
+                        >
+                            <Plus className="mr-2 h-4 w-4" /> Log Hours
+                        </Button>
+                    )}
+                    {isOrgAdmin && (
+                        <>
+                            <Button 
+                                variant="outline" 
+                                onClick={() => setIsShiftDialogOpen(true)}
+                                className="rounded-xl h-10 px-4 font-bold border-primary/20 hover:bg-primary/5 text-primary w-full sm:w-auto shrink-0"
+                            >
+                                <Settings className="mr-2 h-4 w-4" /> Set Org Shift
+                            </Button>
+                            <Select value={selectedMemberFilter} onValueChange={setSelectedMemberFilter}>
+                                <SelectTrigger className="w-full sm:w-[200px] h-10 rounded-xl font-bold bg-muted/30 border-border">
+                                    <SelectValue placeholder="Filter Member" />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-xl border-border bg-card">
+                                    <SelectItem value="all" className="font-bold cursor-pointer rounded-lg">All Members</SelectItem>
+                                    {uniqueUsers.map(u => (
+                                        <SelectItem key={u.id} value={u.id} className="font-bold cursor-pointer rounded-lg">
+                                            {u.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </>
+                    )}
+                </div>
+                <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                    <div className="flex items-center gap-2 w-full justify-center sm:w-auto">
+                        <Button variant="outline" size="icon" onClick={handlePrevWeek} className="rounded-lg h-9 w-9 shrink-0">
+                            <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <Button variant="outline" onClick={handleToday} className="rounded-lg h-9 font-bold px-4 flex-1 sm:flex-none">
+                            Today
+                        </Button>
+                        <Button variant="outline" size="icon" onClick={handleNextWeek} className="rounded-lg h-9 w-9 shrink-0">
+                            <ChevronRight className="h-4 w-4" />
+                        </Button>
+                    </div>
+                    <h2 className="font-black Montserrat text-sm sm:text-lg text-foreground whitespace-nowrap">
                         {format(weekDays[0], 'MMM d')} – {format(weekDays[6], 'MMM d')}
                         <span className="hidden sm:inline">, {format(weekDays[6], 'yyyy')}</span>
                     </h2>
                 </div>
             </div>
 
-            {(() => {
+            {activeTab !== 'leave-logs' && (() => {
                 // Pre-calculate all 7 days for weekly summary
                 const weekData = weekDays.map((day) => {
-                    const myDayEntries = entries.filter(e => e.userId === user?.id && isSameDay(parseISO(e.date), day));
+                    const targetEntries = isOrgAdmin 
+                        ? entries.filter(e => selectedMemberFilter === 'all' ? true : e.userId === selectedMemberFilter)
+                        : (activeTab === 'team-logs' || activeTab === 'leave-logs') 
+                            ? entries.filter(e => e.userId !== user?.id)
+                            : entries.filter(e => e.userId === user?.id);
+                    
+                    const myDayEntries = targetEntries.filter(e => isSameDay(parseISO(e.date), day));
                     
                     // Separate leave entries from work entries
                     const leaveEntries = myDayEntries.filter(e => {
@@ -658,29 +713,43 @@ const Timesheets = () => {
                     });
 
                     const leaveHours = leaveEntries.reduce((sum, e) => sum + parseFloat(e.hours), 0);
-                    const prodHours = workEntries.reduce((sum, e) => sum + parseFloat(e.hours), 0);
-                    let nonProdHours = workEntries.reduce((sum, e) => sum + getNonProductiveHoursForEntry(e), 0);
+                    const billableHours = workEntries.filter(e => e.billable).reduce((sum, e) => sum + parseFloat(e.hours), 0);
+                    const prodHours = workEntries.filter(e => !e.billable).reduce((sum, e) => sum + parseFloat(e.hours), 0);
                     
-                    const hasDirectHours = workEntries.some(e => e.isManual && (!e.description || !e.description.includes('[')));
-                    if (hasDirectHours && orgShiftSettings?.startTime && orgShiftSettings?.endTime) {
-                        const totalShift = calculateCustomHours(orgShiftSettings.startTime, orgShiftSettings.endTime).total;
-                        nonProdHours = Math.max(0, totalShift - prodHours);
-                    }
-                    const totalDayHours = prodHours + nonProdHours + leaveHours;
-                    return { day, prodHours, nonProdHours, leaveHours, totalDayHours };
+                    let nonProdHours = 0;
+                    const userWorkEntries = {};
+                    workEntries.forEach(e => {
+                        if (!userWorkEntries[e.userId]) userWorkEntries[e.userId] = [];
+                        userWorkEntries[e.userId].push(e);
+                    });
+                    
+                    Object.values(userWorkEntries).forEach(uEntries => {
+                        const uProd = uEntries.reduce((s, e) => s + parseFloat(e.hours), 0);
+                        let uNonProd = uEntries.reduce((s, e) => s + getNonProductiveHoursForEntry(e), 0);
+                        const hasDirect = uEntries.some(e => e.isManual && (!e.description || !e.description.includes('[')));
+                        if (hasDirect && orgShiftSettings?.startTime && orgShiftSettings?.endTime) {
+                            const tShift = calculateCustomHours(orgShiftSettings.startTime, orgShiftSettings.endTime).total;
+                            uNonProd = Math.max(0, tShift - uProd);
+                        }
+                        nonProdHours += uNonProd;
+                    });
+                    
+                    const totalDayHours = billableHours + prodHours + nonProdHours + leaveHours;
+                    return { day, billableHours, prodHours, nonProdHours, leaveHours, totalDayHours };
                 });
 
                 // Weekly totals
+                const weeklyBillable = weekData.reduce((s, d) => s + d.billableHours, 0);
                 const weeklyProd = weekData.reduce((s, d) => s + d.prodHours, 0);
                 const weeklyNonProd = weekData.reduce((s, d) => s + d.nonProdHours, 0);
                 const weeklyLeave = weekData.reduce((s, d) => s + d.leaveHours, 0);
-                const weeklyTotal = weeklyProd + weeklyNonProd + weeklyLeave;
+                const weeklyTotal = weeklyBillable + weeklyProd + weeklyNonProd + weeklyLeave;
                 const pct = (v) => weeklyTotal > 0 ? Math.round((v / weeklyTotal) * 100) : 0;
 
                 return (
                     <>
-                        <div className="grid grid-cols-7 gap-1 sm:gap-3">
-                            {weekData.map(({ day, prodHours, nonProdHours, leaveHours, totalDayHours }) => {
+                        <div className="flex sm:grid overflow-x-auto sm:overflow-visible pb-2 sm:pb-0 snap-x snap-mandatory sm:grid-cols-7 gap-2 sm:gap-3">
+                            {weekData.map(({ day, billableHours, prodHours, nonProdHours, leaveHours, totalDayHours }) => {
                                 const isToday = isSameDay(day, new Date());
                                 const isSelected = selectedDateFilter && isSameDay(day, selectedDateFilter);
                                 const dayPct = (v) => totalDayHours > 0 ? Math.round((v / totalDayHours) * 100) : 0;
@@ -690,7 +759,7 @@ const Timesheets = () => {
                                     <Card 
                                         key={day.toString()} 
                                         onClick={() => setSelectedDateFilter(day)}
-                                        className={`relative border-none shadow-md overflow-hidden transition-all duration-300 flex flex-col cursor-pointer hover:scale-[1.02] active:scale-[0.98] ${
+                                        className={`relative border-none shadow-md overflow-hidden transition-all duration-300 flex flex-col cursor-pointer hover:scale-[1.02] active:scale-[0.98] min-w-[70px] sm:min-w-0 snap-center shrink-0 ${
                                             isSelected ? 'ring-2 ring-primary bg-primary/10' : 'bg-card hover:bg-muted/30'
                                         }`}
                                     >
@@ -714,6 +783,7 @@ const Timesheets = () => {
                                                 </span>
                                                 {hasAnyHours ? (
                                                     <div className="flex flex-col items-center mt-1 w-full space-y-0.5">
+                                                        {billableHours > 0 && <span className="text-[7px] sm:text-[9px] font-bold text-amber-500 uppercase">Bill: {billableHours.toFixed(1)}h ({dayPct(billableHours)}%)</span>}
                                                         <span className="text-[7px] sm:text-[9px] font-bold text-green-500 uppercase">Prod: {prodHours.toFixed(1)}h ({dayPct(prodHours)}%)</span>
                                                         <span className="text-[7px] sm:text-[9px] font-bold text-red-500 uppercase">Non: {nonProdHours.toFixed(1)}h ({dayPct(nonProdHours)}%)</span>
                                                         {leaveHours > 0 && (
@@ -745,6 +815,13 @@ const Timesheets = () => {
                                             </div>
                                         </div>
                                         <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
+                                            <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/20 rounded-lg px-2.5 py-1.5 sm:px-3 sm:py-2">
+                                                <div className="h-2 w-2 rounded-full bg-amber-500"></div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-amber-600">Billable</span>
+                                                    <span className="text-xs sm:text-sm font-black Montserrat text-amber-600">{weeklyBillable.toFixed(1)}h <span className="text-[9px] font-bold">({pct(weeklyBillable)}%)</span></span>
+                                                </div>
+                                            </div>
                                             <div className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 rounded-lg px-2.5 py-1.5 sm:px-3 sm:py-2">
                                                 <div className="h-2 w-2 rounded-full bg-green-500"></div>
                                                 <div className="flex flex-col">
@@ -770,6 +847,7 @@ const Timesheets = () => {
                                     </div>
                                     {/* Progress bar */}
                                     <div className="mt-3 h-2.5 w-full rounded-full bg-muted/30 overflow-hidden flex">
+                                        {weeklyBillable > 0 && <div className="h-full bg-amber-500 transition-all duration-500" style={{ width: `${pct(weeklyBillable)}%` }}></div>}
                                         {weeklyProd > 0 && <div className="h-full bg-green-500 transition-all duration-500" style={{ width: `${pct(weeklyProd)}%` }}></div>}
                                         {weeklyNonProd > 0 && <div className="h-full bg-red-500 transition-all duration-500" style={{ width: `${pct(weeklyNonProd)}%` }}></div>}
                                         {weeklyLeave > 0 && <div className="h-full bg-blue-500 transition-all duration-500" style={{ width: `${pct(weeklyLeave)}%` }}></div>}
@@ -781,15 +859,131 @@ const Timesheets = () => {
                 );
             })()}
 
-            <Tabs defaultValue="my-entries" className="w-full">
+            {isOrgAdmin ? (
+                <div className="space-y-4">
+                    <Card className="border-border bg-card shadow-xl overflow-hidden rounded-2xl">
+                        <CardHeader className="border-b border-border bg-muted/20">
+                            <CardTitle className="text-lg font-black Montserrat">
+                                {selectedMemberFilter === 'all' 
+                                    ? 'All Team Logs' 
+                                    : `Logs for ${uniqueUsers.find(u => u.id === selectedMemberFilter)?.name || 'Member'}`}
+                                {selectedDateFilter && ` - ${format(selectedDateFilter, 'MMM d, yyyy')}`}
+                            </CardTitle>
+                            <CardDescription className="text-xs font-medium">Review, approve, or reject time logs from your team</CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <ScrollArea className="h-[400px]">
+                                {(() => {
+                                    const filteredEntries = entries.filter(e => {
+                                        if (selectedDateFilter && !isSameDay(parseISO(e.date), selectedDateFilter)) return false;
+                                        if (selectedMemberFilter !== 'all' && e.userId !== selectedMemberFilter) return false;
+                                        return true;
+                                    }).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                                    if (filteredEntries.length === 0) {
+                                        return (
+                                            <div className="flex flex-col items-center justify-center py-20 text-center opacity-50">
+                                                <CheckCircle2 className="h-12 w-12 mb-4 text-muted-foreground" />
+                                                <p className="font-bold text-muted-foreground Montserrat">No logs found.</p>
+                                            </div>
+                                        );
+                                    }
+
+                                    return (
+                                        <div className="divide-y divide-border">
+                                            {filteredEntries.map((entry) => (
+                                                <div key={entry.id} className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:bg-muted/30 transition-colors">
+                                                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                                                        <Avatar className="h-9 w-9 border shrink-0">
+                                                            <AvatarImage src={entry.user?.avatar} />
+                                                            <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
+                                                                {entry.user?.name?.charAt(0) || '?'}
+                                                            </AvatarFallback>
+                                                        </Avatar>
+                                                        <div className="min-w-0">
+                                                            <h4 className="font-bold text-sm Montserrat">{entry.user?.name || 'Unknown'}</h4>
+                                                            <div className="text-[10px] text-muted-foreground font-bold uppercase truncate flex items-center gap-2">
+                                                                <span>{entry.project.name} &bull; {format(parseISO(entry.date), 'MMM d, yyyy')}</span>
+                                                                {(() => {
+                                                                    const { portions, leaveType } = getPortionTags(entry.description);
+                                                                    if (portions.length === 0 && !leaveType) return null;
+                                                                    return (
+                                                                        <div className="flex gap-1 border-l pl-2 border-border">
+                                                                            {leaveType && (
+                                                                                <Badge variant="outline" className={`text-[8px] h-3 px-1 py-0 font-bold ${
+                                                                                    leaveType === 'Sick Leave' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                                                                                    leaveType === 'Casual Leave' ? 'bg-purple-500/10 text-purple-500 border-purple-500/20' :
+                                                                                    leaveType === 'Paid Leave' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
+                                                                                    'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                                                                                }`}>
+                                                                                    {leaveType}
+                                                                                </Badge>
+                                                                            )}
+                                                                            {portions.map(p => (
+                                                                                <Badge key={p} variant="outline" className="text-[8px] h-3 px-1 py-0 border-primary/30 text-primary bg-primary/5 uppercase font-bold">
+                                                                                    {p}
+                                                                                </Badge>
+                                                                            ))}
+                                                                        </div>
+                                                                    );
+                                                                })()}
+                                                            </div>
+                                                            <p className="text-[11px] text-gray-500 mt-0.5 line-clamp-1 italic">{getCleanDescription(entry.description)}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 shrink-0">
+                                                        <div className="text-right">
+                                                            <p className="text-sm font-black Montserrat">{entry.hours}h</p>
+                                                        </div>
+                                                        <div className="flex items-center gap-3">
+                                                            {getStatusBadge(entry)}
+                                                            {/* Approve/Reject buttons hidden for admin view */}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    );
+                                })()}
+                            </ScrollArea>
+                        </CardContent>
+                    </Card>
+                </div>
+            ) : (
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                 <TabsList className="bg-card border border-border p-1 gap-2 rounded-xl mb-4">
                     <TabsTrigger value="my-entries" className="rounded-lg font-bold data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
                         My Logs
                     </TabsTrigger>
                     {isManagerOrAdmin && (
-                        <TabsTrigger value="team-logs" className="rounded-lg font-bold data-[state=active]:bg-primary/10 data-[state=active]:text-primary">
-                            Team Logs
-                        </TabsTrigger>
+                        <>
+                            <TabsTrigger value="team-logs" className="rounded-lg font-bold data-[state=active]:bg-primary/10 data-[state=active]:text-primary flex items-center gap-2">
+                                Team Logs
+                                {(() => {
+                                    const teamLogsCount = entries
+                                        .filter(e => e.userId !== user?.id)
+                                        .filter(e => e.status === 'PENDING')
+                                        .filter(e => selectedDateFilter ? isSameDay(parseISO(e.date), selectedDateFilter) : true)
+                                        .length;
+                                    return teamLogsCount > 0 ? (
+                                        <Badge variant="secondary" className="bg-primary/20 text-primary hover:bg-primary/30 rounded-full px-2 py-0 text-[10px]">
+                                            {teamLogsCount}
+                                        </Badge>
+                                    ) : null;
+                                })()}
+                            </TabsTrigger>
+                            <TabsTrigger value="leave-logs" className="rounded-lg font-bold data-[state=active]:bg-blue-500/10 data-[state=active]:text-blue-500 flex items-center gap-2">
+                                Leave Logs
+                                {(() => {
+                                    const pendingCount = pendingLeaves.filter(e => e.status === 'PENDING').length;
+                                    return pendingCount > 0 ? (
+                                        <Badge variant="secondary" className="bg-blue-500 text-white hover:bg-blue-600 rounded-full px-2 py-0 text-[10px]">
+                                            {pendingCount}
+                                        </Badge>
+                                    ) : null;
+                                })()}
+                            </TabsTrigger>
+                        </>
                     )}
                 </TabsList>
 
@@ -854,7 +1048,7 @@ const Timesheets = () => {
                                                             <p className="text-[10px] text-muted-foreground font-bold uppercase">{format(parseISO(entry.date), 'MMM d, EEE')}</p>
                                                         </div>
                                                         <div className="flex items-center gap-3">
-                                                            {getStatusBadge(entry.status)}
+                                                            {getStatusBadge(entry)}
                                                             {entry.status === 'PENDING' && (
                                                                 <div className="flex items-center gap-1 transition-all">
                                                                     <Button
@@ -872,6 +1066,36 @@ const Timesheets = () => {
                                                                         className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
                                                                     >
                                                                         <Trash2 className="h-4 w-4" />
+                                                                    </Button>
+                                                                    {isManagerOrAdmin && (
+                                                                        <div className="flex items-center gap-1 border-l pl-1 border-border ml-1">
+                                                                            <Button size="icon" variant="outline" className="h-8 w-8 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'REJECTED')} title="Reject">
+                                                                                <X className="h-4 w-4" />
+                                                                            </Button>
+                                                                            <Button size="icon" className="h-8 w-8 bg-green-500 hover:bg-green-600 text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'APPROVED')} title="Approve">
+                                                                                <Check className="h-4 w-4" />
+                                                                            </Button>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                            {isManagerOrAdmin && entry.status === 'APPROVED' && (
+                                                                <div className="flex items-center gap-1 transition-all border-l pl-2 border-border ml-2">
+                                                                    <Button size="icon" variant="outline" className="h-8 w-8 border-yellow-500/20 text-yellow-500 hover:bg-yellow-500 hover:text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'PENDING')} title="Reset to Pending">
+                                                                        <Clock className="h-4 w-4" />
+                                                                    </Button>
+                                                                    <Button size="icon" variant="outline" className="h-8 w-8 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'REJECTED')} title="Reject">
+                                                                        <X className="h-4 w-4" />
+                                                                    </Button>
+                                                                </div>
+                                                            )}
+                                                            {isManagerOrAdmin && entry.status === 'REJECTED' && (
+                                                                <div className="flex items-center gap-1 transition-all border-l pl-2 border-border ml-2">
+                                                                    <Button size="icon" variant="outline" className="h-8 w-8 border-yellow-500/20 text-yellow-500 hover:bg-yellow-500 hover:text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'PENDING')} title="Reset to Pending">
+                                                                        <Clock className="h-4 w-4" />
+                                                                    </Button>
+                                                                    <Button size="icon" className="h-8 w-8 bg-green-500 hover:bg-green-600 text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'APPROVED')} title="Approve">
+                                                                        <Check className="h-4 w-4" />
                                                                     </Button>
                                                                 </div>
                                                             )}
@@ -949,7 +1173,7 @@ const Timesheets = () => {
                                                             <p className="text-sm font-black Montserrat">{entry.hours}h</p>
                                                         </div>
                                                         <div className="flex items-center gap-3">
-                                                            {getStatusBadge(entry.status)}
+                                                            {getStatusBadge(entry)}
                                                             <div className="flex items-center gap-1 border-l pl-3 border-border">
                                                                 {entry.status === 'PENDING' && (
                                                                     <>
@@ -992,7 +1216,112 @@ const Timesheets = () => {
                         </CardContent>
                     </Card>
                 </TabsContent>
-            </Tabs>
+
+                <TabsContent value="leave-logs" className="space-y-4">
+                    <Card className="border-border bg-card shadow-xl overflow-hidden rounded-2xl">
+                        <CardHeader className="border-b border-border bg-muted/20">
+                            <CardTitle className="text-lg font-black Montserrat">Leave Requests</CardTitle>
+                            <CardDescription className="text-xs font-medium">Review and manage leave requests from your team</CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <ScrollArea className="h-[400px]">
+                                {pendingLeaves.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center py-20 text-center opacity-50">
+                                        <CheckCircle2 className="h-12 w-12 mb-4 text-muted-foreground" />
+                                        <p className="font-bold text-muted-foreground Montserrat">No leave requests found.</p>
+                                    </div>
+                                ) : (
+                                    <div className="divide-y divide-border">
+                                        {pendingLeaves.map((entry) => (
+                                            <div key={entry.id} className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:bg-muted/30 transition-colors">
+                                                <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                                                    <Avatar className="h-9 w-9 border shrink-0">
+                                                        <AvatarImage src={entry.user.avatar} />
+                                                        <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
+                                                            {entry.user.name.charAt(0)}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                    <div className="min-w-0">
+                                                        <h4 className="font-bold text-sm Montserrat">{entry.user.name}</h4>
+                                                        <div className="text-[10px] text-muted-foreground font-bold uppercase truncate flex items-center gap-2">
+                                                            <span>{entry.project.name} &bull; {format(parseISO(entry.date), 'MMM d, yyyy')}</span>
+                                                            {(() => {
+                                                                const { portions, leaveType } = getPortionTags(entry.description);
+                                                                if (portions.length === 0 && !leaveType) return null;
+                                                                return (
+                                                                    <div className="flex gap-1 border-l pl-2 border-border">
+                                                                        {leaveType && (
+                                                                            <Badge variant="outline" className={`text-[8px] h-3 px-1 py-0 font-bold ${
+                                                                                leaveType === 'Sick Leave' ? 'bg-red-500/10 text-red-500 border-red-500/20' :
+                                                                                leaveType === 'Casual Leave' ? 'bg-purple-500/10 text-purple-500 border-purple-500/20' :
+                                                                                leaveType === 'Paid Leave' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
+                                                                                'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                                                                            }`}>
+                                                                                {leaveType}
+                                                                            </Badge>
+                                                                        )}
+                                                                        {portions.map(p => (
+                                                                            <Badge key={p} variant="outline" className="text-[8px] h-3 px-1 py-0 border-primary/30 text-primary bg-primary/5 uppercase font-bold">
+                                                                                {p}
+                                                                            </Badge>
+                                                                        ))}
+                                                                    </div>
+                                                                );
+                                                            })()}
+                                                        </div>
+                                                        <p className="text-[11px] text-gray-500 mt-0.5 line-clamp-1 italic">{getCleanDescription(entry.description)}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 shrink-0">
+                                                    <div className="text-right">
+                                                        <p className="text-sm font-black Montserrat">{entry.hours}h</p>
+                                                    </div>
+                                                    <div className="flex items-center gap-3">
+                                                        {getStatusBadge(entry)}
+                                                        <div className="flex items-center gap-1 border-l pl-3 border-border">
+                                                            {entry.status === 'PENDING' && (
+                                                                <>
+                                                                    <Button size="icon" variant="outline" className="h-8 w-8 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'REJECTED')} title="Reject">
+                                                                        <X className="h-4 w-4" />
+                                                                    </Button>
+                                                                    <Button size="icon" className="h-8 w-8 bg-green-500 hover:bg-green-600 text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'APPROVED')} title="Approve">
+                                                                        <Check className="h-4 w-4" />
+                                                                    </Button>
+                                                                </>
+                                                            )}
+                                                            {entry.status === 'APPROVED' && (
+                                                                <>
+                                                                    <Button size="icon" variant="outline" className="h-8 w-8 border-yellow-500/20 text-yellow-500 hover:bg-yellow-500 hover:text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'PENDING')} title="Reset to Pending">
+                                                                        <Clock className="h-4 w-4" />
+                                                                    </Button>
+                                                                    <Button size="icon" variant="outline" className="h-8 w-8 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'REJECTED')} title="Reject">
+                                                                        <X className="h-4 w-4" />
+                                                                    </Button>
+                                                                </>
+                                                            )}
+                                                            {entry.status === 'REJECTED' && (
+                                                                <>
+                                                                    <Button size="icon" variant="outline" className="h-8 w-8 border-yellow-500/20 text-yellow-500 hover:bg-yellow-500 hover:text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'PENDING')} title="Reset to Pending">
+                                                                        <Clock className="h-4 w-4" />
+                                                                    </Button>
+                                                                    <Button size="icon" className="h-8 w-8 bg-green-500 hover:bg-green-600 text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'APPROVED')} title="Approve">
+                                                                        <Check className="h-4 w-4" />
+                                                                    </Button>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </ScrollArea>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                </Tabs>
+            )}
 
             <Dialog open={isLogDialogOpen} onOpenChange={setIsLogDialogOpen}>
                 <DialogContent className="bg-card border-border shadow-2xl rounded-2xl max-w-md">
@@ -1027,6 +1356,7 @@ const Timesheets = () => {
                         </div>
                     </DialogHeader>
 
+                    <ScrollArea className="max-h-[65vh] pr-4 -mr-4">
                     <div className="space-y-3 py-1">
                         <div className="space-y-1.5">
                             <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Log Date</Label>
@@ -1270,6 +1600,7 @@ const Timesheets = () => {
                             </div>
                         </div>
                     </div>
+                    </ScrollArea>
 
                     <DialogFooter>
                         <Button variant="ghost" onClick={() => setIsLogDialogOpen(false)} className="rounded-xl font-bold">Cancel</Button>
@@ -1300,6 +1631,7 @@ const Timesheets = () => {
                             Set Org Shift Time
                         </DialogTitle>
                     </DialogHeader>
+                    <ScrollArea className="max-h-[65vh] pr-4 -mr-4">
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
                             <Label className="text-xs font-bold text-muted-foreground uppercase">Shift Start Time</Label>
@@ -1321,6 +1653,7 @@ const Timesheets = () => {
                         </div>
 
                     </div>
+                    </ScrollArea>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setIsShiftDialogOpen(false)} className="rounded-xl font-bold">Cancel</Button>
                         <Button onClick={handleSaveShiftSettings} disabled={submitting} className="rounded-xl font-bold">
