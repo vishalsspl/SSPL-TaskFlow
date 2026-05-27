@@ -18,7 +18,7 @@ const TablePagination = ({
     onPageSizeChange,
     pageSizeOptions = [10, 20, 50],
 }) => {
-    if (totalPages <= 1 && totalItems <= pageSizeOptions[0]) return null;
+    if (totalItems === 0) return null;
 
     const [isMobile, setIsMobile] = React.useState(false);
 

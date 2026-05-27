@@ -71,9 +71,9 @@ const KanbanCard = ({ task, isReadOnly, onEdit, onDelete, onStatusChange, isHigh
                 className={`bg-card/60 backdrop-blur-sm border-border ring-1 cursor-grab active:cursor-grabbing hover:ring-primary/40 hover:bg-accent/50 transition-all duration-300 rounded-xl sm:rounded-2xl overflow-hidden shadow-xl ${isHighlighted ? 'ring-2 ring-primary shadow-[0_0_20px_rgba(var(--primary-rgb),0.4)] animate-pulse' : 'ring-border/80'}`}
             >
                 <div className="p-3 sm:p-2.5 space-y-2 sm:space-y-1.5">
-                    <div className="flex justify-between items-start">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                            <Badge className={`${taskTypeColors[task.type || 'TASK']} border-0 px-1.5 py-0 text-[8px] sm:text-[9px] font-black tracking-widest uppercase rounded-sm flex items-center gap-0.5 sm:gap-1`}>
+                    <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap flex-1">
+                            <Badge className={`${taskTypeColors[task.type || 'TASK']} border-0 px-1.5 py-0 text-[7px] sm:text-[8px] font-black tracking-widest uppercase rounded-sm flex items-center gap-0.5 sm:gap-1 shrink-0`}>
                                 {task.type === 'BUG' && <Bug className="w-2 h-2 sm:w-2.5 sm:h-2.5" />}
                                 {task.type === 'STORY' && <BookOpen className="w-2 h-2 sm:w-2.5 sm:h-2.5" />}
                                 {task.type === 'EPIC' && <Zap className="w-2 h-2 sm:w-2.5 sm:h-2.5" />}
@@ -81,13 +81,13 @@ const KanbanCard = ({ task, isReadOnly, onEdit, onDelete, onStatusChange, isHigh
                                 {(task.type === 'TASK' || !task.type) && <CheckSquare className="w-2 h-2 sm:w-2.5 sm:h-2.5" />}
                                 {task.type || 'TASK'}
                             </Badge>
-                            <Badge className={`${priorityColors[task.priority] || 'bg-muted text-muted-foreground'} border-0 px-1.5 py-0 text-[8px] sm:text-[9px] font-black tracking-widest uppercase rounded-sm`}>
+                            <Badge className={`${priorityColors[task.priority] || 'bg-muted text-muted-foreground'} border-0 px-1.5 py-0 text-[7px] sm:text-[8px] font-black tracking-widest uppercase rounded-sm shrink-0`}>
                                 {task.priority || 'NORMAL'}
                             </Badge>
                         </div>
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 shrink-0">
                             {task.storyPoints > 0 && (
-                                <span className="text-[8px] sm:text-[10px] font-black Montserrat text-primary/80 px-1 sm:px-1.5 py-0 sm:py-0.5 bg-primary/10 rounded tracking-tighter">
+                                <span className="text-[7px] sm:text-[8px] font-black Montserrat text-primary/80 px-1 sm:px-1.5 py-0 sm:py-0.5 bg-primary/10 rounded tracking-tighter">
                                     {task.storyPoints} PTS
                                 </span>
                             )}
@@ -163,7 +163,7 @@ const KanbanCard = ({ task, isReadOnly, onEdit, onDelete, onStatusChange, isHigh
                     </div>
 
                     <h4
-                        className="text-[10px] sm:text-[11px] md:text-sm font-bold text-foreground Montserrat leading-tight group-hover:text-primary transition-colors line-clamp-2 cursor-pointer"
+                        className="text-[10px] sm:text-[11px] font-bold text-foreground Montserrat leading-tight group-hover:text-primary transition-colors line-clamp-2 cursor-pointer"
                         onClick={() => onEdit && onEdit(task)}
                     >
                         {task.title}
@@ -171,7 +171,7 @@ const KanbanCard = ({ task, isReadOnly, onEdit, onDelete, onStatusChange, isHigh
 
                     {isPendingApproval && (
                         <div className="flex items-center justify-between mt-2 mb-1">
-                            <Badge variant="outline" className="text-amber-500 border-amber-500/50 bg-amber-500/10 text-[9px] font-bold py-0 uppercase tracking-wider">
+                            <Badge variant="outline" className="text-amber-500 border-amber-500/50 bg-amber-500/10 text-[7px] sm:text-[8px] font-bold py-0 uppercase tracking-wider">
                                 Pending Approval
                             </Badge>
                             {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
@@ -196,41 +196,51 @@ const KanbanCard = ({ task, isReadOnly, onEdit, onDelete, onStatusChange, isHigh
                     )}
 
                     {task.project && (
-                        <p className="text-[10px] font-black Montserrat text-muted-foreground uppercase tracking-widest truncate">
+                        <p className="text-[8px] sm:text-[9px] font-black Montserrat text-muted-foreground uppercase tracking-widest truncate">
                             {task.project.name}
                         </p>
                     )}
 
                     <div className="pt-1 sm:pt-2 flex items-center justify-between border-t border-border">
-                        <div className="flex items-center gap-1 sm:gap-2">
+                        <div className="flex items-center gap-1 sm:gap-2 overflow-hidden max-w-[70%]">
                             {task.assignees && task.assignees.length > 0 ? (
-                                <div className="flex -space-x-1 sm:-space-x-1.5">
-                                    {task.assignees.slice(0, 3).map(({ user }) => (
-                                        <div key={user.id} className="w-3.5 h-3.5 sm:w-5 sm:h-5 rounded-full border-2 border-card ring-1 ring-border overflow-hidden bg-muted">
-                                            {user.avatar ? (
-                                                <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-[5px] sm:text-[7px] font-black text-muted-foreground Montserrat">
-                                                    {user.name.charAt(0)}
-                                                </div>
-                                            )}
+                                <div className="flex items-center gap-1 sm:gap-1.5 overflow-hidden">
+                                    {task.assignees.slice(0, 2).map(({ user }) => (
+                                        <div key={user.id} className="flex items-center gap-1.5 bg-muted/50 rounded-full pr-2 sm:pr-2.5 border border-border/50 shrink-0">
+                                            <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full overflow-hidden bg-background flex-shrink-0">
+                                                {user.avatar ? (
+                                                    <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-[7px] sm:text-[8px] font-black text-muted-foreground Montserrat uppercase">
+                                                        {user.name.charAt(0)}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <span className="text-[8px] sm:text-[9px] font-bold Montserrat text-foreground truncate max-w-[45px] sm:max-w-[60px]">
+                                                {user.name.split(' ')[0]}
+                                            </span>
                                         </div>
                                     ))}
-                                    {task.assignees.length > 3 && (
-                                        <div className="w-3.5 h-3.5 sm:w-5 sm:h-5 rounded-full bg-muted border-2 border-card flex items-center justify-center text-[5px] sm:text-[7px] text-foreground font-black Montserrat">
-                                            +{task.assignees.length - 3}
+                                    {task.assignees.length > 2 && (
+                                        <div className="text-[8px] sm:text-[9px] font-black text-muted-foreground Montserrat bg-muted/50 rounded-full px-2 py-0.5 shrink-0">
+                                            +{task.assignees.length - 2}
                                         </div>
                                     )}
                                 </div>
                             ) : (
-                                <div className="w-3.5 h-3.5 sm:w-5 sm:h-5 rounded-full bg-muted flex items-center justify-center border border-border">
-                                    <User className="w-1.5 sm:w-2.5 h-1.5 sm:h-2.5 text-muted-foreground" />
+                                <div className="flex items-center gap-1.5 bg-muted/50 rounded-full pr-2 sm:pr-2.5 border border-border/50 shrink-0">
+                                    <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-background flex items-center justify-center shrink-0">
+                                        <User className="w-2.5 h-2.5 text-muted-foreground" />
+                                    </div>
+                                    <span className="text-[8px] sm:text-[9px] font-bold Montserrat text-muted-foreground">
+                                        Unassigned
+                                    </span>
                                 </div>
                             )}
                         </div>
 
                         {task.dueDate && (
-                            <div className={`flex items-center gap-0.5 sm:gap-1.5 text-[7px] sm:text-[10px] font-black Montserrat tracking-tighter ${new Date(task.dueDate) < new Date() ? 'text-destructive' : 'text-muted-foreground'}`}>
+                            <div className={`flex items-center gap-0.5 sm:gap-1.5 text-[7px] sm:text-[8px] font-black Montserrat tracking-tighter ${new Date(task.dueDate) < new Date() ? 'text-destructive' : 'text-muted-foreground'}`}>
                                 <Calendar className="w-2 h-2 sm:w-3 sm:h-3" />
                                 <span>{new Date(task.dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
                             </div>

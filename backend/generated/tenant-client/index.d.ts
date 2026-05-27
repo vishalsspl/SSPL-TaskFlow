@@ -193,6 +193,7 @@ export type TimeEntryStatus = (typeof TimeEntryStatus)[keyof typeof TimeEntrySta
 export const TicketStatus: {
   OPEN: 'OPEN',
   IN_PROGRESS: 'IN_PROGRESS',
+  RESOLVED: 'RESOLVED',
   CLOSED: 'CLOSED'
 };
 

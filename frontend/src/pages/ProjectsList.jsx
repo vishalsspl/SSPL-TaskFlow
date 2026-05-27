@@ -33,7 +33,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, FolderKanban, Eye, Edit2, Trash2, Search, Filter, Layers, FileText, Users, Briefcase, Target, Calendar, FileSpreadsheet, UserPlus, RefreshCw } from 'lucide-react';
+import { Plus, FolderKanban, Eye, Edit2, Trash2, Search, Filter, Layers, FileText, Users, Briefcase, Target, Calendar, FileSpreadsheet, UserPlus, RefreshCw, Mail, ShieldCheck, ShieldX } from 'lucide-react';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { SearchableSelect } from '@/components/ui/searchable-select';
@@ -87,6 +87,8 @@ const ProjectsList = () => {
     totalBudget: '',
     status: 'PLANNING',
     category: 'INTERNAL',
+    allowMemberTaskCreation: false,
+    sendEmail: localStorage.getItem('preferNoEmail') !== 'true',
   });
 
   // Search and Filter states
@@ -166,6 +168,7 @@ const ProjectsList = () => {
       status: project.status,
       category: project.category,
       allowMemberTaskCreation: project.allowMemberTaskCreation || false,
+      sendEmail: localStorage.getItem('preferNoEmail') !== 'true',
     });
     setShowEditDialog(true);
   };
@@ -220,7 +223,6 @@ const ProjectsList = () => {
         totalBudget: formData.totalBudget && formData.totalBudget !== '' ? formData.totalBudget : undefined,
         startDate: formData.startDate ? format(new Date(formData.startDate), 'yyyy-MM-dd') : null,
         endDate: formData.endDate ? format(new Date(formData.endDate), 'yyyy-MM-dd') : null,
-        allowMemberTaskCreation: formData.allowMemberTaskCreation,
       };
 
       await api.put(`/projects/${editingProject.id}`, payload);
@@ -237,6 +239,7 @@ const ProjectsList = () => {
         status: 'PLANNING',
         category: 'INTERNAL',
         allowMemberTaskCreation: false,
+        sendEmail: localStorage.getItem('preferNoEmail') !== 'true',
       });
       toast({
         title: "Project Updated",
@@ -527,22 +530,49 @@ const ProjectsList = () => {
               </div>
 
               {/* Member Task Creation Toggle */}
-              <div className="flex items-center justify-between p-4 bg-secondary/20 rounded-xl border border-border/50 mb-4 mx-4 sm:mx-0">
+              <div className="flex items-center justify-between p-4 bg-secondary/20 rounded-xl border border-border/50 mt-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Users className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <Label htmlFor="allowMemberTaskCreation" className="text-sm font-semibold cursor-pointer">Allow Members to Create Tasks</Label>
+                    <p className="text-xs text-muted-foreground">Members of this project can create tasks</p>
+                  </div>
+                </div>
+                <Switch
+                  id="allowMemberTaskCreation"
+                  checked={formData.allowMemberTaskCreation}
+                  onCheckedChange={(checked) => setFormData({ ...formData, allowMemberTaskCreation: checked })}
+                />
+              </div>
+
+              {/* Email Notification Toggle */}
+              {user?.activeFeatures?.emailsupport !== false && (
+                <div className="flex items-center justify-between p-4 bg-secondary/20 rounded-xl border border-border/50 mt-3">
                   <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                          <Users className="w-5 h-5 text-primary" />
-                      </div>
-                      <div>
-                          <Label htmlFor="editAllowMemberTaskCreation" className="text-sm font-semibold cursor-pointer">Allow Members to Create Tasks</Label>
-                          <p className="text-xs text-muted-foreground">Members of this project can create tasks</p>
-                      </div>
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Mail className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <Label htmlFor="sendEmail" className="text-sm font-semibold cursor-pointer">Email Notifications</Label>
+                      <p className="text-xs text-muted-foreground">Notify manager and client about this project</p>
+                    </div>
                   </div>
                   <Switch
-                      id="editAllowMemberTaskCreation"
-                      checked={formData.allowMemberTaskCreation}
-                      onCheckedChange={(checked) => setFormData({ ...formData, allowMemberTaskCreation: checked })}
+                    id="sendEmail"
+                    checked={formData.sendEmail}
+                    onCheckedChange={(checked) => {
+                        setFormData({ ...formData, sendEmail: checked });
+                        if (checked) {
+                            localStorage.removeItem('preferNoEmail');
+                        } else {
+                            localStorage.setItem('preferNoEmail', 'true');
+                        }
+                    }}
                   />
-              </div>
+                </div>
+              )}
 
                <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-4 sm:pt-6 border-t mt-1 px-4 sm:px-0">
                 <Button type="button" variant="outline" onClick={() => setShowEditDialog(false)} className="w-full sm:w-auto h-10 font-bold rounded-xl">
@@ -675,6 +705,7 @@ const ProjectsList = () => {
                       {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && <TableHead>Budget</TableHead>}
                       <TableHead>Status</TableHead>
                       <TableHead>Tasks</TableHead>
+                      {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && <TableHead className="text-center">Member Task Access</TableHead>}
                       {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && <TableHead className="text-center w-[140px]">Actions</TableHead>}
                     </TableRow>
                   </TableHeader>
@@ -693,7 +724,7 @@ const ProjectsList = () => {
                               }}
                             >
                               <TableCell className="relative text-left pl-6">
-                                <div>
+                                <div className="flex items-center gap-2">
                                   <p className="font-semibold text-foreground">{project.name}</p>
                                 </div>
                                 
@@ -736,9 +767,9 @@ const ProjectsList = () => {
                             )}
                           </TableCell>
                           <TableCell>
-                            <div className="text-xs text-muted-foreground">
-                              <p>{formatDate(project.startDate)}</p>
-                              {project.endDate && <p>to {formatDate(project.endDate)}</p>}
+                            <div className="text-xs text-muted-foreground text-center">
+                              <p>{project.startDate ? formatDate(project.startDate) : 'N/A'}</p>
+                              <p className="opacity-70">to {project.endDate ? formatDate(project.endDate) : 'Ongoing'}</p>
                             </div>
                           </TableCell>
                           {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
@@ -768,6 +799,25 @@ const ProjectsList = () => {
                               {project._count.tasks}
                             </span>
                           </TableCell>
+                          {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
+                            <TableCell className="text-center">
+                              {project.allowMemberTaskCreation ? (
+                                <div className="flex items-center justify-center gap-1.5">
+                                  <ShieldCheck className="w-4 h-4 text-[#48A111]" />
+                                  <span className="bg-[#48A111]/10 text-[#48A111] border border-[#48A111]/20 text-[9px] font-black tracking-wider uppercase py-0.5 rounded-md px-1.5 select-none">
+                                    Permitted
+                                  </span>
+                                </div>
+                              ) : (
+                                <div className="flex items-center justify-center gap-1.5">
+                                  <ShieldX className="w-4 h-4 text-destructive" />
+                                  <span className="bg-destructive/10 text-destructive border border-destructive/20 text-[9px] font-black tracking-wider uppercase py-0.5 rounded-md px-1.5 select-none">
+                                    Restricted
+                                  </span>
+                                </div>
+                              )}
+                            </TableCell>
+                          )}
                           {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
                             <TableCell className="text-center">
                               <div className="flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
@@ -840,6 +890,21 @@ const ProjectsList = () => {
                           <span className="font-bold" style={{ color: rowColor }}>{formatCurrency(Number(project.totalBudget))}</span>
                         )}
                       </div>
+                      {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
+                        <div className="flex items-center gap-1.5 mt-2">
+                          {project.allowMemberTaskCreation ? (
+                            <>
+                              <ShieldCheck className="w-3.5 h-3.5 text-[#48A111]" />
+                              <span className="text-[9px] font-black tracking-wider uppercase text-[#48A111]">Permitted</span>
+                            </>
+                          ) : (
+                            <>
+                              <ShieldX className="w-3.5 h-3.5 text-destructive" />
+                              <span className="text-[9px] font-black tracking-wider uppercase text-destructive">Restricted</span>
+                            </>
+                          )}
+                        </div>
+                      )}
                       {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
                         <div className="flex gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
                           <Button 

@@ -136,7 +136,7 @@ const ProjectOverview = ({ projectId }) => {
                 {phases.map((phase) => (
                     <Card key={phase.id} className={phase.status === 'COMPLETED' ? 'bg-green-500/10 border-green-400/50' : phase.status === 'IN_PROGRESS' ? 'bg-blue-500/10 border-blue-400/50' : 'bg-muted/50'}>
                         <CardContent className="p-3 sm:p-4 text-center">
-                            <h3 className="font-semibold text-xs sm:text-sm text-foreground mb-2 truncate max-w-full">{phase.name}</h3>
+                            <h3 className="font-semibold text-[10px] sm:text-[11px] lg:text-xs tracking-tight text-foreground mb-2 leading-tight">{phase.name}</h3>
                             {phase.status === 'COMPLETED' ? (
                                 <div className="flex flex-col items-center gap-1">
                                     <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-green-500 flex items-center justify-center">

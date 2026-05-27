@@ -91,7 +91,7 @@ io.on('connection', (socket) => {
   });
 
     socket.on('send-message', async (data) => {
-        const { content, userId, projectId, organizationId, snippet, replyToId } = data;
+        const { content, userId, projectId, organizationId, snippet, replyToId, mentionedUserIds } = data;
         console.log(`[Socket] New message from User ${userId} in Room ${projectId || 'global'} (ReplyTo: ${replyToId || 'none'})`);
         
         try {
@@ -205,7 +205,12 @@ io.on('connection', (socket) => {
         targetUserIds = orgUsers.map(u => u.id);
       }
 
-      const finalTargets = [...new Set(targetUserIds)].filter(id => id !== userId);
+      let finalTargets = [...new Set(targetUserIds)].filter(id => id !== userId);
+
+      // If this is a group chat and mentions are used, restrict notifications to mentioned users
+      if (!isDM && Array.isArray(mentionedUserIds) && mentionedUserIds.length > 0) {
+          finalTargets = finalTargets.filter(id => mentionedUserIds.includes(id));
+      }
 
       for (const targetId of finalTargets) {
         const notif = await tenantDb.notification.create({

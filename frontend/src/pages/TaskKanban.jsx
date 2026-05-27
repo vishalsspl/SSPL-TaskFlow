@@ -56,10 +56,9 @@ const TaskKanban = () => {
         if (!selectedProjectId) {
             setHeader("Task Kanban", "Select a project to view its Kanban board", true, "Search projects...");
         } else {
-            const projectName = projects.find(p => p.id === selectedProjectId)?.name || 'Project Kanban';
-            setHeader(projectName, "Orchestrate tasks with drag-and-drop", true, "Find tasks...");
+            setHeader("Task Kanban", "Orchestrate tasks with drag-and-drop", true, "Find tasks...");
         }
-    }, [selectedProjectId, projects, setHeader]);
+    }, [selectedProjectId, setHeader]);
 
     const fetchData = async () => {
         try {

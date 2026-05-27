@@ -28,10 +28,14 @@ import {
   UserCheck,
   Activity,
   Plus,
+  Building2,
+  Zap,
+  Ticket,
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { LineChart, PieChart, BarChart } from '@/components/ui/charts'; // Make sure this path is correct or update charts
+import { LineChart, PieChart, BarChart, ModernAreaChart } from '@/components/ui/charts'; // Make sure this path is correct or update charts
 import ProjectOverview from '@/components/ProjectOverview';
+import { PieChart as RechartsPie, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -41,6 +45,8 @@ const Dashboard = () => {
   const [projects, setProjects] = useState([]);
   const [selectedProjectId, setSelectedProjectId] = useState('');
   const [pendingUsersCount, setPendingUsersCount] = useState(0);
+  const [performanceProjectId, setPerformanceProjectId] = useState(null);
+  const [performanceData, setPerformanceData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isRetrying, setIsRetrying] = useState(false);
@@ -51,6 +57,8 @@ const Dashboard = () => {
     completedTasks: 0,
     totalBudget: 0,
   });
+  const [showProjectsPie, setShowProjectsPie] = useState(false);
+  const [showTasksHover, setShowTasksHover] = useState(false);
 
   useEffect(() => {
     const firstName = user?.name?.split(' ')[0];
@@ -72,6 +80,20 @@ const Dashboard = () => {
     }
   }, [user, setHeader]);
 
+  useEffect(() => {
+    const fetchProjectPerformance = async () => {
+      if (!performanceProjectId) return;
+      try {
+        const res = await api.get(`/performance/project/${performanceProjectId}`);
+        // Use the new performance trend over the last 6 months for the area chart
+        setPerformanceData(res.data.performanceTrend || []);
+      } catch (e) {
+        console.error('Failed to fetch project performance', e);
+      }
+    };
+    fetchProjectPerformance();
+  }, [performanceProjectId]);
+
   const fetchDashboardData = async (silent = false) => {
     if (!silent) setLoading(true);
     setError(null);
@@ -83,9 +105,13 @@ const Dashboard = () => {
       if (projectsData.length > 0 && !selectedProjectId) {
         setSelectedProjectId(projectsData[0].id);
       }
+      
+      if (projectsData.length > 0 && !performanceProjectId) {
+        setPerformanceProjectId(projectsData[0].id);
+      }
 
       const totalProjects = projectsData.length;
-      const activeProjects = projectsData.filter(p => ['ACTIVE', 'PLANNING', 'ON_HOLD'].includes(p.status)).length;
+      const activeProjects = projectsData.filter(p => p.status === 'ACTIVE').length;
       let totalTasks = projectsData.reduce((sum, p) => sum + (p._count?.tasks || 0), 0);
       const totalBudget = projectsData.reduce((sum, p) => sum + Number(p.totalBudget || 0), 0);
 
@@ -99,12 +125,24 @@ const Dashboard = () => {
         }
       }
 
+      let ticketsCount = 0;
+      if (user?.role === 'ADMIN') {
+        try {
+          const ticketsRes = await api.get('/tickets');
+          const ticketsData = Array.isArray(ticketsRes.data) ? ticketsRes.data : ticketsRes.data.data || [];
+          ticketsCount = ticketsData.length;
+        } catch (e) {
+          console.error('Failed to fetch tickets count', e);
+        }
+      }
+
       setStats({
         totalProjects,
         activeProjects,
         totalTasks,
         completedTasks: 0,
         totalBudget,
+        ticketsCount,
       });
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);
@@ -127,6 +165,59 @@ const Dashboard = () => {
     } catch (error) {
       console.error('Failed to fetch pending users:', error);
     }
+  };
+
+  // Compute stats for Projects Pie Chart
+  const projectStatsData = projects ? [
+      { name: 'Planning', value: projects.filter(p => p.status === 'PLANNING').length },
+      { name: 'Active', value: projects.filter(p => p.status === 'ACTIVE').length },
+      { name: 'On Hold', value: projects.filter(p => p.status === 'ON_HOLD').length },
+      { name: 'Completed', value: projects.filter(p => p.status === 'COMPLETED').length },
+      { name: 'Cancelled', value: projects.filter(p => p.status === 'CANCELLED').length },
+  ] : [];
+  const totalProjectsForPie = projectStatsData.reduce((sum, d) => sum + d.value, 0);
+  const PROJECT_STATUS_COLORS = {
+      'Planning': '#F59E0B',
+      'Active': '#0EA5E9',
+      'On Hold': '#8B5CF6',
+      'Completed': '#10B981',
+      'Cancelled': '#F43F5E'
+  };
+
+  // Compute stats for Tasks Overlay
+  const taskStatsDataRaw = {
+    'To Do': 0,
+    'In Progress': 0,
+    'In Review': 0,
+    'Completed': 0,
+    'Blocked': 0,
+  };
+  let totalTasksForHover = 0;
+  if (projects) {
+      projects.forEach(p => {
+          if (p.taskStats) {
+              taskStatsDataRaw['To Do'] += p.taskStats.TODO || 0;
+              taskStatsDataRaw['In Progress'] += p.taskStats.IN_PROGRESS || 0;
+              taskStatsDataRaw['In Review'] += p.taskStats.IN_REVIEW || 0;
+              taskStatsDataRaw['Completed'] += p.taskStats.COMPLETED || 0;
+              taskStatsDataRaw['Blocked'] += p.taskStats.BLOCKED || 0;
+              totalTasksForHover += (p.taskStats.TODO || 0) + (p.taskStats.IN_PROGRESS || 0) + (p.taskStats.IN_REVIEW || 0) + (p.taskStats.COMPLETED || 0) + (p.taskStats.BLOCKED || 0);
+          }
+      });
+  }
+  const taskStatsData = [
+      { name: 'To Do', value: taskStatsDataRaw['To Do'] },
+      { name: 'In Progress', value: taskStatsDataRaw['In Progress'] },
+      { name: 'In Review', value: taskStatsDataRaw['In Review'] },
+      { name: 'Completed', value: taskStatsDataRaw['Completed'] },
+      { name: 'Blocked', value: taskStatsDataRaw['Blocked'] },
+  ];
+  const TASK_STATUS_COLORS = {
+      'To Do': '#94A3B8',
+      'In Progress': '#0EA5E9',
+      'In Review': '#F59E0B',
+      'Completed': '#10B981',
+      'Blocked': '#EF4444',
   };
 
   // Placeholder data for charts
@@ -240,8 +331,8 @@ const Dashboard = () => {
         ) : (
           <Card className="flex flex-col items-center justify-center p-12 text-center">
             <FolderKanban className="w-12 h-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-medium">No Projects Found</h3>
-            <p className="text-muted-foreground mt-2">You don't have any active projects yet.</p>
+            <h3 className="text-xl font-bold text-foreground">Welcome to TaskFlow</h3>
+            <p className="text-muted-foreground mt-2">You don't have any projects yet.</p>
           </Card>
         )}
       </div>
@@ -255,32 +346,102 @@ const Dashboard = () => {
 
       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6">
         {/* Total Projects */}
-        <Card
-          className="border-0 bg-gradient-to-br from-[#8B5CF6] to-[#6D28D9] shadow-[0_10px_40px_-10px_rgba(139,92,246,0.3)] relative overflow-hidden group cursor-pointer hover:scale-[1.02] active:scale-95 transition-all duration-300"
-          onClick={() => navigate('/projects')}
-        >
-          <div className="absolute top-0 right-0 p-4 opacity-10 transform scale-150 group-hover:scale-[2] transition-transform duration-700">
-            <FolderKanban size={120} />
-          </div>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-[9px] sm:text-xs font-black text-white/80 uppercase tracking-widest Montserrat leading-tight">Total Projects</CardTitle>
-            <div className="p-2 bg-white/10 backdrop-blur-md rounded-xl ring-1 ring-white/20">
-              <FolderKanban className="h-5 w-5 text-white" />
+        <div className="relative group">
+            <Card
+            className="border-0 bg-gradient-to-br from-[#8B5CF6] to-[#6D28D9] shadow-[0_10px_40px_-10px_rgba(139,92,246,0.3)] relative overflow-hidden cursor-pointer hover:scale-[1.02] active:scale-95 transition-all duration-300 h-full"
+            onClick={() => navigate('/projects')}
+            >
+            <div className="absolute top-0 right-0 p-4 opacity-10 transform scale-150 group-hover:scale-[2] transition-transform duration-700">
+                <FolderKanban size={120} />
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl sm:text-4xl font-black text-white Montserrat">{stats.totalProjects}</div>
-            <p className="text-xs text-white/60 mt-1 flex items-center gap-1 Montserrat">
-              <TrendingUp className="w-3 h-3" /> All time scale
-            </p>
-          </CardContent>
-        </Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-[9px] sm:text-xs font-black text-white/80 uppercase tracking-widest Montserrat leading-tight">Total Projects</CardTitle>
+                <div className="p-2 bg-white/10 backdrop-blur-md rounded-xl ring-1 ring-white/20">
+                <FolderKanban className="h-5 w-5 text-white" />
+                </div>
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl sm:text-4xl font-black text-white Montserrat">{stats.totalProjects}</div>
+                <p className="text-xs text-white/60 mt-1 flex items-center gap-1 Montserrat">
+                <TrendingUp className="w-3 h-3" /> All time scale
+                </p>
+            </CardContent>
+            </Card>
 
-        {/* Active Projects */}
-        <Card
-          className="border-0 bg-gradient-to-br from-[#0EA5E9] to-[#0369A1] shadow-[0_10px_40px_-10px_rgba(14,165,233,0.3)] relative overflow-hidden group cursor-pointer hover:scale-[1.02] active:scale-95 transition-all duration-300"
-          onClick={() => navigate('/projects')}
-        >
+            {/* Smooth Centered Overlay */}
+            <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[200] w-[360px] sm:w-[500px] opacity-0 invisible scale-95 group-hover:opacity-100 group-hover:visible group-hover:scale-100 transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] pointer-events-none">
+                <Card className="shadow-[0_30px_100px_-15px_rgba(0,0,0,0.6)] border border-border p-4 bg-card/95 backdrop-blur-2xl">
+                    <CardHeader className="pb-4">
+                        <CardTitle className="text-center font-bold uppercase tracking-wider text-base text-foreground">Projects Breakdown</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {totalProjectsForPie === 0 ? (
+                            <div className="text-center py-8 text-muted-foreground text-lg">No projects to display</div>
+                        ) : (
+                            <div className="flex items-center gap-8">
+                                <div className="relative w-1/2 h-[220px]">
+                                    <ResponsiveContainer width="100%" height="100%" className="drop-shadow-2xl">
+                                        <RechartsPie>
+                                            <Pie 
+                                                data={projectStatsData.filter(d => d.value > 0)} 
+                                                dataKey="value" 
+                                                cx="50%" 
+                                                cy="50%" 
+                                                innerRadius={65} 
+                                                outerRadius={90} 
+                                                paddingAngle={5}
+                                                cornerRadius={8}
+                                                stroke="none"
+                                            >
+                                                {projectStatsData.filter(d => d.value > 0).map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={PROJECT_STATUS_COLORS[entry.name]} />
+                                                ))}
+                                            </Pie>
+                                            <RechartsTooltip 
+                                                formatter={(value, name) => {
+                                                    const percent = totalProjectsForPie > 0 ? Math.round((value / totalProjectsForPie) * 100) : 0;
+                                                    return [`${value} (${percent}%)`, name];
+                                                }}
+                                                contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '12px', color: 'hsl(var(--foreground))', fontSize: '12px', padding: '10px 16px', boxShadow: '0 10px 40px -10px rgba(0,0,0,0.3)' }}
+                                                itemStyle={{ color: 'hsl(var(--foreground))', fontWeight: 800 }}
+                                                cursor={{ fill: 'transparent' }}
+                                            />
+                                        </RechartsPie>
+                                    </ResponsiveContainer>
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-1">
+                                        <span className="text-4xl font-black text-foreground Montserrat tracking-tighter">{totalProjectsForPie}</span>
+                                        <span className="text-[9px] text-muted-foreground font-black uppercase tracking-widest mt-0.5 Montserrat">Projects</span>
+                                    </div>
+                                </div>
+                                <div className="space-y-4 flex-1">
+                                    {projectStatsData.filter(d => d.value > 0).map((s) => {
+                                        const percent = totalProjectsForPie > 0 ? Math.round((s.value / totalProjectsForPie) * 100) : 0;
+                                        return (
+                                            <div key={s.name} className="flex items-center justify-between text-sm">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-3 h-3 rounded-full" style={{ background: PROJECT_STATUS_COLORS[s.name] }} />
+                                                    <span className="font-bold text-muted-foreground">{s.name}</span>
+                                                </div>
+                                                <div className="font-black text-right min-w-[60px] text-base">
+                                                    {s.value} <span className="text-muted-foreground font-medium ml-1 text-sm">({percent}%)</span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
+
+        {/* Active Work */}
+        {user?.role !== 'ADMIN' && (
+          <Card
+            className="border-0 bg-gradient-to-br from-[#0EA5E9] to-[#0369A1] shadow-[0_10px_40px_-10px_rgba(14,165,233,0.3)] relative overflow-hidden group cursor-pointer hover:scale-[1.02] active:scale-95 transition-all duration-300"
+            onClick={() => navigate('/projects')}
+          >
           <div className="absolute top-0 right-0 p-4 opacity-10 transform scale-150 group-hover:scale-[2] transition-transform duration-700">
             <Activity size={120} />
           </div>
@@ -298,28 +459,87 @@ const Dashboard = () => {
             </div>
           </CardContent>
         </Card>
+        )}
 
         {/* Total Tasks */}
-        <Card
-          className="border-0 bg-gradient-to-br from-[#10B981] to-[#047857] shadow-[0_10px_40px_-10px_rgba(16,185,129,0.3)] relative overflow-hidden group cursor-pointer hover:scale-[1.02] active:scale-95 transition-all duration-300"
-          onClick={() => navigate('/tasks')}
-        >
-          <div className="absolute top-0 right-0 p-4 opacity-10 transform scale-150 group-hover:scale-[2] transition-transform duration-700">
-            <CheckCircle size={120} />
-          </div>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-[9px] sm:text-xs font-black text-white/80 uppercase tracking-widest Montserrat leading-tight">Total Tasks</CardTitle>
-            <div className="p-2 bg-white/10 backdrop-blur-md rounded-xl ring-1 ring-white/20">
-              <CheckCircle className="h-5 w-5 text-white" />
+        <div className="relative group">
+            <Card
+            className="border-0 bg-gradient-to-br from-[#10B981] to-[#047857] shadow-[0_10px_40px_-10px_rgba(16,185,129,0.3)] relative overflow-hidden cursor-pointer hover:scale-[1.02] active:scale-95 transition-all duration-300 h-full"
+            onClick={() => navigate('/tasks')}
+            >
+            <div className="absolute top-0 right-0 p-4 opacity-10 transform scale-150 group-hover:scale-[2] transition-transform duration-700">
+                <CheckCircle size={120} />
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl sm:text-4xl font-black text-white Montserrat">{stats.totalTasks}</div>
-            <p className="text-xs text-white/60 mt-1 Montserrat">Assigned units</p>
-          </CardContent>
-        </Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-[9px] sm:text-xs font-black text-white/80 uppercase tracking-widest Montserrat leading-tight">Total Tasks</CardTitle>
+                <div className="p-2 bg-white/10 backdrop-blur-md rounded-xl ring-1 ring-white/20">
+                <CheckCircle className="h-5 w-5 text-white" />
+                </div>
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl sm:text-4xl font-black text-white Montserrat">{stats.totalTasks}</div>
+                <p className="text-xs text-white/60 mt-1 Montserrat">Assigned units</p>
+            </CardContent>
+            </Card>
 
+            {/* Smooth Centered Overlay */}
+            <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[200] w-[360px] sm:w-[420px] opacity-0 invisible scale-95 group-hover:opacity-100 group-hover:visible group-hover:scale-100 transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] pointer-events-none">
+                <Card className="shadow-[0_30px_100px_-15px_rgba(0,0,0,0.6)] border border-border p-6 bg-card/95 backdrop-blur-2xl">
+                    <CardHeader className="pb-6 p-0">
+                        <CardTitle className="text-center font-bold uppercase tracking-wider text-base text-foreground">Tasks Distribution</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        {totalTasksForHover === 0 ? (
+                            <div className="text-center py-6 text-muted-foreground text-lg">No tasks to display</div>
+                        ) : (
+                            <div className="space-y-6">
+                                {taskStatsData.map(stat => {
+                                    const percent = totalTasksForHover > 0 ? Math.round((stat.value / totalTasksForHover) * 100) : 0;
+                                    return (
+                                        <div key={stat.name}>
+                                            <div className="flex justify-between text-sm font-black mb-2.5 Montserrat">
+                                                <div className="flex items-center gap-2.5">
+                                                    <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: TASK_STATUS_COLORS[stat.name] }} />
+                                                    <span className="text-foreground tracking-wide">{stat.name}</span>
+                                                </div>
+                                                <span className="text-foreground text-base">{stat.value} <span className="text-xs text-muted-foreground ml-1 font-bold">({percent}%)</span></span>
+                                            </div>
+                                            <div className="h-2.5 w-full bg-secondary/50 rounded-full overflow-hidden shadow-inner">
+                                                <div className="h-full rounded-full transition-all duration-1000 ease-out" style={{ width: `${percent}%`, backgroundColor: TASK_STATUS_COLORS[stat.name] }} />
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
 
+        {/* Tickets (Admin Only) */}
+        {user?.role === 'ADMIN' && (
+          <Card
+            className="border-0 bg-gradient-to-br from-[#0EA5E9] to-[#0369A1] shadow-[0_10px_40px_-10px_rgba(14,165,233,0.3)] relative overflow-hidden group cursor-pointer hover:scale-[1.02] active:scale-95 transition-all duration-300"
+            onClick={() => navigate('/tickets')}
+          >
+            <div className="absolute top-0 right-0 p-4 opacity-10 transform scale-150 group-hover:scale-[2] transition-transform duration-700">
+              <Ticket size={120} />
+            </div>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-[9px] sm:text-xs font-black text-white/80 uppercase tracking-widest Montserrat leading-tight">Tickets</CardTitle>
+              <div className="p-2 bg-white/10 backdrop-blur-md rounded-xl ring-1 ring-white/20">
+                <Ticket className="h-5 w-5 text-white" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl sm:text-4xl font-black text-white Montserrat">{stats.ticketsCount || 0}</div>
+              <p className="text-xs text-white/60 mt-1 flex items-center gap-1 Montserrat">
+                Raised by client
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Total Budget - Restricted */}
         {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
@@ -375,9 +595,9 @@ const Dashboard = () => {
         <Card className="bg-card border-border ring-1 ring-border shadow-2xl">
           <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border pb-4 gap-3">
             <div>
-              <CardTitle className="text-lg font-bold Montserrat text-foreground">Active Projects</CardTitle>
+              <CardTitle className="text-lg font-bold Montserrat text-foreground">Recent Projects</CardTitle>
               <CardDescription className="text-gray-400 Montserrat">
-                Recently updated projects and their status.
+                Overview of your latest projects across all statuses.
               </CardDescription>
             </div>
             {user?.role !== 'MEMBER' && (
@@ -451,8 +671,7 @@ const Dashboard = () => {
 
                     {filteredActiveProjects.length === 0 && (
                       <div className="text-center py-12">
-                        <FolderKanban className="w-12 h-12 text-white/10 mx-auto mb-4" />
-                        <p className="text-gray-500 Montserrat text-sm mb-6">No active projects found</p>
+                        <p className="text-gray-500 Montserrat text-sm mb-6">No projects found</p>
                         {user?.role !== 'MEMBER' && (
                           <Button
                             onClick={() => navigate('/projects?create=true')}
@@ -483,21 +702,37 @@ const Dashboard = () => {
         {/* Charts Section */}
         <div className="space-y-4 sm:space-y-6">
           <Card className="bg-card border-border ring-1 ring-border shadow-2xl overflow-hidden">
-            <CardHeader className="border-b border-border">
+            <CardHeader className="border-b border-border flex flex-row items-center justify-between py-3">
               <CardTitle className="text-lg font-bold Montserrat">Team Performance</CardTitle>
+              {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && projects?.length > 0 && (
+                <Select value={performanceProjectId || ''} onValueChange={setPerformanceProjectId}>
+                  <SelectTrigger className="w-[180px] h-8 text-xs border-border">
+                    <SelectValue placeholder="Select Project" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {projects.map(p => (
+                      <SelectItem key={p.id} value={p.id} className="text-xs">
+                        {p.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </CardHeader>
             <CardContent className="p-3 sm:p-6">
-              {taskCompletionData && taskCompletionData.length > 0 ? (
-                <LineChart
-                  data={taskCompletionData}
-                  title="Task Completion"
-                  series={[{ dataKey: 'completed', name: 'Completed', color: '#48A111' }]}
+              {performanceData && performanceData.length > 0 ? (
+                <ModernAreaChart
+                  data={performanceData}
+                  title="Velocity Trend (Last 6 Months)"
+                  xAxisKey="name"
+                  mainSeries={{ dataKey: 'completed', name: 'Completed Tasks', color: '#0EA5E9' }}
+                  secondarySeries={{ dataKey: 'assigned', name: 'Assigned Tasks', color: '#6b7280' }}
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground border-2 border-dashed border-muted rounded-xl bg-accent/20">
                   <Activity className="w-12 h-12 mb-4 opacity-50" />
-                  <p className="text-lg font-medium">No records to display</p>
-                  <p className="text-sm">Complete tasks to see performance metrics here.</p>
+                  <p className="text-lg font-medium">No performance data</p>
+                  <p className="text-sm">Team members need to log time to see performance metrics here.</p>
                 </div>
               )}
             </CardContent>

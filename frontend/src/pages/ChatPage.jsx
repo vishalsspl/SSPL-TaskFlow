@@ -323,6 +323,7 @@ const ChatPage = () => {
                             key={activeRoom.id}
                             projectId={activeRoom.isGlobal ? null : activeRoom.id}
                             title={activeRoom.name}
+                            isDM={activeRoom.isDM}
                         />
                     )}
                 </div>
@@ -337,12 +338,11 @@ const ChatPage = () => {
 
                     <div className="space-y-4 py-4">
                         <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                             <Input
                                 placeholder="Search users by name or email..."
                                 value={userSearch}
                                 onChange={(e) => setUserSearch(e.target.value)}
-                                className="pl-10 bg-secondary border-border focus-visible:ring-primary"
+                                className="bg-secondary border-border focus-visible:ring-primary"
                             />
                         </div>
 

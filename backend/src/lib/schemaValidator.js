@@ -7,6 +7,8 @@
 
 export const ensureProjectSchema = async (db) => {
   if (!db || !db.$queryRawUnsafe) return;
+  
+  // 1. Check GitHub columns
   try {
     await db.$queryRawUnsafe('SELECT "githubRepo" FROM "Project" LIMIT 1');
   } catch (err) {
@@ -18,6 +20,18 @@ export const ensureProjectSchema = async (db) => {
       } catch (migrateErr) {
         console.error('[SchemaValidator] Project migration failed:', migrateErr.message);
       }
+    }
+  }
+
+  // 2. Check allowMemberTaskCreation column
+  try {
+    await db.$queryRawUnsafe('SELECT "allowMemberTaskCreation" FROM "Project" LIMIT 1');
+  } catch (err) {
+    console.log('[SchemaValidator] Auto-migrating Project table: Adding allowMemberTaskCreation column');
+    try {
+      await db.$executeRawUnsafe('ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "allowMemberTaskCreation" BOOLEAN DEFAULT FALSE');
+    } catch (migrateErr) {
+      console.error('[SchemaValidator] Project allowMemberTaskCreation migration failed:', migrateErr.message);
     }
   }
 };

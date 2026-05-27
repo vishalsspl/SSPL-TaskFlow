@@ -26,7 +26,7 @@ const formatDetails = (details) => {
         {Object.entries(details).map(([key, val]) => (
           <div key={key} className="flex flex-col gap-0.5">
             <span className="text-[9px] font-black text-primary/70 uppercase tracking-widest">{key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}</span>
-            <span className="text-xs font-semibold text-foreground/90 break-words leading-tight">{typeof val === 'object' ? JSON.stringify(val) : String(val)}</span>
+            <span className="text-xs font-semibold text-foreground/90 break-words leading-tight">{typeof val === 'object' ? JSON.stringify(val) : String(val) === 'automatic_login' ? 'Login' : String(val)}</span>
           </div>
         ))}
       </div>
@@ -92,7 +92,7 @@ const AuditTable = ({ logs, getActionIcon, getStatusBadge, getSeverity, showOrga
                       <div className="text-sm font-bold tracking-tight text-foreground/90 capitalize truncate">
                         {formatAction(log.action)}
                       </div>
-                      <div className="text-[10px] font-medium text-muted-foreground/60 mt-0.5 truncate">
+                      <div className="text-[10px] font-semibold text-muted-foreground mt-0.5 truncate">
                         {log.entity} {log.entityId ? `#${log.entityId.slice(-6)}` : ''}
                       </div>
                     </div>
@@ -112,7 +112,7 @@ const AuditTable = ({ logs, getActionIcon, getStatusBadge, getSeverity, showOrga
                       <div className="text-sm font-bold tracking-tight text-foreground/80 truncate">
                         {log.user?.name || 'System'}
                       </div>
-                      <div className="text-[10px] font-medium text-muted-foreground/50 capitalize mt-0.5 truncate">
+                      <div className="text-[10px] font-semibold text-muted-foreground capitalize mt-0.5 truncate">
                         {log.user?.role?.toLowerCase() || 'N/A'}
                       </div>
                     </div>
@@ -128,7 +128,7 @@ const AuditTable = ({ logs, getActionIcon, getStatusBadge, getSeverity, showOrga
                         : (log.project?.name || 'Platform')
                       }
                     </div>
-                    <div className="text-[10px] font-medium text-muted-foreground/50 mt-0.5 truncate max-w-[150px]">
+                    <div className="text-[10px] font-semibold text-muted-foreground mt-0.5 truncate max-w-[150px]">
                       {showOrganization 
                         ? (log.project ? `Project: ${log.project.name}` : (log.organization?.industry || 'Platform Action'))
                         : (log.entity === 'project' ? 'Project Action' : (log.project ? 'Activity Detail' : 'Platform Action'))
@@ -139,7 +139,7 @@ const AuditTable = ({ logs, getActionIcon, getStatusBadge, getSeverity, showOrga
 
                 {/* Date & Time Column */}
                 <TableCell className="text-center">
-                  <div className="text-xs font-semibold text-muted-foreground/80">
+                  <div className="text-xs font-bold text-muted-foreground">
                     {log.createdAt ? format(new Date(log.createdAt), 'MMM d, yyyy h:mm a') : '-'}
                   </div>
                 </TableCell>

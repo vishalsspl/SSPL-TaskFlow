@@ -181,6 +181,7 @@ const Timesheets = () => {
     const [selectedDateFilter, setSelectedDateFilter] = useState(new Date());
     const [loggingMode, setLoggingMode] = useState('direct');
     const [selectedMemberFilter, setSelectedMemberFilter] = useState('all');
+    const [selectedProjectFilter, setSelectedProjectFilter] = useState('all');
 
     const isOrgAdmin = user?.role === 'ADMIN' || user?.role === 'SUPERADMIN';
     const uniqueUsers = useMemo(() => {
@@ -354,25 +355,9 @@ const Timesheets = () => {
 
         let projectId = newEntry.projectId;
         let taskId = newEntry.taskId;
-        if (loggingMode === 'leave' && (!projectId || !taskId)) {
-            const internalProject = projects.find(p => (p.category === 'INTERNAL') || /internal|leave/i.test(p.name));
-            if (!internalProject) {
-                toast({ variant: "destructive", title: "Setup Required", description: "No internal project found. Please ask your admin to create an Internal/Leave project." });
-                return;
-            }
-            projectId = internalProject.id;
-            try {
-                const taskRes = await api.get('/tasks', { params: { projectId } });
-                const taskList = taskRes.data;
-                if (taskList.length === 0) {
-                    toast({ variant: "destructive", title: "Setup Required", description: "The internal project has no tasks. Please ask your admin to add a task." });
-                    return;
-                }
-                taskId = taskList[0].id;
-            } catch {
-                toast({ variant: "destructive", title: "Error", description: "Failed to find tasks for internal project." });
-                return;
-            }
+        if (loggingMode === 'leave') {
+            projectId = null;
+            taskId = null;
         }
 
         if (loggingMode !== 'leave' && newEntry.date > new Date()) {
@@ -669,6 +654,19 @@ const Timesheets = () => {
                                     ))}
                                 </SelectContent>
                             </Select>
+                            <Select value={selectedProjectFilter} onValueChange={setSelectedProjectFilter}>
+                                <SelectTrigger className="w-full sm:w-[200px] h-10 rounded-xl font-bold bg-muted/30 border-border">
+                                    <SelectValue placeholder="Filter Project" />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-xl border-border bg-card">
+                                    <SelectItem value="all" className="font-bold cursor-pointer rounded-lg">All Projects</SelectItem>
+                                    {projects.map(p => (
+                                        <SelectItem key={p.id} value={p.id} className="font-bold cursor-pointer rounded-lg">
+                                            {p.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                         </>
                     )}
                 </div>
@@ -694,11 +692,12 @@ const Timesheets = () => {
             {activeTab !== 'leave-logs' && (() => {
                 // Pre-calculate all 7 days for weekly summary
                 const weekData = weekDays.map((day) => {
+                    // Calculate target entries based on mode and filters
                     const targetEntries = isOrgAdmin 
-                        ? entries.filter(e => selectedMemberFilter === 'all' ? true : e.userId === selectedMemberFilter)
+                        ? entries.filter(e => (selectedMemberFilter === 'all' ? true : e.userId === selectedMemberFilter) && (selectedProjectFilter === 'all' ? true : e.projectId === selectedProjectFilter))
                         : (activeTab === 'team-logs' || activeTab === 'leave-logs') 
-                            ? entries.filter(e => e.userId !== user?.id)
-                            : entries.filter(e => e.userId === user?.id);
+                            ? entries.filter(e => e.userId !== user?.id && (selectedProjectFilter === 'all' ? true : e.projectId === selectedProjectFilter))
+                            : entries.filter(e => e.userId === user?.id && (selectedProjectFilter === 'all' ? true : e.projectId === selectedProjectFilter));
                     
                     const myDayEntries = targetEntries.filter(e => isSameDay(parseISO(e.date), day));
                     
@@ -903,7 +902,7 @@ const Timesheets = () => {
                                                         <div className="min-w-0">
                                                             <h4 className="font-bold text-sm Montserrat">{entry.user?.name || 'Unknown'}</h4>
                                                             <div className="text-[10px] text-muted-foreground font-bold uppercase truncate flex items-center gap-2">
-                                                                <span>{entry.project.name} &bull; {format(parseISO(entry.date), 'MMM d, yyyy')}</span>
+                                                                <span>{entry.project?.name || 'Leave'} &bull; {format(parseISO(entry.date), 'MMM d, yyyy')}</span>
                                                                 {(() => {
                                                                     const { portions, leaveType } = getPortionTags(entry.description);
                                                                     if (portions.length === 0 && !leaveType) return null;
@@ -964,6 +963,7 @@ const Timesheets = () => {
                                         .filter(e => e.userId !== user?.id)
                                         .filter(e => e.status === 'PENDING')
                                         .filter(e => selectedDateFilter ? isSameDay(parseISO(e.date), selectedDateFilter) : true)
+                                        .filter(e => selectedProjectFilter === 'all' ? true : e.projectId === selectedProjectFilter)
                                         .length;
                                     return teamLogsCount > 0 ? (
                                         <Badge variant="secondary" className="bg-primary/20 text-primary hover:bg-primary/30 rounded-full px-2 py-0 text-[10px]">
@@ -995,7 +995,7 @@ const Timesheets = () => {
                         </CardHeader>
                         <CardContent className="p-0">
                             <ScrollArea className="h-[400px]">
-                                {entries.filter(e => e.userId === user?.id && isSameDay(parseISO(e.date), selectedDateFilter)).length === 0 ? (
+                                {entries.filter(e => (isOrgAdmin && selectedMemberFilter !== 'all' ? e.userId === selectedMemberFilter : e.userId === user?.id) && isSameDay(parseISO(e.date), selectedDateFilter) && (selectedProjectFilter === 'all' ? true : e.projectId === selectedProjectFilter)).length === 0 ? (
                                     <div className="flex flex-col items-center justify-center py-20 text-center opacity-50">
                                         <Clock className="h-12 w-12 mb-4 text-muted-foreground" />
                                         <p className="font-bold text-muted-foreground Montserrat">No hours logged for this day.</p>
@@ -1003,8 +1003,9 @@ const Timesheets = () => {
                                 ) : (
                                     <div className="divide-y divide-border">
                                         {entries
-                                            .filter(e => e.userId === user?.id)
+                                            .filter(e => (isOrgAdmin && selectedMemberFilter !== 'all' ? e.userId === selectedMemberFilter : e.userId === user?.id))
                                             .filter(e => selectedDateFilter ? isSameDay(parseISO(e.date), selectedDateFilter) : true)
+                                            .filter(e => selectedProjectFilter === 'all' ? true : e.projectId === selectedProjectFilter)
                                             .sort((a, b) => new Date(b.date) - new Date(a.date))
                                             .map((entry) => (
                                                 <div key={entry.id} className="p-4 flex items-center justify-between hover:bg-muted/30 transition-colors group">
@@ -1013,7 +1014,7 @@ const Timesheets = () => {
                                                             <span className="font-black text-primary text-xs">{format(parseISO(entry.date), 'dd')}</span>
                                                         </div>
                                                         <div className="min-w-0">
-                                                            <h4 className="font-bold text-sm truncate Montserrat">{entry.project.name}</h4>
+                                                            <h4 className="font-bold text-sm truncate Montserrat">{entry.project?.name || 'Leave'}</h4>
                                                             <p className="text-[11px] text-muted-foreground font-medium line-clamp-1 italic">
                                                                 {entry.task?.title ? `${entry.task.title} — ` : ''}{getCleanDescription(entry.description)}
                                                             </p>
@@ -1118,7 +1119,7 @@ const Timesheets = () => {
                         </CardHeader>
                         <CardContent className="p-0">
                             <ScrollArea className="h-[400px]">
-                                {entries.filter(e => e.userId !== user?.id && (!selectedDateFilter || isSameDay(parseISO(e.date), selectedDateFilter))).length === 0 ? (
+                                {entries.filter(e => e.userId !== user?.id && (!selectedDateFilter || isSameDay(parseISO(e.date), selectedDateFilter)) && (selectedProjectFilter === 'all' ? true : e.projectId === selectedProjectFilter)).length === 0 ? (
                                     <div className="flex flex-col items-center justify-center py-20 text-center opacity-50">
                                         <CheckCircle2 className="h-12 w-12 mb-4 text-muted-foreground" />
                                         <p className="font-bold text-muted-foreground Montserrat">No team logs found for this day.</p>
@@ -1128,6 +1129,7 @@ const Timesheets = () => {
                                         {entries
                                             .filter(e => e.userId !== user?.id)
                                             .filter(e => selectedDateFilter ? isSameDay(parseISO(e.date), selectedDateFilter) : true)
+                                            .filter(e => selectedProjectFilter === 'all' ? true : e.projectId === selectedProjectFilter)
                                             .map((entry) => (
                                                 <div key={entry.id} className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:bg-muted/30 transition-colors">
                                                     <div className="flex items-center gap-3 sm:gap-4 min-w-0">
@@ -1140,7 +1142,7 @@ const Timesheets = () => {
                                                         <div className="min-w-0">
                                                             <h4 className="font-bold text-sm Montserrat">{entry.user.name}</h4>
                                                             <div className="text-[10px] text-muted-foreground font-bold uppercase truncate flex items-center gap-2">
-                                                                <span>{entry.project.name} &bull; {format(parseISO(entry.date), 'MMM d, yyyy')}</span>
+                                                                <span>{entry.project?.name || 'Leave'} &bull; {format(parseISO(entry.date), 'MMM d, yyyy')}</span>
                                                                 {(() => {
                                                                     const { portions, leaveType } = getPortionTags(entry.description);
                                                                     if (portions.length === 0 && !leaveType) return null;
@@ -1244,7 +1246,7 @@ const Timesheets = () => {
                                                     <div className="min-w-0">
                                                         <h4 className="font-bold text-sm Montserrat">{entry.user.name}</h4>
                                                         <div className="text-[10px] text-muted-foreground font-bold uppercase truncate flex items-center gap-2">
-                                                            <span>{entry.project.name} &bull; {format(parseISO(entry.date), 'MMM d, yyyy')}</span>
+                                                            <span>{entry.project?.name || 'Leave'} &bull; {format(parseISO(entry.date), 'MMM d, yyyy')}</span>
                                                             {(() => {
                                                                 const { portions, leaveType } = getPortionTags(entry.description);
                                                                 if (portions.length === 0 && !leaveType) return null;
@@ -1552,7 +1554,7 @@ const Timesheets = () => {
                                 <div className="space-y-2">
                                     <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Select Project</Label>
                                     <SearchableSelect
-                                        value={newEntry.projectId}
+                                        value={newEntry.projectId || ''}
                                         onChange={(val) => {
                                             setNewEntry({ ...newEntry, projectId: val, taskId: '' });
                                             fetchTasks(val);

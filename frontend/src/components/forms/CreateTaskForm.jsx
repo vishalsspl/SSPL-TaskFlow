@@ -43,7 +43,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
         tags: task?.tags?.join(', ') || '',
         storyPoints: task?.storyPoints || 0,
         type: task?.type || 'TASK',
-        sendEmail: true,
+        sendEmail: localStorage.getItem('preferNoEmail') !== 'true',
     });
 
     const [phases, setPhases] = useState([]);
@@ -388,7 +388,14 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                     <Switch
                         id="sendEmail"
                         checked={formData.sendEmail}
-                        onCheckedChange={(checked) => setFormData({ ...formData, sendEmail: checked })}
+                        onCheckedChange={(checked) => {
+                            setFormData({ ...formData, sendEmail: checked });
+                            if (checked) {
+                                localStorage.removeItem('preferNoEmail');
+                            } else {
+                                localStorage.setItem('preferNoEmail', 'true');
+                            }
+                        }}
                     />
                 </div>
             )}

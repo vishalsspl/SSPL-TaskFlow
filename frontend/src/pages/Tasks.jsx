@@ -57,7 +57,7 @@ import CreateTaskForm from '@/components/forms/CreateTaskForm';
 import TablePagination from '@/components/ui/table-pagination';
 import { useToast } from "@/hooks/use-toast";
 import { useTimerStore } from '@/store/timerStore';
-import { Edit2 } from 'lucide-react';
+import { Edit2, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ImportTasksDialog from '@/components/ImportTasksDialog';
 
@@ -83,6 +83,14 @@ const getContrastColor = (hexColor) => {
   const b = parseInt(hexColor.slice(5, 7), 16);
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
   return luminance > 0.5 ? '#000000' : '#FFFFFF';
+};
+
+const getTaskProgress = (task) => {
+  if (task.status === 'COMPLETED') return 100;
+  if (task.completionPercentage > 0) return task.completionPercentage;
+  if (task.status === 'IN_REVIEW') return 75;
+  if (task.status === 'IN_PROGRESS') return 50;
+  return 0;
 };
 
 const Tasks = () => {
@@ -205,7 +213,8 @@ const Tasks = () => {
   };
 
   const handleTaskClick = (task) => {
-    if (user?.role === 'CLIENT' || user?.role === 'MEMBER') return;
+    if (user?.role === 'CLIENT') return;
+    if (user?.role === 'MEMBER' && !task.project?.allowMemberTaskCreation) return;
     setSelectedTask(task);
     setShowEditDialog(true);
   };
@@ -528,16 +537,19 @@ const Tasks = () => {
                         <TableCell>
                           <div className="flex items-center gap-2">
                             {task.assignees && task.assignees.length > 0 ? (
-                              <div className="flex -space-x-2">
+                              <div className="flex flex-wrap gap-2 items-center">
                                 {task.assignees.slice(0, 3).map(({ user }) => (
-                                  <Avatar key={user.id} className="h-7 w-7 border-2 border-[#0A0A0A] ring-1 ring-white/10">
-                                    <AvatarImage src={user.avatar} />
-                                    <AvatarFallback className="text-[10px] bg-white/5 text-gray-400">{user.name.charAt(0)}</AvatarFallback>
-                                  </Avatar>
+                                  <div key={user.id} className="flex items-center gap-2 bg-secondary/20 pr-3 rounded-full border border-border/50">
+                                    <Avatar className="h-7 w-7 border border-[#0A0A0A] ring-1 ring-white/10">
+                                      <AvatarImage src={user.avatar} />
+                                      <AvatarFallback className="text-[10px] bg-white/5 text-gray-400">{user.name.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <span className="text-[11px] font-bold text-foreground whitespace-nowrap">{user.name}</span>
+                                  </div>
                                 ))}
                                 {task.assignees.length > 3 && (
-                                  <div className="h-7 w-7 rounded-full bg-white/5 border-2 border-[#0A0A0A] flex items-center justify-center text-[10px] text-gray-400 Montserrat font-bold">
-                                    +{task.assignees.length - 3}
+                                  <div className="h-7 px-2 rounded-full bg-white/5 border border-[#0A0A0A] flex items-center justify-center text-[10px] text-gray-400 Montserrat font-bold">
+                                    +{task.assignees.length - 3} more
                                   </div>
                                 )}
                               </div>
@@ -576,45 +588,58 @@ const Tasks = () => {
                               <div
                                 className="h-full rounded-full transition-all duration-500"
                                 style={{
-                                  width: `${task.status === 'COMPLETED' ? 100 : task.completionPercentage}%`,
+                                  width: `${getTaskProgress(task)}%`,
                                   backgroundColor: task.status === 'COMPLETED' ? '#48A111' : '#00A3FF',
                                   boxShadow: `0 0 8px ${task.status === 'COMPLETED' ? '#48A11160' : '#00A3FF60'}`
                                 }}
                               />
                             </div>
                             <span className="text-[10px] font-black Montserrat text-gray-500 block text-right">
-                              {task.status === 'COMPLETED' ? 100 : task.completionPercentage}%
+                              {getTaskProgress(task)}%
                             </span>
                           </div>
                         </TableCell>
                         <TableCell className="text-right pr-4">
                           <div className="flex items-center justify-end gap-1">
-                            {user?.role !== 'CLIENT' && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-muted-foreground hover:text-white hover:bg-white/10 transition-colors"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleTaskClick(task);
-                                }}
-                              >
-                                <Edit2 className="h-4 w-4" />
-                              </Button>
-                            )}
-                            {(user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.role === 'MEMBER') && (
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDelete(task);
-                                }}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            )}
+                            {(() => {
+                              const canEdit = user?.role === 'ADMIN' || user?.role === 'MANAGER' || (user?.role === 'MEMBER' && task.project?.allowMemberTaskCreation);
+                              if (user?.role === 'CLIENT') return null;
+                              
+                              if (!canEdit) {
+                                return (
+                                  <div className="flex items-center justify-center h-8 w-8 text-gray-400 bg-gray-100/50 dark:bg-gray-800/50 rounded-md" title="Restricted - No permission to edit">
+                                    <Lock className="w-4 h-4" />
+                                  </div>
+                                );
+                              }
+
+                              return (
+                                <>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleTaskClick(task);
+                                    }}
+                                  >
+                                    <Edit2 className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDelete(task);
+                                    }}
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </>
+                              );
+                            })()}
                           </div>
                         </TableCell>
                       </TableRow>
@@ -635,46 +660,63 @@ const Tasks = () => {
                     className="p-4 rounded-xl border border-border bg-card cursor-pointer active:scale-[0.98] transition-all"
                     onClick={() => handleTaskClick(task)}
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-start gap-2 flex-1 min-w-0">
-                        <div
-                          className="w-2 h-2 rounded-full mt-1.5 shrink-0"
-                          style={{
-                            backgroundColor: task.status === 'TODO' ? '#F59E0B' :
-                              task.status === 'IN_PROGRESS' ? '#00A3FF' :
-                                task.status === 'IN_REVIEW' ? '#D946EF' :
-                                  task.status === 'COMPLETED' ? '#48A111' : '#EF4444'
-                          }}
-                        />
-                        <p className="font-bold text-sm text-foreground leading-tight truncate">{task.title}</p>
+                    <div className="flex flex-col gap-3 relative">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-start gap-2 flex-1 min-w-0">
+                          <div
+                            className="w-2 h-2 rounded-full mt-1.5 shrink-0"
+                            style={{
+                              backgroundColor: task.status === 'TODO' ? '#F59E0B' :
+                                task.status === 'IN_PROGRESS' ? '#00A3FF' :
+                                  task.status === 'IN_REVIEW' ? '#D946EF' :
+                                    task.status === 'COMPLETED' ? '#48A111' : '#EF4444'
+                            }}
+                          />
+                          <p className="font-bold text-sm text-foreground leading-tight pr-2">{task.title}</p>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          {(() => {
+                            const canEdit = user?.role === 'ADMIN' || user?.role === 'MANAGER' || (user?.role === 'MEMBER' && task.project?.allowMemberTaskCreation);
+                            if (user?.role === 'CLIENT') return null;
+                            
+                            if (!canEdit) {
+                              return (
+                                <div className="flex items-center justify-center h-8 w-8 text-gray-400 bg-gray-100/50 dark:bg-gray-800/50 rounded-md" title="Restricted - No permission to edit">
+                                  <Lock className="w-4 h-4" />
+                                </div>
+                              );
+                            }
+
+                            return (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleTaskClick(task);
+                                  }}
+                                >
+                                  <Edit2 className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDelete(task);
+                                  }}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </>
+                            );
+                          })()}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        {user?.role !== 'CLIENT' && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-muted-foreground hover:text-white hover:bg-white/10 transition-colors"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleTaskClick(task);
-                            }}
-                          >
-                            <Edit2 className="h-4 w-4" />
-                          </Button>
-                        )}
-                        {(user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.role === 'MEMBER') && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete(task);
-                            }}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        )}
+                      <div className="flex flex-wrap items-center gap-2">
                         <Badge className={`${priorityColors[task.priority]} border-0 px-2 py-0.5 text-[9px] font-black tracking-widest uppercase shrink-0`}>
                           {task.priority}
                         </Badge>
@@ -688,24 +730,36 @@ const Tasks = () => {
                         </Badge>
                       </div>
                     </div>
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-xs text-muted-foreground">
-                      <span>📁 {task.project.name}</span>
-                      {task.dueDate && <span>📅 {formatDate(task.dueDate)}</span>}
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${statusColors[task.status] || ''}`}>
-                        {task.status.replace('_', ' ')}
-                      </span>
+                    <div className="flex flex-col gap-2 mt-3">
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1.5">
+                          <span>📁</span>
+                          <span className="truncate max-w-[130px] font-medium">{task.project.name}</span>
+                        </div>
+                        {task.dueDate && (
+                          <div className="flex items-center gap-1.5">
+                            <span>📅</span>
+                            <span className="font-medium">{formatDate(task.dueDate)}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black tracking-widest uppercase shadow-sm border border-black/5 ${statusColors[task.status] || ''}`}>
+                          {task.status.replace('_', ' ')}
+                        </span>
+                      </div>
                     </div>
                     <div className="mt-2">
                       <div className="flex items-center justify-between text-[10px] text-gray-500 mb-1">
                         <span>Progress</span>
-                        <span>{task.status === 'COMPLETED' ? 100 : task.completionPercentage}%</span>
+                        <span>{getTaskProgress(task)}%</span>
                       </div>
                       <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
                         <div
-                          className="h-full rounded-full"
+                          className="h-full bg-primary rounded-full transition-all duration-300"
                           style={{
-                            width: `${task.status === 'COMPLETED' ? 100 : task.completionPercentage}%`,
-                            backgroundColor: task.status === 'COMPLETED' ? '#48A111' : '#00A3FF',
+                            width: `${getTaskProgress(task)}%`,
+                            backgroundColor: task.status === 'COMPLETED' ? '#48A111' : '#00A3FF'
                           }}
                         />
                       </div>

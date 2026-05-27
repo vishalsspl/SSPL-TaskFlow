@@ -426,6 +426,7 @@ exports.TimeEntryStatus = exports.$Enums.TimeEntryStatus = {
 exports.TicketStatus = exports.$Enums.TicketStatus = {
   OPEN: 'OPEN',
   IN_PROGRESS: 'IN_PROGRESS',
+  RESOLVED: 'RESOLVED',
   CLOSED: 'CLOSED'
 };
 

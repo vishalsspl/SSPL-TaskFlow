@@ -41,6 +41,7 @@ const StatCard = ({ icon: Icon, label, value, sub, color = '#48A111' }) => (
 const PerformanceDashboardView = ({ data, hoursTitle = "Hours by Project" }) => {
     const { summary = {}, tasksByStatus = {}, hoursByProject = [], recentTasks = [] } = data || {};
     const statusData = Object.entries(tasksByStatus || {}).map(([name, value]) => ({ name, value }));
+    const totalStatusTasks = statusData.reduce((sum, item) => sum + item.value, 0);
 
     return (
         <div className="space-y-4 sm:space-y-6">
@@ -49,7 +50,7 @@ const PerformanceDashboardView = ({ data, hoursTitle = "Hours by Project" }) => 
                 <StatCard icon={CheckCircle2} label="Completion Rate" value={`${summary.completionRate}%`} sub={`${summary.completedTasks}/${summary.totalTasks} tasks`} color="#48A111" />
                 <StatCard icon={Target} label="On-Time Rate" value={`${summary.onTimeRate}%`} sub="Finished before due" color="#0EA5E9" />
                 <StatCard icon={Clock} label="Total Hours" value={`${summary.totalHours}h`} sub={`${summary.billableHours}h billable`} color="#F59E0B" />
-                <StatCard icon={Zap} label="Velocity" value={`${summary.velocity} sp/hr`} sub="Points per logged hour" color="#8B5CF6" />
+                <StatCard icon={Zap} label="Velocity" value={`${summary.velocity}`} sub="Points per logged hour" color="#8B5CF6" />
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
@@ -99,22 +100,30 @@ const PerformanceDashboardView = ({ data, hoursTitle = "Hours by Project" }) => 
                                     {statusData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                                 </Pie>
                                 <Tooltip 
-                                    formatter={(value, name) => [value, name.replace('_', ' ')]}
+                                    formatter={(value, name) => {
+                                        const percent = totalStatusTasks > 0 ? Math.round((value / totalStatusTasks) * 100) : 0;
+                                        return [`${value} (${percent}%)`, name.replace('_', ' ')];
+                                    }}
                                     contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))', fontSize: '12px', padding: '8px 12px' }}
                                     itemStyle={{ color: 'hsl(var(--foreground))', fontWeight: 700 }}
                                 />
                             </PieChart>
                         </ResponsiveContainer>
                         <div className="space-y-2 flex-1">
-                            {statusData.map((s, i) => (
-                                <div key={s.name} className="flex items-center justify-between text-xs">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-2 h-2 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
-                                        <span className="font-bold text-muted-foreground">{s.name.replace('_', ' ')}</span>
+                            {statusData.map((s, i) => {
+                                const percent = totalStatusTasks > 0 ? Math.round((s.value / totalStatusTasks) * 100) : 0;
+                                return (
+                                    <div key={s.name} className="flex items-center justify-between text-xs">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
+                                            <span className="font-bold text-muted-foreground">{s.name.replace('_', ' ')}</span>
+                                        </div>
+                                        <div className="font-black text-right min-w-[50px]">
+                                            {s.value} <span className="text-muted-foreground font-medium ml-1">({percent}%)</span>
+                                        </div>
                                     </div>
-                                    <span className="font-black">{s.value}</span>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </CardContent>
                 </Card>

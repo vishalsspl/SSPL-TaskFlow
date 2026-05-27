@@ -17,7 +17,7 @@ const formatDetails = (details) => {
         {Object.entries(details).map(([key, val]) => (
           <div key={key} className="flex flex-col gap-0.5">
             <span className="text-[9px] font-black text-primary/70 uppercase tracking-widest">{key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}</span>
-            <span className="text-xs font-semibold text-foreground/90 break-words leading-tight">{typeof val === 'object' ? JSON.stringify(val) : String(val)}</span>
+            <span className="text-xs font-semibold text-foreground/90 break-words leading-tight">{typeof val === 'object' ? JSON.stringify(val) : String(val) === 'automatic_login' ? 'Login' : String(val)}</span>
           </div>
         ))}
       </div>
@@ -38,7 +38,7 @@ const AuditCards = ({ logs, getActionIcon, getStatusBadge, getSeverity, showOrga
                 <div className="shrink-0">{getActionIcon(log.action)}</div>
                 <div className="min-w-0">
                   <div className="text-sm font-bold capitalize truncate">{formatAction(log.action)}</div>
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+                  <div className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
                     {log.createdAt ? new Date(log.createdAt).toLocaleString() : '-'}
                   </div>
                 </div>
@@ -48,11 +48,11 @@ const AuditCards = ({ logs, getActionIcon, getStatusBadge, getSeverity, showOrga
 
             <div className="mt-3 space-y-1.5">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">User</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">User</span>
                 <span className="text-[11px] font-semibold truncate">{log.user?.name || 'System'}</span>
               </div>
               <div className="flex items-center justify-between gap-2">
-                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">
+                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">
                   {showOrganization ? 'Org' : 'Project'}
                 </span>
                 <span className="text-[11px] font-semibold truncate">
@@ -63,13 +63,13 @@ const AuditCards = ({ logs, getActionIcon, getStatusBadge, getSeverity, showOrga
                 </span>
               </div>
               <div className="flex items-center justify-between gap-2 pb-2">
-                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">Entity</span>
+                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Entity</span>
                 <Badge variant="secondary" className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0">
                   {log.entity || 'N/A'}
                 </Badge>
               </div>
               <div className="pt-2 border-t border-border/10">
-                <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60 mb-1.5">Details</div>
+                <div className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mb-1.5">Details</div>
                 <div className="bg-secondary/5 p-3 rounded-xl border border-border/10 shadow-inner max-h-24 overflow-y-auto custom-scrollbar">
                   {formatDetails(log.details)}
                 </div>

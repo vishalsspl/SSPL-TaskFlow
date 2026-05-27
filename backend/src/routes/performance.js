@@ -13,7 +13,6 @@ const router = express.Router();
 router.use(authenticate);
 router.use(requireFeature('performance'));
 router.use(attachTenantDb);
-
 router.get('/statistics', getPerformanceStats);
 router.get('/user/:userId', getUserPerformance);
 router.get('/project/:projectId', getProjectPerformance);

@@ -38,7 +38,7 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
         totalBudget: '',
         status: 'PLANNING',
         category: 'INTERNAL',
-        sendEmail: true,
+        sendEmail: localStorage.getItem('preferNoEmail') !== 'true',
         allowMemberTaskCreation: false,
     });
     const [loading, setLoading] = useState(false);
@@ -352,7 +352,14 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
                     <Switch
                         id="sendEmail"
                         checked={formData.sendEmail}
-                        onCheckedChange={(checked) => setFormData({ ...formData, sendEmail: checked })}
+                        onCheckedChange={(checked) => {
+                            setFormData({ ...formData, sendEmail: checked });
+                            if (checked) {
+                                localStorage.removeItem('preferNoEmail');
+                            } else {
+                                localStorage.setItem('preferNoEmail', 'true');
+                            }
+                        }}
                     />
                 </div>
             )}

@@ -659,3 +659,87 @@ The column `allowMemberTaskCreation` does not exist in the current database.
 Path: /api/projects
 User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
 ---
+2026-05-25T10:59:58.966Z [GLOBAL_ERROR] sendEmail is not defined
+Stack: ReferenceError: sendEmail is not defined
+    at updateProject (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/projectController.js:1055:26)
+Path: /api/projects/65fecd9d-c5e1-4a5d-aedb-5aa4c4e7921b
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-05-25T11:00:08.234Z [GLOBAL_ERROR] sendEmail is not defined
+Stack: ReferenceError: sendEmail is not defined
+    at updateProject (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/projectController.js:1055:26)
+Path: /api/projects/65fecd9d-c5e1-4a5d-aedb-5aa4c4e7921b
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-05-25T11:00:18.627Z [GLOBAL_ERROR] sendEmail is not defined
+Stack: ReferenceError: sendEmail is not defined
+    at updateProject (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/projectController.js:1055:26)
+Path: /api/projects/cfeeb9f1-04a0-4ea4-b043-af17798d1d6c
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-05-25T11:02:06.854Z [GLOBAL_ERROR] sendEmail is not defined
+Stack: ReferenceError: sendEmail is not defined
+    at updateProject (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/projectController.js:1055:26)
+Path: /api/projects/65fecd9d-c5e1-4a5d-aedb-5aa4c4e7921b
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-05-25T11:02:11.068Z [GLOBAL_ERROR] sendEmail is not defined
+Stack: ReferenceError: sendEmail is not defined
+    at updateProject (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/projectController.js:1055:26)
+Path: /api/projects/65fecd9d-c5e1-4a5d-aedb-5aa4c4e7921b
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-05-25T11:02:11.220Z [GLOBAL_ERROR] sendEmail is not defined
+Stack: ReferenceError: sendEmail is not defined
+    at updateProject (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/projectController.js:1055:26)
+Path: /api/projects/65fecd9d-c5e1-4a5d-aedb-5aa4c4e7921b
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-05-25T11:02:11.399Z [GLOBAL_ERROR] sendEmail is not defined
+Stack: ReferenceError: sendEmail is not defined
+    at updateProject (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/projectController.js:1055:26)
+Path: /api/projects/65fecd9d-c5e1-4a5d-aedb-5aa4c4e7921b
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-05-25T11:02:11.534Z [GLOBAL_ERROR] sendEmail is not defined
+Stack: ReferenceError: sendEmail is not defined
+    at updateProject (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/projectController.js:1055:26)
+Path: /api/projects/65fecd9d-c5e1-4a5d-aedb-5aa4c4e7921b
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-05-25T11:02:11.755Z [GLOBAL_ERROR] sendEmail is not defined
+Stack: ReferenceError: sendEmail is not defined
+    at updateProject (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/projectController.js:1055:26)
+Path: /api/projects/65fecd9d-c5e1-4a5d-aedb-5aa4c4e7921b
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-05-25T11:02:19.939Z [GLOBAL_ERROR] sendEmail is not defined
+Stack: ReferenceError: sendEmail is not defined
+    at updateProject (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/projectController.js:1055:26)
+Path: /api/projects/65fecd9d-c5e1-4a5d-aedb-5aa4c4e7921b
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-05-25T11:14:14.980Z [GLOBAL_ERROR] sendEmail is not defined
+Stack: ReferenceError: sendEmail is not defined
+    at updateProject (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/projectController.js:1055:26)
+Path: /api/projects/b9316bb8-f442-477a-8436-9e6e570f8e09
+User: 454265a3-1777-413b-a49f-8735ef6ffa2a
+---
+2026-05-25T11:15:47.224Z [GLOBAL_ERROR] sendEmail is not defined
+Stack: ReferenceError: sendEmail is not defined
+    at updateProject (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/projectController.js:1055:26)
+Path: /api/projects/b9316bb8-f442-477a-8436-9e6e570f8e09
+User: 454265a3-1777-413b-a49f-8735ef6ffa2a
+---
+2026-05-25T11:22:44.024Z [GLOBAL_ERROR] sendEmail is not defined
+Stack: ReferenceError: sendEmail is not defined
+    at updateProject (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/projectController.js:1055:26)
+Path: /api/projects/b9316bb8-f442-477a-8436-9e6e570f8e09
+User: 454265a3-1777-413b-a49f-8735ef6ffa2a
+---
+2026-05-25T11:26:55.568Z [GLOBAL_ERROR] sendEmail is not defined
+Stack: ReferenceError: sendEmail is not defined
+    at updateProject (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/projectController.js:1055:26)
+Path: /api/projects/b9316bb8-f442-477a-8436-9e6e570f8e09
+User: 454265a3-1777-413b-a49f-8735ef6ffa2a
+---

@@ -1,6 +1,6 @@
 import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge"
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, format } from 'date-fns';
 
 export function cn(...inputs) {
   return twMerge(clsx(inputs));
@@ -10,7 +10,7 @@ export function formatDate(dateString) {
   if (!dateString) return 'N/A';
   const date = new Date(dateString);
   if (isNaN(date.getTime())) return 'N/A';
-  return date.toLocaleDateString();
+  return format(date, 'dd MMM yyyy');
 }
 
 export function formatRelativeTime(dateString) {

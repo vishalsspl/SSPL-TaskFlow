@@ -119,7 +119,7 @@ const TicketList = () => {
                                         <TableHead>Status</TableHead>
                                         <TableHead>Priority</TableHead>
                                         <TableHead>Last Update</TableHead>
-                                        <TableHead className="text-right">Action</TableHead>
+                                        <TableHead className="text-center">Action</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -132,7 +132,7 @@ const TicketList = () => {
                                     ) : (
                                         tickets.map((ticket) => (
                                             <TableRow key={ticket.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/tickets/${ticket.id}`)}>
-                                                <TableCell>
+                                                <TableCell className="text-left">
                                                     <div className="font-medium">{ticket.title}</div>
                                                     <div className="text-xs text-muted-foreground line-clamp-1">
                                                         {ticket.description
@@ -162,7 +162,7 @@ const TicketList = () => {
                                                         {formatRelativeTime(ticket.updatedAt)}
                                                     </div>
                                                 </TableCell>
-                                                <TableCell className="text-right">
+                                                <TableCell className="text-center">
                                                     <Button variant="ghost" size="sm">
                                                         <MessageSquare className="w-4 h-4 mr-2" />
                                                         View

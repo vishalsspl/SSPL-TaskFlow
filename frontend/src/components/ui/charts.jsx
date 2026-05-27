@@ -12,7 +12,9 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
+  ComposedChart,
+  Area
 } from 'recharts';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
@@ -132,3 +134,65 @@ export const PieChart = ({ data, title, dataKey = "value", nameKey = "name" }) =
     </div>
   );
 };
+
+export const ModernAreaChart = ({ data, title, xAxisKey = "name", mainSeries, secondarySeries }) => {
+  return (
+    <div className="w-full h-full bg-transparent">
+      <h3 className="text-lg font-semibold mb-6 text-foreground">{title}</h3>
+      <div className="h-[300px] w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <defs>
+              <linearGradient id="colorMain" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={mainSeries.color} stopOpacity={0.3}/>
+                <stop offset="95%" stopColor={mainSeries.color} stopOpacity={0}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#2d3748" opacity={0.4} />
+            <XAxis
+              dataKey={xAxisKey}
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 11, fill: '#9ca3af' }}
+              dy={15}
+            />
+            <YAxis
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 11, fill: '#9ca3af' }}
+            />
+            <Tooltip
+              contentStyle={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '8px', color: '#f3f4f6' }}
+              itemStyle={{ color: '#f3f4f6' }}
+            />
+            
+            {secondarySeries && (
+              <Line 
+                type="monotone" 
+                dataKey={secondarySeries.dataKey} 
+                name={secondarySeries.name} 
+                stroke={secondarySeries.color || "#6b7280"} 
+                strokeWidth={2}
+                strokeDasharray="4 4"
+                dot={false}
+                activeDot={{ r: 4, fill: secondarySeries.color || "#6b7280", stroke: 'transparent' }}
+              />
+            )}
+
+              <Area 
+                type="monotone" 
+                dataKey={mainSeries.dataKey} 
+                name={mainSeries.name} 
+                stroke={mainSeries.color} 
+                strokeWidth={3}
+                fillOpacity={1} 
+                fill="url(#colorMain)" 
+                dot={{ r: 4, strokeWidth: 2, fill: 'var(--card, #000)', stroke: mainSeries.color }}
+                activeDot={{ r: 6, fill: mainSeries.color, stroke: 'var(--card, #000)', strokeWidth: 2 }}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    );
+  };

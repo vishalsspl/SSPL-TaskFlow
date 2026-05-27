@@ -38,9 +38,7 @@ const KanbanColumn = ({ id, title, tasks, isReadOnly, onEdit, onDelete, onStatus
             id={id}
             className={`flex flex-col h-full flex-1 
             min-w-[calc(100vw-3rem)] 
-            md:min-w-[200px] 
-            lg:min-w-[230px] 
-            xl:min-w-[280px]
+            md:min-w-0
             rounded-2xl p-1 sm:p-2 mx-1 my-1 transition-all duration-300 snap-center ${getColumnColor(id)}`}>
             <div className="flex items-center justify-between mb-3 px-1">
                 <div className="flex items-center gap-2.5">

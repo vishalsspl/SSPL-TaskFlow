@@ -21,16 +21,20 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { useTheme } from '@/components/ThemeProvider';
 import { useToast } from "@/hooks/use-toast";
 
-const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
+const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = false }) => {
     const { toast } = useToast();
     const { user } = useAuthStore();
+    const { theme } = useTheme();
     const { socket, setActiveRoom, joinRoom } = useChatStore();
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const messagesEndRef = useRef(null);
+
+    const isDirectMessage = isDM || (typeof projectId === 'string' && projectId.startsWith('dm_'));
 
     // Add member state
     const [addMemberOpen, setAddMemberOpen] = useState(false);
@@ -46,6 +50,10 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
     const [replyingTo, setReplyingTo] = useState(null);
     const [forwardingMsg, setForwardingMsg] = useState(null);
     const [reactions, setReactions] = useState({}); // { messageId: { emoji: count } }
+
+    // Mention state
+    const [showMentionMenu, setShowMentionMenu] = useState(false);
+    const [mentionSearch, setMentionSearch] = useState('');
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -193,11 +201,9 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
     }, [messages]);
 
     useEffect(() => {
-        if (addMemberOpen) {
-            fetchAvailableUsers();
-            if (projectId) {
-                fetchProjectMembers();
-            }
+        fetchAvailableUsers();
+        if (addMemberOpen && projectId) {
+            fetchProjectMembers();
         }
     }, [addMemberOpen, projectId]);
 
@@ -270,6 +276,52 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
         }
     };
 
+    const renderMessageContent = (content, isOwnMessage) => {
+        if (!content) return null;
+        const regex = /(@[a-zA-Z0-9_.-]+)/g;
+        const parts = content.split(regex);
+        return parts.map((part, i) => {
+            if (part.startsWith('@')) {
+                return (
+                    <span key={i} className="font-bold">
+                        {part}
+                    </span>
+                );
+            }
+            return part;
+        });
+    };
+
+    const handleMessageChange = (e) => {
+        const val = e.target.value;
+        setNewMessage(val);
+        
+        const lastAtIndex = val.lastIndexOf('@');
+        if (lastAtIndex !== -1) {
+            const textAfterAt = val.slice(lastAtIndex + 1);
+            if (!textAfterAt.includes(' ')) {
+                setMentionSearch(textAfterAt);
+                setShowMentionMenu(true);
+                return;
+            }
+        }
+        setShowMentionMenu(false);
+    };
+
+    const insertMention = (mentionedUser) => {
+        const lastAtIndex = newMessage.lastIndexOf('@');
+        if (lastAtIndex !== -1) {
+            const prefix = newMessage.substring(0, lastAtIndex);
+            setNewMessage(prefix + `@${mentionedUser.name} `);
+        }
+        setShowMentionMenu(false);
+        setMentionSearch('');
+        
+        // Refocus input
+        const input = document.getElementById('chat-message-input');
+        if (input) setTimeout(() => input.focus(), 10);
+    };
+
     const handleSendMessage = async (e) => {
         e.preventDefault();
         if (!newMessage.trim()) return;
@@ -281,6 +333,10 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
 
         const encryptedContent = await encrypt(newMessage);
 
+        const mentionedUserIds = availableUsers
+            .filter(u => newMessage.includes(`@${u.name}`))
+            .map(u => u.id);
+
         socket.emit('send-message', {
             content: encryptedContent,
             userId: user.id,
@@ -288,7 +344,8 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
             organizationId: user.organizationId,
             snippet: newMessage.substring(0, 100),
             replyToId: replyingTo?.id,
-            isForwarded: !!forwardingMsg
+            isForwarded: !!forwardingMsg,
+            mentionedUserIds
         });
 
         setNewMessage('');
@@ -389,7 +446,7 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
                     )}
                     <h3 className="font-bold text-lg Montserrat text-foreground truncate">{title}</h3>
                 </div>
-                {isManagerOrAdmin && projectId && (
+                {isManagerOrAdmin && projectId && !isDirectMessage && (
                     <Button
                         variant="ghost"
                         size="icon"
@@ -540,7 +597,7 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
                                                     : 'bg-secondary text-foreground rounded-tl-none border border-white/5'
                                                     }`}
                                             >
-                                                {msg.content}
+                                                {renderMessageContent(msg.content, msg.userId === user.id)}
                                             </div>
 
                                             {/* Render Reactions */}
@@ -596,9 +653,36 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
                         <div className="absolute bottom-[80px] left-4 z-50 shadow-2xl rounded-xl overflow-hidden border border-border">
                             <EmojiPicker
                                 onEmojiClick={onEmojiClick}
-                                theme="dark"
+                                theme={theme === 'dark' ? 'dark' : 'light'}
                                 autoFocusSearch={false}
                             />
+                        </div>
+                    )}
+
+                    {/* Mention Dropdown */}
+                    {showMentionMenu && (
+                        <div className="absolute bottom-[80px] left-16 z-50 bg-card border border-border rounded-xl shadow-2xl w-64 max-h-48 overflow-y-auto">
+                            {availableUsers
+                                .filter(u => u.name.toLowerCase().includes(mentionSearch.toLowerCase()))
+                                .map((u) => (
+                                    <button
+                                        key={u.id}
+                                        type="button"
+                                        className="w-full flex items-center gap-3 p-2 hover:bg-white/10 transition-colors text-left"
+                                        onClick={() => insertMention(u)}
+                                    >
+                                        <Avatar className="w-6 h-6">
+                                            <AvatarImage src={u.avatar} />
+                                            <AvatarFallback className="bg-primary/20 text-[10px]">{u.name.charAt(0)}</AvatarFallback>
+                                        </Avatar>
+                                        <div className="flex flex-col min-w-0">
+                                            <span className="text-sm font-bold truncate Montserrat">{u.name}</span>
+                                        </div>
+                                    </button>
+                                ))}
+                            {availableUsers.filter(u => u.name.toLowerCase().includes(mentionSearch.toLowerCase())).length === 0 && (
+                                <div className="p-3 text-center text-xs text-muted-foreground Montserrat">No users found</div>
+                            )}
                         </div>
                     )}
 
@@ -613,8 +697,9 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null }) => {
                     </Button>
 
                     <Input
+                        id="chat-message-input"
                         value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
+                        onChange={handleMessageChange}
                         placeholder={replyingTo ? "Type your reply..." : "Type your message..."}
                         className="bg-background border-border text-foreground Montserrat focus-visible:ring-primary h-11"
                     />

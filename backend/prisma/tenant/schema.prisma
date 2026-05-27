@@ -134,6 +134,8 @@ model Project {
   githubRepo           String?  // e.g., "owner/repo"
   githubInstallationId String? 
 
+  allowMemberTaskCreation Boolean @default(false)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 }
@@ -439,6 +441,7 @@ enum TaskType {
 enum TicketStatus {
   OPEN
   IN_PROGRESS
+  RESOLVED
   CLOSED
 }
 

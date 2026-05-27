@@ -20,7 +20,7 @@ export function DatePicker({ date, setDate, className, placeholder = "Pick a dat
                 <Button
                     variant={"outline"}
                     className={cn(
-                        "w-full justify-start text-left font-normal Montserrat text-sm bg-secondary border-border hover:bg-accent",
+                        "w-full justify-start text-left font-normal Montserrat text-xs sm:text-sm bg-secondary border-border hover:bg-accent px-3",
                         !date && "text-muted-foreground",
                         className
                     )}

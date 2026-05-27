@@ -116,6 +116,13 @@ export const getAllProjects = async (req, res) => {
       return res.status(500).json({ error: 'Database connection failed', details: connErr.message });
     }
 
+    // ── Lazy Migration ────────────────────────────────────────────────────────
+    try {
+      await ensureProjectSchema(req.db);
+    } catch (migrateErr) {
+      log(`Lazy migration warning: ${migrateErr.message}`);
+    }
+
     const { search, status: statusFilter, category, page, limit: rawLimit } = req.query;
 
     const where = {
@@ -258,8 +265,16 @@ export const getAllProjects = async (req, res) => {
         progress = Math.round((completedTasks / project._count.tasks) * 100);
       }
 
+      const taskStats = {
+        TODO: tasks.filter(t => t.status === 'TODO').length,
+        IN_PROGRESS: tasks.filter(t => t.status === 'IN_PROGRESS').length,
+        IN_REVIEW: tasks.filter(t => t.status === 'IN_REVIEW').length,
+        COMPLETED: tasks.filter(t => t.status === 'COMPLETED').length,
+        BLOCKED: tasks.filter(t => t.status === 'BLOCKED').length,
+      };
+
       const { tasks: _, ...projectWithoutTasks } = project;
-      return { ...projectWithoutTasks, progress };
+      return { ...projectWithoutTasks, progress, taskStats };
     });
 
     // Always sort General or General Tasks to the very top
@@ -555,6 +570,7 @@ export const createProject = async (req, res) => {
       endDate: true,
       totalBudget: true,
       usedBudget: true,
+      allowMemberTaskCreation: true,
       createdAt: true,
       updatedAt: true,
       client: {
@@ -1008,6 +1024,7 @@ export const updateProject = async (req, res) => {
       endDate: true,
       totalBudget: true,
       usedBudget: true,
+      allowMemberTaskCreation: true,
       createdAt: true,
       updatedAt: true,
       client: {

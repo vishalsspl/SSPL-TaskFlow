@@ -152,7 +152,7 @@ export const login = async (req, res) => {
           organizationId: user.organizationId,
           action: 'LOGIN_CLOCK_IN',
           entity: 'attendance',
-          details: { method: 'automatic_login' }
+          details: { method: 'Login' }
         }
       });
     } catch (attErr) {

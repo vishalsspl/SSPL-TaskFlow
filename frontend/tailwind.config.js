@@ -58,6 +58,17 @@ export default {
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
   		},
+  		fontSize: {
+  			'xs': 'clamp(0.65rem, 0.5vw + 0.5rem, 0.75rem)',
+  			'sm': 'clamp(0.75rem, 0.8vw + 0.5rem, 0.875rem)',
+  			'base': 'clamp(0.875rem, 1vw + 0.5rem, 1rem)',
+  			'lg': 'clamp(1rem, 1.2vw + 0.5rem, 1.125rem)',
+  			'xl': 'clamp(1.125rem, 1.5vw + 0.5rem, 1.25rem)',
+  			'2xl': 'clamp(1.25rem, 2vw + 0.5rem, 1.5rem)',
+  			'3xl': 'clamp(1.5rem, 3vw + 0.5rem, 1.875rem)',
+  			'4xl': 'clamp(1.875rem, 4vw + 0.5rem, 2.25rem)',
+  			'5xl': 'clamp(2.25rem, 5vw + 0.5rem, 3rem)',
+  		},
   		keyframes: {
   			'accordion-down': {
   				from: {

@@ -1,4 +1,5 @@
 import prisma from '../lib/prisma.js';
+import tenantDbManager from '../lib/tenantDbManager.js';
 
 /**
  * Get overall performance statistics for the organization (Team View)
@@ -224,6 +225,39 @@ export const getProjectPerformance = async (req, res) => {
             BLOCKED: tasks.filter(t => t.status === 'BLOCKED').length,
         };
 
+        const last6Months = [];
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date();
+            d.setMonth(d.getMonth() - i);
+            last6Months.push({
+                month: d.toLocaleString('default', { month: 'short' }).toUpperCase(),
+                year: d.getFullYear(),
+                monthNum: d.getMonth(),
+                completed: 0,
+                assigned: 0
+            });
+        }
+
+        tasks.forEach(t => {
+            const created = new Date(t.createdAt);
+            const updated = new Date(t.updatedAt);
+            
+            last6Months.forEach(m => {
+                if (created.getMonth() === m.monthNum && created.getFullYear() === m.year) {
+                    m.assigned++;
+                }
+                if (t.status === 'COMPLETED' && updated.getMonth() === m.monthNum && updated.getFullYear() === m.year) {
+                    m.completed++;
+                }
+            });
+        });
+        
+        const performanceTrend = last6Months.map(m => ({
+            name: m.month,
+            completed: m.completed,
+            assigned: m.assigned
+        }));
+
         res.json({
             projectId,
             projectName: project.name,
@@ -238,6 +272,7 @@ export const getProjectPerformance = async (req, res) => {
             },
             tasksByStatus,
             hoursByProject: Object.entries(hoursByUserMap).map(([name, hours]) => ({ name, hours: parseFloat(hours.toFixed(2)) })),
+            performanceTrend,
             recentTasks: tasks.slice(0, 10)
         });
     } catch (error) {

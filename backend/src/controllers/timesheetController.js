@@ -154,13 +154,16 @@ export const createTimeEntry = async (req, res) => {
         }
     }
 
-    // Verify project/task belongs to user's organization
-    const project = await req.db.project.findFirst({
-        where: { id: projectId, organizationId: req.user.organizationId }
-    });
-    if (!project) return res.status(404).json({ error: 'Project not found' });
+    // Verify project/task belongs to user's organization if provided
+    let project = null;
+    if (projectId) {
+        project = await req.db.project.findFirst({
+            where: { id: projectId, organizationId: req.user.organizationId }
+        });
+        if (!project) return res.status(404).json({ error: 'Project not found' });
+    }
 
-    if (taskId) {
+    if (taskId && projectId) {
         const task = await req.db.task.findFirst({
             where: { id: taskId, projectId }
         });
@@ -191,7 +194,7 @@ export const createTimeEntry = async (req, res) => {
     const entry = await req.db.timeEntry.create({
         data: {
             userId: req.user.id,
-            projectId,
+            projectId: projectId || null,
             taskId: taskId || null,
             date: new Date(date),
             hours: parseFloat(hours),
@@ -224,7 +227,7 @@ export const createTimeEntry = async (req, res) => {
         console.error('[CreateTimeEntry] Failed to log activity:', logErr.message);
     }
 
-    if (project.managerId && project.managerId !== req.user.id) {
+    if (project && project.managerId && project.managerId !== req.user.id) {
         const manager = await req.db.user.findUnique({
             where: { id: project.managerId },
             select: { email: true, name: true }
@@ -262,7 +265,11 @@ export const updateTimeEntry = async (req, res) => {
         include: { project: true },
     });
 
-    if (!existingEntry || existingEntry.project.organizationId !== req.user.organizationId) {
+    if (!existingEntry) {
+        return res.status(404).json({ error: 'Time entry not found' });
+    }
+
+    if (existingEntry.project && existingEntry.project.organizationId !== req.user.organizationId) {
         return res.status(404).json({ error: 'Time entry not found' });
     }
 
@@ -345,7 +352,11 @@ export const updateTimeEntryStatus = async (req, res) => {
         include: { project: true, user: true },
     });
 
-    if (!existingEntry || existingEntry.project.organizationId !== req.user.organizationId) {
+    if (!existingEntry) {
+        return res.status(404).json({ error: 'Time entry not found' });
+    }
+
+    if (existingEntry.project && existingEntry.project.organizationId !== req.user.organizationId) {
         return res.status(404).json({ error: 'Time entry not found' });
     }
 
@@ -356,7 +367,7 @@ export const updateTimeEntryStatus = async (req, res) => {
         await createNotification(req, {
             userId: existingEntry.userId,
             title: `Timesheet ${status === 'APPROVED' ? 'Approved' : 'Rejected'}`,
-            message: `Your time log for ${existingEntry.project.name} has been ${status.toLowerCase()}`,
+            message: `Your time log for ${existingEntry.project?.name || 'Leave'} has been ${status.toLowerCase()}`,
             type: `TIMESHEET_${status}`
         });
 
@@ -364,7 +375,7 @@ export const updateTimeEntryStatus = async (req, res) => {
         await sendTimesheetStatusEmail(
             existingEntry.user.email,
             existingEntry.user.name,
-            existingEntry.project.name,
+            existingEntry.project?.name || 'Leave',
             status,
             req.user.name,
             existingEntry.hours,
@@ -409,7 +420,11 @@ export const deleteTimeEntry = async (req, res) => {
         include: { project: true },
     });
 
-    if (!existingEntry || existingEntry.project.organizationId !== req.user.organizationId) {
+    if (!existingEntry) {
+        return res.status(404).json({ error: 'Time entry not found' });
+    }
+
+    if (existingEntry.project && existingEntry.project.organizationId !== req.user.organizationId) {
         return res.status(404).json({ error: 'Time entry not found' });
     }
 

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Download } from 'lucide-react';
@@ -42,6 +43,8 @@ const ENTITIES = [
 ];
 
 const AuditFilters = ({ action, setAction, entity, setEntity, setPage, onExport, onSubmit }) => {
+  const [actionOpen, setActionOpen] = useState(false);
+  const [entityOpen, setEntityOpen] = useState(false);
   const currentActionLabel = action
     ? (ACTIONS.find(a => a.value === action)?.label || action)
     : 'All Operations';
@@ -53,7 +56,7 @@ const AuditFilters = ({ action, setAction, entity, setEntity, setPage, onExport,
   return (
     <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
       <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
-        <Popover>
+        <Popover open={actionOpen} onOpenChange={setActionOpen}>
           <PopoverTrigger asChild>
             <Button
               variant="ghost"
@@ -82,6 +85,7 @@ const AuditFilters = ({ action, setAction, entity, setEntity, setPage, onExport,
                     onSelect={() => {
                       setAction('');
                       setPage(1);
+                      setActionOpen(false);
                     }}
                     className={cn(
                       "rounded-xl cursor-pointer font-bold text-[10px] tracking-widest uppercase py-4 px-4 mb-1 transition-all",
@@ -100,6 +104,7 @@ const AuditFilters = ({ action, setAction, entity, setEntity, setPage, onExport,
                         onSelect={() => {
                           setAction(a.value);
                           setPage(1);
+                          setActionOpen(false);
                         }}
                         className={cn(
                           "rounded-xl cursor-pointer font-bold text-[10px] tracking-widest uppercase py-4 px-4 mb-1 transition-all",
@@ -119,7 +124,7 @@ const AuditFilters = ({ action, setAction, entity, setEntity, setPage, onExport,
 
         {/* Entity Filter */}
         {setEntity && (
-          <Popover>
+          <Popover open={entityOpen} onOpenChange={setEntityOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant="ghost"
@@ -148,6 +153,7 @@ const AuditFilters = ({ action, setAction, entity, setEntity, setPage, onExport,
                       onSelect={() => {
                         setEntity('');
                         setPage(1);
+                        setEntityOpen(false);
                       }}
                       className={cn(
                         "rounded-xl cursor-pointer font-bold text-[10px] tracking-widest uppercase py-4 px-4 mb-1 transition-all",
@@ -166,6 +172,7 @@ const AuditFilters = ({ action, setAction, entity, setEntity, setPage, onExport,
                           onSelect={() => {
                             setEntity(e.value);
                             setPage(1);
+                            setEntityOpen(false);
                           }}
                           className={cn(
                             "rounded-xl cursor-pointer font-bold text-[10px] tracking-widest uppercase py-4 px-4 mb-1 transition-all",

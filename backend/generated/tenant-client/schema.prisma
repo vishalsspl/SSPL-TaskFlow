@@ -44,7 +44,7 @@ model Organization {
   customFeatures Json?
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 
   users            User[]
   projects         Project[]
@@ -137,7 +137,7 @@ model Project {
   allowMemberTaskCreation Boolean @default(false)
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 // ─── Phase ──────────────────────────────────────────────────────────────────
@@ -156,7 +156,7 @@ model Phase {
   tasks Task[]
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 // ─── Task ───────────────────────────────────────────────────────────────────
@@ -185,7 +185,7 @@ model Task {
   timeEntries TimeEntry[]
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 // ─── TaskAssignee ───────────────────────────────────────────────────────────
@@ -271,7 +271,7 @@ model Ticket {
   comments TicketComment[]
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 // ─── TicketComment ──────────────────────────────────────────────────────────
@@ -286,7 +286,7 @@ model TicketComment {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 // ─── ChatMessage ────────────────────────────────────────────────────────────
@@ -441,6 +441,7 @@ enum TaskType {
 enum TicketStatus {
   OPEN
   IN_PROGRESS
+  RESOLVED
   CLOSED
 }
 

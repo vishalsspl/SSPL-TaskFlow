@@ -93,7 +93,7 @@ export const getAllTasks = async (req, res) => {
         },
       },
     },
-    project: { select: { id: true, name: true } },
+    project: { select: { id: true, name: true, allowMemberTaskCreation: true } },
     phase: { select: { id: true, name: true } },
   };
 
@@ -212,6 +212,33 @@ export const createTask = async (req, res) => {
      projectId = generalProject.id;
   }
 
+  // Determine if it's a general/random task to apply special approval routing
+  let isGeneralTask = false;
+  if (projectId) {
+      const proj = await req.db.project.findFirst({ where: { id: projectId } });
+      if (proj && (proj.name === 'General' || proj.name === 'General Tasks')) {
+          isGeneralTask = true;
+      }
+  }
+
+  // If it's a random task, determine the approver
+  let approverId = null;
+  if (isGeneralTask) {
+      if (req.user.role === 'MEMBER') {
+          const memberUser = await req.db.user.findFirst({ where: { id: req.user.id } });
+          if (memberUser && memberUser.managerId) {
+              approverId = memberUser.managerId;
+          }
+      } else if (req.user.role === 'ADMIN' || req.user.role === 'MANAGER') {
+          approverId = req.user.id;
+      }
+  }
+
+  let finalTags = tags || [];
+  if (approverId) {
+      finalTags.push(`APPROVER:${approverId}`);
+  }
+
   // Check if title starts with a number
   if (/^\d/.test(title.trim())) {
     return res.status(400).json({ error: 'Task title cannot start with a number' });
@@ -286,7 +313,7 @@ export const createTask = async (req, res) => {
       priority: priority || 'MEDIUM',
       completionPercentage: completionPercentage || 0,
       dueDate: dueDate ? new Date(dueDate) : null,
-      tags: tags || [],
+      tags: finalTags,
       storyPoints: storyPoints ? parseInt(storyPoints) : 0,
       type: type || 'TASK',
       assignees: {
@@ -979,7 +1006,9 @@ export const updateTaskStatus = async (req, res) => {
 
     let completionPercentage = undefined;
     if (status === 'COMPLETED') completionPercentage = 100;
-    else if (status === 'TODO') completionPercentage = 0;
+    else if (status === 'IN_REVIEW') completionPercentage = 75;
+    else if (status === 'IN_PROGRESS') completionPercentage = 50;
+    else if (status === 'TODO' || status === 'BLOCKED') completionPercentage = 0;
 
     const task = await req.db.task.update({
       where: { id },
@@ -1073,7 +1102,9 @@ export const updateTaskStatus = async (req, res) => {
 
     // Notify Manager for Approval if requested by Member
     if (req.user.role === 'MEMBER') {
-      const managerId = existingTask.project?.managerId;
+      const approverTag = updatedTags.find(t => t.startsWith('APPROVER:'));
+      let managerId = approverTag ? approverTag.split(':')[1] : existingTask.project?.managerId;
+
       if (managerId) {
         createNotification(req, {
           userId: managerId,
@@ -1173,7 +1204,9 @@ export const rejectTaskStatus = async (req, res) => {
 
     let completionPercentage = undefined;
     if (oldStatus === 'COMPLETED') completionPercentage = 100;
-    else if (oldStatus === 'TODO') completionPercentage = 0;
+    else if (oldStatus === 'IN_REVIEW') completionPercentage = 75;
+    else if (oldStatus === 'IN_PROGRESS') completionPercentage = 50;
+    else if (oldStatus === 'TODO' || oldStatus === 'BLOCKED') completionPercentage = 0;
 
     const updatedTask = await req.db.task.update({
       where: { id },
