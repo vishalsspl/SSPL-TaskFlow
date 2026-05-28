@@ -1,7 +1,8 @@
 import prisma from '../lib/prisma.js';
 import bcrypt from 'bcryptjs';
 
-import { sendUserApprovalEmail, sendTeamAssignmentEmail, sendUserRejectionEmail } from '../services/emailService.js';
+import { sendUserApprovalEmail, sendTeamAssignmentEmail, sendUserRejectionEmail, sendRoleChangeEmail } from '../services/emailService.js';
+import { createNotification } from '../utils/notifications.js';
 
 // Helper to get project IDs managed by a user
 const getManagerProjectIds = async (db, managerId, organizationId) => {
@@ -35,9 +36,8 @@ export const getUsers = async (req, res) => {
     where.isApproved = true;
   }
 
-  // If Admin requests team members (for task assignment), show Managers and Members
   if (req.user.role === 'ADMIN' && pending !== 'true' && teamOnly === 'true') {
-    where.role = { in: ['MANAGER', 'MEMBER'] };
+    where.role = { in: ['ADMIN', 'MANAGER', 'MEMBER'] };
   }
 
   // If the requester is a MANAGER, restrict visibility
@@ -46,9 +46,10 @@ export const getUsers = async (req, res) => {
 
     if (teamOnly === 'true') {
       where.AND = [
-        { role: 'MEMBER' },
+        { role: { in: ['MANAGER', 'MEMBER'] } },
         {
           OR: [
+            { id: req.user.id },
             { managerId: req.user.id },
             {
               taskAssignments: {
@@ -424,6 +425,23 @@ export const updateUser = async (req, res) => {
       const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
       sendTeamAssignmentEmail(updatedUser.email, updatedUser.name, newManager.name, teamMembers, origin)
         .catch(err => console.error('Failed to send team assignment email:', err));
+    }
+
+    if (role !== undefined && role !== existingUser.role) {
+      // Always send an internal application notification for the role change
+      await createNotification(req, {
+        userId: updatedUser.id,
+        title: 'Role Updated',
+        message: `Your account role has been changed from ${existingUser.role} to ${role} by the Admin.`,
+        type: 'ROLE_UPDATED'
+      });
+
+      // Send email if user has an email
+      if (updatedUser.email) {
+        const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
+        sendRoleChangeEmail(updatedUser.email, updatedUser.name, role, origin)
+          .catch(err => console.error('Failed to send role change email:', err));
+      }
     }
 
     res.json(updatedUser);

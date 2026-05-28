@@ -37,7 +37,7 @@
     /* ── Table Colors ── */
     --table-border: rgba(0, 0, 0, 0.20);
     --table-bg: rgba(255, 255, 255, 0.5);
-    --table-header-bg: rgba(0, 0, 0, 0.03);
+    --table-header-bg: rgba(0, 0, 0, 0.06);
     --table-header-border: rgba(0, 0, 0, 0.10);
     --table-divider: rgba(0, 0, 0, 0.08);
     --table-heading-text: rgba(0, 0, 0, 0.70);
@@ -75,10 +75,10 @@
     /* ── Table Colors ── */
     --table-border: rgba(255, 255, 255, 0.15);
     --table-bg: rgba(0, 0, 0, 0.20);
-    --table-header-bg: rgba(255, 255, 255, 0.03);
+    --table-header-bg: rgba(255, 255, 255, 0.08);
     --table-header-border: rgba(255, 255, 255, 0.10);
     --table-divider: rgba(255, 255, 255, 0.06);
-    --table-heading-text: rgba(255, 255, 255, 0.55);
+    --table-heading-text: rgba(255, 255, 255, 0.85);
     --table-row-hover: rgba(255, 255, 255, 0.03);
     --input-border: rgba(255, 255, 255, 0.12);
   }

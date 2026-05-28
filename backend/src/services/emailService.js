@@ -1,87 +1,150 @@
 import nodemailer from 'nodemailer';
 
-// Create reusable transporter object using the default SMTP transport
 console.log(`[EmailService] Initializing transporter for host: ${process.env.SMTP_HOST || 'smtp.ethereal.email'}`);
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.office365.com',
   port: parseInt(process.env.SMTP_PORT) || 587,
-  secure: process.env.SMTP_SECURE === 'true', // false for 587
+  secure: process.env.SMTP_SECURE === 'true',
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
   },
   tls: {
-    // Microsoft 365 often requires specific ciphers or versions
     ciphers: 'TLSv1.2',
     rejectUnauthorized: false
   },
-  // Some Office 365 accounts need this
   requireTLS: true
 });
 
-
-
 const DEFAULT_FROM = `"${process.env.SMTP_FROM_NAME || 'TaskFlow'}" <${process.env.SMTP_USER}>`;
+const getBaseUrl = (baseUrl) => baseUrl || process.env.CLIENT_URL || 'http://localhost:5173';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Jira-Style Email Template Engine
+// ─────────────────────────────────────────────────────────────────────────────
+
+const buildEmailTemplate = ({ actionSummary, refLabel, refTitle, bodyLines, fields, ctaUrl, ctaLabel, footerNote }) => {
+
+  // Build fields as simple "Label :  Value" rows (Jira-style)
+  const fieldsBlock = (fields && fields.length > 0) ? `
+    <table cellpadding="0" cellspacing="0" border="0" style="margin:16px 0 0;width:100%;">
+      ${fields.map(f => `
+        <tr>
+          <td style="padding:5px 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#707070;width:160px;vertical-align:top;white-space:nowrap;">${f.label} :</td>
+          <td style="padding:5px 0 5px 12px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#333333;vertical-align:top;word-break:break-word;">${f.value}</td>
+        </tr>
+      `).join('')}
+    </table>
+  ` : '';
+
+  // Build body paragraphs
+  const bodyHtml = (bodyLines || []).map(line =>
+    `<p style="margin:0 0 12px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:21px;color:#333333;">${line}</p>`
+  ).join('');
+
+  // CTA as a simple blue link (not a button — matches Jira style)
+  const ctaBlock = ctaUrl ? `
+    <p style="margin:20px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;">
+      <a href="${ctaUrl}" target="_blank" style="color:#0052CC;text-decoration:none;font-weight:600;">${ctaLabel || 'View Details'}</a>
+    </p>
+  ` : '';
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>TaskFlow Notification</title>
+  <!--[if !mso]><!-->
+  <style type="text/css">
+    @media only screen and (max-width: 620px) {
+      .email-outer { padding: 8px !important; }
+      .email-inner { padding: 16px 0 0 !important; }
+    }
+  </style>
+  <!--<![endif]-->
+</head>
+<body style="margin:0;padding:0;background-color:#ffffff;-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+    <tr>
+      <td class="email-outer" style="padding:20px;">
+        <table cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
+
+          <!-- Action Summary Line -->
+          <tr>
+            <td style="padding:0 0 12px;">
+              <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#333333;">${actionSummary || ''}</p>
+            </td>
+          </tr>
+
+          <!-- Thin Separator -->
+          <tr><td style="border-bottom:1px solid #cccccc;height:1px;padding:0;"></td></tr>
+
+          <!-- Reference Label + Clickable Title (like Jira project/ticket header) -->
+          ${refLabel || refTitle ? `
+          <tr>
+            <td style="padding:16px 0 0;">
+              ${refLabel ? `<p style="margin:0 0 2px;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#707070;">${refLabel}</p>` : ''}
+              ${refTitle ? `<p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:18px;color:#0052CC;font-weight:400;line-height:24px;">${ctaUrl ? `<a href="${ctaUrl}" style="color:#0052CC;text-decoration:none;">${refTitle}</a>` : refTitle}</p>` : ''}
+            </td>
+          </tr>
+          ` : ''}
+
+          <!-- Body Content + Fields + CTA Link -->
+          <tr>
+            <td class="email-inner" style="padding:20px 0 0;">
+              ${bodyHtml}
+              ${fieldsBlock}
+              ${ctaBlock}
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding:24px 0 0;">
+              <hr style="border:0;border-top:1px solid #e0e0e0;margin:0 0 12px;">
+              ${footerNote ? `<p style="margin:0 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#999999;">${footerNote}</p>` : ''}
+              <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#999999;">This message was sent by TaskFlow. Do not reply to this email.</p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+};
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Email Functions
+// ─────────────────────────────────────────────────────────────────────────────
 
 export const sendTaskAssignmentEmail = async (to, taskTitle, projectName, assignedByName, { priority, dueDate, status, description, baseUrl } = {}) => {
   try {
-    if (!to) return;
-
-
-    const priorityColors = { HIGH: '#DC2626', MEDIUM: '#D97706', LOW: '#16A34A' };
-    const priorityColor = priorityColors[priority] || '#6B7280';
-    const dueDateStr = dueDate ? new Date(dueDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'No due date';
-    const statusStr = status ? status.replace('_', ' ') : 'TODO';
-
+    if (!to) return null;
+    const dueDateStr = dueDate ? new Date(dueDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Not set';
+    const statusStr = status ? status.replace(/_/g, ' ') : 'TODO';
     const info = await transporter.sendMail({
-      from: DEFAULT_FROM,
-      to,
-      subject: `New Task Assigned: ${taskTitle}`,
-      text: `Hello,\n\nYou have been assigned a new task "${taskTitle}" in project "${projectName}" by ${assignedByName}.\n\nTask Details:\n- Priority: ${priority || 'MEDIUM'}\n- Status: ${statusStr}\n- Due Date: ${dueDateStr}\n- Description: ${description || 'No description'}\n\nPlease log in to TaskFlow to view and manage this task.\n\nBest regards,\nTaskFlow Team`,
-      html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #2563eb; margin-bottom: 4px;">New Task Assigned</h2>
-          <p style="color: #6B7280; margin-top: 0;">You have a new task waiting for you.</p>
-          <hr style="border: 1px solid #eee; margin: 16px 0;">
-          <p>Hello,</p>
-          <p>You have been assigned a new task by <strong>${assignedByName}</strong>.</p>
-
-          <div style="background: #F9FAFB; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #2563eb;">
-            <h3 style="margin: 0 0 12px 0; font-size: 18px; color: #111;">${taskTitle}</h3>
-            <table style="width: 100%; border-collapse: collapse;">
-              <tr>
-                <td style="padding: 6px 0; color: #6B7280; width: 120px;">Project</td>
-                <td style="padding: 6px 0; font-weight: 600;">${projectName}</td>
-              </tr>
-              <tr>
-                <td style="padding: 6px 0; color: #6B7280;">Priority</td>
-                <td style="padding: 6px 0;"><span style="background: ${priorityColor}; color: white; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">${priority || 'MEDIUM'}</span></td>
-              </tr>
-              <tr>
-                <td style="padding: 6px 0; color: #6B7280;">Status</td>
-                <td style="padding: 6px 0;">${statusStr}</td>
-              </tr>
-              <tr>
-                <td style="padding: 6px 0; color: #6B7280;">Due Date</td>
-                <td style="padding: 6px 0;">${dueDateStr}</td>
-              </tr>
-              ${description ? `<tr>
-                <td style="padding: 6px 0; color: #6B7280; vertical-align: top;">Description</td>
-                <td style="padding: 6px 0; line-height: 1.5;">${description}</td>
-              </tr>` : ''}
-            </table>
-          </div>
-
-          <div style="margin: 30px 0;">
-            <a href="${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/tasks" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">View Task</a>
-          </div>
-          <hr style="border: 1px solid #eee; margin: 20px 0;">
-          <p style="color: #666; font-size: 12px;">This is an automated message from TaskFlow.</p>
-        </div>
-      `,
+      from: DEFAULT_FROM, to,
+      subject: `[TaskFlow] (${projectName}) Task Assigned: ${taskTitle}`,
+      html: buildEmailTemplate({
+        actionSummary: `<strong>${assignedByName}</strong> assigned a task to you.`,
+        refLabel: `TaskFlow / ${projectName}`,
+        refTitle: taskTitle,
+        fields: [
+          { label: 'Priority', value: priority || 'MEDIUM' },
+          { label: 'Status', value: statusStr },
+          { label: 'Due Date', value: dueDateStr },
+          ...(description ? [{ label: 'Description', value: description }] : [])
+        ],
+        ctaUrl: `${getBaseUrl(baseUrl)}/tasks`,
+        ctaLabel: 'View this task in TaskFlow'
+      }),
     });
-
     console.log(`[EmailService] Task Assignment Email sent to ${to}: ${info.messageId}`);
     return info;
   } catch (error) {
@@ -90,156 +153,109 @@ export const sendTaskAssignmentEmail = async (to, taskTitle, projectName, assign
   }
 };
 
-
-/**
- * Send an email notification when a task status is updated.
- * @param {string} to - Recipient's email
- * @param {string} taskTitle - Title of the task
- * @param {string} projectName - Name of the project
- * @param {string} newStatus - The new status of the task
- * @param {string} updatedBy - Name of the person who updated the status
- */
 export const sendTaskStatusUpdateEmail = async (to, taskTitle, projectName, newStatus, updatedBy, baseUrl) => {
   try {
-    if (!to) return;
-
-    const statusColors = {
-      TODO: '#6B7280',
-      IN_PROGRESS: '#2563EB',
-      COMPLETED: '#16A34A',
-      REJECTED: '#DC2626',
-      ON_HOLD: '#D97706'
-    };
-    const statusColor = statusColors[newStatus] || '#6B7280';
-    const statusStr = newStatus.replace('_', ' ');
-
+    if (!to) return null;
+    const statusStr = newStatus.replace(/_/g, ' ');
     const info = await transporter.sendMail({
-      from: DEFAULT_FROM,
-      to,
-      subject: `Task Status Updated: ${taskTitle}`,
-      text: `Hello,\n\nThe status of task "${taskTitle}" in project "${projectName}" has been updated to "${statusStr}" by ${updatedBy}.\n\nPlease log in to TaskFlow to view the details.\n\nBest regards,\nTaskFlow Team`,
-      html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #2563eb; margin-bottom: 4px;">Task Status Updated</h2>
-          <p style="color: #6B7280; margin-top: 0;">An update has been made to a task assigned to you.</p>
-          <hr style="border: 1px solid #eee; margin: 16px 0;">
-          <p>Hello,</p>
-          <p>The status of task <strong>${taskTitle}</strong> has been updated by <strong>${updatedBy}</strong>.</p>
-
-          <div style="background: #F9FAFB; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #2563eb;">
-            <table style="width: 100%; border-collapse: collapse;">
-              <tr>
-                <td style="padding: 6px 0; color: #6B7280; width: 120px;">Project</td>
-                <td style="padding: 6px 0; font-weight: 600;">${projectName}</td>
-              </tr>
-              <tr>
-                <td style="padding: 6px 0; color: #6B7280;">Task</td>
-                <td style="padding: 6px 0; font-weight: 600;">${taskTitle}</td>
-              </tr>
-              <tr>
-                <td style="padding: 6px 0; color: #6B7280;">New Status</td>
-                <td style="padding: 6px 0;"><span style="background: ${statusColor}; color: white; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">${statusStr}</span></td>
-              </tr>
-            </table>
-          </div>
-
-          <div style="margin: 30px 0;">
-            <a href="${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/tasks" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">View Tasks</a>
-          </div>
-          <hr style="border: 1px solid #eee; margin: 20px 0;">
-          <p style="color: #666; font-size: 12px;">This is an automated message from TaskFlow.</p>
-        </div>
-      `,
+      from: DEFAULT_FROM, to,
+      subject: `[TaskFlow] (${projectName}) Status Updated: ${taskTitle}`,
+      html: buildEmailTemplate({
+        actionSummary: `<strong>${updatedBy}</strong> updated the status of a task.`,
+        refLabel: `TaskFlow / ${projectName}`,
+        refTitle: taskTitle,
+        fields: [{ label: 'Status', value: statusStr }],
+        ctaUrl: `${getBaseUrl(baseUrl)}/tasks`,
+        ctaLabel: 'View this task in TaskFlow'
+      }),
     });
-
-    console.log(`[EmailService] ✅ Task Status Update Email sent to ${to}: ${info.messageId}`);
+    console.log(`[EmailService] Task Status Update Email sent to ${to}: ${info.messageId}`);
     return info;
   } catch (error) {
-    console.error(`[EmailService] ❌ Error sending task status update email to ${to}:`, error);
+    console.error(`[EmailService] Error sending task status update email to ${to}:`, error);
     return null;
   }
 };
 
+export const sendTaskUpdateEmail = async (to, taskTitle, projectName, updatedByName, { priority, dueDate, status, description, baseUrl } = {}) => {
+  try {
+    if (!to) return null;
+    const dueDateStr = dueDate ? new Date(dueDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Not set';
+    const statusStr = status ? status.replace(/_/g, ' ') : 'TODO';
+    const info = await transporter.sendMail({
+      from: DEFAULT_FROM, to,
+      subject: `[TaskFlow] (${projectName}) Task Updated: ${taskTitle}`,
+      html: buildEmailTemplate({
+        actionSummary: `<strong>${updatedByName}</strong> updated a task assigned to you.`,
+        refLabel: `TaskFlow / ${projectName}`,
+        refTitle: taskTitle,
+        fields: [
+          { label: 'Priority', value: priority || 'MEDIUM' },
+          { label: 'Status', value: statusStr },
+          { label: 'Due Date', value: dueDateStr },
+          ...(description ? [{ label: 'Description', value: description }] : [])
+        ],
+        ctaUrl: `${getBaseUrl(baseUrl)}/tasks`,
+        ctaLabel: 'View this task in TaskFlow'
+      }),
+    });
+    console.log(`[EmailService] Task Update Email sent to ${to}: ${info.messageId}`);
+    return info;
+  } catch (error) {
+    console.error(`[EmailService] Error sending task update email to ${to}:`, error);
+    return null;
+  }
+};
 
-/**
- * Send a rich project assignment email to the Manager.
- * @param {string} to - Manager's email
- * @param {object} project - Project object { name, description, status, startDate, endDate, totalBudget }
- * @param {object} manager - Manager object { name }
- * @param {object|null} client - Client user object { name, email } or null
- * @param {Array} teamMembers - Array of user objects { name, role, email }
- * @param {string} assignedByName - Name of the admin who assigned the project
- */
+export const sendTaskDeleteEmail = async (to, taskTitle, projectName, deletedByName) => {
+  try {
+    if (!to) return null;
+    const info = await transporter.sendMail({
+      from: DEFAULT_FROM, to,
+      subject: `[TaskFlow] (${projectName}) Task Deleted: ${taskTitle}`,
+      html: buildEmailTemplate({
+        actionSummary: `<strong>${deletedByName}</strong> deleted a task that was assigned to you.`,
+        refLabel: `TaskFlow / ${projectName}`,
+        refTitle: taskTitle,
+        bodyLines: [
+          `The task <strong>${taskTitle}</strong> has been deleted from TaskFlow.`,
+          `If you believe this was a mistake, please contact your manager.`
+        ],
+      }),
+    });
+    console.log(`[EmailService] Task Delete Email sent to ${to}: ${info.messageId}`);
+    return info;
+  } catch (error) {
+    console.error(`[EmailService] Error sending task delete email to ${to}:`, error);
+    return null;
+  }
+};
+
 export const sendProjectManagerEmail = async (to, project, manager, client, assignedByName, baseUrl) => {
   try {
-    if (!to) return;
-
+    if (!to) return null;
     const startStr = project.startDate ? new Date(project.startDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'TBD';
     const endStr = project.endDate ? new Date(project.endDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'TBD';
-    const budgetStr = project.totalBudget ? `₹${Number(project.totalBudget).toLocaleString('en-IN')}` : 'Not specified';
-    const statusColors = { PLANNING: '#6366F1', IN_PROGRESS: '#F59E0B', COMPLETED: '#10B981', ON_HOLD: '#6B7280' };
-    const statusColor = statusColors[project.status] || '#6B7280';
-
-
-
+    const budgetStr = project.totalBudget ? `INR ${Number(project.totalBudget).toLocaleString('en-IN')}` : 'Not specified';
     const info = await transporter.sendMail({
-      from: DEFAULT_FROM,
-      to,
-      subject: `You've been assigned as Manager: ${project.name}`,
-      text: `Hello ${manager.name},\n\nYou have been assigned as the Manager for the project "${project.name}" by ${assignedByName}.\n\nProject Details:\n- Status: ${project.status || 'PLANNING'}\n- Start Date: ${startStr}\n- End Date: ${endStr}\n- Budget: ${budgetStr}\n- Description: ${project.description || 'No description provided'}\n- Client: ${client ? client.name : 'Not assigned'}\n\nPlease log in to TaskFlow to view and manage this project.\n\nBest regards,\nTaskFlow Team`,
-      html: `
-<div style="font-family:Arial,sans-serif;max-width:620px;margin:0 auto;color:#1F2937;">
-  <div style="background:linear-gradient(135deg,#1D4ED8,#3B82F6);padding:32px 28px;border-radius:12px 12px 0 0;">
-    <h1 style="margin:0;color:#fff;font-size:22px;">📋 Project Assigned to You</h1>
-    <p style="color:#BFDBFE;margin:6px 0 0;">You are now the Manager for a new project.</p>
-  </div>
-
-  <div style="background:#F9FAFB;padding:28px;border-radius:0 0 12px 12px;border:1px solid #E5E7EB;">
-    <p>Hello <strong>${manager.name}</strong>,</p>
-    <p>You have been assigned as the <strong>Project Manager</strong> for <strong>${project.name}</strong> by <strong>${assignedByName}</strong>.</p>
-
-    <!-- Project Details Card -->
-    <div style="background:#fff;border-radius:8px;padding:20px;margin:20px 0;border-left:4px solid #3B82F6;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
-      <h2 style="margin:0 0 14px;font-size:18px;color:#111827;">${project.name}</h2>
-      <table style="width:100%;border-collapse:collapse;">
-        <tr>
-          <td style="padding:7px 0;color:#6B7280;width:130px;">Status</td>
-          <td style="padding:7px 0;"><span style="background:${statusColor};color:#fff;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;">${project.status || 'PLANNING'}</span></td>
-        </tr>
-        <tr>
-          <td style="padding:7px 0;color:#6B7280;">Start Date</td>
-          <td style="padding:7px 0;">${startStr}</td>
-        </tr>
-        <tr>
-          <td style="padding:7px 0;color:#6B7280;">End Date</td>
-          <td style="padding:7px 0;">${endStr}</td>
-        </tr>
-        <tr>
-          <td style="padding:7px 0;color:#6B7280;">Budget</td>
-          <td style="padding:7px 0;font-weight:600;">${budgetStr}</td>
-        </tr>
-        <tr>
-          <td style="padding:7px 0;color:#6B7280;">Client</td>
-          <td style="padding:7px 0;">${client ? client.name : '<em style="color:#9CA3AF;">Not assigned</em>'}</td>
-        </tr>
-        ${project.description ? `<tr>
-          <td style="padding:7px 0;color:#6B7280;vertical-align:top;">Description</td>
-          <td style="padding:7px 0;line-height:1.6;">${project.description}</td>
-        </tr>` : ''}
-      </table>
-    </div>
-
-
-
-    <div style="margin:28px 0 8px;">
-      <a href="${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/projects" style="background:#2563EB;color:#fff;padding:13px 26px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;">View Project →</a>
-    </div>
-    <hr style="border:1px solid #E5E7EB;margin:24px 0 12px;">
-    <p style="color:#9CA3AF;font-size:12px;">This is an automated message from TaskFlow. Do not reply to this email.</p>
-  </div>
-</div>`,
+      from: DEFAULT_FROM, to,
+      subject: `[TaskFlow] Project Assigned: ${project.name}`,
+      html: buildEmailTemplate({
+        actionSummary: `<strong>${assignedByName}</strong> assigned you as Project Manager.`,
+        refLabel: `TaskFlow / Projects`,
+        refTitle: project.name,
+        fields: [
+          { label: 'Status', value: project.status || 'PLANNING' },
+          { label: 'Start Date', value: startStr },
+          { label: 'End Date', value: endStr },
+          { label: 'Budget', value: budgetStr },
+          { label: 'Client', value: client ? client.name : 'Not assigned' },
+          ...(project.description ? [{ label: 'Description', value: project.description }] : [])
+        ],
+        ctaUrl: `${getBaseUrl(baseUrl)}/projects`,
+        ctaLabel: 'View this project in TaskFlow'
+      }),
     });
-
     console.log(`[EmailService] Project Manager Email sent to ${to}: ${info.messageId}`);
     return info;
   } catch (error) {
@@ -248,164 +264,139 @@ export const sendProjectManagerEmail = async (to, project, manager, client, assi
   }
 };
 
-
-/**
- * Send a rich project notification email to the Client.
- * @param {string} to - Client's email
- * @param {object} project - Project object
- * @param {object} manager - Manager user object { name, email }
- * @param {Array} teamMembers - Array of user objects { name, role }
- * @param {string} assignedByName - Admin who set this up
- */
-export const sendProjectClientEmail = async (to, project, manager, assignedByName, baseUrl) => {
+export const sendProjectUpdateEmail = async (to, project, assignedByName, baseUrl) => {
   try {
-    if (!to) return;
-
+    if (!to) return null;
     const startStr = project.startDate ? new Date(project.startDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'TBD';
     const endStr = project.endDate ? new Date(project.endDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'TBD';
-    const statusColors = { PLANNING: '#6366F1', IN_PROGRESS: '#F59E0B', COMPLETED: '#10B981', ON_HOLD: '#6B7280' };
-    const statusColor = statusColors[project.status] || '#6B7280';
-
-
-
+    const budgetStr = project.totalBudget ? `INR ${Number(project.totalBudget).toLocaleString('en-IN')}` : 'Not specified';
     const info = await transporter.sendMail({
-      from: DEFAULT_FROM,
-      to,
-      subject: `Your Project Is Ready: ${project.name}`,
-      text: `Hello,\n\nGreat news! The project "${project.name}" has been set up for you on TaskFlow.\n\nProject Details:\n- Status: ${project.status || 'PLANNING'}\n- Start Date: ${startStr}\n- End Date: ${endStr}\n- Description: ${project.description || 'No description provided'}\n\nYour Project Manager: ${manager ? `${manager.name} (${manager.email})` : 'Not assigned'}\n\nLog in to TaskFlow to track progress.\n\nBest regards,\nTaskFlow Team`,
-      html: `
-<div style="font-family:Arial,sans-serif;max-width:620px;margin:0 auto;color:#1F2937;">
-  <div style="background:linear-gradient(135deg,#059669,#10B981);padding:32px 28px;border-radius:12px 12px 0 0;">
-    <h1 style="margin:0;color:#fff;font-size:22px;">🚀 Your Project Is Live!</h1>
-    <p style="color:#A7F3D0;margin:6px 0 0;">A new project has been set up for you.</p>
-  </div>
-
-  <div style="background:#F9FAFB;padding:28px;border-radius:0 0 12px 12px;border:1px solid #E5E7EB;">
-    <p>Hello,</p>
-    <p>Great news! The project <strong>${project.name}</strong> has been set up for you on TaskFlow${assignedByName ? ` by <strong>${assignedByName}</strong>` : ''}.</p>
-
-    <!-- Project Details Card -->
-    <div style="background:#fff;border-radius:8px;padding:20px;margin:20px 0;border-left:4px solid #10B981;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
-      <h2 style="margin:0 0 14px;font-size:18px;color:#111827;">${project.name}</h2>
-      <table style="width:100%;border-collapse:collapse;">
-        <tr>
-          <td style="padding:7px 0;color:#6B7280;width:130px;">Status</td>
-          <td style="padding:7px 0;"><span style="background:${statusColor};color:#fff;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;">${project.status || 'PLANNING'}</span></td>
-        </tr>
-        <tr>
-          <td style="padding:7px 0;color:#6B7280;">Start Date</td>
-          <td style="padding:7px 0;">${startStr}</td>
-        </tr>
-        <tr>
-          <td style="padding:7px 0;color:#6B7280;">End Date</td>
-          <td style="padding:7px 0;">${endStr}</td>
-        </tr>
-        ${project.description ? `<tr>
-          <td style="padding:7px 0;color:#6B7280;vertical-align:top;">Description</td>
-          <td style="padding:7px 0;line-height:1.6;">${project.description}</td>
-        </tr>` : ''}
-      </table>
-    </div>
-
-    <!-- Manager Info -->
-    ${manager ? `
-    <div style="background:#EFF6FF;border-radius:8px;padding:16px;margin-bottom:20px;">
-      <h3 style="margin:0 0 6px;font-size:14px;color:#1D4ED8;">🧑‍💼 Your Project Manager</h3>
-      <p style="margin:0;font-size:15px;font-weight:600;">${manager.name}</p>
-      <p style="margin:2px 0 0;font-size:13px;color:#6B7280;">${manager.email}</p>
-    </div>` : ''}
-
-
-
-    <div style="margin:28px 0 8px;">
-      <a href="${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}" style="background:#059669;color:#fff;padding:13px 26px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;">Track Your Project →</a>
-    </div>
-    <hr style="border:1px solid #E5E7EB;margin:24px 0 12px;">
-    <p style="color:#9CA3AF;font-size:12px;">This is an automated message from TaskFlow. Do not reply to this email.</p>
-  </div>
-</div>`,
+      from: DEFAULT_FROM, to,
+      subject: `[TaskFlow] Project Updated: ${project.name}`,
+      html: buildEmailTemplate({
+        actionSummary: `<strong>${assignedByName}</strong> updated a project you manage.`,
+        refLabel: `TaskFlow / Projects`,
+        refTitle: project.name,
+        fields: [
+          { label: 'Status', value: project.status || 'PLANNING' },
+          { label: 'Start Date', value: startStr },
+          { label: 'End Date', value: endStr },
+          { label: 'Budget', value: budgetStr },
+          ...(project.description ? [{ label: 'Description', value: project.description }] : [])
+        ],
+        ctaUrl: `${getBaseUrl(baseUrl)}/projects`,
+        ctaLabel: 'View this project in TaskFlow'
+      }),
     });
-
-    console.log('Client Project Email sent: %s', info.messageId);
-    if (nodemailer.getTestMessageUrl(info)) {
-      console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
-    }
+    console.log(`[EmailService] Project Update Email sent to ${to}: ${info.messageId}`);
     return info;
   } catch (error) {
-    console.error('Error sending client project email:', error);
+    console.error(`[EmailService] Error sending project update email to ${to}:`, error);
     return null;
   }
 };
 
-// Keep old function name as alias for backward compat
-export const sendProjectAssignmentEmail = sendProjectManagerEmail;
-
-
-export const sendUserApprovalEmail = async (to, userName, baseUrl) => {
-  console.log(`[EmailService] 📧 Initiating Approval Email for: ${to}`);
+export const sendProjectDeleteEmail = async (to, projectName, assignedByName) => {
   try {
-    if (!to) {
-      console.warn('[EmailService] ⚠️ No recipient email provided for approval notification');
-      return;
-    }
-
+    if (!to) return null;
     const info = await transporter.sendMail({
-      from: DEFAULT_FROM,
-      to,
-      subject: 'Account Approved - Welcome to TaskFlow',
-      text: `Hello ${userName},\n\nYour account has been approved by the administrator.\n\nYou can now log in to TaskFlow and access your dashboard.\n\nLogin here: ${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/login\n\nBest regards,\nTaskFlow Team`,
-      html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-          <h2 style="color: #2563eb;">Account Approved!</h2>
-          <p>Hello <strong>${userName}</strong>,</p>
-          <p>Great news! Your account has been approved by the administrator.</p>
-          <p>You can now log in to TaskFlow and start collaborating.</p>
-          <div style="margin: 30px 0;">
-            <a href="${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/login" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Login to TaskFlow</a>
-          </div>
-          <hr style="border: 1px solid #eee; margin: 20px 0;">
-          <p style="color: #666; font-size: 12px;">This is an automated message from TaskFlow.</p>
-        </div>
-      `,
+      from: DEFAULT_FROM, to,
+      subject: `[TaskFlow] Project Deleted: ${projectName}`,
+      html: buildEmailTemplate({
+        actionSummary: `<strong>${assignedByName}</strong> deleted a project you were managing.`,
+        refLabel: `TaskFlow / Projects`,
+        refTitle: projectName,
+        bodyLines: [
+          `The project <strong>${projectName}</strong> has been deleted from TaskFlow.`,
+          `If you believe this was a mistake, please contact your administrator.`
+        ],
+      }),
     });
-
-    console.log(`[EmailService] ✅ Approval Email sent to ${to}: ${info.messageId}`);
-    if (nodemailer.getTestMessageUrl(info)) {
-      console.log(`[EmailService] Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
-    }
+    console.log(`[EmailService] Project Delete Email sent to ${to}: ${info.messageId}`);
     return info;
   } catch (error) {
-    console.error(`[EmailService] ❌ Error sending approval email to ${to}:`, error);
+    console.error(`[EmailService] Error sending project delete email to ${to}:`, error);
+    return null;
+  }
+};
+
+export const sendProjectClientEmail = async (to, project, manager, assignedByName, baseUrl) => {
+  try {
+    if (!to) return null;
+    const startStr = project.startDate ? new Date(project.startDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'TBD';
+    const endStr = project.endDate ? new Date(project.endDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'TBD';
+    const info = await transporter.sendMail({
+      from: DEFAULT_FROM, to,
+      subject: `[TaskFlow] Your Project Is Ready: ${project.name}`,
+      html: buildEmailTemplate({
+        actionSummary: `${assignedByName ? `<strong>${assignedByName}</strong> configured` : 'A'} project for you.`,
+        refLabel: `TaskFlow / Projects`,
+        refTitle: project.name,
+        fields: [
+          { label: 'Status', value: project.status || 'PLANNING' },
+          { label: 'Start Date', value: startStr },
+          { label: 'End Date', value: endStr },
+          { label: 'Project Manager', value: manager ? `${manager.name} (${manager.email})` : 'Not assigned' },
+          ...(project.description ? [{ label: 'Description', value: project.description }] : [])
+        ],
+        ctaUrl: getBaseUrl(baseUrl),
+        ctaLabel: 'View this project in TaskFlow'
+      }),
+    });
+    console.log(`[EmailService] Client Project Email sent to ${to}: ${info.messageId}`);
+    return info;
+  } catch (error) {
+    console.error(`[EmailService] Error sending client project email to ${to}:`, error);
+    return null;
+  }
+};
+
+export const sendProjectAssignmentEmail = sendProjectManagerEmail;
+
+export const sendUserApprovalEmail = async (to, userName, baseUrl) => {
+  try {
+    if (!to) return null;
+    const info = await transporter.sendMail({
+      from: DEFAULT_FROM, to,
+      subject: '[TaskFlow] Your Account Has Been Approved',
+      html: buildEmailTemplate({
+        actionSummary: `Your TaskFlow account has been approved.`,
+        refLabel: 'TaskFlow / Account',
+        refTitle: 'Account Approved',
+        bodyLines: [
+          `Hello ${userName},`,
+          `Your account has been approved by the administrator. You can now log in and access your dashboard.`
+        ],
+        ctaUrl: `${getBaseUrl(baseUrl)}/login`,
+        ctaLabel: 'Log in to TaskFlow'
+      }),
+    });
+    console.log(`[EmailService] Approval Email sent to ${to}: ${info.messageId}`);
+    return info;
+  } catch (error) {
+    console.error(`[EmailService] Error sending approval email to ${to}:`, error);
     return null;
   }
 };
 
 export const sendUserRejectionEmail = async (to, userName) => {
-  console.log(`[EmailService] 📧 Initiating Rejection Email for: ${to}`);
   try {
-    if (!to) {
-      console.warn('[EmailService] ⚠️ No recipient email provided for rejection notification');
-      return;
-    }
-
+    if (!to) return null;
     const info = await transporter.sendMail({
-      from: DEFAULT_FROM,
-      to,
-      subject: 'Update on Your TaskFlow Registration',
-      text: `Hello ${userName},\n\nThank you for your interest in TaskFlow. We regret to inform you that your registration request has been declined at this time.\n\nIf you have any questions, please contact your organization administrator.\n\nBest regards,\nTaskFlow Team`,
-      html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px;">
-          <h2 style="color: #EF4444;">Registration Update</h2>
-          <p>Hello <strong>${userName}</strong>,</p>
-          <p>Thank you for your interest in TaskFlow.</p>
-          <p>We regret to inform you that your registration request has been <strong>declined</strong> at this time.</p>
-          <p style="color: #6B7280; font-size: 14px; margin-top: 20px;">If you believe this was a mistake or have any questions, please contact your organization's administrator.</p>
-          <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-          <p style="color: #6B7280; font-size: 12px; text-align: center;">This is an automated message from TaskFlow.</p>
-        </div>
-      `,
+      from: DEFAULT_FROM, to,
+      subject: '[TaskFlow] Registration Update',
+      html: buildEmailTemplate({
+        actionSummary: `An update regarding your registration request.`,
+        refLabel: 'TaskFlow / Account',
+        refTitle: 'Registration Declined',
+        bodyLines: [
+          `Hello ${userName},`,
+          `Thank you for your interest in TaskFlow. We regret to inform you that your registration request has been declined at this time.`,
+          `If you believe this was a mistake, please contact your organization's administrator.`
+        ],
+        footerNote: 'If you have any questions, please reach out to your organization administrator.'
+      }),
     });
-
     console.log(`[EmailService] Rejection Email sent to ${to}: ${info.messageId}`);
     return info;
   } catch (error) {
@@ -416,28 +407,22 @@ export const sendUserRejectionEmail = async (to, userName) => {
 
 export const sendOrgSignupEmail = async (to, userName, orgName) => {
   try {
-    if (!to) return;
-
+    if (!to) return null;
     const info = await transporter.sendMail({
-      from: DEFAULT_FROM,
-      to,
-      subject: `Welcome to TaskFlow - Joining ${orgName}`,
-      text: `Hello ${userName},\n\nThank you for registering with ${orgName} on TaskFlow.\n\nYour account has been created and is currently pending administrator approval. You will receive another email once your account is approved and ready to use.\n\nBest regards,\nTaskFlow Team`,
-      html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #2563eb;">Welcome to TaskFlow!</h2>
-          <p>Hello <strong>${userName}</strong>,</p>
-          <p>Thank you for registering with <strong>${orgName}</strong> on TaskFlow.</p>
-          <div style="background: #FFFBEB; border-left: 4px solid #F59E0B; padding: 15px; margin: 20px 0; border-radius: 4px;">
-            <p style="margin: 0; color: #B45309;"><strong>Status: Pending Approval</strong></p>
-            <p style="margin: 5px 0 0 0; font-size: 14px;">Your account is currently under review by the organization administrator. We will notify you via email as soon as it is approved.</p>
-          </div>
-          <hr style="border: 1px solid #eee; margin: 20px 0;">
-          <p style="color: #666; font-size: 12px;">This is an automated message from TaskFlow.</p>
-        </div>
-      `,
+      from: DEFAULT_FROM, to,
+      subject: `[TaskFlow] Registration Received: ${orgName}`,
+      html: buildEmailTemplate({
+        actionSummary: `Your registration with ${orgName} has been received.`,
+        refLabel: 'TaskFlow / Account',
+        refTitle: 'Pending Approval',
+        bodyLines: [
+          `Hello ${userName},`,
+          `Thank you for registering with <strong>${orgName}</strong> on TaskFlow.`,
+          `Your account is currently under review. You will receive a confirmation email once approved.`
+        ],
+        footerNote: 'No action is required from you at this time.'
+      }),
     });
-
     console.log(`[EmailService] Org Signup Email sent to ${to}: ${info.messageId}`);
     return info;
   } catch (error) {
@@ -446,37 +431,29 @@ export const sendOrgSignupEmail = async (to, userName, orgName) => {
   }
 };
 
-
-/**
- * Send an email notification when superadmin updates organization admin credentials.
- */
 export const sendCredentialsUpdatedEmail = async (to, userName, newPassword, baseUrl) => {
   try {
-    if (!to) return;
-
+    if (!to) return null;
     const info = await transporter.sendMail({
-      from: DEFAULT_FROM,
-      to,
-      subject: 'Security Alert - Your TaskFlow Credentials Have Been Updated',
-      html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #2563eb;">Credentials Updated</h2>
-          <p>Hello <strong>${userName}</strong>,</p>
-          <p>The administrator has updated your login credentials for TaskFlow.</p>
-          <div style="background: #f8fafc; border-left: 4px solid #3b82f6; padding: 15px; margin: 20px 0; border-radius: 4px;">
-            <p style="margin: 0;"><strong>Email:</strong> ${to}</p>
-            ${newPassword ? `<p style="margin: 8px 0 0 0;"><strong>New Password:</strong> ${newPassword}</p>` : ''}
-          </div>
-          <p>Please log in with these credentials. For your security, we strongly recommend changing your password directly within the platform if a temporary one was provided to you.</p>
-          <div style="margin: 30px 0;">
-            <a href="${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/login" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold;">Login Now</a>
-          </div>
-          <hr style="border: 1px solid #eee; margin: 20px 0;">
-          <p style="color: #666; font-size: 12px;">This is an automated security message from TaskFlow.</p>
-        </div>
-      `,
+      from: DEFAULT_FROM, to,
+      subject: '[TaskFlow] Security Alert: Credentials Updated',
+      html: buildEmailTemplate({
+        actionSummary: `Your login credentials have been updated by an administrator.`,
+        refLabel: 'TaskFlow / Security',
+        refTitle: 'Credentials Updated',
+        bodyLines: [
+          `Hello ${userName},`,
+          `Please use the credentials below to log in. We recommend changing your password after logging in.`
+        ],
+        fields: [
+          { label: 'Email', value: to },
+          ...(newPassword ? [{ label: 'New Password', value: newPassword }] : [])
+        ],
+        ctaUrl: `${getBaseUrl(baseUrl)}/login`,
+        ctaLabel: 'Log in to TaskFlow',
+        footerNote: 'If you did not expect this change, please contact your administrator immediately.'
+      }),
     });
-
     console.log(`[EmailService] Credentials Updated Email sent to ${to}: ${info.messageId}`);
     return info;
   } catch (error) {
@@ -485,30 +462,24 @@ export const sendCredentialsUpdatedEmail = async (to, userName, newPassword, bas
   }
 };
 
-
-/**
- * Send an email notification for a new support ticket.
- */
 export const sendNewTicketNotification = async (to, ticketTitle, description, priority, clientName, ticketId, baseUrl) => {
   try {
-    if (!to) return;
-
+    if (!to) return null;
     const info = await transporter.sendMail({
-      from: DEFAULT_FROM,
-      to,
-      subject: `New Support Ticket: ${ticketTitle}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #2563eb;">New Support Ticket</h2>
-          <p>A new support ticket has been submitted by <strong>${clientName}</strong>.</p>
-          <div style="background: #F9FAFB; padding: 20px; border-radius: 8px; border-left: 4px solid #2563eb; margin: 20px 0;">
-            <h3 style="margin-top: 0;">${ticketTitle}</h3>
-            <p>${description}</p>
-            <p style="margin-bottom: 0;"><strong>Priority:</strong> ${priority}</p>
-          </div>
-          <a href="${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/tickets/${ticketId}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">View Ticket</a>
-        </div>
-      `,
+      from: DEFAULT_FROM, to,
+      subject: `[TaskFlow] New Support Ticket: ${ticketTitle}`,
+      html: buildEmailTemplate({
+        actionSummary: `<strong>${clientName}</strong> created a new support ticket.`,
+        refLabel: 'TaskFlow / Support Tickets',
+        refTitle: ticketTitle,
+        fields: [
+          { label: 'Submitted By', value: clientName },
+          { label: 'Priority', value: priority },
+          { label: 'Description', value: description }
+        ],
+        ctaUrl: `${getBaseUrl(baseUrl)}/tickets/${ticketId}`,
+        ctaLabel: 'View this ticket in TaskFlow'
+      }),
     });
     console.log(`[EmailService] New Ticket Notification Email sent to ${to}: ${info.messageId}`);
     return info;
@@ -518,26 +489,21 @@ export const sendNewTicketNotification = async (to, ticketTitle, description, pr
   }
 };
 
-
-/**
- * Send an email notification for ticket status update.
- */
 export const sendTicketStatusUpdateNotification = async (to, ticketTitle, newStatus, updatedBy) => {
   try {
-    if (!to) return;
-
+    if (!to) return null;
     const info = await transporter.sendMail({
-      from: DEFAULT_FROM,
-      to,
-      subject: `Ticket Status Updated: ${ticketTitle}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #2563eb;">Ticket Status Updated</h2>
-          <p>Your ticket "<strong>${ticketTitle}</strong>" has been updated to <strong>${newStatus}</strong> by ${updatedBy}.</p>
-          <hr style="border: 1px solid #eee; margin: 20px 0;">
-          <p style="color: #666; font-size: 12px;">Log in to TaskFlow to view more details.</p>
-        </div>
-      `,
+      from: DEFAULT_FROM, to,
+      subject: `[TaskFlow] Ticket Updated: ${ticketTitle}`,
+      html: buildEmailTemplate({
+        actionSummary: `<strong>${updatedBy}</strong> updated a support ticket.`,
+        refLabel: 'TaskFlow / Support Tickets',
+        refTitle: ticketTitle,
+        fields: [
+          { label: 'New Status', value: newStatus },
+          { label: 'Updated By', value: updatedBy }
+        ]
+      }),
     });
     console.log(`[EmailService] Ticket Status Update Email sent to ${to}: ${info.messageId}`);
     return info;
@@ -547,28 +513,20 @@ export const sendTicketStatusUpdateNotification = async (to, ticketTitle, newSta
   }
 };
 
-
-/**
- * Send an email notification for a new ticket comment.
- */
 export const sendTicketCommentNotification = async (to, ticketTitle, commentAuthor, message, ticketId, baseUrl) => {
   try {
-    if (!to) return;
-
+    if (!to) return null;
     const info = await transporter.sendMail({
-      from: DEFAULT_FROM,
-      to,
-      subject: `New Comment on Ticket: ${ticketTitle}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #2563eb;">New Comment</h2>
-          <p><strong>${commentAuthor}</strong> added a comment to the ticket "<strong>${ticketTitle}</strong>":</p>
-          <div style="background: #F9FAFB; padding: 15px; border-radius: 8px; margin: 20px 0; font-style: italic;">
-            "${message}"
-          </div>
-          <a href="${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/tickets/${ticketId}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Reply on Ticket</a>
-        </div>
-      `,
+      from: DEFAULT_FROM, to,
+      subject: `[TaskFlow] New Comment on: ${ticketTitle}`,
+      html: buildEmailTemplate({
+        actionSummary: `<strong>${commentAuthor}</strong> added a comment.`,
+        refLabel: 'TaskFlow / Support Tickets',
+        refTitle: ticketTitle,
+        bodyLines: [`"${message}"`],
+        ctaUrl: `${getBaseUrl(baseUrl)}/tickets/${ticketId}`,
+        ctaLabel: 'Reply on this ticket'
+      }),
     });
     console.log(`[EmailService] Ticket Comment Email sent to ${to}: ${info.messageId}`);
     return info;
@@ -580,46 +538,28 @@ export const sendTicketCommentNotification = async (to, ticketTitle, commentAuth
 
 export const sendMemberInvitationEmail = async (to, userName, password, role, baseUrl) => {
   try {
-    if (!to) return;
-
-    const loginUrl = `${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/login`;
-
+    if (!to) return null;
     const info = await transporter.sendMail({
-      from: DEFAULT_FROM,
-      to,
-      subject: 'Welcome to TaskFlow - Your Account Credentials',
-      text: `Hello ${userName},\n\nYou have been added to TaskFlow as a ${role}.\n\nYour login credentials are:\nEmail: ${to}\nPassword: ${password}\n\nLogin here: ${loginUrl}\n\nPlease log in to set your new password and access your dashboard.\n\nBest regards,\nTaskFlow Team`,
-      html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px;">
-          <h2 style="color: #2563eb; text-align: center;">Welcome to TaskFlow!</h2>
-          <p>Hello <strong>${userName}</strong>,</p>
-          <p>You have been added to the TaskFlow platform with the role of <strong>${role}</strong>.</p>
-          
-          <div style="background: #F9FAFB; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <p style="margin-top: 0; font-weight: bold; color: #374151;">Your Login Credentials:</p>
-            <table style="width: 100%;">
-              <tr>
-                <td style="padding: 5px 0; color: #6B7280; width: 100px;">Email:</td>
-                <td style="padding: 5px 0; font-family: monospace;">${to}</td>
-              </tr>
-              <tr>
-                <td style="padding: 5px 0; color: #6B7280;">Password:</td>
-                <td style="padding: 5px 0; font-family: monospace;">${password}</td>
-              </tr>
-            </table>
-          </div>
-
-
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${loginUrl}" style="background-color: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Go to Login Page</a>
-          </div>
-
-          <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-          <p style="color: #6B7280; font-size: 12px; text-align: center;">This is an automated message from TaskFlow. If you did not expect this, please ignore this email.</p>
-        </div>
-      `,
+      from: DEFAULT_FROM, to,
+      subject: '[TaskFlow] You Have Been Invited',
+      html: buildEmailTemplate({
+        actionSummary: `You have been added to TaskFlow.`,
+        refLabel: 'TaskFlow / Account',
+        refTitle: 'Welcome to TaskFlow',
+        bodyLines: [
+          `Hello ${userName},`,
+          `You have been added to the platform with the role of <strong>${role}</strong>. Use the credentials below to log in.`
+        ],
+        fields: [
+          { label: 'Email', value: to },
+          { label: 'Password', value: password },
+          { label: 'Role', value: role }
+        ],
+        ctaUrl: `${getBaseUrl(baseUrl)}/login`,
+        ctaLabel: 'Log in to TaskFlow',
+        footerNote: 'If you did not expect this invitation, you can safely ignore this email.'
+      }),
     });
-
     console.log(`[EmailService] Invitation Email sent to ${to}: ${info.messageId}`);
     return info;
   } catch (error) {
@@ -628,287 +568,233 @@ export const sendMemberInvitationEmail = async (to, userName, password, role, ba
   }
 };
 
+export const sendRoleChangeEmail = async (to, userName, newRole, baseUrl) => {
+  try {
+    if (!to) return null;
+    const info = await transporter.sendMail({
+      from: DEFAULT_FROM, to,
+      subject: '[TaskFlow] Your Role Has Been Updated',
+      html: buildEmailTemplate({
+        actionSummary: `Your account role has been updated by an administrator.`,
+        refLabel: 'TaskFlow / Account',
+        refTitle: 'Role Updated',
+        bodyLines: [
+          `Hello ${userName},`,
+          `Your permissions have been changed. Please log in to review your updated access.`
+        ],
+        fields: [{ label: 'New Role', value: newRole }],
+        ctaUrl: `${getBaseUrl(baseUrl)}/login`,
+        ctaLabel: 'Log in to TaskFlow',
+        footerNote: 'If you believe this change was made in error, please contact your administrator.'
+      }),
+    });
+    console.log(`[EmailService] Role change email sent to ${to}`);
+    return info;
+  } catch (error) {
+    console.error(`[EmailService] Failed to send role change email to ${to}:`, error);
+    return null;
+  }
+};
 
-/**
- * Send an email notification when a user is added to a manager's team
- */
 export const sendTeamAssignmentEmail = async (to, userName, managerName, teamMembers = [], baseUrl) => {
   try {
-    if (!to) return;
-
-    const teamRows = teamMembers.length > 0
-      ? teamMembers.map(m => `
-                <tr>
-                  <td style="padding:8px 12px;border-bottom:1px solid #F3F4F6;">${m.name}</td>
-                  <td style="padding:8px 12px;border-bottom:1px solid #F3F4F6;color:#6B7280;">${m.email}</td>
-                </tr>`).join('')
-      : '<tr><td colspan="2" style="padding:8px 12px;color:#9CA3AF;text-align:center;">You are the first member of this team!</td></tr>';
-
+    if (!to) return null;
+    const teamList = teamMembers.length > 0
+      ? teamMembers.map(m => `${m.name} - ${m.email}`).join('<br>')
+      : 'You are the first member of this team.';
     const info = await transporter.sendMail({
-      from: DEFAULT_FROM,
-      to,
-      subject: `You have been added to ${managerName}'s Team`,
-      text: `Hello ${userName},\n\nYou have been assigned to ${managerName}'s team on TaskFlow.\n\nTeam Members:\n${teamMembers.map(m => `- ${m.name} (${m.email})`).join('\n') || 'You are the first member!'}\n\nPlease log in to TaskFlow to view your team and tasks.\n\nBest regards,\nTaskFlow Team`,
-      html: `
-<div style="font-family:Arial,sans-serif;max-width:620px;margin:0 auto;color:#1F2937;">
-  <div style="background:linear-gradient(135deg,#8B5CF6,#6D28D9);padding:32px 28px;border-radius:12px 12px 0 0;">
-    <h1 style="margin:0;color:#fff;font-size:22px;">👋 Welcome to the Team!</h1>
-    <p style="color:#DDD6FE;margin:6px 0 0;">You have been assigned to a new manager's team.</p>
-  </div>
-
-  <div style="background:#F9FAFB;padding:28px;border-radius:0 0 12px 12px;border:1px solid #E5E7EB;">
-    <p>Hello <strong>${userName}</strong>,</p>
-    <p>You have been assigned to <strong>${managerName}'s</strong> team on TaskFlow.</p>
-
-    <!-- Team Members -->
-    <h3 style="font-size:15px;margin:24px 0 10px;color:#374151;">👥 Your Team Members</h3>
-    <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
-      <thead>
-        <tr style="background:#F3F4F6;">
-          <th style="padding:10px 12px;text-align:left;font-size:12px;color:#6B7280;text-transform:uppercase;">Name</th>
-          <th style="padding:10px 12px;text-align:left;font-size:12px;color:#6B7280;text-transform:uppercase;">Email</th>
-        </tr>
-      </thead>
-      <tbody>${teamRows}</tbody>
-    </table>
-
-    <div style="margin:28px 0 8px;">
-      <a href="${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/team" style="background:#8B5CF6;color:#fff;padding:13px 26px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;">View Team →</a>
-    </div>
-    <hr style="border:1px solid #E5E7EB;margin:24px 0 12px;">
-    <p style="color:#9CA3AF;font-size:12px;">This is an automated message from TaskFlow. Do not reply to this email.</p>
-  </div>
-</div>`,
+      from: DEFAULT_FROM, to,
+      subject: `[TaskFlow] Team Assignment: ${managerName}'s Team`,
+      html: buildEmailTemplate({
+        actionSummary: `You have been assigned to <strong>${managerName}'s</strong> team.`,
+        refLabel: 'TaskFlow / Team',
+        refTitle: `${managerName}'s Team`,
+        bodyLines: [`Hello ${userName},`],
+        fields: [
+          { label: 'Manager', value: managerName },
+          { label: 'Team Members', value: teamList }
+        ],
+        ctaUrl: `${getBaseUrl(baseUrl)}/team`,
+        ctaLabel: 'View your team in TaskFlow'
+      }),
     });
-
-    console.log('Team Assignment Email sent: %s', info.messageId);
+    console.log(`[EmailService] Team Assignment Email sent to ${to}: ${info.messageId}`);
     return info;
   } catch (error) {
-    console.error('Error sending team assignment email:', error);
+    console.error(`[EmailService] Error sending team assignment email to ${to}:`, error);
     return null;
   }
 };
 
-/**
- * Send an email notification when a user is added as a member to a project
- */
 export const sendProjectMemberAssignmentEmail = async (to, userName, projectName, projectDescription, managerName, baseUrl) => {
   try {
-    if (!to) return;
-
+    if (!to) return null;
     const info = await transporter.sendMail({
-      from: DEFAULT_FROM,
-      to,
-      subject: `Added to Project: ${projectName}`,
-      text: `Hello ${userName},\n\nYou have been added as a member to the project "${projectName}" by ${managerName}.\n\nProject Description: ${projectDescription || 'No description provided'}\n\nPlease log in to TaskFlow to view the project details.\n\nBest regards,\nTaskFlow Team`,
-      html: `
-<div style="font-family:Arial,sans-serif;max-width:620px;margin:0 auto;color:#1F2937;">
-  <div style="background:linear-gradient(135deg,#10B981,#059669);padding:32px 28px;border-radius:12px 12px 0 0;">
-    <h1 style="margin:0;color:#fff;font-size:22px;">🚀 New Project Assignment</h1>
-    <p style="color:#A7F3D0;margin:6px 0 0;">You have been added to a new project team.</p>
-  </div>
-
-  <div style="background:#F9FAFB;padding:28px;border-radius:0 0 12px 12px;border:1px solid #E5E7EB;">
-    <p>Hello <strong>${userName}</strong>,</p>
-    <p>You have been added as a member to the project <strong>${projectName}</strong> by <strong>${managerName}</strong>.</p>
-
-    <div style="background:#fff;border-radius:8px;padding:20px;margin:20px 0;border-left:4px solid #10B981;box-shadow:0 1px 4px rgba(0,0,0,0.07);">
-      <h3 style="margin:0 0 10px;font-size:16px;color:#111827;">Project: ${projectName}</h3>
-      <p style="margin:0;color:#6B7280;font-size:14px;line-height:1.5;">${projectDescription || 'No description provided'}</p>
-    </div>
-
-    <div style="margin:28px 0 8px;">
-      <a href="${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/projects" style="background:#10B981;color:#fff;padding:13px 26px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;">View Projects →</a>
-    </div>
-    <hr style="border:1px solid #E5E7EB;margin:24px 0 12px;">
-    <p style="color:#9CA3AF;font-size:12px;">This is an automated message from TaskFlow. Do not reply to this email.</p>
-  </div>
-</div>`,
+      from: DEFAULT_FROM, to,
+      subject: `[TaskFlow] Added to Project: ${projectName}`,
+      html: buildEmailTemplate({
+        actionSummary: `<strong>${managerName}</strong> added you to a project.`,
+        refLabel: 'TaskFlow / Projects',
+        refTitle: projectName,
+        bodyLines: [
+          `Hello ${userName},`,
+          `You have been added as a member. You can now view and contribute to this project.`
+        ],
+        fields: [
+          ...(projectDescription ? [{ label: 'Description', value: projectDescription }] : [])
+        ],
+        ctaUrl: `${getBaseUrl(baseUrl)}/projects`,
+        ctaLabel: 'View this project in TaskFlow'
+      }),
     });
-
-    console.log('Project Member Assignment Email sent: %s', info.messageId);
+    console.log(`[EmailService] Project Member Assignment Email sent to ${to}: ${info.messageId}`);
     return info;
   } catch (error) {
-    console.error('Error sending project member email:', error);
+    console.error(`[EmailService] Error sending project member email to ${to}:`, error);
     return null;
   }
 };
 
-
-/**
- * Send a password reset email.
- * @param {string} to - User's email
- * @param {string} userName - User's name
- * @param {string} resetLink - Link to reset password
- */
 export const sendPasswordResetEmail = async (to, userName, resetLink) => {
   try {
-    if (!to) return;
-
+    if (!to) return null;
     const info = await transporter.sendMail({
-      from: DEFAULT_FROM,
-      to,
-      subject: 'Reset Your Password - TaskFlow',
-      text: `Hello ${userName},\n\nYou requested to reset your password. Click the link below to set a new password:\n\n${resetLink}\n\nThis link will expire in 1 hour. If you did not request this, please ignore this email.\n\nBest regards,\nTaskFlow Team`,
-      html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px;">
-          <h2 style="color: #2563eb; text-align: center;">Reset Your Password</h2>
-          <p>Hello <strong>${userName}</strong>,</p>
-          <p>You requested to reset your password for your TaskFlow account. Click the button below to set a new password:</p>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${resetLink}" style="background-color: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">Reset Password</a>
-          </div>
-
-          <p style="color: #6B7280; font-size: 14px;">Or copy and paste this link in your browser:</p>
-          <p style="word-break: break-all; color: #2563eb; font-size: 12px;">${resetLink}</p>
-
-          <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-          <p style="color: #6B7280; font-size: 12px; text-align: center;">This link will expire in 1 hour. If you did not request this reset, please ignore this email.</p>
-        </div>
-      `,
+      from: DEFAULT_FROM, to,
+      subject: '[TaskFlow] Password Reset Request',
+      html: buildEmailTemplate({
+        actionSummary: `A password reset was requested for your account.`,
+        refLabel: 'TaskFlow / Security',
+        refTitle: 'Password Reset',
+        bodyLines: [
+          `Hello ${userName},`,
+          `We received a request to reset your password. Click the link below to set a new password. This link will expire in 1 hour.`,
+          `If you did not request this reset, you can safely ignore this email.`
+        ],
+        ctaUrl: resetLink,
+        ctaLabel: 'Reset your password',
+        footerNote: 'If you did not request a password reset, no action is required.'
+      }),
     });
-
-    console.log(`[EmailService] ✅ Password Reset Email sent to ${to}: ${info.messageId}`);
+    console.log(`[EmailService] Password Reset Email sent to ${to}: ${info.messageId}`);
     return info;
   } catch (error) {
-    console.error(`[EmailService] ❌ Error sending password reset email to ${to}:`, error);
+    console.error(`[EmailService] Error sending password reset email to ${to}:`, error);
     return null;
   }
 };
 
-/**
- * Send an email when a timesheet is submitted for approval.
- */
 export const sendTimesheetSubmissionEmail = async (to, managerName, userName, projectName, hours, date, baseUrl) => {
   try {
-    if (!to) return;
+    if (!to) return null;
     const info = await transporter.sendMail({
-      from: DEFAULT_FROM,
-      to,
-      subject: `Timesheet Submitted: ${userName} - ${projectName}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px;">
-          <h2 style="color: #2563eb;">Timesheet Requires Approval</h2>
-          <p>Hello <strong>${managerName}</strong>,</p>
-          <p><strong>${userName}</strong> has submitted a time entry for the project <strong>${projectName}</strong> that requires your review.</p>
-          <div style="background: #F9FAFB; padding: 15px; border-radius: 8px; border-left: 4px solid #2563eb; margin: 20px 0;">
-            <p style="margin: 0;"><strong>Logged Hours:</strong> ${hours}h</p>
-            <p style="margin: 5px 0 0 0;"><strong>Date:</strong> ${new Date(date).toLocaleDateString()}</p>
-          </div>
-          <a href="${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/timesheets" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Review Timesheet</a>
-        </div>
-      `,
+      from: DEFAULT_FROM, to,
+      subject: `[TaskFlow] Timesheet Pending Review: ${userName}`,
+      html: buildEmailTemplate({
+        actionSummary: `<strong>${userName}</strong> submitted a timesheet for review.`,
+        refLabel: `TaskFlow / ${projectName}`,
+        refTitle: `Timesheet: ${userName}`,
+        bodyLines: [`Hello ${managerName},`],
+        fields: [
+          { label: 'Submitted By', value: userName },
+          { label: 'Project', value: projectName },
+          { label: 'Hours Logged', value: `${hours}h` },
+          { label: 'Date', value: new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) }
+        ],
+        ctaUrl: `${getBaseUrl(baseUrl)}/timesheets`,
+        ctaLabel: 'Review this timesheet in TaskFlow'
+      }),
     });
+    console.log(`[EmailService] Timesheet Submission Email sent to ${to}: ${info.messageId}`);
     return info;
   } catch (error) {
-    console.error('Error sending timesheet submission email:', error);
+    console.error(`[EmailService] Error sending timesheet submission email to ${to}:`, error);
     return null;
   }
 };
 
-/**
- * Send an email when a leave is submitted for approval.
- */
 export const sendLeaveSubmissionEmail = async (to, managerName, userName, leaveType, hours, date, baseUrl) => {
   try {
-    if (!to) return;
+    if (!to) return null;
     const info = await transporter.sendMail({
-      from: DEFAULT_FROM,
-      to,
-      subject: `Leave Application Submitted: ${userName}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px;">
-          <h2 style="color: #2563eb;">Leave Requires Approval</h2>
-          <p>Hello <strong>${managerName}</strong>,</p>
-          <p><strong>${userName}</strong> has submitted a Leave Application that requires your review.</p>
-          <div style="background: #F9FAFB; padding: 15px; border-radius: 8px; border-left: 4px solid #2563eb; margin: 20px 0;">
-            <p style="margin: 0;"><strong>Leave Type:</strong> ${leaveType}</p>
-            <p style="margin: 5px 0 0 0;"><strong>Hours Logged:</strong> ${hours}h</p>
-            <p style="margin: 5px 0 0 0;"><strong>Date:</strong> ${new Date(date).toLocaleDateString()}</p>
-          </div>
-          <a href="${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/timesheets" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">Review Leave Application</a>
-        </div>
-      `,
+      from: DEFAULT_FROM, to,
+      subject: `[TaskFlow] Leave Application: ${userName}`,
+      html: buildEmailTemplate({
+        actionSummary: `<strong>${userName}</strong> submitted a leave application.`,
+        refLabel: 'TaskFlow / Leave',
+        refTitle: `Leave Application: ${userName}`,
+        bodyLines: [`Hello ${managerName},`],
+        fields: [
+          { label: 'Submitted By', value: userName },
+          { label: 'Leave Type', value: leaveType },
+          { label: 'Hours', value: `${hours}h` },
+          { label: 'Date', value: new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) }
+        ],
+        ctaUrl: `${getBaseUrl(baseUrl)}/timesheets`,
+        ctaLabel: 'Review this application in TaskFlow'
+      }),
     });
+    console.log(`[EmailService] Leave Submission Email sent to ${to}: ${info.messageId}`);
     return info;
   } catch (error) {
-    console.error('Error sending leave submission email:', error);
+    console.error(`[EmailService] Error sending leave submission email to ${to}:`, error);
     return null;
   }
 };
 
-/**
- * Send an email when a timesheet is approved or rejected.
- */
 export const sendTimesheetStatusEmail = async (to, userName, projectName, status, managerName, hours, baseUrl) => {
   try {
-    if (!to) return;
+    if (!to) return null;
     const isApproved = status === 'APPROVED';
-    const color = isApproved ? '#10B981' : '#EF4444';
     const info = await transporter.sendMail({
-      from: DEFAULT_FROM,
-      to,
-      subject: `Timesheet ${isApproved ? 'Approved' : 'Rejected'}: ${projectName}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px;">
-          <h2 style="color: ${color};">Timesheet ${isApproved ? 'Approved' : 'Rejected'}</h2>
-          <p>Hello <strong>${userName}</strong>,</p>
-          <p>Your time entry of <strong>${hours}h</strong> for the project <strong>${projectName}</strong> has been <strong>${status.toLowerCase()}</strong> by ${managerName}.</p>
-          <a href="${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/timesheets" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">View Timesheets</a>
-        </div>
-      `,
+      from: DEFAULT_FROM, to,
+      subject: `[TaskFlow] Timesheet ${isApproved ? 'Approved' : 'Rejected'}: ${projectName}`,
+      html: buildEmailTemplate({
+        actionSummary: `<strong>${managerName}</strong> ${isApproved ? 'approved' : 'rejected'} your timesheet.`,
+        refLabel: `TaskFlow / ${projectName}`,
+        refTitle: `Timesheet ${isApproved ? 'Approved' : 'Rejected'}`,
+        bodyLines: [
+          `Hello ${userName},`,
+          `Your time entry of <strong>${hours}h</strong> for the project <strong>${projectName}</strong> has been <strong>${status.toLowerCase()}</strong>.`
+        ],
+        ctaUrl: `${getBaseUrl(baseUrl)}/timesheets`,
+        ctaLabel: 'View your timesheets in TaskFlow'
+      }),
     });
+    console.log(`[EmailService] Timesheet Status Email sent to ${to}: ${info.messageId}`);
     return info;
   } catch (error) {
-    console.error('Error sending timesheet status email:', error);
+    console.error(`[EmailService] Error sending timesheet status email to ${to}:`, error);
     return null;
   }
 };
 
-/**
- * Send an email notification to SuperAdmin when a new organization signs up.
- */
 export const sendNewOrgSignupNotificationToSuperAdmin = async (superAdminEmail, superAdminName, orgDetails, adminDetails, baseUrl) => {
   try {
-    if (!superAdminEmail) return;
-
+    if (!superAdminEmail) return null;
     const info = await transporter.sendMail({
-      from: DEFAULT_FROM,
-      to: superAdminEmail,
-      subject: `New Organization Signup: ${orgDetails.name}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 8px;">
-          <h2 style="color: #2563eb;">🚀 New Organization Registered</h2>
-          <p>Hello <strong>${superAdminName}</strong>,</p>
-          <p>A new organization has just signed up on TaskFlow.</p>
-          
-          <div style="background: #F9FAFB; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="margin-top: 0; color: #1f2937;">Organization Details</h3>
-            <p><strong>Name:</strong> ${orgDetails.name}</p>
-            <p><strong>Industry:</strong> ${orgDetails.industry || 'Not specified'}</p>
-            <p><strong>Size:</strong> ${orgDetails.size || 'Not specified'}</p>
-            <p><strong>Country:</strong> ${orgDetails.country || 'Not specified'}</p>
-            
-            <h3 style="margin-top: 20px; color: #1f2937;">Admin Details</h3>
-            <p><strong>Name:</strong> ${adminDetails.name}</p>
-            <p><strong>Email:</strong> ${adminDetails.email}</p>
-          </div>
-
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${baseUrl || process.env.CLIENT_URL || 'http://localhost:5173'}/superadmin/orgs" style="background-color: #2563eb; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">View Organization in Admin Panel</a>
-          </div>
-
-          <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-          <p style="color: #6B7280; font-size: 12px; text-align: center;">This is an automated system notification from TaskFlow.</p>
-        </div>
-      `,
+      from: DEFAULT_FROM, to: superAdminEmail,
+      subject: `[TaskFlow] New Organization Signup: ${orgDetails.name}`,
+      html: buildEmailTemplate({
+        actionSummary: `A new organization has registered on the platform.`,
+        refLabel: 'TaskFlow / Admin',
+        refTitle: orgDetails.name,
+        bodyLines: [`Hello ${superAdminName},`],
+        fields: [
+          { label: 'Organization', value: orgDetails.name },
+          { label: 'Industry', value: orgDetails.industry || 'Not specified' },
+          { label: 'Size', value: orgDetails.size || 'Not specified' },
+          { label: 'Country', value: orgDetails.country || 'Not specified' },
+          { label: 'Admin Name', value: adminDetails.name },
+          { label: 'Admin Email', value: adminDetails.email }
+        ],
+        ctaUrl: `${getBaseUrl(baseUrl)}/superadmin/orgs`,
+        ctaLabel: 'View in admin panel'
+      }),
     });
-
-    console.log('SuperAdmin Notification Email sent: %s', info.messageId);
+    console.log(`[EmailService] SuperAdmin Notification Email sent to ${superAdminEmail}: ${info.messageId}`);
     return info;
   } catch (error) {
-    console.error('Error sending superadmin notification email:', error);
+    console.error(`[EmailService] Error sending superadmin notification email:`, error);
     return null;
   }
 };

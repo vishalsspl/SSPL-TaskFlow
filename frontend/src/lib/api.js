@@ -36,5 +36,10 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+export const getFileUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http')) return url;
+  return `${API_URL}${url}`;
+};
 
 export default api;

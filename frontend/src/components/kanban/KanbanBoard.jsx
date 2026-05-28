@@ -24,7 +24,17 @@ const sortByPriority = (tasks) => {
     });
 };
 
-const KanbanBoard = ({ tasks, onTaskUpdate, isReadOnly, onEdit, onDelete, onStatusChange, onApprove, onReject }) => {
+const KanbanBoard = ({ 
+    tasks, 
+    onTaskUpdate, 
+    isReadOnly, 
+    onEdit, 
+    onDelete, 
+    onStatusChange,
+    onApprove,
+    onReject,
+    currentUser
+}) => {
     const [activeId, setActiveId] = useState(null);
     const [recentlyMovedId, setRecentlyMovedId] = useState(null);
     const activeTask = activeId ? tasks.find(t => t.id === activeId) : null;
@@ -77,6 +87,18 @@ const KanbanBoard = ({ tasks, onTaskUpdate, isReadOnly, onEdit, onDelete, onStat
         if (newStatus) {
             const currentTask = tasks.find(t => t.id === activeTaskId);
             if (currentTask && currentTask.status !== newStatus) {
+                // Restrictions for MEMBER role
+                if (currentUser?.role === 'MEMBER') {
+                    // Prevent moving out of COMPLETED
+                    if (currentTask.status === 'COMPLETED') {
+                        return; // silently ignore
+                    }
+                    // Prevent moving into COMPLETED
+                    if (newStatus === 'COMPLETED') {
+                        return; // silently ignore
+                    }
+                }
+
                 setRecentlyMovedId(activeTaskId);
                 
                 // Auto-scroll on mobile

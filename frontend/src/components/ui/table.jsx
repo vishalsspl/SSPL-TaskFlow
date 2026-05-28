@@ -52,7 +52,7 @@ const TableHead = React.forwardRef(({ className, ...props }, ref) => (
   <th
     ref={ref}
     className={cn(
-      "h-10 px-4 text-center align-middle font-semibold text-xs uppercase tracking-wider last:border-r-0 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+      "py-4 px-4 text-center align-middle font-semibold text-xs uppercase tracking-wider last:border-r-0 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
       className
     )}
     style={{ color: 'var(--table-heading-text)', borderRight: '1px solid var(--table-divider)' }}

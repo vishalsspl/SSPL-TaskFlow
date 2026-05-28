@@ -96,6 +96,10 @@ const Kanban = () => {
   const [taskToDelete, setTaskToDelete] = useState(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
+  const [rejectTaskId, setRejectTaskId] = useState(null);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [showRejectDialog, setShowRejectDialog] = useState(false);
+
   useEffect(() => {
     fetchProjects();
     fetchUsers();
@@ -175,6 +179,20 @@ const Kanban = () => {
     e.preventDefault();
     setDragOverCol(null);
     if (!draggedTask || draggedTask.status === newStatus) { setDraggedTask(null); return; }
+
+    if (user?.role === 'MEMBER') {
+      if (newStatus === 'COMPLETED') {
+        toast({ title: 'Not Allowed', description: 'Members cannot move tasks directly to Completed. Please use In Review.', variant: 'destructive' });
+        setDraggedTask(null);
+        return;
+      }
+      if (draggedTask.status === 'COMPLETED') {
+        toast({ title: 'Not Allowed', description: 'Tasks that are Completed can only be moved by a Manager.', variant: 'destructive' });
+        setDraggedTask(null);
+        return;
+      }
+    }
+
     try {
       await api.put(`/tasks/${draggedTask.id}`, { status: newStatus });
       setTasks(tasks.map(t => t.id === draggedTask.id ? { ...t, status: newStatus } : t));
@@ -213,6 +231,37 @@ const Kanban = () => {
       toast({ title: 'Status Updated', description: `Task moved to ${STATUS_CONFIG[newStatus]?.label || newStatus}.` });
     } catch {
       toast({ title: 'Error', description: 'Failed to update status.', variant: 'destructive' });
+    }
+  };
+
+  const handleApproveStatus = async (taskId) => {
+    try {
+      await api.post(`/tasks/${taskId}/approve-status`);
+      toast({ title: 'Status Approved', description: 'The task status change has been approved.' });
+      fetchMyTasks();
+    } catch (error) {
+      toast({ title: 'Error', description: error.response?.data?.error || 'Failed to approve status.', variant: 'destructive' });
+    }
+  };
+
+  const handleRejectStatus = (taskId) => {
+    setRejectTaskId(taskId);
+    setRejectionReason('');
+    setShowRejectDialog(true);
+  };
+
+  const submitRejectionStatus = async () => {
+    if (!rejectTaskId) return;
+    try {
+      await api.post(`/tasks/${rejectTaskId}/reject-status`, { rejectionReason });
+      toast({ title: 'Status Rejected', description: 'The task has been reverted to its previous status.' });
+      fetchMyTasks();
+    } catch (error) {
+      toast({ title: 'Error', description: error.response?.data?.error || 'Failed to reject status.', variant: 'destructive' });
+    } finally {
+      setShowRejectDialog(false);
+      setRejectTaskId(null);
+      setRejectionReason('');
     }
   };
 
@@ -388,6 +437,8 @@ const Kanban = () => {
 
                     // Specific status label and color for the badge on the card
                     const cardCfg = STATUS_CONFIG[task.status] || cfg;
+                    const pendingTag = task.tags?.find(t => t.startsWith('PENDING_APPROVAL:'));
+                    const isPendingApproval = !!pendingTag;
 
                     return (
                       <div
@@ -425,7 +476,7 @@ const Kanban = () => {
                                     Change Status
                                   </DropdownMenuSubTrigger>
                                   <DropdownMenuSubContent className="bg-card border-border text-foreground">
-                                    {STATUSES.filter(s => s !== task.status).map(s => (
+                                    {STATUSES.filter(s => s !== task.status && !(user?.role === 'MEMBER' && s === 'COMPLETED')).map(s => (
                                       <DropdownMenuItem key={s} onClick={() => handleStatusChange(task.id, s)} className="cursor-pointer">
                                         <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: STATUS_CONFIG[s].color }} />
                                         {STATUS_CONFIG[s].label}
@@ -457,6 +508,32 @@ const Kanban = () => {
                             </span>
                           </div>
                         </div>
+
+                        {isPendingApproval && (
+                          <div className="flex items-center justify-between mt-2 mb-3 px-2 py-1 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                            <span className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">
+                              Pending Approval
+                            </span>
+                            {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
+                              <div className="flex gap-1">
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleApproveStatus(task.id); }}
+                                  className="p-1.5 rounded-md bg-green-500/20 text-green-400 hover:bg-green-500/40 transition-colors"
+                                  title="Approve"
+                                >
+                                  <CheckSquare className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleRejectStatus(task.id); }}
+                                  className="p-1.5 rounded-md bg-red-500/20 text-red-400 hover:bg-red-500/40 transition-colors"
+                                  title="Reject"
+                                >
+                                  <XCircle className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
 
                         <div className="mb-4">
                           <h3 className="text-sm font-bold text-white mb-1 line-clamp-2 leading-snug tracking-tight Montserrat">
@@ -563,6 +640,44 @@ const Kanban = () => {
         title="Delete Task"
         description="Are you sure you want to delete this task? This action cannot be undone and will remove it from the board."
       />
+
+      <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
+        <DialogContent className="sm:max-w-md bg-card border-border text-foreground rounded-xl">
+            <DialogHeader>
+                <DialogTitle className="font-black Montserrat">Provide Rejection Reason</DialogTitle>
+                <DialogDescription className="text-muted-foreground font-medium">
+                    Please explain why this task is being rejected. This will be visible to the assignee.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+                <textarea
+                    className="w-full h-32 p-3 bg-background border border-border rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+                    placeholder="Enter reason here..."
+                    value={rejectionReason}
+                    onChange={(e) => setRejectionReason(e.target.value)}
+                />
+            </div>
+            <div className="flex justify-end gap-3">
+                <button
+                    onClick={() => {
+                        setShowRejectDialog(false);
+                        setRejectTaskId(null);
+                        setRejectionReason('');
+                    }}
+                    className="px-4 py-2 rounded-lg font-bold text-sm bg-muted text-foreground hover:bg-muted/80 transition-colors"
+                >
+                    Cancel
+                </button>
+                <button
+                    onClick={submitRejectionStatus}
+                    disabled={!rejectionReason.trim()}
+                    className="px-4 py-2 rounded-lg font-bold text-sm bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    Reject Task
+                </button>
+            </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

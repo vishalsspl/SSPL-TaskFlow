@@ -208,12 +208,14 @@ exports.Prisma.TaskScalarFieldEnum = {
   title: 'title',
   description: 'description',
   status: 'status',
+  rejectionReason: 'rejectionReason',
   priority: 'priority',
   type: 'type',
   completionPercentage: 'completionPercentage',
   storyPoints: 'storyPoints',
   dueDate: 'dueDate',
   tags: 'tags',
+  attachments: 'attachments',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -340,6 +342,10 @@ exports.Prisma.SortOrder = {
 
 exports.Prisma.NullableJsonNullValueInput = {
   DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.JsonNullValueInput = {
   JsonNull: Prisma.JsonNull
 };
 

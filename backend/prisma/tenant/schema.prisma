@@ -171,6 +171,7 @@ model Task {
   title       String
   description String?
   status      TaskStatus @default(TODO)
+  rejectionReason String?
   priority    Priority   @default(MEDIUM)
   type        TaskType   @default(TASK)
 
@@ -179,6 +180,7 @@ model Task {
 
   dueDate DateTime?
   tags    String[]  @default([])
+  attachments Json @default("[]")
 
   assignees   TaskAssignee[]
   workLogs    WorkLog[]

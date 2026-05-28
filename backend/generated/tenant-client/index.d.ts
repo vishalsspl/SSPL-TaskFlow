@@ -7916,6 +7916,7 @@ export namespace Prisma {
     title: string | null
     description: string | null
     status: $Enums.TaskStatus | null
+    rejectionReason: string | null
     priority: $Enums.Priority | null
     type: $Enums.TaskType | null
     completionPercentage: number | null
@@ -7932,6 +7933,7 @@ export namespace Prisma {
     title: string | null
     description: string | null
     status: $Enums.TaskStatus | null
+    rejectionReason: string | null
     priority: $Enums.Priority | null
     type: $Enums.TaskType | null
     completionPercentage: number | null
@@ -7948,12 +7950,14 @@ export namespace Prisma {
     title: number
     description: number
     status: number
+    rejectionReason: number
     priority: number
     type: number
     completionPercentage: number
     storyPoints: number
     dueDate: number
     tags: number
+    attachments: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -7977,6 +7981,7 @@ export namespace Prisma {
     title?: true
     description?: true
     status?: true
+    rejectionReason?: true
     priority?: true
     type?: true
     completionPercentage?: true
@@ -7993,6 +7998,7 @@ export namespace Prisma {
     title?: true
     description?: true
     status?: true
+    rejectionReason?: true
     priority?: true
     type?: true
     completionPercentage?: true
@@ -8009,12 +8015,14 @@ export namespace Prisma {
     title?: true
     description?: true
     status?: true
+    rejectionReason?: true
     priority?: true
     type?: true
     completionPercentage?: true
     storyPoints?: true
     dueDate?: true
     tags?: true
+    attachments?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -8113,12 +8121,14 @@ export namespace Prisma {
     title: string
     description: string | null
     status: $Enums.TaskStatus
+    rejectionReason: string | null
     priority: $Enums.Priority
     type: $Enums.TaskType
     completionPercentage: number
     storyPoints: number | null
     dueDate: Date | null
     tags: string[]
+    attachments: JsonValue
     createdAt: Date
     updatedAt: Date
     _count: TaskCountAggregateOutputType | null
@@ -8149,12 +8159,14 @@ export namespace Prisma {
     title?: boolean
     description?: boolean
     status?: boolean
+    rejectionReason?: boolean
     priority?: boolean
     type?: boolean
     completionPercentage?: boolean
     storyPoints?: boolean
     dueDate?: boolean
     tags?: boolean
+    attachments?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     project?: boolean | ProjectDefaultArgs<ExtArgs>
@@ -8172,12 +8184,14 @@ export namespace Prisma {
     title?: boolean
     description?: boolean
     status?: boolean
+    rejectionReason?: boolean
     priority?: boolean
     type?: boolean
     completionPercentage?: boolean
     storyPoints?: boolean
     dueDate?: boolean
     tags?: boolean
+    attachments?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     project?: boolean | ProjectDefaultArgs<ExtArgs>
@@ -8191,12 +8205,14 @@ export namespace Prisma {
     title?: boolean
     description?: boolean
     status?: boolean
+    rejectionReason?: boolean
     priority?: boolean
     type?: boolean
     completionPercentage?: boolean
     storyPoints?: boolean
     dueDate?: boolean
     tags?: boolean
+    attachments?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -8230,12 +8246,14 @@ export namespace Prisma {
       title: string
       description: string | null
       status: $Enums.TaskStatus
+      rejectionReason: string | null
       priority: $Enums.Priority
       type: $Enums.TaskType
       completionPercentage: number
       storyPoints: number | null
       dueDate: Date | null
       tags: string[]
+      attachments: Prisma.JsonValue
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["task"]>
@@ -8642,12 +8660,14 @@ export namespace Prisma {
     readonly title: FieldRef<"Task", 'String'>
     readonly description: FieldRef<"Task", 'String'>
     readonly status: FieldRef<"Task", 'TaskStatus'>
+    readonly rejectionReason: FieldRef<"Task", 'String'>
     readonly priority: FieldRef<"Task", 'Priority'>
     readonly type: FieldRef<"Task", 'TaskType'>
     readonly completionPercentage: FieldRef<"Task", 'Int'>
     readonly storyPoints: FieldRef<"Task", 'Int'>
     readonly dueDate: FieldRef<"Task", 'DateTime'>
     readonly tags: FieldRef<"Task", 'String[]'>
+    readonly attachments: FieldRef<"Task", 'Json'>
     readonly createdAt: FieldRef<"Task", 'DateTime'>
     readonly updatedAt: FieldRef<"Task", 'DateTime'>
   }
@@ -20110,12 +20130,14 @@ export namespace Prisma {
     title: 'title',
     description: 'description',
     status: 'status',
+    rejectionReason: 'rejectionReason',
     priority: 'priority',
     type: 'type',
     completionPercentage: 'completionPercentage',
     storyPoints: 'storyPoints',
     dueDate: 'dueDate',
     tags: 'tags',
+    attachments: 'attachments',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -20285,6 +20307,13 @@ export namespace Prisma {
   };
 
   export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+  export const JsonNullValueInput: {
+    JsonNull: typeof JsonNull
+  };
+
+  export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
   export const QueryMode: {
@@ -21106,12 +21135,14 @@ export namespace Prisma {
     title?: StringFilter<"Task"> | string
     description?: StringNullableFilter<"Task"> | string | null
     status?: EnumTaskStatusFilter<"Task"> | $Enums.TaskStatus
+    rejectionReason?: StringNullableFilter<"Task"> | string | null
     priority?: EnumPriorityFilter<"Task"> | $Enums.Priority
     type?: EnumTaskTypeFilter<"Task"> | $Enums.TaskType
     completionPercentage?: IntFilter<"Task"> | number
     storyPoints?: IntNullableFilter<"Task"> | number | null
     dueDate?: DateTimeNullableFilter<"Task"> | Date | string | null
     tags?: StringNullableListFilter<"Task">
+    attachments?: JsonFilter<"Task">
     createdAt?: DateTimeFilter<"Task"> | Date | string
     updatedAt?: DateTimeFilter<"Task"> | Date | string
     project?: XOR<ProjectRelationFilter, ProjectWhereInput>
@@ -21128,12 +21159,14 @@ export namespace Prisma {
     title?: SortOrder
     description?: SortOrderInput | SortOrder
     status?: SortOrder
+    rejectionReason?: SortOrderInput | SortOrder
     priority?: SortOrder
     type?: SortOrder
     completionPercentage?: SortOrder
     storyPoints?: SortOrderInput | SortOrder
     dueDate?: SortOrderInput | SortOrder
     tags?: SortOrder
+    attachments?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     project?: ProjectOrderByWithRelationInput
@@ -21153,12 +21186,14 @@ export namespace Prisma {
     title?: StringFilter<"Task"> | string
     description?: StringNullableFilter<"Task"> | string | null
     status?: EnumTaskStatusFilter<"Task"> | $Enums.TaskStatus
+    rejectionReason?: StringNullableFilter<"Task"> | string | null
     priority?: EnumPriorityFilter<"Task"> | $Enums.Priority
     type?: EnumTaskTypeFilter<"Task"> | $Enums.TaskType
     completionPercentage?: IntFilter<"Task"> | number
     storyPoints?: IntNullableFilter<"Task"> | number | null
     dueDate?: DateTimeNullableFilter<"Task"> | Date | string | null
     tags?: StringNullableListFilter<"Task">
+    attachments?: JsonFilter<"Task">
     createdAt?: DateTimeFilter<"Task"> | Date | string
     updatedAt?: DateTimeFilter<"Task"> | Date | string
     project?: XOR<ProjectRelationFilter, ProjectWhereInput>
@@ -21175,12 +21210,14 @@ export namespace Prisma {
     title?: SortOrder
     description?: SortOrderInput | SortOrder
     status?: SortOrder
+    rejectionReason?: SortOrderInput | SortOrder
     priority?: SortOrder
     type?: SortOrder
     completionPercentage?: SortOrder
     storyPoints?: SortOrderInput | SortOrder
     dueDate?: SortOrderInput | SortOrder
     tags?: SortOrder
+    attachments?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: TaskCountOrderByAggregateInput
@@ -21200,12 +21237,14 @@ export namespace Prisma {
     title?: StringWithAggregatesFilter<"Task"> | string
     description?: StringNullableWithAggregatesFilter<"Task"> | string | null
     status?: EnumTaskStatusWithAggregatesFilter<"Task"> | $Enums.TaskStatus
+    rejectionReason?: StringNullableWithAggregatesFilter<"Task"> | string | null
     priority?: EnumPriorityWithAggregatesFilter<"Task"> | $Enums.Priority
     type?: EnumTaskTypeWithAggregatesFilter<"Task"> | $Enums.TaskType
     completionPercentage?: IntWithAggregatesFilter<"Task"> | number
     storyPoints?: IntNullableWithAggregatesFilter<"Task"> | number | null
     dueDate?: DateTimeNullableWithAggregatesFilter<"Task"> | Date | string | null
     tags?: StringNullableListFilter<"Task">
+    attachments?: JsonWithAggregatesFilter<"Task">
     createdAt?: DateTimeWithAggregatesFilter<"Task"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Task"> | Date | string
   }
@@ -22673,12 +22712,14 @@ export namespace Prisma {
     title: string
     description?: string | null
     status?: $Enums.TaskStatus
+    rejectionReason?: string | null
     priority?: $Enums.Priority
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     project: ProjectCreateNestedOneWithoutTasksInput
@@ -22695,12 +22736,14 @@ export namespace Prisma {
     title: string
     description?: string | null
     status?: $Enums.TaskStatus
+    rejectionReason?: string | null
     priority?: $Enums.Priority
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     assignees?: TaskAssigneeUncheckedCreateNestedManyWithoutTaskInput
@@ -22713,12 +22756,14 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     project?: ProjectUpdateOneRequiredWithoutTasksNestedInput
@@ -22735,12 +22780,14 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     assignees?: TaskAssigneeUncheckedUpdateManyWithoutTaskNestedInput
@@ -22755,12 +22802,14 @@ export namespace Prisma {
     title: string
     description?: string | null
     status?: $Enums.TaskStatus
+    rejectionReason?: string | null
     priority?: $Enums.Priority
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -22770,12 +22819,14 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -22787,12 +22838,14 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -24429,6 +24482,28 @@ export namespace Prisma {
     hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
     isEmpty?: boolean
   }
+  export type JsonFilter<$PrismaModel = never> = 
+    | PatchUndefined<
+        Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type PhaseNullableRelationFilter = {
     is?: PhaseWhereInput | null
@@ -24442,12 +24517,14 @@ export namespace Prisma {
     title?: SortOrder
     description?: SortOrder
     status?: SortOrder
+    rejectionReason?: SortOrder
     priority?: SortOrder
     type?: SortOrder
     completionPercentage?: SortOrder
     storyPoints?: SortOrder
     dueDate?: SortOrder
     tags?: SortOrder
+    attachments?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -24464,6 +24541,7 @@ export namespace Prisma {
     title?: SortOrder
     description?: SortOrder
     status?: SortOrder
+    rejectionReason?: SortOrder
     priority?: SortOrder
     type?: SortOrder
     completionPercentage?: SortOrder
@@ -24480,6 +24558,7 @@ export namespace Prisma {
     title?: SortOrder
     description?: SortOrder
     status?: SortOrder
+    rejectionReason?: SortOrder
     priority?: SortOrder
     type?: SortOrder
     completionPercentage?: SortOrder
@@ -24522,6 +24601,31 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumTaskTypeFilter<$PrismaModel>
     _max?: NestedEnumTaskTypeFilter<$PrismaModel>
+  }
+  export type JsonWithAggregatesFilter<$PrismaModel = never> = 
+    | PatchUndefined<
+        Either<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedJsonFilter<$PrismaModel>
+    _max?: NestedJsonFilter<$PrismaModel>
   }
 
   export type TaskRelationFilter = {
@@ -27385,6 +27489,28 @@ export namespace Prisma {
     _min?: NestedEnumTaskTypeFilter<$PrismaModel>
     _max?: NestedEnumTaskTypeFilter<$PrismaModel>
   }
+  export type NestedJsonFilter<$PrismaModel = never> = 
+    | PatchUndefined<
+        Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>
+
+  export type NestedJsonFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string[]
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
 
   export type NestedEnumTimeEntryStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.TimeEntryStatus | EnumTimeEntryStatusFieldRefInput<$PrismaModel>
@@ -29347,12 +29473,14 @@ export namespace Prisma {
     title: string
     description?: string | null
     status?: $Enums.TaskStatus
+    rejectionReason?: string | null
     priority?: $Enums.Priority
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     phase?: PhaseCreateNestedOneWithoutTasksInput
@@ -29367,12 +29495,14 @@ export namespace Prisma {
     title: string
     description?: string | null
     status?: $Enums.TaskStatus
+    rejectionReason?: string | null
     priority?: $Enums.Priority
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     assignees?: TaskAssigneeUncheckedCreateNestedManyWithoutTaskInput
@@ -29761,12 +29891,14 @@ export namespace Prisma {
     title?: StringFilter<"Task"> | string
     description?: StringNullableFilter<"Task"> | string | null
     status?: EnumTaskStatusFilter<"Task"> | $Enums.TaskStatus
+    rejectionReason?: StringNullableFilter<"Task"> | string | null
     priority?: EnumPriorityFilter<"Task"> | $Enums.Priority
     type?: EnumTaskTypeFilter<"Task"> | $Enums.TaskType
     completionPercentage?: IntFilter<"Task"> | number
     storyPoints?: IntNullableFilter<"Task"> | number | null
     dueDate?: DateTimeNullableFilter<"Task"> | Date | string | null
     tags?: StringNullableListFilter<"Task">
+    attachments?: JsonFilter<"Task">
     createdAt?: DateTimeFilter<"Task"> | Date | string
     updatedAt?: DateTimeFilter<"Task"> | Date | string
   }
@@ -29877,12 +30009,14 @@ export namespace Prisma {
     title: string
     description?: string | null
     status?: $Enums.TaskStatus
+    rejectionReason?: string | null
     priority?: $Enums.Priority
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     project: ProjectCreateNestedOneWithoutTasksInput
@@ -29897,12 +30031,14 @@ export namespace Prisma {
     title: string
     description?: string | null
     status?: $Enums.TaskStatus
+    rejectionReason?: string | null
     priority?: $Enums.Priority
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     assignees?: TaskAssigneeUncheckedCreateNestedManyWithoutTaskInput
@@ -30314,12 +30450,14 @@ export namespace Prisma {
     title: string
     description?: string | null
     status?: $Enums.TaskStatus
+    rejectionReason?: string | null
     priority?: $Enums.Priority
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     project: ProjectCreateNestedOneWithoutTasksInput
@@ -30335,12 +30473,14 @@ export namespace Prisma {
     title: string
     description?: string | null
     status?: $Enums.TaskStatus
+    rejectionReason?: string | null
     priority?: $Enums.Priority
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutTaskInput
@@ -30433,12 +30573,14 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     project?: ProjectUpdateOneRequiredWithoutTasksNestedInput
@@ -30454,12 +30596,14 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     workLogs?: WorkLogUncheckedUpdateManyWithoutTaskNestedInput
@@ -30660,12 +30804,14 @@ export namespace Prisma {
     title: string
     description?: string | null
     status?: $Enums.TaskStatus
+    rejectionReason?: string | null
     priority?: $Enums.Priority
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     project: ProjectCreateNestedOneWithoutTasksInput
@@ -30681,12 +30827,14 @@ export namespace Prisma {
     title: string
     description?: string | null
     status?: $Enums.TaskStatus
+    rejectionReason?: string | null
     priority?: $Enums.Priority
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     assignees?: TaskAssigneeUncheckedCreateNestedManyWithoutTaskInput
@@ -30844,12 +30992,14 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     project?: ProjectUpdateOneRequiredWithoutTasksNestedInput
@@ -30865,12 +31015,14 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     assignees?: TaskAssigneeUncheckedUpdateManyWithoutTaskNestedInput
@@ -31000,12 +31152,14 @@ export namespace Prisma {
     title: string
     description?: string | null
     status?: $Enums.TaskStatus
+    rejectionReason?: string | null
     priority?: $Enums.Priority
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     project: ProjectCreateNestedOneWithoutTasksInput
@@ -31021,12 +31175,14 @@ export namespace Prisma {
     title: string
     description?: string | null
     status?: $Enums.TaskStatus
+    rejectionReason?: string | null
     priority?: $Enums.Priority
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     assignees?: TaskAssigneeUncheckedCreateNestedManyWithoutTaskInput
@@ -31184,12 +31340,14 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     project?: ProjectUpdateOneRequiredWithoutTasksNestedInput
@@ -31205,12 +31363,14 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     assignees?: TaskAssigneeUncheckedUpdateManyWithoutTaskNestedInput
@@ -34735,12 +34895,14 @@ export namespace Prisma {
     title: string
     description?: string | null
     status?: $Enums.TaskStatus
+    rejectionReason?: string | null
     priority?: $Enums.Priority
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -34817,12 +34979,14 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     phase?: PhaseUpdateOneWithoutTasksNestedInput
@@ -34837,12 +35001,14 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     assignees?: TaskAssigneeUncheckedUpdateManyWithoutTaskNestedInput
@@ -34856,12 +35022,14 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -34959,12 +35127,14 @@ export namespace Prisma {
     title: string
     description?: string | null
     status?: $Enums.TaskStatus
+    rejectionReason?: string | null
     priority?: $Enums.Priority
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -34974,12 +35144,14 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     project?: ProjectUpdateOneRequiredWithoutTasksNestedInput
@@ -34994,12 +35166,14 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     assignees?: TaskAssigneeUncheckedUpdateManyWithoutTaskNestedInput
@@ -35013,12 +35187,14 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

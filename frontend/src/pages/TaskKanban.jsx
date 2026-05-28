@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/dialog';
 import CreateTaskForm from '@/components/forms/CreateTaskForm';
 import DeleteConfirmDialog from '@/components/ui/delete-confirm-dialog';
+import TaskDetailsModal from '@/components/task/TaskDetailsModal';
 
 const TaskKanban = () => {
     const { user } = useAuthStore();
@@ -42,6 +43,11 @@ const TaskKanban = () => {
     const [showCreateDialog, setShowCreateDialog] = useState(false);
     const [taskToDelete, setTaskToDelete] = useState(null);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+
+    const [rejectTaskId, setRejectTaskId] = useState(null);
+    const [rejectionReason, setRejectionReason] = useState('');
+    const [showRejectDialog, setShowRejectDialog] = useState(false);
 
     const [managerFilter, setManagerFilter] = useState('all');
 
@@ -84,7 +90,12 @@ const TaskKanban = () => {
     };
 
     const handleTaskClick = (task) => {
-        if (user?.role === 'CLIENT' || user?.role === 'MEMBER') return;
+        if (user?.role === 'CLIENT') return;
+        if (user?.role === 'MEMBER') {
+            setSelectedTask(task);
+            setShowDetailsDialog(true);
+            return;
+        }
         setSelectedTask(task);
         setShowEditDialog(true);
     };
@@ -137,14 +148,25 @@ const TaskKanban = () => {
         }
     };
 
-    const handleRejectStatus = async (taskId) => {
+    const handleRejectStatus = (taskId) => {
+        setRejectTaskId(taskId);
+        setRejectionReason('');
+        setShowRejectDialog(true);
+    };
+
+    const submitRejectionStatus = async () => {
+        if (!rejectTaskId) return;
         try {
-            await api.post(`/tasks/${taskId}/reject-status`);
+            await api.post(`/tasks/${rejectTaskId}/reject-status`, { rejectionReason });
             toast({ title: 'Status Rejected', description: 'The task has been reverted to its previous status.' });
             fetchData();
         } catch (error) {
             console.error('Failed to reject status:', error);
             toast({ title: 'Error', description: error.response?.data?.error || 'Failed to reject status.', variant: 'destructive' });
+        } finally {
+            setShowRejectDialog(false);
+            setRejectTaskId(null);
+            setRejectionReason('');
         }
     };
 
@@ -357,6 +379,7 @@ const TaskKanban = () => {
                     onStatusChange={isReadOnly ? undefined : handleStatusChange}
                     onApprove={handleApproveStatus}
                     onReject={handleRejectStatus}
+                    currentUser={user}
                 />
             </div>
 
@@ -383,6 +406,12 @@ const TaskKanban = () => {
                 </DialogContent>
             </Dialog>
 
+            <TaskDetailsModal 
+                open={showDetailsDialog}
+                onOpenChange={setShowDetailsDialog}
+                task={selectedTask}
+            />
+
             <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
                 <DialogContent className="w-[calc(100%-2rem)] sm:w-full sm:max-w-[700px] max-h-[95vh] bg-card border-border text-foreground rounded-xl sm:rounded-3xl p-0 overflow-hidden flex flex-col">
                     <div className="overflow-y-auto p-4 sm:p-8 flex-1 w-full relative no-scrollbar">
@@ -402,6 +431,44 @@ const TaskKanban = () => {
                             }}
                             onCancel={() => setShowCreateDialog(false)}
                         />
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
+                <DialogContent className="sm:max-w-md bg-card border-border text-foreground rounded-xl">
+                    <DialogHeader>
+                        <DialogTitle className="font-black Montserrat">Provide Rejection Reason</DialogTitle>
+                        <DialogDescription className="text-muted-foreground font-medium">
+                            Please explain why this task is being rejected. This will be visible to the assignee.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <textarea
+                            className="w-full h-32 p-3 bg-background border border-border rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+                            placeholder="Enter reason here..."
+                            value={rejectionReason}
+                            onChange={(e) => setRejectionReason(e.target.value)}
+                        />
+                    </div>
+                    <div className="flex justify-end gap-3">
+                        <button
+                            onClick={() => {
+                                setShowRejectDialog(false);
+                                setRejectTaskId(null);
+                                setRejectionReason('');
+                            }}
+                            className="px-4 py-2 rounded-lg font-bold text-sm bg-muted text-foreground hover:bg-muted/80 transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={submitRejectionStatus}
+                            disabled={!rejectionReason.trim()}
+                            className="px-4 py-2 rounded-lg font-bold text-sm bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Reject Task
+                        </button>
                     </div>
                 </DialogContent>
             </Dialog>

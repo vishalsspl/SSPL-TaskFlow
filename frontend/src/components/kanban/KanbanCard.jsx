@@ -112,14 +112,14 @@ const KanbanCard = ({ task, isReadOnly, onEdit, onDelete, onStatusChange, isHigh
                                                 Edit Task
                                             </DropdownMenuItem>
                                         )}
-                                        {onStatusChange && (
+                                        {onStatusChange && !(user?.role === 'MEMBER' && task.status === 'COMPLETED') && (
                                             <DropdownMenuSub>
                                                 <DropdownMenuSubTrigger className="cursor-pointer">
                                                     <ArrowRightLeft className="w-4 h-4 mr-2" />
                                                     Change Status
                                                 </DropdownMenuSubTrigger>
                                                 <DropdownMenuSubContent className="bg-card border-border text-foreground">
-                                                    {STATUS_OPTIONS.filter(s => s.value !== task.status).map((status) => (
+                                                    {STATUS_OPTIONS.filter(s => s.value !== task.status && !(user?.role === 'MEMBER' && s.value === 'COMPLETED')).map((status) => (
                                                         <DropdownMenuItem
                                                             key={status.value}
                                                             onClick={(e) => { e.stopPropagation(); onStatusChange(task.id, status.value); }}

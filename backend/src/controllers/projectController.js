@@ -1,5 +1,5 @@
 import prisma from '../lib/prisma.js';
-import { sendProjectManagerEmail, sendProjectClientEmail, sendProjectMemberAssignmentEmail } from '../services/emailService.js';
+import { sendProjectManagerEmail, sendProjectClientEmail, sendProjectMemberAssignmentEmail, sendProjectUpdateEmail, sendProjectDeleteEmail } from '../services/emailService.js';
 
 /** Fetch team members (MEMBER/MANAGER roles) assigned to a project via Workload */
 const getProjectTeamMembers = async (db, projectId) => {
@@ -427,6 +427,23 @@ export const getProject = async (req, res) => {
     return res.status(404).json({ error: 'Project not found' });
   }
 
+  // Authorization Checks
+  if (req.user.role === 'MANAGER') {
+    if (project.managerId !== req.user.id && !['General', 'General Tasks'].includes(project.name)) {
+      return res.status(403).json({ error: 'Unauthorized: You are no longer the manager of this project.' });
+    }
+  } else if (req.user.role === 'CLIENT') {
+    if (project.clientId !== req.user.id) {
+      return res.status(403).json({ error: 'Unauthorized: You do not have access to this project.' });
+    }
+  } else if (req.user.role === 'MEMBER') {
+    const isAssigned = project.workloads?.some(w => w.user.id === req.user.id) || 
+                       project.tasks?.some(t => t.assignees.some(a => a.user.id === req.user.id));
+    if (!isAssigned && !['General', 'General Tasks'].includes(project.name)) {
+      return res.status(403).json({ error: 'Unauthorized: You are not assigned to this project.' });
+    }
+  }
+
   // Calculate progress
   const totalStoryPoints = project.tasks.reduce((sum, t) => sum + (t.storyPoints || 0), 0);
   const completedStoryPoints = project.tasks
@@ -634,6 +651,16 @@ export const createProject = async (req, res) => {
   // Send rich email notification to manager
   const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
 
+  // Always send internal notification to manager
+  if (project.manager) {
+    createNotification(req, {
+      userId: project.manager.id,
+      title: 'New Project Assigned',
+      message: `You have been assigned as manager for project: ${project.name}`,
+      type: 'PROJECT_ASSIGNED',
+    });
+  }
+
   if (hasEmailSupport && sendEmail && project.manager?.email) {
     const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
     sendProjectManagerEmail(
@@ -644,13 +671,6 @@ export const createProject = async (req, res) => {
       req.user.name,
       origin
     ).catch(err => console.error('Failed to send manager project email:', err));
-
-    createNotification(req, {
-      userId: project.manager.id,
-      title: 'New Project Assigned',
-      message: `You have been assigned as manager for project: ${project.name}`,
-      type: 'PROJECT_ASSIGNED',
-    });
   }
 
   // Send rich email notification to client
@@ -1070,25 +1090,38 @@ export const updateProject = async (req, res) => {
   // Send rich emails if manager or client changed
   const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
 
-  if (hasEmailSupport && sendEmail && (isManagerChanged || isClientChanged)) {
+  if (isManagerChanged && project.manager) {
+    createNotification(req, {
+      userId: project.manager.id,
+      title: 'Project Assignment Updated',
+      message: `You have been assigned as manager for project: ${project.name}`,
+      type: 'PROJECT_ASSIGNED',
+    });
+  }
+
+  if (hasEmailSupport && sendEmail && (isManagerChanged || isClientChanged || project.manager)) {
 
     const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
+    
     if (project.manager?.email) {
-      sendProjectManagerEmail(
-        project.manager.email,
-        project,
-        project.manager,
-        project.client || null,
-        req.user.name,
-        origin
-      ).catch(err => console.error('Failed to send manager project email:', err));
-
-      createNotification(req, {
-        userId: project.manager.id,
-        title: 'Project Assignment Updated',
-        message: `You have been assigned as manager for project: ${project.name}`,
-        type: 'PROJECT_ASSIGNED',
-      });
+      if (isManagerChanged) {
+        sendProjectManagerEmail(
+          project.manager.email,
+          project,
+          project.manager,
+          project.client || null,
+          req.user.name,
+          origin
+        ).catch(err => console.error('Failed to send manager project email:', err));
+      } else {
+        // Send generic update email to current manager
+        sendProjectUpdateEmail(
+          project.manager.email,
+          project,
+          req.user.name,
+          origin
+        ).catch(err => console.error('Failed to send manager project update email:', err));
+      }
     }
 
     if (project.client?.email) {
@@ -1117,7 +1150,11 @@ export const deleteProject = async (req, res) => {
       id,
       organizationId: req.user.organizationId,
     },
-    select: { id: true, name: true }
+    select: { 
+      id: true, 
+      name: true,
+      manager: { select: { id: true, email: true } }
+    }
   });
 
   if (!existingProject) {
@@ -1147,6 +1184,26 @@ export const deleteProject = async (req, res) => {
   await req.db.project.delete({
     where: { id },
   });
+
+  // Always send internal notification to manager
+  if (existingProject.manager) {
+    createNotification(req, {
+      userId: existingProject.manager.id,
+      title: 'Project Deleted',
+      message: `The project ${existingProject.name} has been deleted.`,
+      type: 'PROJECT_DELETED',
+    });
+  }
+
+  // Send rich email if email support is active
+  const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
+  if (hasEmailSupport && existingProject.manager?.email) {
+    sendProjectDeleteEmail(
+      existingProject.manager.email,
+      existingProject.name,
+      req.user.name
+    ).catch(err => console.error('Failed to send manager project delete email:', err));
+  }
 
   res.json({ message: 'Project deleted successfully' });
 };

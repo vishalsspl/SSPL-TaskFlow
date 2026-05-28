@@ -20,13 +20,13 @@ export function DatePicker({ date, setDate, className, placeholder = "Pick a dat
                 <Button
                     variant={"outline"}
                     className={cn(
-                        "w-full justify-start text-left font-normal Montserrat text-xs sm:text-sm bg-secondary border-border hover:bg-accent px-3",
+                        "w-full justify-start text-left font-normal Montserrat text-[11px] sm:text-xs bg-secondary border-border hover:bg-accent px-3",
                         !date && "text-muted-foreground",
                         className
                     )}
                 >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {date ? format(date, "PPP") : <span>{placeholder}</span>}
+                    <CalendarIcon className="mr-2 h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">{date ? format(date, "PPP") : placeholder}</span>
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0 border-border shadow-2xl rounded-2xl" align="start">

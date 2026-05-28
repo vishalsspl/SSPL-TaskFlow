@@ -767,9 +767,9 @@ const ProjectsList = () => {
                             )}
                           </TableCell>
                           <TableCell>
-                            <div className="text-xs text-muted-foreground text-center">
+                            <div className="text-xs font-bold text-foreground/90 text-center">
                               <p>{project.startDate ? formatDate(project.startDate) : 'N/A'}</p>
-                              <p className="opacity-70">to {project.endDate ? formatDate(project.endDate) : 'Ongoing'}</p>
+                              <p className="text-[11px] text-foreground/70 font-medium mt-0.5">to {project.endDate ? formatDate(project.endDate) : 'Ongoing'}</p>
                             </div>
                           </TableCell>
                           {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (

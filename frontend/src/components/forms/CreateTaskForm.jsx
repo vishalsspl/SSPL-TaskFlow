@@ -17,12 +17,14 @@ import {
     BookOpen,
     GitBranch,
     Mail,
+    X,
+    File as FileIcon,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 // Removed MultiSearchableSelect import as it is no longer used
 import RichTextEditor from '@/components/ui/RichTextEditor';
 import { DatePicker } from '@/components/ui/date-picker';
-import api from '@/lib/api';
+import api, { getFileUrl } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthStore } from '@/store/authStore';
 
@@ -44,9 +46,11 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
         storyPoints: task?.storyPoints || 0,
         type: task?.type || 'TASK',
         sendEmail: localStorage.getItem('preferNoEmail') !== 'true',
+        attachments: task?.attachments ? (typeof task.attachments === 'string' ? JSON.parse(task.attachments) : task.attachments) : [],
     });
 
     const [phases, setPhases] = useState([]);
+    const [projectMemberIds, setProjectMemberIds] = useState([]);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -58,13 +62,25 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
     const fetchPhases = async (projectId) => {
         if (!projectId) {
             setPhases([]);
+            setProjectMemberIds([]);
             return;
         }
         try {
             const response = await api.get(`/projects/${projectId}`);
             setPhases(response.data.phases || []);
+            
+            const memberIds = new Set();
+            if (response.data.managerId) memberIds.add(response.data.managerId);
+            if (response.data.clientId) memberIds.add(response.data.clientId);
+            if (response.data.workloads) {
+                response.data.workloads.forEach(w => memberIds.add(w.user.id));
+            }
+            if (task?.assignees?.[0]?.userId) {
+                memberIds.add(task.assignees[0].userId);
+            }
+            setProjectMemberIds(Array.from(memberIds));
         } catch (error) {
-            console.error('Failed to fetch phases:', error);
+            console.error('Failed to fetch project details:', error);
         }
     };
 
@@ -146,6 +162,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                     tags: '',
                     storyPoints: 0,
                     type: 'TASK',
+                    attachments: [],
                 });
             }
 
@@ -205,20 +222,34 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                 </div>
 
                 {/* Phase */}
-                <div className="space-y-2">
-                    <Label htmlFor="phase" className="text-foreground/90 font-semibold mobile-reduce-label">Phase {formData.projectId && <span className="text-red-500">*</span>}</Label>
-                    <div className="relative">
-                        <Layers className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70 z-10" />
-                        <SearchableSelect
-                            value={formData.phaseId}
-                            onChange={(value) => setFormData({ ...formData, phaseId: value })}
-                            disabled={!formData.projectId}
-                            options={phases.map((p) => ({ label: p.name, value: p.id }))}
-                            placeholder="Select Phase"
-                            className="!pl-10 relative mobile-reduce-input"
-                        />
-                    </div>
-                </div>
+                {(() => {
+                    const selectedProjectObj = projects.find(p => p.id === formData.projectId);
+                    const isGeneralProject = !formData.projectId || 
+                        selectedProjectObj?.name === 'General' || 
+                        selectedProjectObj?.name === 'General Tasks' || 
+                        task?.project?.name === 'General' || 
+                        task?.project?.name === 'General Tasks';
+                    const showPhaseAsterisk = formData.projectId && !isGeneralProject;
+                    
+                    return (
+                        <div className="space-y-2">
+                            <Label htmlFor="phase" className="text-foreground/90 font-semibold mobile-reduce-label">
+                                Phase {showPhaseAsterisk && <span className="text-red-500">*</span>}
+                            </Label>
+                            <div className="relative">
+                                <Layers className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70 z-10" />
+                                <SearchableSelect
+                                    value={formData.phaseId}
+                                    onChange={(value) => setFormData({ ...formData, phaseId: value })}
+                                    disabled={isGeneralProject}
+                                    options={phases.map((p) => ({ label: p.name, value: p.id }))}
+                                    placeholder={isGeneralProject ? "Not applicable" : "Select Phase"}
+                                    className="!pl-10 relative mobile-reduce-input"
+                                />
+                            </div>
+                        </div>
+                    );
+                })()}
 
                 {/* Task Type */}
                 <div className="space-y-2">
@@ -247,12 +278,24 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                     <div className="relative">
                         <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70 z-10" />
                         <SearchableSelect
-                            options={Array.from(new Map((user?.role === 'ADMIN' || user?.role === 'MANAGER' ? users : users.filter(u => u.id === user?.id)).map(u => [u.id, { 
-                                value: u.id, 
-                                label: u.name,
-                                sublabel: `${u.email} (${u.role})`,
-                                initial: u.name.charAt(0)
-                            }])).values())}
+                            options={Array.from(new Map(
+                                users
+                                    .filter(u => {
+                                        // Members can only assign to themselves (or are disabled anyway)
+                                        if (user?.role === 'MEMBER') return u.id === user.id;
+                                        // Admins/Managers can only assign to project members (if a project is selected)
+                                        if (formData.projectId && projectMemberIds.length > 0) {
+                                            return projectMemberIds.includes(u.id) || u.id === user.id;
+                                        }
+                                        return true; // Fallback if no project selected yet
+                                    })
+                                    .map(u => [u.id, { 
+                                        value: u.id, 
+                                        label: u.name,
+                                        sublabel: `${u.email} (${u.role})`,
+                                        initial: u.name.charAt(0)
+                                    }])
+                            ).values())}
                             value={formData.assigneeId}
                             onChange={(id) => setFormData({ ...formData, assigneeId: id })}
                             disabled={user?.role === 'MEMBER'}
@@ -368,7 +411,34 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                             value={formData.description}
                             onChange={(value) => setFormData({ ...formData, description: value })}
                             placeholder="Task description..."
+                            onAttach={(fileData) => setFormData(prev => ({ ...prev, attachments: [...prev.attachments, fileData] }))}
                         />
+                        {formData.attachments && formData.attachments.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                                {formData.attachments.map((file, idx) => (
+                                    <div key={idx} className="flex items-center gap-2 bg-secondary/40 border border-border/60 rounded-md px-2 py-1 text-sm group">
+                                        <FileIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                                        <a href={getFileUrl(file.url)} target="_blank" rel="noopener noreferrer" className="hover:underline truncate max-w-[150px] text-xs font-medium">
+                                            {file.name}
+                                        </a>
+                                        <span className="text-[10px] text-muted-foreground mr-1">
+                                            ({(file.size / 1024).toFixed(0)}KB)
+                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                const newAtts = [...formData.attachments];
+                                                newAtts.splice(idx, 1);
+                                                setFormData({ ...formData, attachments: newAtts });
+                                            }}
+                                            className="text-muted-foreground hover:text-destructive transition-colors opacity-60 group-hover:opacity-100"
+                                        >
+                                            <X className="h-3.5 w-3.5" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

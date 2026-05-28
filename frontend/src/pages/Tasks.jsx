@@ -60,6 +60,7 @@ import { useTimerStore } from '@/store/timerStore';
 import { Edit2, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ImportTasksDialog from '@/components/ImportTasksDialog';
+import TaskDetailsModal from '@/components/task/TaskDetailsModal';
 
 const PROJECT_COLORS = [
   '#48A111', // SSPL Green
@@ -114,6 +115,7 @@ const Tasks = () => {
   const [selectedTask, setSelectedTask] = useState(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState(null);
 
   // Mobile filters toggle
@@ -214,7 +216,11 @@ const Tasks = () => {
 
   const handleTaskClick = (task) => {
     if (user?.role === 'CLIENT') return;
-    if (user?.role === 'MEMBER' && !task.project?.allowMemberTaskCreation) return;
+    if (user?.role === 'MEMBER') {
+      setSelectedTask(task);
+      setShowDetailsDialog(true);
+      return;
+    }
     setSelectedTask(task);
     setShowEditDialog(true);
   };
@@ -343,6 +349,12 @@ const Tasks = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <TaskDetailsModal 
+        open={showDetailsDialog}
+        onOpenChange={setShowDetailsDialog}
+        task={selectedTask}
+      />
 
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent className="w-[calc(100%-2rem)] sm:w-full sm:max-w-[700px] max-h-[95vh] p-0 overflow-hidden flex flex-col">
@@ -533,7 +545,7 @@ const Tasks = () => {
                               )}
                             </div>
                           </TableCell>
-                        <TableCell className="text-xs font-medium Montserrat text-gray-400">{task.project.name}</TableCell>
+                        <TableCell className="text-xs font-bold Montserrat text-foreground/90">{task.project.name}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
                             {task.assignees && task.assignees.length > 0 ? (
@@ -542,19 +554,19 @@ const Tasks = () => {
                                   <div key={user.id} className="flex items-center gap-2 bg-secondary/20 pr-3 rounded-full border border-border/50">
                                     <Avatar className="h-7 w-7 border border-[#0A0A0A] ring-1 ring-white/10">
                                       <AvatarImage src={user.avatar} />
-                                      <AvatarFallback className="text-[10px] bg-white/5 text-gray-400">{user.name.charAt(0)}</AvatarFallback>
+                                      <AvatarFallback className="text-[10px] bg-white/5 text-muted-foreground">{user.name.charAt(0)}</AvatarFallback>
                                     </Avatar>
                                     <span className="text-[11px] font-bold text-foreground whitespace-nowrap">{user.name}</span>
                                   </div>
                                 ))}
                                 {task.assignees.length > 3 && (
-                                  <div className="h-7 px-2 rounded-full bg-white/5 border border-[#0A0A0A] flex items-center justify-center text-[10px] text-gray-400 Montserrat font-bold">
+                                  <div className="h-7 px-2 rounded-full bg-white/5 border border-[#0A0A0A] flex items-center justify-center text-[10px] text-muted-foreground Montserrat font-bold">
                                     +{task.assignees.length - 3} more
                                   </div>
                                 )}
                               </div>
                             ) : (
-                              <span className="text-gray-600 text-[10px] font-bold uppercase tracking-widest Montserrat">Unassigned</span>
+                              <span className="text-muted-foreground/70 text-[10px] font-bold uppercase tracking-widest Montserrat">Unassigned</span>
                             )}
                           </div>
                         </TableCell>
@@ -581,7 +593,7 @@ const Tasks = () => {
                         <TableCell className="text-xs font-black Montserrat text-foreground">
                           {task.storyPoints || 0}
                         </TableCell>
-                        <TableCell className="text-[11px] font-bold Montserrat text-gray-500">{formatDate(task.dueDate)}</TableCell>
+                        <TableCell className="text-[11px] font-bold Montserrat text-foreground/90">{formatDate(task.dueDate)}</TableCell>
                         <TableCell>
                           <div className="space-y-1.5">
                             <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
@@ -594,7 +606,7 @@ const Tasks = () => {
                                 }}
                               />
                             </div>
-                            <span className="text-[10px] font-black Montserrat text-gray-500 block text-right">
+                            <span className="text-[10px] font-black Montserrat text-muted-foreground block text-right">
                               {getTaskProgress(task)}%
                             </span>
                           </div>
@@ -621,7 +633,8 @@ const Tasks = () => {
                                     className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      handleTaskClick(task);
+                                      setSelectedTask(task);
+                                      setShowEditDialog(true);
                                     }}
                                   >
                                     <Edit2 className="h-4 w-4" />

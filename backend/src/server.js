@@ -24,8 +24,10 @@ import notificationRoutes from './routes/notifications.js';
 import billingRoutes from './routes/billing.js';
 import paymentRoutes from './routes/payment.js';
 import integrationRoutes from './routes/integrations.js';
+import uploadRoutes from './routes/upload.js';
 import { getPublicSettings } from './controllers/settingsController.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import path from 'path';
 import prisma from './lib/prisma.js';
 import tenantDbManager from './lib/tenantDbManager.js';
 import { attachIo } from './middleware/socketMiddleware.js';
@@ -69,6 +71,10 @@ app.use('/api/superadmin/billing', billingRoutes);
 app.use('/api/billing', paymentRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/integrations', integrationRoutes);
+app.use('/api/upload', uploadRoutes);
+
+// Static file serving for uploads
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Socket.io
 io.on('connection', (socket) => {
