@@ -283,6 +283,10 @@ export const createTask = async (req, res) => {
     });
   }
 
+  if (req.user.role === 'MEMBER' && status === 'COMPLETED') {
+    return res.status(403).json({ error: 'Members cannot create tasks in Completed status.' });
+  }
+
   // Validate phaseId belongs to the same project (and thus same org)
   if (phaseId) {
     const phase = await req.db.phase.findFirst({
@@ -368,7 +372,7 @@ export const createTask = async (req, res) => {
       title: 'New Task Assigned',
       message: `You have been assigned to task: ${task.title} in project: ${task.project.name}`,
       type: 'TASK_ASSIGNED',
-      link: '/task-board'
+      link: `/task-board?project=${task.projectId}&highlight=${task.id}&action=new`
     });
 
     // 2. Only send email if enabled and supported
@@ -569,6 +573,7 @@ export const bulkCreateTasks = async (req, res) => {
             title: 'New Task Assigned (Bulk)',
             message: `You have been assigned to task: ${task.title} in project: ${task.project.name}`,
             type: 'TASK_ASSIGNED',
+            link: `/task-board?project=${task.projectId}&highlight=${task.id}&action=new`
           });
         }
       }
@@ -630,6 +635,10 @@ export const updateTask = async (req, res) => {
     if (taskDueDate < today) {
       return res.status(400).json({ error: 'Due date cannot be in the past' });
     }
+  }
+
+  if (req.user.role === 'MEMBER' && status === 'COMPLETED') {
+    return res.status(403).json({ error: 'Members cannot move tasks directly to Completed.' });
   }
 
   const existingAssigneeIds = existingTask.assignees.map((a) => a.userId);
@@ -719,7 +728,7 @@ export const updateTask = async (req, res) => {
         title: 'New Task Assigned',
         message: `You have been assigned to task: ${task.title} in project: ${task.project.name}`,
         type: 'TASK_ASSIGNED',
-        link: '/task-board'
+        link: `/task-board?project=${task.projectId}&highlight=${task.id}&action=new`
       });
     }
   }
@@ -895,11 +904,17 @@ export const getMyTasks = async (req, res) => {
     // Check if user is admin/manager - they see all tasks
     const isAdmin = req.user.role === 'ADMIN' || req.user.role === 'MANAGER';
 
+    const { projectId } = req.query;
+
     const where = {
       project: {
         organizationId: req.user.organizationId,
       },
     };
+
+    if (projectId) {
+      where.projectId = projectId;
+    }
 
     // If not admin, only show tasks assigned to the user
     if (!isAdmin) {
@@ -1052,12 +1067,16 @@ export const updateTaskStatus = async (req, res) => {
     let updatedRejectionReason = existingTask.rejectionReason;
 
     if (req.user.role === 'MEMBER') {
+      if (status === 'COMPLETED') {
+        return res.status(403).json({ error: 'Members cannot move tasks directly to Completed. Please use In Review.' });
+      }
+
       const existingPendingTag = updatedTags.find(t => t.startsWith('PENDING_APPROVAL:'));
       
-      // Only require approval when moving to IN_REVIEW or COMPLETED
-      if (status === 'IN_REVIEW' || status === 'COMPLETED') {
+      // Only require approval when moving to IN_REVIEW
+      if (status === 'IN_REVIEW') {
         if (!existingPendingTag) {
-          // First move to review/completed — record the original status to roll back to if rejected
+          // First move to review — record the original status to roll back to if rejected
           updatedTags = [...updatedTags, `PENDING_APPROVAL:${existingTask.status}`];
         }
       } else {
@@ -1176,7 +1195,7 @@ export const updateTaskStatus = async (req, res) => {
           title: notificationTitle,
           message: notificationMessage,
           type: notificationType,
-          link: '/task-board'
+          link: `/task-board?project=${existingTask.projectId}`
         });
       }
     }
@@ -1192,7 +1211,7 @@ export const updateTaskStatus = async (req, res) => {
           title: 'Status Approval Required',
           message: `${req.user.name} moved task "${task.title}" to ${status}. Approval required.`,
           type: 'TASK_APPROVAL_REQUEST',
-          link: '/task-board'
+          link: `/task-board?project=${existingTask.projectId}&highlight=${task.id}&action=pending`
         });
       } else {
         const admins = await req.db.user.findMany({ where: { organizationId: req.user.organizationId, role: 'ADMIN' } });
@@ -1202,7 +1221,7 @@ export const updateTaskStatus = async (req, res) => {
             title: 'Status Approval Required',
             message: `${req.user.name} moved task "${task.title}" to ${status}. Approval required.`,
             type: 'TASK_APPROVAL_REQUEST',
-            link: '/task-board'
+            link: `/task-board?project=${existingTask.projectId}&highlight=${task.id}&action=pending`
           });
         }
       }
@@ -1255,7 +1274,7 @@ export const approveTaskStatus = async (req, res) => {
         title: 'Status Change Approved 🎉',
         message: `Your task "${task.title}" was approved by ${req.user.name} and moved to Completed.`,
         type: 'TASK_APPROVED',
-        link: '/task-board'
+        link: `/task-board?project=${task.projectId}&highlight=${task.id}&action=approved`
       });
     }
 
@@ -1314,7 +1333,7 @@ export const rejectTaskStatus = async (req, res) => {
         title: 'Task Rejected ⚠️',
         message,
         type: 'TASK_REJECTED',
-        link: '/task-board'
+        link: `/task-board?project=${task.projectId}&highlight=${task.id}&action=rejected`
       });
     }
 

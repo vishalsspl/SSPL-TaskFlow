@@ -329,7 +329,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                                 { label: 'To Do', value: 'TODO' },
                                 { label: 'In Progress', value: 'IN_PROGRESS' },
                                 { label: 'In Review', value: 'IN_REVIEW' },
-                                { label: 'Completed', value: 'COMPLETED' }
+                                ...(user?.role === 'MEMBER' ? [] : [{ label: 'Completed', value: 'COMPLETED' }])
                             ]}
                             placeholder="To Do"
                             className="!pl-10 relative mobile-reduce-input"

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import api from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/hooks/use-toast';
@@ -99,6 +100,7 @@ const Kanban = () => {
   const [rejectTaskId, setRejectTaskId] = useState(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     fetchProjects();
@@ -109,7 +111,10 @@ const Kanban = () => {
   const fetchMyTasks = async () => {
     try {
       setLoading(true);
-      const res = await api.get('/tasks/my-tasks');
+      const params = new URLSearchParams(location.search);
+      const projectIdFromUrl = params.get('project');
+      const url = projectIdFromUrl ? `/tasks/my-tasks?projectId=${projectIdFromUrl}` : '/tasks/my-tasks';
+      const res = await api.get(url);
       setTasks(res.data);
     } catch (e) {
       console.error(e);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 import api from '@/lib/api';
 import { Loader2, Search, Plus, Layers } from 'lucide-react';
@@ -45,6 +45,9 @@ const TaskKanban = () => {
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [showDetailsDialog, setShowDetailsDialog] = useState(false);
 
+    const [highlightTaskId, setHighlightTaskId] = useState(null);
+    const [highlightAction, setHighlightAction] = useState(null);
+
     const [rejectTaskId, setRejectTaskId] = useState(null);
     const [rejectionReason, setRejectionReason] = useState('');
     const [showRejectDialog, setShowRejectDialog] = useState(false);
@@ -53,6 +56,36 @@ const TaskKanban = () => {
 
     const isReadOnly = user?.role === 'CLIENT';
     const navigate = useNavigate();
+    const location = useLocation();
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const projectIdFromUrl = params.get('project');
+        if (projectIdFromUrl) {
+            setSelectedProjectId(projectIdFromUrl);
+        }
+
+        const highlightId = params.get('highlight');
+        const action = params.get('action');
+        if (highlightId) {
+            setHighlightTaskId(highlightId);
+            setHighlightAction(action);
+            
+            // Clear highlight after 3 seconds
+            const timer = setTimeout(() => {
+                setHighlightTaskId(null);
+                setHighlightAction(null);
+                
+                // Remove from URL without reloading
+                const newParams = new URLSearchParams(location.search);
+                newParams.delete('highlight');
+                newParams.delete('action');
+                window.history.replaceState({}, '', `${location.pathname}?${newParams.toString()}`);
+            }, 3000);
+            
+            return () => clearTimeout(timer);
+        }
+    }, [location.search]);
 
     useEffect(() => {
         fetchData();
@@ -78,8 +111,10 @@ const TaskKanban = () => {
             setTasks(tasksRes.data);
             setUsers(usersRes.data.filter(u => u.role !== 'CLIENT'));
 
-            // Auto-select project if only one exists
-            if (projectsRes.data.length === 1) {
+            // Auto-select project if only one exists and no project is selected via URL
+            const params = new URLSearchParams(location.search);
+            const projectIdFromUrl = params.get('project');
+            if (projectsRes.data.length === 1 && !projectIdFromUrl) {
                 setSelectedProjectId(projectsRes.data[0].id);
             }
         } catch (error) {
@@ -380,6 +415,8 @@ const TaskKanban = () => {
                     onApprove={handleApproveStatus}
                     onReject={handleRejectStatus}
                     currentUser={user}
+                    highlightTaskId={highlightTaskId}
+                    highlightAction={highlightAction}
                 />
             </div>
 
