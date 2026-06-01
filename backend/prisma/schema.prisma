@@ -44,10 +44,11 @@ model Organization {
   currentPeriodStart  DateTime?
   currentPeriodEnd    DateTime?
 
-  // org-level settings
+  // Org Settings
   requireApproval      Boolean @default(false)
   allowClientSignup    Boolean @default(false)
   sessionTimeoutMinutes Int?
+  rolePermissions      Json?
 
   customFeatures Json?
 

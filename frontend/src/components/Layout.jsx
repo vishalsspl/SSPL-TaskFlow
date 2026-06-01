@@ -58,6 +58,7 @@ import {
   CreditCard,
   Sun,
   Moon,
+  ShieldCheck,
 } from 'lucide-react';
 import { useChatStore } from '@/store/chatStore';
 import { useHeaderStore } from '@/store/headerStore';
@@ -142,44 +143,49 @@ const Layout = () => {
     navigate('/login');
   };
   const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Projects', href: '/projects', icon: FolderKanban, featureKey: 'projects' },
-    { name: 'Kanban Board', href: '/task-board', icon: Kanban, featureKey: 'kanban' },
-    { name: 'Tasks', href: '/tasks', icon: CheckSquare, featureKey: 'tasks' },
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, permKey: 'dashboard.view' },
+    { name: 'Projects', href: '/projects', icon: FolderKanban, featureKey: 'projects', permKey: 'projects.view' },
+    { name: 'Kanban Board', href: '/task-board', icon: Kanban, featureKey: 'kanban', permKey: 'kanban.view' },
+    { name: 'Tasks', href: '/tasks', icon: CheckSquare, featureKey: 'tasks', permKey: 'tasks.view' },
     {
       name: 'Tickets',
       href: '/tickets',
       icon: LifeBuoy,
       allowedRoles: ['ADMIN', 'CLIENT'],
-      featureKey: 'tickets'
+      featureKey: 'tickets',
+      permKey: 'tickets.view'
     },
     {
       name: 'Team',
       href: '/team',
       icon: Users,
       allowedRoles: ['ADMIN', 'MANAGER'],
-      featureKey: 'team'
+      featureKey: 'team',
+      permKey: 'team.view'
     },
     {
       name: 'Chat',
       href: '/chat',
       icon: MessageSquare,
       allowedRoles: ['ADMIN', 'MANAGER', 'MEMBER'],
-      featureKey: 'chat'
+      featureKey: 'chat',
+      permKey: 'chat.view'
     },
     {
       name: 'Performance',
       href: '/performance',
       icon: BarChart2,
       allowedRoles: ['ADMIN', 'MANAGER', 'MEMBER'],
-      featureKey: 'performance'
+      featureKey: 'performance',
+      permKey: 'performance.viewOwn'
     },
     {
       name: 'Timesheets',
       href: '/timesheets',
       icon: Clock,
       allowedRoles: ['ADMIN', 'MANAGER', 'MEMBER'],
-      featureKey: 'timesheets'
+      featureKey: 'timesheets',
+      permKey: 'timesheets.view'
     },
     {
       name: 'Activity Logs',
@@ -188,11 +194,18 @@ const Layout = () => {
       allowedRoles: ['ADMIN'],
     },
     {
+      name: 'Manage Access',
+      href: '/organization/access',
+      icon: ShieldCheck,
+      allowedRoles: ['ADMIN'],
+    },
+    {
       name: 'Integrations',
       href: '/integrations',
       icon: Zap,
       allowedRoles: ['ADMIN', 'MANAGER', 'MEMBER'],
-      featureKey: 'github'
+      featureKey: 'github',
+      permKey: 'integrations.view'
     },
     {
       name: 'Billing',
@@ -259,6 +272,13 @@ const Layout = () => {
 
                 // If explicitly disabled, hide it immediately
                 if (normalizedFeatures[item.featureKey.toLowerCase()] === false) return false;
+              }
+            }
+
+            // Granular Permission based filtering (from Manage Access)
+            if (item.permKey && user?.role !== 'ADMIN') {
+              if (user?.permissions && user.permissions[item.permKey] === false) {
+                return false;
               }
             }
 

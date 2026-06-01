@@ -39,6 +39,7 @@ const Timesheets = lazy(() => import('./pages/Timesheets'));
 const Performance = lazy(() => import('./pages/Performance'));
 const OrganizationSettings = lazy(() => import('./pages/organization/OrganizationSettings'));
 const ActivityLog = lazy(() => import('./pages/organization/ActivityLog'));
+const ManageAccess = lazy(() => import('./pages/organization/ManageAccess'));
 const Integrations = lazy(() => import('./pages/Integrations'));
 const BillingPage = lazy(() => import('./pages/BillingPage'));
 const RestrictedAccess = lazy(() => import('./pages/RestrictedAccess'));
@@ -99,6 +100,19 @@ function FeatureGuard({ feature, children }) {
     if (normalizedFeatures[feature.toLowerCase()] === false) {
       return <RestrictedAccess feature={feature} />;
     }
+  }
+
+  return children;
+}
+
+// ── Guard — protects routes based on Granular Permissions (Manage Access)
+function PermissionGuard({ permKey, children }) {
+  const { user } = useAuthStore();
+  
+  if (user?.role === 'ADMIN') return children;
+  
+  if (permKey && user?.permissions && user.permissions[permKey] === false) {
+    return <RestrictedAccess feature={permKey} />;
   }
 
   return children;
@@ -207,59 +221,61 @@ function App() {
 
             {/* ── Protected Routes ────────────────────────────────── */}
             <Route element={token ? <Layout /> : <Navigate to="/login" replace />}>
-              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="dashboard" element={<PermissionGuard permKey="dashboard.view"><Dashboard /></PermissionGuard>} />
               <Route
                 path="projects"
-                element={<FeatureGuard feature="projects"><ProjectsList /></FeatureGuard>}
+                element={<FeatureGuard feature="projects"><PermissionGuard permKey="projects.view"><ProjectsList /></PermissionGuard></FeatureGuard>}
               />
               <Route
                 path="projects/:id"
-                element={<FeatureGuard feature="projects"><ProjectView /></FeatureGuard>}
+                element={<FeatureGuard feature="projects"><PermissionGuard permKey="projects.view"><ProjectView /></PermissionGuard></FeatureGuard>}
               />
               <Route
                 path="kanban"
-                element={<FeatureGuard feature="kanban"><KanbanBoard /></FeatureGuard>}
+                element={<FeatureGuard feature="kanban"><PermissionGuard permKey="kanban.view"><KanbanBoard /></PermissionGuard></FeatureGuard>}
               />
               <Route
                 path="task-board"
-                element={<FeatureGuard feature="kanban"><TaskKanban /></FeatureGuard>}
+                element={<FeatureGuard feature="kanban"><PermissionGuard permKey="kanban.view"><TaskKanban /></PermissionGuard></FeatureGuard>}
               />
               <Route
                 path="tasks"
-                element={<FeatureGuard feature="tasks"><Tasks /></FeatureGuard>}
+                element={<FeatureGuard feature="tasks"><PermissionGuard permKey="tasks.view"><Tasks /></PermissionGuard></FeatureGuard>}
               />
               <Route
                 path="team"
-                element={<FeatureGuard feature="team"><Team /></FeatureGuard>}
+                element={<FeatureGuard feature="team"><PermissionGuard permKey="team.view"><Team /></PermissionGuard></FeatureGuard>}
               />
               <Route path="settings" element={<Settings />} />
               <Route
                 path="timesheets"
-                element={<FeatureGuard feature="timesheets"><Timesheets /></FeatureGuard>}
+                element={<FeatureGuard feature="timesheets"><PermissionGuard permKey="timesheets.view"><Timesheets /></PermissionGuard></FeatureGuard>}
               />
               <Route
                 path="performance"
-                element={<FeatureGuard feature="performance"><Performance /></FeatureGuard>}
+                element={<FeatureGuard feature="performance"><PermissionGuard permKey="performance.viewOwn"><Performance /></PermissionGuard></FeatureGuard>}
               />
               <Route
                 path="chat"
                 element={
                   <FeatureGuard feature="chat">
-                    {user?.role !== 'CLIENT' ? <ChatPage /> : <Navigate to="/dashboard" />}
+                    <PermissionGuard permKey="chat.view">
+                      {user?.role !== 'CLIENT' ? <ChatPage /> : <Navigate to="/dashboard" />}
+                    </PermissionGuard>
                   </FeatureGuard>
                 }
               />
               <Route
                 path="tickets"
-                element={<FeatureGuard feature="tickets"><TicketList /></FeatureGuard>}
+                element={<FeatureGuard feature="tickets"><PermissionGuard permKey="tickets.view"><TicketList /></PermissionGuard></FeatureGuard>}
               />
               <Route
                 path="tickets/new"
-                element={<FeatureGuard feature="tickets"><SubmitTicket /></FeatureGuard>}
+                element={<FeatureGuard feature="tickets"><PermissionGuard permKey="tickets.view"><SubmitTicket /></PermissionGuard></FeatureGuard>}
               />
               <Route
                 path="tickets/:id"
-                element={<FeatureGuard feature="tickets"><TicketDetail /></FeatureGuard>}
+                element={<FeatureGuard feature="tickets"><PermissionGuard permKey="tickets.view"><TicketDetail /></PermissionGuard></FeatureGuard>}
               />
 
               <Route
@@ -279,10 +295,18 @@ function App() {
                 }
               />
               <Route
+                path="organization/access"
+                element={
+                  user?.role === 'ADMIN'
+                    ? <ManageAccess />
+                    : <Navigate to="/dashboard" replace />
+                }
+              />
+              <Route
                 path="integrations"
                 element={
                   ['ADMIN', 'MANAGER', 'MEMBER'].includes(user?.role)
-                    ? <FeatureGuard feature="github"><Integrations /></FeatureGuard>
+                    ? <FeatureGuard feature="github"><PermissionGuard permKey="integrations.view"><Integrations /></PermissionGuard></FeatureGuard>
                     : <Navigate to="/dashboard" replace />
                 }
               />

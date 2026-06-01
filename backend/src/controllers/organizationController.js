@@ -3,6 +3,7 @@ import { sendUserApprovalEmail, sendCredentialsUpdatedEmail } from '../services/
 import { ensureOrganizationSchema } from '../lib/schemaValidator.js';
 import bcrypt from 'bcryptjs';
 import fs from 'fs';
+import { getDefaultPermissions } from '../config/permissionDefaults.js';
 
 // ── GET /api/organizations/me ──────────────────────────────────────────────
 // Returns the current user's organisation with user + project counts
@@ -411,5 +412,90 @@ export const getOrgActivityLogs = async (req, res) => {
     } catch (error) {
         console.error('[OrgActivityLogs] Error:', error);
         res.status(500).json({ error: 'Failed to fetch activity logs' });
+    }
+};
+
+// ── GET /api/organizations/permissions ──────────────────────────────────────
+// Returns the current org's role permissions (merged with defaults)
+export const getOrgPermissions = async (req, res) => {
+    const { organizationId } = req.user;
+
+    try {
+        await ensureOrganizationSchema(req.db);
+        const org = await req.db.organization.findUnique({
+            where: { id: organizationId },
+            select: { rolePermissions: true }
+        });
+
+        if (!org) return res.status(404).json({ error: 'Organisation not found' });
+
+        const defaults = getDefaultPermissions();
+        const customPermissions = org.rolePermissions || {};
+
+        // Merge custom over defaults
+        const merged = {
+            MANAGER: { ...defaults.MANAGER, ...(customPermissions.MANAGER || {}) },
+            MEMBER: { ...defaults.MEMBER, ...(customPermissions.MEMBER || {}) },
+            CLIENT: { ...defaults.CLIENT, ...(customPermissions.CLIENT || {}) },
+        };
+
+        res.json(merged);
+    } catch (error) {
+        console.error('[getOrgPermissions] Error:', error);
+        fs.appendFileSync('debug_trace.log', `[getOrgPermissions] Error: ${error.message}\n${error.stack}\n`);
+        res.status(500).json({ error: 'Failed to fetch permissions' });
+    }
+};
+
+// ── PUT /api/organizations/permissions ──────────────────────────────────────
+// ADMIN only — Update role permissions for the organization
+export const updateOrgPermissions = async (req, res) => {
+    const { organizationId } = req.user;
+    const permissions = req.body;
+
+    // Validate body structure
+    if (!permissions || typeof permissions !== 'object') {
+        return res.status(400).json({ error: 'Invalid permissions payload' });
+    }
+
+    try {
+        const updateData = { rolePermissions: permissions };
+
+        // 1. Update Main DB (so it's centrally tracked if needed)
+        await ensureOrganizationSchema(prisma);
+        await prisma.organization.update({
+            where: { id: organizationId },
+            data: updateData
+        });
+
+        // 2. Update Tenant DB
+        await ensureOrganizationSchema(req.db);
+        const updated = await req.db.organization.update({
+            where: { id: organizationId },
+            data: updateData
+        });
+
+        // 3. Log Activity
+        await req.db.activityLog.create({
+            data: {
+                userId: req.user.id,
+                organizationId,
+                action: 'UPDATED',
+                entity: 'permissions',
+                details: { roles: Object.keys(permissions) }
+            }
+        });
+
+        // 4. Broadcast to clients
+        if (req.io) {
+            req.io.to(`org-${organizationId}`).emit('org-permissions-updated', {
+                organizationId
+            });
+        }
+
+        res.json(updated.rolePermissions);
+    } catch (error) {
+        console.error('[updateOrgPermissions] Error:', error);
+        res.status(500).json({ error: 'Failed to update permissions' });
     }
 };

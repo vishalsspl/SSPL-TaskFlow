@@ -40,6 +40,7 @@ model Organization {
   requireApproval      Boolean @default(false)
   allowClientSignup    Boolean @default(false)
   sessionTimeoutMinutes Int?
+  rolePermissions      Json?
 
   customFeatures Json?
 

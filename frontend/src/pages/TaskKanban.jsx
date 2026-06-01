@@ -126,7 +126,8 @@ const TaskKanban = () => {
 
     const handleTaskClick = (task) => {
         if (user?.role === 'CLIENT') return;
-        if (user?.role === 'MEMBER') {
+        const canEditTask = user?.role === 'ADMIN' || user?.permissions?.['tasks.editAny'] || (user?.role === 'MEMBER' && task.project?.allowMemberTaskCreation);
+        if (!canEditTask) {
             setSelectedTask(task);
             setShowDetailsDialog(true);
             return;
@@ -375,13 +376,14 @@ const TaskKanban = () => {
                             />
                         </div>
                         {(() => {
-                            let canCreate = user?.role === 'ADMIN' || user?.role === 'MANAGER';
+                            let canCreateTaskGlobal = user?.role === 'ADMIN' || user?.permissions?.['tasks.create'];
+                            let canCreate = canCreateTaskGlobal;
                             if (user?.role === 'MEMBER') {
                                 if (selectedProjectId) {
                                     const selectedProject = projects.find(p => p.id === selectedProjectId);
-                                    canCreate = selectedProject?.allowMemberTaskCreation;
+                                    canCreate = canCreateTaskGlobal || selectedProject?.allowMemberTaskCreation;
                                 } else {
-                                    canCreate = projects.some(p => p.allowMemberTaskCreation);
+                                    canCreate = canCreateTaskGlobal || projects.some(p => p.allowMemberTaskCreation);
                                 }
                             }
                             return canCreate ? (
@@ -409,8 +411,8 @@ const TaskKanban = () => {
                         }
                     }}
                     isReadOnly={isReadOnly}
-                    onEdit={(user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.role === 'MEMBER') ? handleTaskClick : undefined}
-                    onDelete={(user?.role === 'ADMIN' || user?.role === 'MANAGER') ? handleDeleteTask : undefined}
+                    onEdit={(user?.role === 'ADMIN' || user?.permissions?.['tasks.editAny'] || user?.role === 'MEMBER') ? handleTaskClick : undefined}
+                    onDelete={(user?.role === 'ADMIN' || user?.permissions?.['tasks.delete']) ? handleDeleteTask : undefined}
                     onStatusChange={isReadOnly ? undefined : handleStatusChange}
                     onApprove={handleApproveStatus}
                     onReject={handleRejectStatus}

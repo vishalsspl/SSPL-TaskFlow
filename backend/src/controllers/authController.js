@@ -5,6 +5,7 @@ import crypto from 'crypto';
 import { sendMemberInvitationEmail, sendPasswordResetEmail, sendOrgSignupEmail, sendNewOrgSignupNotificationToSuperAdmin } from '../services/emailService.js';
 import { provisionTenantDatabase } from '../services/tenantProvisioner.js';
 import tenantDbManager from '../lib/tenantDbManager.js';
+import { getDefaultPermissions } from '../config/permissionDefaults.js';
 
 // ── check-email (public) ──────────────────────────────────────────────────
 export const checkEmail = async (req, res) => {
@@ -119,6 +120,21 @@ export const login = async (req, res) => {
     userWithoutSensitive.activeFeatures = activeFeatures;
     userWithoutSensitive.permissionsTimestamp = Date.now();
   }
+
+  // Resolve role permissions
+  const defaults = getDefaultPermissions();
+  const orgPermissions = user.organization?.rolePermissions || {};
+  let resolvedPermissions = {};
+  
+  if (user.role === 'SUPERADMIN' || user.role === 'ADMIN') {
+    Object.keys(defaults.MANAGER).forEach(k => { resolvedPermissions[k] = true; });
+  } else if (defaults[user.role]) {
+    resolvedPermissions = {
+      ...defaults[user.role],
+      ...(orgPermissions[user.role] || {})
+    };
+  }
+  userWithoutSensitive.permissions = resolvedPermissions;
 
   // 5. ✅ NEW: Trigger Automatic Clock In (Attendance)
   if (user.role !== 'SUPERADMIN' && user.organization?.dbUrl) {
@@ -844,6 +860,23 @@ export const me = async (req, res) => {
   // Ensure activeFeatures is always present (critical for SuperAdmin)
   userWithoutSensitive.activeFeatures = activeFeatures;
   userWithoutSensitive.permissionsTimestamp = Date.now();
+
+  // Resolve role permissions
+  const defaults = getDefaultPermissions();
+  const orgPermissions = (freshOrg?.rolePermissions || req.user.organization?.rolePermissions) || {};
+  let resolvedPermissions = {};
+  
+  if (req.user.role === 'SUPERADMIN' || req.user.role === 'ADMIN') {
+    // ADMIN has all permissions true
+    Object.keys(defaults.MANAGER).forEach(k => { resolvedPermissions[k] = true; });
+  } else if (defaults[req.user.role]) {
+    // Merge defaults + overrides
+    resolvedPermissions = {
+      ...defaults[req.user.role],
+      ...(orgPermissions[req.user.role] || {})
+    };
+  }
+  userWithoutSensitive.permissions = resolvedPermissions;
 
   if (userWithoutSensitive.organization || freshOrg) {
     userWithoutSensitive.organization = {

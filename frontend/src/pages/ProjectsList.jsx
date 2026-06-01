@@ -24,6 +24,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { MultiSearchableSelect } from "@/components/ui/multi-searchable-select";
 import CreateProjectForm from '@/components/forms/CreateProjectForm';
 import {
   Table,
@@ -33,7 +42,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, FolderKanban, Eye, Edit2, Trash2, Search, Filter, Layers, FileText, Users, Briefcase, Target, Calendar, FileSpreadsheet, UserPlus, RefreshCw, Mail, ShieldCheck, ShieldX } from 'lucide-react';
+import { Plus, FolderKanban, Eye, Edit2, Trash2, Search, Filter, Layers, FileText, Users, Briefcase, Target, Calendar, FileSpreadsheet, UserPlus, RefreshCw, Mail, ShieldCheck, ShieldX, ArrowUp, ArrowDown } from 'lucide-react';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 import { SearchableSelect } from '@/components/ui/searchable-select';
@@ -58,6 +67,12 @@ const getContrastColor = (hexColor) => {
 const ProjectsList = () => {
   const { toast } = useToast();
   const { user } = useAuthStore();
+  
+  const canCreate = user?.role === 'ADMIN' || user?.permissions?.['projects.create'];
+  const canEdit = user?.role === 'ADMIN' || user?.permissions?.['projects.edit'];
+  const canDelete = user?.role === 'ADMIN' || user?.permissions?.['projects.delete'];
+  const canManageMembers = user?.role === 'ADMIN' || user?.permissions?.['projects.manageMembers'];
+
   const { setHeader, searchTerm: globalSearch, setSearchTerm: setGlobalSearch } = useHeaderStore();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -106,6 +121,19 @@ const ProjectsList = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
 
+  // Sorting state
+  const [sortBy, setSortBy] = useState('name');
+  const [sortOrder, setSortOrder] = useState('asc');
+
+  // Advanced Filters State
+  const [selectedManagerIds, setSelectedManagerIds] = useState([]);
+  const [selectedProjectIds, setSelectedProjectIds] = useState([]);
+  const [startDateFrom, setStartDateFrom] = useState(null);
+  const [startDateTo, setStartDateTo] = useState(null);
+  const [tasksMin, setTasksMin] = useState('');
+  const [tasksMax, setTasksMax] = useState('');
+  const [allProjects, setAllProjects] = useState([]); // For the project filter dropdown
+
   // Debounce global search input
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -117,12 +145,22 @@ const ProjectsList = () => {
 
   useEffect(() => {
     fetchProjects();
-  }, [statusFilter, page, pageSize, debouncedSearch]);
+  }, [statusFilter, page, pageSize, debouncedSearch, sortBy, sortOrder, selectedManagerIds, selectedProjectIds, startDateFrom, startDateTo, tasksMin, tasksMax]);
 
   useEffect(() => {
     setHeader("All Projects", "Manage and monitor all your organization's projects", true, "Search projects...");
     fetchUsers();
+    fetchAllProjectsForFilter();
   }, [setHeader]);
+
+  const fetchAllProjectsForFilter = async () => {
+    try {
+      const response = await api.get('/projects'); // No page param = all projects
+      setAllProjects(response.data);
+    } catch (error) {
+      console.error('Failed to fetch all projects for filters:', error);
+    }
+  };
 
   useEffect(() => {
     if (searchParams.get('create') === 'true') {
@@ -132,9 +170,17 @@ const ProjectsList = () => {
 
   const fetchProjects = async () => {
     try {
-      const params = { page, limit: pageSize };
+      const params = { page, limit: pageSize, sortBy, sortOrder };
       if (debouncedSearch) params.search = debouncedSearch;
       if (statusFilter !== 'ALL') params.status = statusFilter;
+      
+      if (selectedManagerIds.length > 0) params.managerIds = selectedManagerIds.join(',');
+      if (selectedProjectIds.length > 0) params.projectIds = selectedProjectIds.join(',');
+      if (startDateFrom) params.startDateFrom = startDateFrom.toISOString();
+      if (startDateTo) params.startDateTo = startDateTo.toISOString();
+      if (tasksMin !== '') params.tasksMin = tasksMin;
+      if (tasksMax !== '') params.tasksMax = tasksMax;
+
       const response = await api.get('/projects', { params });
       setProjects(response.data.data);
       setTotalPages(response.data.pagination.totalPages);
@@ -144,6 +190,20 @@ const ProjectsList = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSort = (column) => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(column);
+      setSortOrder('asc');
+    }
+  };
+
+  const renderSortIcon = (column) => {
+    if (sortBy !== column) return null;
+    return sortOrder === 'asc' ? <ArrowUp className="w-3 h-3 ml-1 inline-block" /> : <ArrowDown className="w-3 h-3 ml-1 inline-block" />;
   };
 
   const fetchUsers = async () => {
@@ -598,7 +658,7 @@ const ProjectsList = () => {
                   <Filter className="w-4 h-4" />
                 </Button>
                 {/* Mobile Action Button */}
-                {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
+                {canCreate && (
                   <Button
                     onClick={() => setShowCreateDialog(true)}
                     className="w-11 h-11 p-0 shrink-0 sm:hidden rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground"
@@ -643,10 +703,84 @@ const ProjectsList = () => {
                     placeholder="Status"
                     className="w-full sm:w-[155px] h-11 rounded-xl bg-background border-border/40 hover:bg-accent/20 transition-all font-semibold"
                   />
+
+                  {/* Advanced Filters */}
+                  <Sheet>
+                    <SheetTrigger asChild>
+                      <Button variant="outline" className="h-11 rounded-xl border-border/40 hover:bg-accent/20 font-semibold text-foreground/80 whitespace-nowrap">
+                        <Filter className="w-4 h-4 mr-2" />
+                        Advanced Filters
+                        {(selectedManagerIds.length > 0 || selectedProjectIds.length > 0 || startDateFrom || startDateTo || tasksMin || tasksMax) && (
+                          <Badge className="ml-2 bg-primary text-primary-foreground h-5 px-1.5 flex items-center justify-center rounded-full text-[10px]">
+                            On
+                          </Badge>
+                        )}
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+                      <SheetHeader className="mb-6">
+                        <SheetTitle>Advanced Filters</SheetTitle>
+                        <SheetDescription>Apply multiple filters to narrow down the projects list.</SheetDescription>
+                      </SheetHeader>
+                      <div className="space-y-6">
+                         {/* Projects */}
+                         <div className="space-y-2">
+                            <Label className="font-semibold text-foreground/90">Specific Projects</Label>
+                            <MultiSearchableSelect 
+                               options={allProjects.map(p => ({ label: p.name, value: p.id }))} 
+                               value={selectedProjectIds} 
+                               onChange={setSelectedProjectIds} 
+                               placeholder="Select projects..." 
+                            />
+                         </div>
+                         
+                         {/* Managers */}
+                         <div className="space-y-2">
+                            <Label className="font-semibold text-foreground/90">Specific Managers</Label>
+                            <MultiSearchableSelect 
+                               options={managerOptions} 
+                               value={selectedManagerIds} 
+                               onChange={setSelectedManagerIds} 
+                               placeholder="Select managers..." 
+                            />
+                         </div>
+                         
+                         {/* Start Date Range */}
+                         <div className="space-y-2">
+                            <Label className="font-semibold text-foreground/90">Project Start Date Between</Label>
+                            <div className="grid grid-cols-2 gap-2">
+                                <DatePicker date={startDateFrom} setDate={setStartDateFrom} placeholder="From Date" />
+                                <DatePicker date={startDateTo} setDate={setStartDateTo} placeholder="To Date" />
+                            </div>
+                         </div>
+                         
+                         {/* Tasks Range */}
+                         <div className="space-y-2">
+                            <Label className="font-semibold text-foreground/90">Number of Tasks Between</Label>
+                            <div className="grid grid-cols-2 gap-2">
+                                <Input type="number" value={tasksMin} onChange={(e) => setTasksMin(e.target.value)} placeholder="Min Tasks" />
+                                <Input type="number" value={tasksMax} onChange={(e) => setTasksMax(e.target.value)} placeholder="Max Tasks" />
+                            </div>
+                         </div>
+
+                         {/* Clear button */}
+                         <Button variant="outline" className="w-full mt-4 text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => {
+                             setSelectedProjectIds([]);
+                             setSelectedManagerIds([]);
+                             setStartDateFrom(null);
+                             setStartDateTo(null);
+                             setTasksMin('');
+                             setTasksMax('');
+                         }}>
+                           Clear Advanced Filters
+                         </Button>
+                      </div>
+                    </SheetContent>
+                  </Sheet>
                 </div>
 
                 {/* Desktop Action Buttons */}
-                {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
+                {canCreate && (
                   <div className="hidden sm:flex items-center gap-2 shrink-0">
                     <Button
                       onClick={() => setShowImportDialog(true)}
@@ -698,15 +832,15 @@ const ProjectsList = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Project Name</TableHead>
-                      <TableHead>Client</TableHead>
-                      <TableHead>Manager</TableHead>
-                      <TableHead>Timeline</TableHead>
-                      {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && <TableHead>Budget</TableHead>}
-                      <TableHead>Status</TableHead>
-                      <TableHead>Tasks</TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => handleSort('name')}>Project Name {renderSortIcon('name')}</TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => handleSort('client')}>Client {renderSortIcon('client')}</TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => handleSort('manager')}>Manager {renderSortIcon('manager')}</TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => handleSort('timeline')}>Timeline {renderSortIcon('timeline')}</TableHead>
+                      {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && <TableHead className="cursor-pointer select-none" onClick={() => handleSort('budget')}>Budget {renderSortIcon('budget')}</TableHead>}
+                      <TableHead className="cursor-pointer select-none" onClick={() => handleSort('status')}>Status {renderSortIcon('status')}</TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => handleSort('tasks')}>Tasks {renderSortIcon('tasks')}</TableHead>
                       {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && <TableHead className="text-center">Member Task Access</TableHead>}
-                      {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && <TableHead className="text-center w-[140px]">Actions</TableHead>}
+                      {(canEdit || canDelete || canManageMembers) && <TableHead className="text-center w-[140px]">Actions</TableHead>}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -818,37 +952,43 @@ const ProjectsList = () => {
                               )}
                             </TableCell>
                           )}
-                          {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
+                          {(canEdit || canDelete || canManageMembers) && (
                             <TableCell className="text-center">
                               <div className="flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  title="Manage Members"
-                                  onClick={() => {
-                                    setSelectedProjectForMember(project);
-                                    setMemberToAddId('');
-                                    setShowAddMemberDialog(true);
-                                    fetchProjectMembers(project.id);
-                                  }}
-                                >
-                                  <UserPlus className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => handleEdit(project)}
-                                >
-                                  <Edit2 className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => handleDelete(project.id, project.name)}
-                                  className="text-destructive hover:text-destructive/90"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
+                                {canManageMembers && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    title="Manage Members"
+                                    onClick={() => {
+                                      setSelectedProjectForMember(project);
+                                      setMemberToAddId('');
+                                      setShowAddMemberDialog(true);
+                                      fetchProjectMembers(project.id);
+                                    }}
+                                  >
+                                    <UserPlus className="w-4 h-4" />
+                                  </Button>
+                                )}
+                                {canEdit && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleEdit(project)}
+                                  >
+                                    <Edit2 className="w-4 h-4" />
+                                  </Button>
+                                )}
+                                {canDelete && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleDelete(project.id, project.name)}
+                                    className="text-destructive hover:text-destructive/90"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                )}
                               </div>
                             </TableCell>
                           )}
@@ -905,27 +1045,33 @@ const ProjectsList = () => {
                           )}
                         </div>
                       )}
-                      {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
+                      {(canEdit || canDelete || canManageMembers) && (
                         <div className="flex gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8" 
-                            onClick={() => {
-                              setSelectedProjectForMember(project);
-                              setMemberToAddId('');
-                              setShowAddMemberDialog(true);
-                              fetchProjectMembers(project.id);
-                            }}
-                          >
-                            <UserPlus className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(project)}>
-                            <Edit2 className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive/90 hover:bg-destructive/10" onClick={() => handleDelete(project.id, project.name)}>
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                          {canManageMembers && (
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8" 
+                              onClick={() => {
+                                setSelectedProjectForMember(project);
+                                setMemberToAddId('');
+                                setShowAddMemberDialog(true);
+                                fetchProjectMembers(project.id);
+                              }}
+                            >
+                              <UserPlus className="w-4 h-4" />
+                            </Button>
+                          )}
+                          {canEdit && (
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(project)}>
+                              <Edit2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                          {canDelete && (
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive/90 hover:bg-destructive/10" onClick={() => handleDelete(project.id, project.name)}>
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
                         </div>
                       )}
                     </div>

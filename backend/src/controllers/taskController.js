@@ -23,7 +23,7 @@ export const getAllTasks = async (req, res) => {
       });
     }
 
-    const { projectId, status, priority, type, assignedTo, search, page, limit: rawLimit } = req.query;
+    const { projectId, status, priority, type, assignedTo, search, page, limit: rawLimit, sortBy, sortOrder = 'asc', dueDateFrom, dueDateTo, pointsMin, pointsMax } = req.query;
 
   const where = {
     project: {
@@ -31,12 +31,28 @@ export const getAllTasks = async (req, res) => {
     },
   };
 
-  if (projectId) where.projectId = projectId;
-  if (status) where.status = status;
-  if (priority) where.priority = priority;
-  if (type) where.type = type;
+  if (projectId) where.projectId = { in: projectId.split(',').map(id => id.trim()).filter(Boolean) };
+  if (status) where.status = { in: status.split(',').map(s => s.trim()).filter(Boolean) };
+  if (priority) where.priority = { in: priority.split(',').map(p => p.trim()).filter(Boolean) };
+  if (type) where.type = { in: type.split(',').map(t => t.trim()).filter(Boolean) };
   if (assignedTo) {
-    where.assignees = { some: { userId: assignedTo } };
+    where.assignees = { some: { userId: { in: assignedTo.split(',').map(id => id.trim()).filter(Boolean) } } };
+  }
+
+  if (dueDateFrom || dueDateTo) {
+    where.dueDate = {};
+    if (dueDateFrom) where.dueDate.gte = new Date(dueDateFrom);
+    if (dueDateTo) where.dueDate.lte = new Date(dueDateTo);
+  }
+
+  if (pointsMin !== undefined || pointsMax !== undefined) {
+    const min = pointsMin !== undefined ? parseInt(pointsMin) : undefined;
+    const max = pointsMax !== undefined ? parseInt(pointsMax) : undefined;
+    if (!isNaN(min) || !isNaN(max)) {
+      where.storyPoints = {};
+      if (!isNaN(min)) where.storyPoints.gte = min;
+      if (!isNaN(max)) where.storyPoints.lte = max;
+    }
   }
 
   // Backend search filter
@@ -97,6 +113,20 @@ export const getAllTasks = async (req, res) => {
     phase: { select: { id: true, name: true } },
   };
 
+  let prismaOrderBy = { title: 'asc' };
+  if (sortBy) {
+    const order = sortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
+    switch (sortBy) {
+      case 'title': prismaOrderBy = { title: order }; break;
+      case 'project': prismaOrderBy = { project: { name: order } }; break;
+      case 'status': prismaOrderBy = { status: order }; break;
+      case 'type': prismaOrderBy = { type: order }; break;
+      case 'priority': prismaOrderBy = { priority: order }; break;
+      case 'points': prismaOrderBy = { storyPoints: order }; break;
+      case 'dueDate': prismaOrderBy = { dueDate: order }; break;
+    }
+  }
+
   // If page is provided, return paginated response
   if (page) {
     const pageNum = Math.max(1, parseInt(page));
@@ -107,7 +137,7 @@ export const getAllTasks = async (req, res) => {
       req.db.task.findMany({
         where,
         include,
-        orderBy: { title: 'asc' },
+        orderBy: prismaOrderBy,
         skip,
         take: limit,
       }),
@@ -129,7 +159,7 @@ export const getAllTasks = async (req, res) => {
   const tasks = await req.db.task.findMany({
     where,
     include,
-    orderBy: { title: 'asc' },
+    orderBy: prismaOrderBy,
   });
 
   res.json(tasks);

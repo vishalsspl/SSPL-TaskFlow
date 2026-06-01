@@ -146,6 +146,7 @@ exports.Prisma.OrganizationScalarFieldEnum = {
   requireApproval: 'requireApproval',
   allowClientSignup: 'allowClientSignup',
   sessionTimeoutMinutes: 'sessionTimeoutMinutes',
+  rolePermissions: 'rolePermissions',
   customFeatures: 'customFeatures',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

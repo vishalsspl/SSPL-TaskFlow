@@ -25,7 +25,7 @@ const STATUS_OPTIONS = [
     { value: 'COMPLETED', label: 'Completed', color: '#48A111' },
 ];
 
-const KanbanCard = ({ task, isReadOnly, onEdit, onDelete, onStatusChange, isHighlighted, highlightAction, onApprove, onReject }) => {
+const KanbanCard = ({ task, isReadOnly, disableDrag, onEdit, onDelete, onStatusChange, isHighlighted, highlightAction, onApprove, onReject }) => {
     const { user } = useAuthStore();
     const canTrackTime = user?.role !== 'CLIENT';
     const pendingTag = task.tags?.find(t => t.startsWith('PENDING_APPROVAL:'));
@@ -44,7 +44,7 @@ const KanbanCard = ({ task, isReadOnly, onEdit, onDelete, onStatusChange, isHigh
             type: 'Task',
             task,
         },
-        disabled: isReadOnly,
+        disabled: disableDrag ?? isReadOnly,
     });
 
     const startTimer = useTimerStore(state => state.startTimer);
@@ -83,7 +83,7 @@ const KanbanCard = ({ task, isReadOnly, onEdit, onDelete, onStatusChange, isHigh
     return (
         <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="mb-3 touch-none group w-full max-w-[550px] sm:max-w-none mx-auto px-2 sm:px-0">
             <Card
-                className={`bg-card/60 backdrop-blur-sm border cursor-grab active:cursor-grabbing hover:border-primary/40 hover:bg-accent/50 transition-all duration-300 rounded-xl sm:rounded-2xl overflow-hidden shadow-xl ${highlightClasses}`}
+                className={`bg-card/60 backdrop-blur-sm border ${disableDrag ? '' : 'cursor-grab active:cursor-grabbing'} hover:border-primary/40 hover:bg-accent/50 transition-all duration-300 rounded-xl sm:rounded-2xl overflow-hidden shadow-xl ${highlightClasses}`}
             >
                 <div className="p-3 sm:p-2.5 space-y-2 sm:space-y-1.5">
                     <div className="flex items-start justify-between gap-2">

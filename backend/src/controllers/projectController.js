@@ -123,7 +123,7 @@ export const getAllProjects = async (req, res) => {
       log(`Lazy migration warning: ${migrateErr.message}`);
     }
 
-    const { search, status: statusFilter, category, page, limit: rawLimit } = req.query;
+    const { search, status: statusFilter, category, page, limit: rawLimit, sortBy, sortOrder = 'asc', managerIds, projectIds, startDateFrom, startDateTo, tasksMin, tasksMax } = req.query;
 
     const where = {
       organizationId: req.user.organizationId,
@@ -201,6 +201,43 @@ export const getAllProjects = async (req, res) => {
   // Backend category filter
   if (category && category !== 'ALL') {
     where.category = category;
+  }
+
+  // Advanced Filters
+  if (managerIds) {
+    const ids = managerIds.split(',').map(id => id.trim()).filter(Boolean);
+    if (ids.length > 0) {
+      where.managerId = { in: ids };
+    }
+  }
+
+  if (projectIds) {
+    const ids = projectIds.split(',').map(id => id.trim()).filter(Boolean);
+    if (ids.length > 0) {
+      where.id = { in: ids };
+    }
+  }
+
+  if (startDateFrom || startDateTo) {
+    where.startDate = {};
+    if (startDateFrom) where.startDate.gte = new Date(startDateFrom);
+    if (startDateTo) where.startDate.lte = new Date(startDateTo);
+  }
+
+  if (tasksMin !== undefined || tasksMax !== undefined) {
+    const min = tasksMin !== undefined ? parseInt(tasksMin) : undefined;
+    const max = tasksMax !== undefined ? parseInt(tasksMax) : undefined;
+    
+    if (!isNaN(min) || !isNaN(max)) {
+      const countFilter = {};
+      if (!isNaN(min)) countFilter.gte = min;
+      if (!isNaN(max)) countFilter.lte = max;
+      
+      where.AND = [
+        ...(where.AND || []),
+        { tasks: { _count: countFilter } }
+      ];
+    }
   }
 
   let taskWhereFilter = {};
@@ -287,6 +324,20 @@ export const getAllProjects = async (req, res) => {
     });
   };
 
+  let prismaOrderBy = { name: 'asc' };
+  if (sortBy) {
+    const order = sortOrder.toLowerCase() === 'desc' ? 'desc' : 'asc';
+    switch(sortBy) {
+      case 'name': prismaOrderBy = { name: order }; break;
+      case 'client': prismaOrderBy = { client: { name: order } }; break;
+      case 'manager': prismaOrderBy = { manager: { name: order } }; break;
+      case 'timeline': prismaOrderBy = { startDate: order }; break;
+      case 'budget': prismaOrderBy = { totalBudget: order }; break;
+      case 'status': prismaOrderBy = { status: order }; break;
+      case 'tasks': prismaOrderBy = { tasks: { _count: order } }; break;
+    }
+  }
+
   // If page is provided, return paginated response
   if (page) {
     const pageNum = Math.max(1, parseInt(page));
@@ -298,7 +349,7 @@ export const getAllProjects = async (req, res) => {
       req.db.project.findMany({
         where,
         select: projectSelect,
-        orderBy: { name: 'asc' },
+        orderBy: prismaOrderBy,
         skip,
         take: limit,
       }),
@@ -324,9 +375,7 @@ export const getAllProjects = async (req, res) => {
   const projects = await req.db.project.findMany({
     where,
     select: projectSelect,
-    orderBy: {
-      name: 'asc',
-    },
+    orderBy: prismaOrderBy,
   });
 
   log(`Found ${projects.length} projects. Computing progress...`);

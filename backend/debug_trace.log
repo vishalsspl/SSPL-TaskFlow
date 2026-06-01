@@ -21,3 +21,33 @@ authController invite - req.db exists? true
 authController invite - req.db === prisma? false
 Entering req.db.user.create
 Successfully created user in tenant DB
+[getOrgPermissions] Error: 
+Invalid `prisma.organization.findUnique()` invocation:
+
+
+The column `Organization.rolePermissions` does not exist in the current database.
+PrismaClientKnownRequestError: 
+Invalid `prisma.organization.findUnique()` invocation:
+
+
+The column `Organization.rolePermissions` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getOrgPermissions (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/organizationController.js:424:21)
+[getOrgPermissions] Error: 
+Invalid `prisma.organization.findUnique()` invocation:
+
+
+The column `Organization.rolePermissions` does not exist in the current database.
+PrismaClientKnownRequestError: 
+Invalid `prisma.organization.findUnique()` invocation:
+
+
+The column `Organization.rolePermissions` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getOrgPermissions (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/organizationController.js:424:21)

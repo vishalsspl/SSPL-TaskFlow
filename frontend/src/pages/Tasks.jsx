@@ -20,6 +20,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { MultiSearchableSelect } from "@/components/ui/multi-searchable-select";
+import { DatePicker } from '@/components/ui/date-picker';
+import {
   Table,
   TableBody,
   TableCell,
@@ -57,7 +67,7 @@ import CreateTaskForm from '@/components/forms/CreateTaskForm';
 import TablePagination from '@/components/ui/table-pagination';
 import { useToast } from "@/hooks/use-toast";
 import { useTimerStore } from '@/store/timerStore';
-import { Edit2, Lock } from 'lucide-react';
+import { Edit2, Lock, ArrowUp, ArrowDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ImportTasksDialog from '@/components/ImportTasksDialog';
 import TaskDetailsModal from '@/components/task/TaskDetailsModal';
@@ -127,6 +137,22 @@ const Tasks = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
 
+  const [sortBy, setSortBy] = useState('title');
+  const [sortOrder, setSortOrder] = useState('asc');
+
+  // Advanced Filters State
+  const [selectedProjectIds, setSelectedProjectIds] = useState([]);
+  const [selectedAssigneeIds, setSelectedAssigneeIds] = useState([]);
+  const [selectedStatuses, setSelectedStatuses] = useState([]);
+  const [selectedTypes, setSelectedTypes] = useState([]);
+  const [selectedPriorities, setSelectedPriorities] = useState([]);
+  const [dueDateFrom, setDueDateFrom] = useState(null);
+  const [dueDateTo, setDueDateTo] = useState(null);
+  const [pointsMin, setPointsMin] = useState('');
+  const [pointsMax, setPointsMax] = useState('');
+
+  const canCreateTaskGlobal = user?.role === 'ADMIN' || user?.permissions?.['tasks.create'] || (user?.role === 'MEMBER' && projects.some(p => p.allowMemberTaskCreation));
+
   // Debounce global search input
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -149,31 +175,33 @@ const Tasks = () => {
     fetchTasks();
     fetchProjects();
     fetchUsers();
-  }, [filter, projectFilter, priorityFilter, typeFilter, page, pageSize, debouncedSearch]);
+  }, [filter, projectFilter, priorityFilter, typeFilter, page, pageSize, debouncedSearch, sortBy, sortOrder, selectedProjectIds, selectedAssigneeIds, selectedStatuses, selectedTypes, selectedPriorities, dueDateFrom, dueDateTo, pointsMin, pointsMax]);
 
   const fetchTasks = async () => {
     try {
-      const params = { page, limit: pageSize };
-      if (filter !== 'all') {
-        params.status = filter;
-      }
-      if (projectFilter !== 'all') {
-        params.projectId = projectFilter;
-      }
-      if (priorityFilter) {
-        params.priority = priorityFilter;
-      }
-      if (typeFilter) {
-        params.type = typeFilter;
-      }
-      if (debouncedSearch) {
-        params.search = debouncedSearch;
-      }
+      const params = { page, limit: pageSize, sortBy, sortOrder };
+      
+      if (selectedProjectIds.length > 0) params.projectId = selectedProjectIds.join(',');
+      else if (projectFilter !== 'all') params.projectId = projectFilter;
 
-      // Fix: Filter by assignedTo on backend for Members to ensure correct pagination
-      if (user?.role === 'MEMBER') {
-        params.assignedTo = user.id;
-      }
+      if (selectedStatuses.length > 0) params.status = selectedStatuses.join(',');
+      else if (filter !== 'all') params.status = filter;
+
+      if (selectedPriorities.length > 0) params.priority = selectedPriorities.join(',');
+      else if (priorityFilter) params.priority = priorityFilter;
+
+      if (selectedTypes.length > 0) params.type = selectedTypes.join(',');
+      else if (typeFilter) params.type = typeFilter;
+
+      if (selectedAssigneeIds.length > 0) params.assignedTo = selectedAssigneeIds.join(',');
+      else if (user?.role === 'MEMBER') params.assignedTo = user.id;
+
+      if (debouncedSearch) params.search = debouncedSearch;
+
+      if (dueDateFrom) params.dueDateFrom = dueDateFrom.toISOString();
+      if (dueDateTo) params.dueDateTo = dueDateTo.toISOString();
+      if (pointsMin !== '') params.pointsMin = pointsMin;
+      if (pointsMax !== '') params.pointsMax = pointsMax;
 
       const response = await api.get('/tasks', { params });
       setTasks(response.data.data);
@@ -184,6 +212,20 @@ const Tasks = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSort = (column) => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(column);
+      setSortOrder('asc');
+    }
+  };
+
+  const renderSortIcon = (column) => {
+    if (sortBy !== column) return null;
+    return sortOrder === 'asc' ? <ArrowUp className="w-3 h-3 ml-1 inline-block" /> : <ArrowDown className="w-3 h-3 ml-1 inline-block" />;
   };
 
   const fetchProjects = async () => {
@@ -392,7 +434,7 @@ const Tasks = () => {
                   <Filter className="w-4 h-4" />
                 </Button>
                 {/* Mobile Action Button */}
-                {(user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.role === 'MEMBER') && (
+                {canCreateTaskGlobal && (
                   <Button
                     onClick={() => setShowCreateDialog(true)}
                     className="w-10 h-10 p-0 md:hidden rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground shrink-0"
@@ -445,13 +487,125 @@ const Tasks = () => {
                     placeholder="Status"
                     className="w-full md:w-[130px] h-10 rounded-xl bg-background/50 border-border/40 hover:bg-background transition-all"
                   />
+                  
+                  {/* Advanced Filters */}
+                  <Sheet>
+                    <SheetTrigger asChild>
+                      <Button variant="outline" className="h-10 rounded-xl border-border/40 hover:bg-accent/20 font-semibold text-foreground/80 whitespace-nowrap">
+                        <Filter className="w-4 h-4 mr-2" />
+                        Advanced Filters
+                        {(selectedProjectIds.length > 0 || selectedAssigneeIds.length > 0 || selectedStatuses.length > 0 || selectedTypes.length > 0 || selectedPriorities.length > 0 || dueDateFrom || dueDateTo || pointsMin || pointsMax) && (
+                          <Badge className="ml-2 bg-primary text-primary-foreground h-5 px-1.5 flex items-center justify-center rounded-full text-[10px]">
+                            On
+                          </Badge>
+                        )}
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+                      <SheetHeader className="mb-6">
+                        <SheetTitle>Advanced Filters</SheetTitle>
+                        <SheetDescription>Apply multiple filters to narrow down the tasks list.</SheetDescription>
+                      </SheetHeader>
+                      <div className="space-y-6">
+                         {/* Projects */}
+                         <div className="space-y-2">
+                            <Label className="font-semibold text-foreground/90">Specific Projects</Label>
+                            <MultiSearchableSelect 
+                               options={projects.map(p => ({ label: p.name, value: p.id }))} 
+                               value={selectedProjectIds} 
+                               onChange={setSelectedProjectIds} 
+                               placeholder="Select projects..." 
+                            />
+                         </div>
+                         
+                         {/* Assignees */}
+                         <div className="space-y-2">
+                            <Label className="font-semibold text-foreground/90">Specific Assignees</Label>
+                            <MultiSearchableSelect 
+                               options={managerOptions} 
+                               value={selectedAssigneeIds} 
+                               onChange={setSelectedAssigneeIds} 
+                               placeholder="Select assignees..." 
+                            />
+                         </div>
+
+                         {/* Statuses */}
+                         <div className="space-y-2">
+                            <Label className="font-semibold text-foreground/90">Task Statuses</Label>
+                            <MultiSearchableSelect 
+                               options={[
+                                 { label: 'To Do', value: 'TODO' },
+                                 { label: 'In Progress', value: 'IN_PROGRESS' },
+                                 { label: 'In Review', value: 'IN_REVIEW' },
+                                 { label: 'Completed', value: 'COMPLETED' }
+                               ]} 
+                               value={selectedStatuses} 
+                               onChange={setSelectedStatuses} 
+                               placeholder="Select statuses..." 
+                            />
+                         </div>
+
+                         {/* Priorities */}
+                         <div className="space-y-2">
+                            <Label className="font-semibold text-foreground/90">Priorities</Label>
+                            <MultiSearchableSelect 
+                               options={priorityOptions} 
+                               value={selectedPriorities} 
+                               onChange={setSelectedPriorities} 
+                               placeholder="Select priorities..." 
+                            />
+                         </div>
+
+                         {/* Types */}
+                         <div className="space-y-2">
+                            <Label className="font-semibold text-foreground/90">Task Types</Label>
+                            <MultiSearchableSelect 
+                               options={typeOptions} 
+                               value={selectedTypes} 
+                               onChange={setSelectedTypes} 
+                               placeholder="Select types..." 
+                            />
+                         </div>
+                         
+                         {/* Due Date Range */}
+                         <div className="space-y-2">
+                            <Label className="font-semibold text-foreground/90">Due Date Between</Label>
+                            <div className="grid grid-cols-2 gap-2">
+                                <DatePicker date={dueDateFrom} setDate={setDueDateFrom} placeholder="From Date" />
+                                <DatePicker date={dueDateTo} setDate={setDueDateTo} placeholder="To Date" />
+                            </div>
+                         </div>
+                         
+                         {/* Story Points Range */}
+                         <div className="space-y-2">
+                            <Label className="font-semibold text-foreground/90">Story Points Between</Label>
+                            <div className="grid grid-cols-2 gap-2">
+                                <Input type="number" value={pointsMin} onChange={(e) => setPointsMin(e.target.value)} placeholder="Min Points" />
+                                <Input type="number" value={pointsMax} onChange={(e) => setPointsMax(e.target.value)} placeholder="Max Points" />
+                            </div>
+                         </div>
+
+                         {/* Clear button */}
+                         <Button variant="outline" className="w-full mt-4 text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => {
+                             setSelectedProjectIds([]);
+                             setSelectedAssigneeIds([]);
+                             setSelectedStatuses([]);
+                             setSelectedTypes([]);
+                             setSelectedPriorities([]);
+                             setDueDateFrom(null);
+                             setDueDateTo(null);
+                             setPointsMin('');
+                             setPointsMax('');
+                         }}>
+                           Clear Advanced Filters
+                         </Button>
+                      </div>
+                    </SheetContent>
+                  </Sheet>
                 </div>
 
                 {/* Desktop Action Buttons */}
-                {(() => {
-                  const canCreate = user?.role === 'ADMIN' || user?.role === 'MANAGER' || 
-                    (user?.role === 'MEMBER' && projects.some(p => p.allowMemberTaskCreation));
-                  return canCreate ? (
+                {canCreateTaskGlobal && (
                   <div className="hidden md:flex items-center gap-2 shrink-0">
                     <Button
                       onClick={() => setShowImportDialog(true)}
@@ -469,8 +623,7 @@ const Tasks = () => {
                       <span>New Task</span>
                     </Button>
                   </div>
-                  ) : null;
-                })()}
+                )}
               </div>
             </div>
           </div>
@@ -479,15 +632,15 @@ const Tasks = () => {
             <div className="hidden sm:block">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[30%] text-center">TASK</TableHead>
-                    <TableHead>Project</TableHead>
+                  <TableRow className="border-b border-border/40 hover:bg-transparent">
+                    <TableHead className="w-[30%] text-center cursor-pointer select-none" onClick={() => handleSort('title')}>TASK {renderSortIcon('title')}</TableHead>
+                    <TableHead className="cursor-pointer select-none" onClick={() => handleSort('project')}>Project {renderSortIcon('project')}</TableHead>
                     <TableHead>Assigned To</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="whitespace-nowrap">Task Type</TableHead>
-                    <TableHead>Priority</TableHead>
-                    <TableHead>Points</TableHead>
-                    <TableHead>Due Date</TableHead>
+                    <TableHead className="cursor-pointer select-none" onClick={() => handleSort('status')}>Status {renderSortIcon('status')}</TableHead>
+                    <TableHead className="whitespace-nowrap cursor-pointer select-none" onClick={() => handleSort('type')}>Task Type {renderSortIcon('type')}</TableHead>
+                    <TableHead className="cursor-pointer select-none" onClick={() => handleSort('priority')}>Priority {renderSortIcon('priority')}</TableHead>
+                    <TableHead className="cursor-pointer select-none" onClick={() => handleSort('points')}>Points {renderSortIcon('points')}</TableHead>
+                    <TableHead className="cursor-pointer select-none" onClick={() => handleSort('dueDate')}>Due Date {renderSortIcon('dueDate')}</TableHead>
                     <TableHead className="w-[15%]">Progress</TableHead>
                     <TableHead className="text-right pr-6">{user?.role !== 'CLIENT' ? 'Actions' : ''}</TableHead>
                   </TableRow>
@@ -614,12 +767,13 @@ const Tasks = () => {
                         <TableCell className="text-right pr-4">
                           <div className="flex items-center justify-end gap-1">
                             {(() => {
-                              const canEdit = user?.role === 'ADMIN' || user?.role === 'MANAGER' || (user?.role === 'MEMBER' && task.project?.allowMemberTaskCreation);
+                              const canEditBtn = user?.role === 'ADMIN' || user?.permissions?.['tasks.editAny'] || (user?.role === 'MEMBER' && task.project?.allowMemberTaskCreation);
+                              const canDeleteBtn = user?.role === 'ADMIN' || user?.permissions?.['tasks.delete'];
                               if (user?.role === 'CLIENT') return null;
                               
-                              if (!canEdit) {
+                              if (!canEditBtn && !canDeleteBtn) {
                                 return (
-                                  <div className="flex items-center justify-center h-8 w-8 text-gray-400 bg-gray-100/50 dark:bg-gray-800/50 rounded-md" title="Restricted - No permission to edit">
+                                  <div className="flex items-center justify-center h-8 w-8 text-gray-400 bg-gray-100/50 dark:bg-gray-800/50 rounded-md" title="Restricted - No permission">
                                     <Lock className="w-4 h-4" />
                                   </div>
                                 );
@@ -627,29 +781,33 @@ const Tasks = () => {
 
                               return (
                                 <>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setSelectedTask(task);
-                                      setShowEditDialog(true);
-                                    }}
-                                  >
-                                    <Edit2 className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDelete(task);
-                                    }}
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </Button>
+                                  {canEditBtn && (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedTask(task);
+                                        setShowEditDialog(true);
+                                      }}
+                                    >
+                                      <Edit2 className="h-4 w-4" />
+                                    </Button>
+                                  )}
+                                  {canDeleteBtn && (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDelete(task);
+                                      }}
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </Button>
+                                  )}
                                 </>
                               );
                             })()}
@@ -689,12 +847,13 @@ const Tasks = () => {
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
                           {(() => {
-                            const canEdit = user?.role === 'ADMIN' || user?.role === 'MANAGER' || (user?.role === 'MEMBER' && task.project?.allowMemberTaskCreation);
+                            const canEditBtn = user?.role === 'ADMIN' || user?.permissions?.['tasks.editAny'] || (user?.role === 'MEMBER' && task.project?.allowMemberTaskCreation);
+                            const canDeleteBtn = user?.role === 'ADMIN' || user?.permissions?.['tasks.delete'];
                             if (user?.role === 'CLIENT') return null;
                             
-                            if (!canEdit) {
+                            if (!canEditBtn && !canDeleteBtn) {
                               return (
-                                <div className="flex items-center justify-center h-8 w-8 text-gray-400 bg-gray-100/50 dark:bg-gray-800/50 rounded-md" title="Restricted - No permission to edit">
+                                <div className="flex items-center justify-center h-8 w-8 text-gray-400 bg-gray-100/50 dark:bg-gray-800/50 rounded-md" title="Restricted - No permission">
                                   <Lock className="w-4 h-4" />
                                 </div>
                               );
@@ -702,28 +861,32 @@ const Tasks = () => {
 
                             return (
                               <>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleTaskClick(task);
-                                  }}
-                                >
-                                  <Edit2 className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDelete(task);
-                                  }}
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
+                                {canEditBtn && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleTaskClick(task);
+                                    }}
+                                  >
+                                    <Edit2 className="h-4 w-4" />
+                                  </Button>
+                                )}
+                                {canDeleteBtn && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDelete(task);
+                                    }}
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                )}
                               </>
                             );
                           })()}

@@ -1,5 +1,5 @@
 import express from 'express';
-import { getMyOrganization, updateMyOrganization, getPublicOrganization, getAllOrganizations, updateOrgByAdmin, deleteOrganization, getOrgActivityLogs } from '../controllers/organizationController.js';
+import { getMyOrganization, updateMyOrganization, getPublicOrganization, getAllOrganizations, updateOrgByAdmin, deleteOrganization, getOrgActivityLogs, getOrgPermissions, updateOrgPermissions } from '../controllers/organizationController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import attachTenantDb from '../middleware/tenantMiddleware.js';
 
@@ -37,6 +37,10 @@ router.use(attachTenantDb);
  */
 router.get('/me', getMyOrganization);
 router.get('/activity-logs', authorize('ADMIN'), getOrgActivityLogs);
+
+// Role permissions
+router.get('/permissions', authorize('ADMIN', 'MANAGER', 'MEMBER', 'CLIENT'), getOrgPermissions);
+router.put('/permissions', authorize('ADMIN'), updateOrgPermissions);
 
 /**
  * @swagger

@@ -60,6 +60,10 @@ const generatePassword = () => {
 const Team = () => {
   const { toast, dismiss } = useToast();
   const { user: currentUser } = useAuthStore();
+  const canInvite = currentUser?.role === 'ADMIN' || currentUser?.permissions?.['team.invite'];
+  const canEditRoles = currentUser?.role === 'ADMIN';
+  const canRemove = currentUser?.role === 'ADMIN' || currentUser?.permissions?.['team.remove'];
+  const canViewProgress = currentUser?.role === 'ADMIN' || currentUser?.permissions?.['team.viewProgress'];
   const { setHeader, searchTerm: globalSearch } = useHeaderStore();
   const [users, setUsers] = useState([]);
   const [allMembers, setAllMembers] = useState([]); // Kept for manager card team counts
@@ -613,7 +617,7 @@ const Team = () => {
                     <Plus className="w-5 h-5" />
                   </Button>
                 )}
-                {(currentUser?.role === 'ADMIN' || currentUser?.role === 'MANAGER') && (
+                {currentUser?.role === 'ADMIN' && (
                   <Button
                     onClick={() => setShowImportDialog(true)}
                     variant="outline"
@@ -627,7 +631,7 @@ const Team = () => {
 
               {/* Scrollable Tabs (Desktop) */}
               <div className="hidden lg:flex items-center gap-1.5 xl:gap-2 flex-1 overflow-x-auto no-scrollbar">
-                {(currentUser?.role === 'ADMIN' || currentUser?.role === 'MANAGER') && (
+                {currentUser?.role === 'ADMIN' && (
                   <>
                     <Button
                       variant="none"
@@ -694,11 +698,23 @@ const Team = () => {
                     )}
                   </>
                 )}
+                {currentUser?.role === 'MANAGER' && (
+                  <>
+                    <Button
+                      variant="none"
+                      className="group gap-1.5 sm:gap-2 h-10 sm:h-11 px-2.5 xl:px-4 rounded-xl font-medium transition-all duration-300 text-xs sm:text-sm shrink-0 border bg-primary/10 text-primary border-primary/30 shadow-[0_0_15px_rgba(var(--primary),0.1)]"
+                    >
+                      <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 transition-transform group-hover:scale-110" />
+                      <span className="hidden sm:inline">Your Team</span>
+                    </Button>
+                  </>
+                )}
               </div>
 
               {/* Mobile Role Toggle Button */}
-              <div className="flex lg:hidden flex-1 min-w-0">
-                <DropdownMenu>
+              {currentUser?.role === 'ADMIN' && (
+                <div className="flex lg:hidden flex-1 min-w-0">
+                  <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="w-full justify-between gap-2 h-10 rounded-xl bg-background/50 border-border/40 text-sm font-semibold">
                       <div className="flex items-center gap-2 truncate">
@@ -749,12 +765,13 @@ const Team = () => {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
+              )}
 
             </div>
 
             {/* Right side: Desktop Buttons */}
             <div className="hidden lg:flex items-center gap-2 shrink-0">
-              {(currentUser?.role === 'ADMIN' || currentUser?.role === 'MANAGER') && (
+              {currentUser?.role === 'ADMIN' && (
                 <Button
                   onClick={() => setShowImportDialog(true)}
                   variant="outline"
@@ -1053,7 +1070,7 @@ const Team = () => {
                                 ? 'All Clients'
                                 : selectedManagerId === 'MEMBERS_LIST'
                                   ? 'Team Members'
-                                  : `${allMembers.find(m => m.id === selectedManagerId)?.name || 'Manager'}'s Team`}
+                                  : (currentUser?.role === 'MANAGER' && selectedManagerId === currentUser.id) ? 'Your Team' : `${allMembers.find(m => m.id === selectedManagerId)?.name || 'Manager'}'s Team`}
                           </span>
                           {!['ALL', 'CLIENTS_LIST', 'MEMBERS_LIST'].includes(selectedManagerId) && managerTeam.length > 0 && (
                             <Badge variant="none" className="text-[10px] px-2 whitespace-nowrap" style={{ background: 'rgba(16,185,129,0.1)', color: '#6EE7B7', border: '1px solid rgba(16,185,129,0.2)' }}>
@@ -1064,7 +1081,7 @@ const Team = () => {
                       </div>
                     </div>
                     {((currentUser?.role === 'ADMIN' && !['ALL', 'CLIENTS_LIST', 'MEMBERS_LIST', 'PENDING'].includes(selectedManagerId)) || 
-                      (currentUser?.role === 'MANAGER' && selectedManagerId === currentUser.id)) && (
+                      (currentUser?.role === 'MANAGER' && selectedManagerId === currentUser.id && canInvite)) && (
                       <Button size="sm" onClick={() => setShowAddToTeamDialog(true)} className="flex items-center justify-center p-2 sm:px-3 sm:py-2">
                         <Plus className="w-4 h-4 sm:mr-2" />
                         <span className="hidden sm:inline">Add to Team</span>
@@ -1143,7 +1160,7 @@ const Team = () => {
                                     <TableCell className="text-center">
                                       <div className="grid grid-cols-3 gap-1 w-max mx-auto">
                                         <div className="w-8 h-8 flex items-center justify-center">
-                                          {user.role !== 'CLIENT' && (
+                                          {canViewProgress && user.role !== 'CLIENT' && (
                                             <Button
                                               variant="ghost"
                                               size="icon"
@@ -1159,12 +1176,14 @@ const Team = () => {
                                           )}
                                         </div>
                                         <div className="w-8 h-8 flex items-center justify-center">
-                                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(user)}>
-                                            <Edit2 className="w-4 h-4" />
-                                          </Button>
+                                          {canEditRoles && (
+                                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(user)}>
+                                              <Edit2 className="w-4 h-4" />
+                                            </Button>
+                                          )}
                                         </div>
                                         <div className="w-8 h-8 flex items-center justify-center">
-                                          {!(currentUser?.role === 'MANAGER' && !isSpecificManagerView) && (
+                                          {canRemove && (
                                             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive/90" onClick={() => handleDelete(user)}>
                                               {isSpecificManagerView ? (
                                                 <UserMinus className="w-4 h-4" />
@@ -1211,15 +1230,17 @@ const Team = () => {
                             </div>
                             {currentUser?.role !== 'CLIENT' && currentUser?.role !== 'MEMBER' && (
                               <div className="flex gap-2 mt-3">
-                                {user.role !== 'CLIENT' && (
+                                {canViewProgress && user.role !== 'CLIENT' && (
                                   <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-primary" onClick={() => { setViewingProgressUserId(user.id); setShowProgressPanel(true); }}>
                                     <BarChart2 className="w-3 h-3 mr-1" /> Progress
                                   </Button>
                                 )}
-                                <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => handleEdit(user)}>
-                                  <Edit2 className="w-3 h-3 mr-1" /> Edit
-                                </Button>
-                                {!(currentUser?.role === 'MANAGER' && !isSpecificManagerView) && (
+                                {canEditRoles && (
+                                  <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => handleEdit(user)}>
+                                    <Edit2 className="w-3 h-3 mr-1" /> Edit
+                                  </Button>
+                                )}
+                                {canRemove && (
                                   <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-destructive" onClick={() => handleDelete(user)}>
                                     {isSpecificManagerView ? (
                                       <><UserMinus className="w-3 h-3 mr-1" /> Remove</>

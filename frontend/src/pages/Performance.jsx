@@ -102,7 +102,7 @@ const PerformanceDashboardView = ({ data, hoursTitle = "Hours by Project" }) => 
                                 <Tooltip 
                                     formatter={(value, name) => {
                                         const percent = totalStatusTasks > 0 ? Math.round((value / totalStatusTasks) * 100) : 0;
-                                        return [`${value} (${percent}%)`, name.replace('_', ' ')];
+                                        return [`${value} (${percent}%)`, name.replace('_', ' ').replace('TODO', 'TO DO')];
                                     }}
                                     contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))', fontSize: '12px', padding: '8px 12px' }}
                                     itemStyle={{ color: 'hsl(var(--foreground))', fontWeight: 700 }}
@@ -116,7 +116,7 @@ const PerformanceDashboardView = ({ data, hoursTitle = "Hours by Project" }) => 
                                     <div key={s.name} className="flex items-center justify-between text-xs">
                                         <div className="flex items-center gap-2">
                                             <div className="w-2 h-2 rounded-full" style={{ background: COLORS[i % COLORS.length] }} />
-                                            <span className="font-bold text-muted-foreground">{s.name.replace('_', ' ')}</span>
+                                            <span className="font-bold text-muted-foreground">{s.name.replace('_', ' ').replace('TODO', 'TO DO')}</span>
                                         </div>
                                         <div className="font-black text-right min-w-[50px]">
                                             {s.value} <span className="text-muted-foreground font-medium ml-1">({percent}%)</span>
@@ -151,7 +151,7 @@ const PerformanceDashboardView = ({ data, hoursTitle = "Hours by Project" }) => 
                                         <div className="flex items-center gap-2 ml-4">
                                             {isOverdue && <Badge className="text-[9px] bg-red-500/10 text-red-500 border-red-500/20">OVERDUE</Badge>}
                                             <span className="text-[10px] font-black px-2 py-0.5 rounded-full" style={{ background: `${STATUS_COLORS[task.status]}20`, color: STATUS_COLORS[task.status] }}>
-                                                {task.status.replace('_', ' ')}
+                                                {task.status.replace('_', ' ').replace('TODO', 'TO DO')}
                                             </span>
                                             {task.storyPoints > 0 && (
                                                 <span className="text-xs font-black text-muted-foreground">{task.storyPoints}sp</span>

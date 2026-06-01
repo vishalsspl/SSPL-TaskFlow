@@ -80,12 +80,14 @@ export const ensureChatSchema = async (db) => {
 
 export const ensureOrganizationSchema = async (db) => {
   if (!db || !db.$queryRawUnsafe) return;
+  
   try {
-    await db.$queryRawUnsafe('SELECT "customFeatures" FROM "Organization" LIMIT 1');
+    await db.$queryRawUnsafe('SELECT "customFeatures", "rolePermissions" FROM "Organization" LIMIT 1');
   } catch (err) {
     console.log('[SchemaValidator] Auto-migrating Organization table');
     try {
       await db.$executeRawUnsafe('ALTER TABLE "Organization" ADD COLUMN IF NOT EXISTS "customFeatures" JSONB');
+      await db.$executeRawUnsafe('ALTER TABLE "Organization" ADD COLUMN IF NOT EXISTS "rolePermissions" JSONB');
     } catch (migrateErr) {
       console.error('[SchemaValidator] Organization migration failed:', migrateErr.message);
     }

@@ -59,9 +59,11 @@ const ForgotPassword = () => {
             )}
           </div>
           <CardTitle className="text-2xl">Forgot Password</CardTitle>
-          <CardDescription className="text-sm">
-            Enter your email address and we'll send you a link to reset your password.
-          </CardDescription>
+          {!success && (
+            <CardDescription className="text-sm">
+              Enter your registered email address and we'll send you a link to reset your password.
+            </CardDescription>
+          )}
         </CardHeader>
         <CardContent>
           {success ? (

@@ -2834,6 +2834,7 @@ export namespace Prisma {
     requireApproval: number
     allowClientSignup: number
     sessionTimeoutMinutes: number
+    rolePermissions: number
     customFeatures: number
     createdAt: number
     updatedAt: number
@@ -2933,6 +2934,7 @@ export namespace Prisma {
     requireApproval?: true
     allowClientSignup?: true
     sessionTimeoutMinutes?: true
+    rolePermissions?: true
     customFeatures?: true
     createdAt?: true
     updatedAt?: true
@@ -3049,6 +3051,7 @@ export namespace Prisma {
     requireApproval: boolean
     allowClientSignup: boolean
     sessionTimeoutMinutes: number | null
+    rolePermissions: JsonValue | null
     customFeatures: JsonValue | null
     createdAt: Date
     updatedAt: Date
@@ -3097,6 +3100,7 @@ export namespace Prisma {
     requireApproval?: boolean
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: boolean
+    rolePermissions?: boolean
     customFeatures?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -3135,6 +3139,7 @@ export namespace Prisma {
     requireApproval?: boolean
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: boolean
+    rolePermissions?: boolean
     customFeatures?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -3164,6 +3169,7 @@ export namespace Prisma {
     requireApproval?: boolean
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: boolean
+    rolePermissions?: boolean
     customFeatures?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -3218,6 +3224,7 @@ export namespace Prisma {
       requireApproval: boolean
       allowClientSignup: boolean
       sessionTimeoutMinutes: number | null
+      rolePermissions: Prisma.JsonValue | null
       customFeatures: Prisma.JsonValue | null
       createdAt: Date
       updatedAt: Date
@@ -3645,6 +3652,7 @@ export namespace Prisma {
     readonly requireApproval: FieldRef<"Organization", 'Boolean'>
     readonly allowClientSignup: FieldRef<"Organization", 'Boolean'>
     readonly sessionTimeoutMinutes: FieldRef<"Organization", 'Int'>
+    readonly rolePermissions: FieldRef<"Organization", 'Json'>
     readonly customFeatures: FieldRef<"Organization", 'Json'>
     readonly createdAt: FieldRef<"Organization", 'DateTime'>
     readonly updatedAt: FieldRef<"Organization", 'DateTime'>
@@ -20056,6 +20064,7 @@ export namespace Prisma {
     requireApproval: 'requireApproval',
     allowClientSignup: 'allowClientSignup',
     sessionTimeoutMinutes: 'sessionTimeoutMinutes',
+    rolePermissions: 'rolePermissions',
     customFeatures: 'customFeatures',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -20600,6 +20609,7 @@ export namespace Prisma {
     requireApproval?: BoolFilter<"Organization"> | boolean
     allowClientSignup?: BoolFilter<"Organization"> | boolean
     sessionTimeoutMinutes?: IntNullableFilter<"Organization"> | number | null
+    rolePermissions?: JsonNullableFilter<"Organization">
     customFeatures?: JsonNullableFilter<"Organization">
     createdAt?: DateTimeFilter<"Organization"> | Date | string
     updatedAt?: DateTimeFilter<"Organization"> | Date | string
@@ -20637,6 +20647,7 @@ export namespace Prisma {
     requireApproval?: SortOrder
     allowClientSignup?: SortOrder
     sessionTimeoutMinutes?: SortOrderInput | SortOrder
+    rolePermissions?: SortOrderInput | SortOrder
     customFeatures?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -20677,6 +20688,7 @@ export namespace Prisma {
     requireApproval?: BoolFilter<"Organization"> | boolean
     allowClientSignup?: BoolFilter<"Organization"> | boolean
     sessionTimeoutMinutes?: IntNullableFilter<"Organization"> | number | null
+    rolePermissions?: JsonNullableFilter<"Organization">
     customFeatures?: JsonNullableFilter<"Organization">
     createdAt?: DateTimeFilter<"Organization"> | Date | string
     updatedAt?: DateTimeFilter<"Organization"> | Date | string
@@ -20714,6 +20726,7 @@ export namespace Prisma {
     requireApproval?: SortOrder
     allowClientSignup?: SortOrder
     sessionTimeoutMinutes?: SortOrderInput | SortOrder
+    rolePermissions?: SortOrderInput | SortOrder
     customFeatures?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -20751,6 +20764,7 @@ export namespace Prisma {
     requireApproval?: BoolWithAggregatesFilter<"Organization"> | boolean
     allowClientSignup?: BoolWithAggregatesFilter<"Organization"> | boolean
     sessionTimeoutMinutes?: IntNullableWithAggregatesFilter<"Organization"> | number | null
+    rolePermissions?: JsonNullableWithAggregatesFilter<"Organization">
     customFeatures?: JsonNullableWithAggregatesFilter<"Organization">
     createdAt?: DateTimeWithAggregatesFilter<"Organization"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Organization"> | Date | string
@@ -22072,6 +22086,7 @@ export namespace Prisma {
     requireApproval?: boolean
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -22109,6 +22124,7 @@ export namespace Prisma {
     requireApproval?: boolean
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -22146,6 +22162,7 @@ export namespace Prisma {
     requireApproval?: BoolFieldUpdateOperationsInput | boolean
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22183,6 +22200,7 @@ export namespace Prisma {
     requireApproval?: BoolFieldUpdateOperationsInput | boolean
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22220,6 +22238,7 @@ export namespace Prisma {
     requireApproval?: boolean
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -22249,6 +22268,7 @@ export namespace Prisma {
     requireApproval?: BoolFieldUpdateOperationsInput | boolean
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -22278,6 +22298,7 @@ export namespace Prisma {
     requireApproval?: BoolFieldUpdateOperationsInput | boolean
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -23862,6 +23883,7 @@ export namespace Prisma {
     requireApproval?: SortOrder
     allowClientSignup?: SortOrder
     sessionTimeoutMinutes?: SortOrder
+    rolePermissions?: SortOrder
     customFeatures?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -28159,6 +28181,7 @@ export namespace Prisma {
     requireApproval?: boolean
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -28195,6 +28218,7 @@ export namespace Prisma {
     requireApproval?: boolean
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -28820,6 +28844,7 @@ export namespace Prisma {
     requireApproval?: BoolFieldUpdateOperationsInput | boolean
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -28856,6 +28881,7 @@ export namespace Prisma {
     requireApproval?: BoolFieldUpdateOperationsInput | boolean
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -29249,6 +29275,7 @@ export namespace Prisma {
     requireApproval?: boolean
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -29285,6 +29312,7 @@ export namespace Prisma {
     requireApproval?: boolean
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -29643,6 +29671,7 @@ export namespace Prisma {
     requireApproval?: BoolFieldUpdateOperationsInput | boolean
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -29679,6 +29708,7 @@ export namespace Prisma {
     requireApproval?: BoolFieldUpdateOperationsInput | boolean
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -31649,6 +31679,7 @@ export namespace Prisma {
     requireApproval?: boolean
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -31685,6 +31716,7 @@ export namespace Prisma {
     requireApproval?: boolean
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -31828,6 +31860,7 @@ export namespace Prisma {
     requireApproval?: BoolFieldUpdateOperationsInput | boolean
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -31864,6 +31897,7 @@ export namespace Prisma {
     requireApproval?: BoolFieldUpdateOperationsInput | boolean
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -32252,6 +32286,7 @@ export namespace Prisma {
     requireApproval?: boolean
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -32288,6 +32323,7 @@ export namespace Prisma {
     requireApproval?: boolean
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -32478,6 +32514,7 @@ export namespace Prisma {
     requireApproval?: BoolFieldUpdateOperationsInput | boolean
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -32514,6 +32551,7 @@ export namespace Prisma {
     requireApproval?: BoolFieldUpdateOperationsInput | boolean
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -32668,6 +32706,7 @@ export namespace Prisma {
     requireApproval?: boolean
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -32704,6 +32743,7 @@ export namespace Prisma {
     requireApproval?: boolean
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -32827,6 +32867,7 @@ export namespace Prisma {
     requireApproval?: BoolFieldUpdateOperationsInput | boolean
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -32863,6 +32904,7 @@ export namespace Prisma {
     requireApproval?: BoolFieldUpdateOperationsInput | boolean
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -32964,6 +33006,7 @@ export namespace Prisma {
     requireApproval?: boolean
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -33000,6 +33043,7 @@ export namespace Prisma {
     requireApproval?: boolean
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -33123,6 +33167,7 @@ export namespace Prisma {
     requireApproval?: BoolFieldUpdateOperationsInput | boolean
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33159,6 +33204,7 @@ export namespace Prisma {
     requireApproval?: BoolFieldUpdateOperationsInput | boolean
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33260,6 +33306,7 @@ export namespace Prisma {
     requireApproval?: boolean
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -33296,6 +33343,7 @@ export namespace Prisma {
     requireApproval?: boolean
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -33419,6 +33467,7 @@ export namespace Prisma {
     requireApproval?: BoolFieldUpdateOperationsInput | boolean
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33455,6 +33504,7 @@ export namespace Prisma {
     requireApproval?: BoolFieldUpdateOperationsInput | boolean
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33556,6 +33606,7 @@ export namespace Prisma {
     requireApproval?: boolean
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -33592,6 +33643,7 @@ export namespace Prisma {
     requireApproval?: boolean
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -33715,6 +33767,7 @@ export namespace Prisma {
     requireApproval?: BoolFieldUpdateOperationsInput | boolean
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33751,6 +33804,7 @@ export namespace Prisma {
     requireApproval?: BoolFieldUpdateOperationsInput | boolean
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string

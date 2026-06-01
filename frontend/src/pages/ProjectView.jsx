@@ -119,7 +119,9 @@ const ProjectView = () => {
   };
 
   const handleTaskClick = (task) => {
-    if (user?.role === 'CLIENT' || user?.role === 'MEMBER') return;
+    if (user?.role === 'CLIENT') return;
+    const canEditTask = user?.role === 'ADMIN' || user?.permissions?.['tasks.editAny'] || (user?.role === 'MEMBER' && task.project?.allowMemberTaskCreation);
+    if (!canEditTask) return;
     setSelectedTask(task);
     setShowEditDialog(true);
   };
@@ -532,7 +534,7 @@ const ProjectView = () => {
                 Refresh
               </Button>
               {/* New Task Button */}
-              {(user?.role === 'ADMIN' || user?.role === 'MANAGER' || (user?.role === 'MEMBER' && project?.allowMemberTaskCreation)) && (
+              {(user?.role === 'ADMIN' || user?.permissions?.['tasks.create'] || (user?.role === 'MEMBER' && project?.allowMemberTaskCreation)) && (
                 <Button size="sm" onClick={() => setShowCreateDialog(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground Montserrat font-bold rounded-lg sm:rounded-xl px-2 sm:px-4 text-[10px] sm:text-sm h-7 sm:h-9">
                   <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                   New Task
