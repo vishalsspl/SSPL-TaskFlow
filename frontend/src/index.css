@@ -173,6 +173,31 @@
   min-height: 150px !important;
 }
 
+/* Reduce paragraph margins inside the editor so hitting Enter doesn't create huge gaps */
+.ck.ck-content p {
+  margin-bottom: 0.5em !important;
+  margin-top: 0 !important;
+}
+
+/* Ensure list items render correctly against Tailwind resets */
+.ck.ck-content ol {
+  list-style-type: decimal !important;
+  margin-left: 1.5rem !important;
+  padding-left: 1rem !important;
+}
+
+.ck.ck-content ul {
+  list-style-type: disc !important;
+  margin-left: 1.5rem !important;
+  padding-left: 1rem !important;
+}
+
+.ck.ck-content li {
+  display: list-item !important;
+  margin-top: 0.25em !important;
+  margin-bottom: 0.25em !important;
+}
+
 /* Dark mode CKEditor */
 .dark .ck.ck-editor__editable,
 .dark .ck.ck-editor__editable_inline,
