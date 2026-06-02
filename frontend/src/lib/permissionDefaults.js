@@ -68,8 +68,7 @@ export const PERMISSION_MODULES = [
       { key: 'timesheets.view', label: 'View Own', description: 'View own timesheets', defaults: { MANAGER: true, MEMBER: true, CLIENT: false } },
       { key: 'timesheets.viewAll', label: 'View All', description: 'View all team timesheets', defaults: { MANAGER: true, MEMBER: false, CLIENT: false } },
       { key: 'timesheets.create', label: 'Log Time', description: 'Log time entries', defaults: { MANAGER: true, MEMBER: true, CLIENT: false } },
-      { key: 'timesheets.approve', label: 'Approve Time', description: 'Approve/reject time entries', defaults: { MANAGER: true, MEMBER: false, CLIENT: false } },
-      { key: 'timesheets.export', label: 'Export Reports', description: 'Export timesheet reports', defaults: { MANAGER: true, MEMBER: false, CLIENT: false } }
+      { key: 'timesheets.approve', label: 'Approve Time', description: 'Approve/reject time entries', defaults: { MANAGER: true, MEMBER: false, CLIENT: false } }
     ]
   },
   {
