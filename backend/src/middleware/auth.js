@@ -58,3 +58,43 @@ export const authorize = (...roles) => {
     next();
   };
 };
+
+const defaultPermissions = {
+  'timesheets.view': { MANAGER: true, MEMBER: true, CLIENT: false },
+  'timesheets.viewAll': { MANAGER: true, MEMBER: false, CLIENT: false },
+  'timesheets.create': { MANAGER: true, MEMBER: true, CLIENT: false },
+  'timesheets.approve': { MANAGER: true, MEMBER: false, CLIENT: false },
+  'timesheets.export': { MANAGER: true, MEMBER: false, CLIENT: false },
+};
+
+export const hasPermission = (user, permissionKey) => {
+  if (!user) return false;
+  if (user.role === 'SUPERADMIN' || user.role === 'ADMIN') return true;
+  
+  const role = user.role;
+  const permissions = user.organization?.rolePermissions;
+  
+  if (permissions && permissions[role] && typeof permissions[role][permissionKey] === 'boolean') {
+    return permissions[role][permissionKey];
+  }
+  
+  if (defaultPermissions[permissionKey] && typeof defaultPermissions[permissionKey][role] === 'boolean') {
+    return defaultPermissions[permissionKey][role];
+  }
+  
+  return false;
+};
+
+export const requirePermission = (permissionKey) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    if (!hasPermission(req.user, permissionKey)) {
+      return res.status(403).json({ error: `Insufficient permissions. Requires: ${permissionKey}` });
+    }
+
+    next();
+  };
+};

@@ -11,7 +11,7 @@ import {
     getUserPerformance,
     getTeamPerformance,
 } from '../controllers/timesheetController.js';
-import { authenticate, authorize } from '../middleware/auth.js';
+import { authenticate, authorize, requirePermission } from '../middleware/auth.js';
 import attachTenantDb from '../middleware/tenantMiddleware.js';
 import { requireFeature } from '../middleware/featureGate.js';
 
@@ -23,14 +23,14 @@ router.use(attachTenantDb);
 
 // Time entries
 router.get('/', getTimeEntries);
-router.post('/', createTimeEntry);
-router.put('/:id', updateTimeEntry);
-router.patch('/:id/status', authorize('ADMIN', 'MANAGER'), updateTimeEntryStatus);
+router.post('/', requirePermission('timesheets.create'), createTimeEntry);
+router.put('/:id', requirePermission('timesheets.create'), updateTimeEntry);
+router.patch('/:id/status', requirePermission('timesheets.approve'), updateTimeEntryStatus);
 router.delete('/:id', deleteTimeEntry);
 
 // Work logs
 router.get('/worklogs', getWorkLogs);
-router.post('/worklogs', createWorkLog);
+router.post('/worklogs', requirePermission('timesheets.create'), createWorkLog);
 router.delete('/worklogs/:id', deleteWorkLog);
 
 // Performance

@@ -1,6 +1,7 @@
 import prisma from '../lib/prisma.js';
 import { createNotification } from '../utils/notifications.js';
 import { sendTimesheetSubmissionEmail, sendLeaveSubmissionEmail, sendTimesheetStatusEmail } from '../services/emailService.js';
+import { hasPermission } from '../middleware/auth.js';
 const include = {
     user: { select: { id: true, name: true, email: true, avatar: true } },
     project: { select: { id: true, name: true } },
@@ -9,6 +10,10 @@ const include = {
 
 export const getTimeEntries = async (req, res) => {
     try {
+        if (!hasPermission(req.user, 'timesheets.view') && !hasPermission(req.user, 'timesheets.viewAll')) {
+            return res.status(403).json({ error: 'You do not have permission to view timesheets' });
+        }
+
         // ── Check for tenant DB connection errors ─────────────────────────────
         if (req.tenantDbError) {
             return res.status(503).json({
@@ -40,17 +45,21 @@ export const getTimeEntries = async (req, res) => {
     if (projectId) where.projectId = projectId;
     if (status) where.status = status;
 
-    if (req.user.role === 'MEMBER') {
+    const canViewAll = hasPermission(req.user, 'timesheets.viewAll');
+
+    if (!canViewAll) {
         where.userId = req.user.id;
-    } else if (req.user.role === 'MANAGER') {
-        where.OR = [
-            { userId: req.user.id },
-            { project: { managerId: req.user.id } },
-            { user: { managerId: req.user.id } }
-        ];
-        if (userId) where.userId = userId;
-    } else if (req.user.role === 'ADMIN') {
-        if (userId) where.userId = userId;
+    } else {
+        if (req.user.role === 'MANAGER') {
+            where.OR = [
+                { userId: req.user.id },
+                { project: { managerId: req.user.id } },
+                { user: { managerId: req.user.id } }
+            ];
+            if (userId) where.userId = userId;
+        } else {
+            if (userId) where.userId = userId;
+        }
     }
 
     if (page) {
@@ -343,8 +352,8 @@ export const updateTimeEntryStatus = async (req, res) => {
         return res.status(400).json({ error: 'Invalid status' });
     }
 
-    if (req.user.role !== 'ADMIN' && req.user.role !== 'MANAGER') {
-        return res.status(403).json({ error: 'Only managers and admins can update status' });
+    if (!hasPermission(req.user, 'timesheets.approve')) {
+        return res.status(403).json({ error: 'You do not have permission to approve timesheets' });
     }
 
     const existingEntry = await req.db.timeEntry.findUnique({
