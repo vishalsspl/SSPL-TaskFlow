@@ -603,6 +603,16 @@ const Timesheets = () => {
 
     const isManagerOrAdmin = user?.role === 'ADMIN' || user?.role === 'MANAGER';
     
+    const hasApprovePermission = useMemo(() => {
+        if (!user) return false;
+        if (user.role === 'SUPERADMIN' || user.role === 'ADMIN') return true;
+        const perms = user.organization?.rolePermissions;
+        if (perms && perms[user.role] && typeof perms[user.role]['timesheets.approve'] === 'boolean') {
+            return perms[user.role]['timesheets.approve'];
+        }
+        return user.role === 'MANAGER';
+    }, [user]);
+    
     return (
         <div className="flex-1 space-y-4 p-0 sm:p-2 overflow-y-auto h-full">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-card p-4 rounded-xl border border-border shadow-sm">
@@ -1068,7 +1078,7 @@ const Timesheets = () => {
                                                                     >
                                                                         <Trash2 className="h-4 w-4" />
                                                                     </Button>
-                                                                    {isManagerOrAdmin && (
+                                                                    {hasApprovePermission && (
                                                                         <div className="flex items-center gap-1 border-l pl-1 border-border ml-1">
                                                                             <Button size="icon" variant="outline" className="h-8 w-8 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'REJECTED')} title="Reject">
                                                                                 <X className="h-4 w-4" />
@@ -1080,7 +1090,7 @@ const Timesheets = () => {
                                                                     )}
                                                                 </div>
                                                             )}
-                                                            {isManagerOrAdmin && entry.status === 'APPROVED' && (
+                                                            {hasApprovePermission && entry.status === 'APPROVED' && (
                                                                 <div className="flex items-center gap-1 transition-all border-l pl-2 border-border ml-2">
                                                                     <Button size="icon" variant="outline" className="h-8 w-8 border-yellow-500/20 text-yellow-500 hover:bg-yellow-500 hover:text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'PENDING')} title="Reset to Pending">
                                                                         <Clock className="h-4 w-4" />
@@ -1090,7 +1100,7 @@ const Timesheets = () => {
                                                                     </Button>
                                                                 </div>
                                                             )}
-                                                            {isManagerOrAdmin && entry.status === 'REJECTED' && (
+                                                            {hasApprovePermission && entry.status === 'REJECTED' && (
                                                                 <div className="flex items-center gap-1 transition-all border-l pl-2 border-border ml-2">
                                                                     <Button size="icon" variant="outline" className="h-8 w-8 border-yellow-500/20 text-yellow-500 hover:bg-yellow-500 hover:text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'PENDING')} title="Reset to Pending">
                                                                         <Clock className="h-4 w-4" />
@@ -1176,8 +1186,9 @@ const Timesheets = () => {
                                                         </div>
                                                         <div className="flex items-center gap-3">
                                                             {getStatusBadge(entry)}
-                                                            <div className="flex items-center gap-1 border-l pl-3 border-border">
-                                                                {entry.status === 'PENDING' && (
+                                                            {hasApprovePermission && (
+                                                                <div className="flex items-center gap-1 border-l pl-3 border-border">
+                                                                    {entry.status === 'PENDING' && (
                                                                     <>
                                                                         <Button size="icon" variant="outline" className="h-8 w-8 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'REJECTED')} title="Reject">
                                                                             <X className="h-4 w-4" />
@@ -1207,7 +1218,8 @@ const Timesheets = () => {
                                                                         </Button>
                                                                     </>
                                                                 )}
-                                                            </div>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1280,7 +1292,8 @@ const Timesheets = () => {
                                                     </div>
                                                     <div className="flex items-center gap-3">
                                                         {getStatusBadge(entry)}
-                                                        <div className="flex items-center gap-1 border-l pl-3 border-border">
+                                                        {hasApprovePermission && (
+                                                            <div className="flex items-center gap-1 border-l pl-3 border-border">
                                                             {entry.status === 'PENDING' && (
                                                                 <>
                                                                     <Button size="icon" variant="outline" className="h-8 w-8 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'REJECTED')} title="Reject">
@@ -1311,7 +1324,8 @@ const Timesheets = () => {
                                                                     </Button>
                                                                 </>
                                                             )}
-                                                        </div>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>
