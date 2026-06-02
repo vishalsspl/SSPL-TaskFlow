@@ -59,7 +59,7 @@ export function SearchableSelect({
                     return 0
                 }}>
                     <CommandInput placeholder={searchPlaceholder} />
-                    <CommandList className="max-h-[300px]">
+                    <CommandList className="max-h-[200px]">
                         <CommandEmpty>{emptyMessage}</CommandEmpty>
                         <CommandGroup>
                             {options.map((option) => (

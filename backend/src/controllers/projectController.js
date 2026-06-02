@@ -12,7 +12,7 @@ const getProjectTeamMembers = async (db, projectId) => {
 };
 
 /** Create and emit an internal notification */
-import { ensureProjectSchema } from '../lib/schemaValidator.js';
+import { ensureProjectSchema, ensureOrganizationSchema } from '../lib/schemaValidator.js';
 
 const createNotification = async (req, { userId, title, message, type }) => {
   try {
@@ -533,6 +533,7 @@ export const createProject = async (req, res) => {
 
   // ── Lazy Migration ────────────────────────────────────────────────────────
   await ensureProjectSchema(req.db);
+  await ensureOrganizationSchema(req.db);
 
   // ── Resource Limit Check ──────────────────────────────────────────────────
   const [org, currentProjectCount] = await Promise.all([

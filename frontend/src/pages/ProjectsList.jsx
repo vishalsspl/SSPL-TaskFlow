@@ -831,7 +831,7 @@ const ProjectsList = () => {
               <div className="hidden sm:block">
                 <Table>
                   <TableHeader>
-                    <TableRow>
+                    <TableRow style={{ borderLeft: '4px solid transparent' }}>
                       <TableHead className="cursor-pointer select-none" onClick={() => handleSort('name')}>Project Name {renderSortIcon('name')}</TableHead>
                       <TableHead className="cursor-pointer select-none" onClick={() => handleSort('client')}>Client {renderSortIcon('client')}</TableHead>
                       <TableHead className="cursor-pointer select-none" onClick={() => handleSort('manager')}>Manager {renderSortIcon('manager')}</TableHead>

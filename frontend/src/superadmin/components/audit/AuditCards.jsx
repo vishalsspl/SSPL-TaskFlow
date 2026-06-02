@@ -8,6 +8,26 @@ const formatAction = (action) => {
   return action.toLowerCase().replace(/_/g, ' ');
 };
 
+const formatValue = (val) => {
+  if (val === null || val === undefined) return 'None';
+  if (typeof val === 'boolean') return val ? 'Yes' : 'No';
+  if (Array.isArray(val)) return val.length ? val.join(', ') : 'None';
+  if (typeof val === 'object') {
+    return (
+      <div className="mt-1 pl-2 border-l-2 border-primary/20 space-y-1">
+        {Object.entries(val).map(([k, v]) => (
+          <div key={k} className="text-[11px] leading-tight">
+            <span className="font-bold text-muted-foreground capitalize">{k.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}: </span>
+            <span className="text-foreground/90">{typeof v === 'object' ? JSON.stringify(v) : String(v)}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  if (String(val) === 'automatic_login') return 'Login';
+  return String(val);
+};
+
 const formatDetails = (details) => {
   if (!details || (typeof details === 'object' && Object.keys(details).length === 0)) return <span className="text-muted-foreground/50 italic">-</span>;
   
@@ -17,7 +37,9 @@ const formatDetails = (details) => {
         {Object.entries(details).map(([key, val]) => (
           <div key={key} className="flex flex-col gap-0.5">
             <span className="text-[9px] font-black text-primary/70 uppercase tracking-widest">{key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ')}</span>
-            <span className="text-xs font-semibold text-foreground/90 break-words leading-tight">{typeof val === 'object' ? JSON.stringify(val) : String(val) === 'automatic_login' ? 'Login' : String(val)}</span>
+            <div className="text-xs font-semibold text-foreground/90 break-words leading-tight">
+              {formatValue(val)}
+            </div>
           </div>
         ))}
       </div>

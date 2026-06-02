@@ -383,12 +383,23 @@ export const getOrgActivityLogs = async (req, res) => {
             req.db.activityLog.count({ where })
         ]);
 
+        // Fetch related projects for the logs
+        const projectIds = [...new Set(logs.map(log => log.projectId).filter(Boolean))];
+        const projects = await req.db.project.findMany({
+            where: { id: { in: projectIds } },
+            select: { id: true, name: true }
+        });
+        const projectMap = projects.reduce((acc, p) => ({ ...acc, [p.id]: p.name }), {});
+
         // Map logs for consistent metadata display
         const mappedLogs = logs.map(log => {
             const l = { ...log };
-            if (!l.project && l.details && typeof l.details === 'object') {
+            
+            if (l.projectId && projectMap[l.projectId]) {
+                l.project = { name: projectMap[l.projectId] };
+            } else if (!l.project && l.details && typeof l.details === 'object') {
                 const details = l.details;
-                const nameSnippet = details.name || details.projectName || details.title || details.taskTitle;
+                const nameSnippet = details.projectName || (l.entity !== 'task' && details.name) || null;
                 if (nameSnippet) {
                     l.project = { name: nameSnippet };
                 } else if (l.entity === 'chat') {

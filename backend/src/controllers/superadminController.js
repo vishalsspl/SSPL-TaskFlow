@@ -502,7 +502,7 @@ export const getGlobalAuditLogs = async (req, res) => {
                 const details = l.details;
                 
                 // Priority 1: Direct name or projectName in details
-                const nameSnippet = details.name || details.projectName || details.title || details.taskTitle;
+                const nameSnippet = details.projectName || (l.entity !== 'task' && (details.name || details.title)) || null;
                 
                 if (nameSnippet) {
                     l.project = { name: nameSnippet };
