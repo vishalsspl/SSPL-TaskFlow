@@ -15,7 +15,8 @@ import {
     Check,
     X,
     User as UserIcon,
-    Settings
+    Settings,
+    Download
 } from 'lucide-react';
 import api from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
@@ -612,6 +613,60 @@ const Timesheets = () => {
         }
         return user.role === 'MANAGER';
     }, [user]);
+
+    const hasExportPermission = useMemo(() => {
+        if (!user) return false;
+        if (user.role === 'SUPERADMIN' || user.role === 'ADMIN') return true;
+        const perms = user.organization?.rolePermissions;
+        if (perms && perms[user.role] && typeof perms[user.role]['timesheets.export'] === 'boolean') {
+            return perms[user.role]['timesheets.export'];
+        }
+        return user.role === 'MANAGER';
+    }, [user]);
+
+    const handleExport = () => {
+        let dataToExport = entries;
+        if (activeTab === 'my-entries') {
+            dataToExport = entries.filter(e => e.userId === user?.id);
+        } else if (activeTab === 'team-logs') {
+            dataToExport = entries.filter(e => e.userId !== user?.id);
+        } else if (activeTab === 'leave-logs') {
+            dataToExport = pendingLeaves;
+        }
+
+        if (selectedDateFilter) {
+            dataToExport = dataToExport.filter(e => isSameDay(parseISO(e.date), selectedDateFilter));
+        }
+
+        const csvRows = [
+            ["Date", "User", "Project", "Task", "Hours", "Status", "Description", "Billable"]
+        ];
+        
+        dataToExport.forEach(e => {
+            const desc = getCleanDescription(e.description).replace(/"/g, '""');
+            csvRows.push([
+                format(parseISO(e.date), 'yyyy-MM-dd'),
+                `"${e.user?.name || ''}"`,
+                `"${e.project?.name || ''}"`,
+                `"${e.task?.name || ''}"`,
+                e.hours,
+                e.status,
+                `"${desc}"`,
+                e.billable ? 'Yes' : 'No'
+            ]);
+        });
+
+        const csvContent = csvRows.map(row => row.join(",")).join("\n");
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `timesheets_export_${format(new Date(), 'yyyy-MM-dd')}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
     
     return (
         <div className="flex-1 space-y-4 p-0 sm:p-2 overflow-y-auto h-full">
@@ -640,6 +695,15 @@ const Timesheets = () => {
                             className="bg-primary hover:bg-primary/90 text-white font-bold rounded-xl h-10 px-6 shadow-lg shadow-primary/20 transition-all active:scale-95 w-full sm:w-auto"
                         >
                             <Plus className="mr-2 h-4 w-4" /> Log Hours
+                        </Button>
+                    )}
+                    {hasExportPermission && (
+                        <Button 
+                            variant="outline" 
+                            onClick={handleExport}
+                            className="rounded-xl h-10 px-4 font-bold border-primary/20 hover:bg-primary/5 text-primary w-full sm:w-auto shrink-0"
+                        >
+                            <Download className="mr-2 h-4 w-4" /> Export Report
                         </Button>
                     )}
                     {isOrgAdmin && (
