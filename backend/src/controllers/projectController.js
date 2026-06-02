@@ -251,15 +251,7 @@ export const getAllProjects = async (req, res) => {
     };
   } else if (req.user.role === 'MEMBER') {
     taskWhereFilter = {
-      OR: [
-        { project: { name: { notIn: ['General', 'General Tasks'] } } },
-        {
-          AND: [
-            { project: { name: { in: ['General', 'General Tasks'] } } },
-            { assignees: { some: { userId: req.user.id } } }
-          ]
-        }
-      ]
+      assignees: { some: { userId: req.user.id } }
     };
   }
 
