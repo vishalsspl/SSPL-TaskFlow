@@ -541,6 +541,8 @@ const Team = () => {
   const clients = users.filter(u => u.role === 'CLIENT');
   const members = users.filter(u => u.role === 'MEMBER');
 
+  const canImport = currentUser?.role === 'ADMIN' || currentUser?.permissions?.['reports.import'];
+
   // Decide which users to show.
   // For MANAGERS_LIST, CLIENTS_LIST, MEMBERS_LIST, ALL:
   //   the backend already sends the right role-filtered users via `roleFilter`.
@@ -617,7 +619,7 @@ const Team = () => {
                     <Plus className="w-5 h-5" />
                   </Button>
                 )}
-                {currentUser?.role === 'ADMIN' && (
+                {canImport && (
                   <Button
                     onClick={() => setShowImportDialog(true)}
                     variant="outline"
@@ -771,7 +773,7 @@ const Team = () => {
 
             {/* Right side: Desktop Buttons */}
             <div className="hidden lg:flex items-center gap-2 shrink-0">
-              {currentUser?.role === 'ADMIN' && (
+              {canImport && (
                 <Button
                   onClick={() => setShowImportDialog(true)}
                   variant="outline"

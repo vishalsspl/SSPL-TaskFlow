@@ -151,7 +151,7 @@ const Layout = () => {
       name: 'Tickets',
       href: '/tickets',
       icon: LifeBuoy,
-      allowedRoles: ['ADMIN', 'CLIENT'],
+      allowedRoles: ['ADMIN', 'MANAGER', 'MEMBER', 'CLIENT'],
       featureKey: 'tickets',
       permKey: 'tickets.view'
     },
@@ -177,7 +177,7 @@ const Layout = () => {
       icon: BarChart2,
       allowedRoles: ['ADMIN', 'MANAGER', 'MEMBER'],
       featureKey: 'performance',
-      permKey: 'performance.viewOwn'
+      permKey: 'performance.viewOwn,performance.viewAll'
     },
     {
       name: 'Timesheets',
@@ -277,8 +277,12 @@ const Layout = () => {
 
             // Granular Permission based filtering (from Manage Access)
             if (item.permKey && user?.role !== 'ADMIN') {
-              if (user?.permissions && user.permissions[item.permKey] === false) {
-                return false;
+              if (user?.permissions) {
+                const keys = item.permKey.split(',');
+                const hasAnyAccess = keys.some(key => user.permissions[key] !== false);
+                if (!hasAnyAccess) {
+                  return false;
+                }
               }
             }
 

@@ -56,8 +56,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import CreateTaskForm from '@/components/forms/CreateTaskForm';
+import TaskDetailsModal from '@/components/task/TaskDetailsModal';
 import Chat from '@/components/Chat';
-import { useTimerStore } from '@/store/timerStore';
+
 
 
 const ProjectView = () => {
@@ -72,9 +73,10 @@ const ProjectView = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [users, setUsers] = useState([]);
   const [activeTab, setActiveTab] = useState('overview');
-  const startTimer = useTimerStore(state => state.startTimer);
+
   const dashboardRef = useRef(null);
   const { user } = useAuthStore();
   const [showRemoveMemberDialog, setShowRemoveMemberDialog] = useState(false);
@@ -121,10 +123,13 @@ const ProjectView = () => {
 
   const handleTaskClick = (task) => {
     if (user?.role === 'CLIENT') return;
-    const canEditTask = user?.role === 'ADMIN' || user?.permissions?.['tasks.editAny'] || (user?.role === 'MEMBER' && task.project?.allowMemberTaskCreation);
-    if (!canEditTask) return;
     setSelectedTask(task);
-    setShowEditDialog(true);
+    setShowDetailsDialog(true);
+  };
+
+  const checkCanEditTask = (task) => {
+    if (!task) return false;
+    return user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.permissions?.['tasks.editAny'] || (user?.role === 'MEMBER' && task.project?.allowMemberTaskCreation);
   };
 
   const handleRemoveMember = async () => {
@@ -261,7 +266,7 @@ const ProjectView = () => {
               <div class="grid">
                 <div class="info-item">
                   <div class="label">Project Manager</div>
-                  <div class="value">${project.manager?.name || 'Unassigned'}</div>
+                  <div class="value">${project.name.toLowerCase() === 'general' ? '-' : (project.manager?.name || 'Unassigned')}</div>
                 </div>
                 <div class="info-item">
                   <div class="label">Organization</div>
@@ -403,57 +408,69 @@ const ProjectView = () => {
     );
   }
 
-  const { project, overview, budget, phases, overdueTasks, workloads, upcomingDeadlines } = dashboard;
+  const { project, overview, budget, phases, overdueTasks, workloads: originalWorkloads, upcomingDeadlines } = dashboard;
+  
+  const workloads = project.name?.toLowerCase() === 'general' && users.length > 0
+    ? users
+        .filter(u => u.role !== 'ADMIN' && u.role !== 'CLIENT')
+        .map(u => {
+          const existing = originalWorkloads.find(w => w.user.id === u.id);
+          return existing || { user: u, workloadPercentage: 0 };
+        })
+    : originalWorkloads;
+
   const workloadChartData = workloads.map((w) => ({ name: w.user.name, workload: w.workloadPercentage }));
 
   const overviewContent = (
     <TabsContent value="overview" className="space-y-6 mt-0">
       {/* Phases */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
-        {phases.map((phase) => {
-          const isComp = phase.status === 'COMPLETED';
-          const isProd = phase.status === 'IN_PROGRESS';
-          return (
-            <Card key={phase.id} className={`border-0 relative overflow-hidden group transition-all duration-500 ${isComp ? 'bg-gradient-to-br from-[#10B981] to-[#047857]' : isProd ? 'bg-gradient-to-br from-[#0EA5E9] to-[#0369A1]' : 'bg-card border border-border shadow-sm'}`}>
-              <CardContent className="p-6 flex flex-col items-center justify-center text-center space-y-3 relative z-10">
-                <h4 className={`font-black text-[10px] uppercase tracking-widest Montserrat ${isComp || isProd ? 'text-white/80' : 'text-muted-foreground'}`}>{phase.name}</h4>
-                {isComp ? (
-                  <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-md shadow-[0_0_20px_rgba(255,255,255,0.2)]">
-                    <CheckCircle className="w-8 h-8 text-white" />
-                  </div>
-                ) : isProd ? (
-                  <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-md shadow-[0_0_20px_rgba(255,255,255,0.2)]">
-                    <div className="text-2xl font-black text-white Montserrat">{phase.completionPercentage}%</div>
-                  </div>
-                ) : (
-                  <div className="p-3 bg-secondary/50 rounded-2xl">
-                    <Clock className="w-8 h-8 text-muted-foreground" />
-                  </div>
-                )}
-                <Badge variant="none" className={`text-[9px] font-black tracking-widest uppercase px-2 py-0.5 rounded-md ${isComp || isProd ? 'bg-white/20 text-white' : 'bg-secondary text-muted-foreground border border-border'}`}>
-                  {phase.status.replace('_', ' ')}
-                </Badge>
-              </CardContent>
-              <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
-            </Card>
-          );
-        })}
-        <Card className="border-0 bg-gradient-to-br from-[#F59E0B] to-[#B45309] shadow-[0_10px_40px_-10px_rgba(245,158,11,0.3)] relative overflow-hidden group">
-          <CardContent className="p-6 flex flex-col items-center justify-center text-center space-y-1">
-            <h4 className="font-black text-[10px] text-white/80 uppercase tracking-widest Montserrat">Target Launch</h4>
-            <div className="text-4xl font-black text-white Montserrat">
-              {overview.daysToLaunch !== null && overview.daysToLaunch !== undefined 
-                ? Math.abs(overview.daysToLaunch) 
-                : 'TBD'}
-            </div>
-            <span className="text-[10px] font-black text-white/60 uppercase tracking-widest Montserrat">
-              {overview.daysToLaunch !== null && overview.daysToLaunch !== undefined 
-                ? (overview.daysToLaunch < 0 ? 'Days Overdue' : 'Days Remaining')
-                : 'No Deadline'}
-            </span>
-          </CardContent>
-        </Card>
-      </div>
+      {project.name.toLowerCase() !== 'general' && (
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+          {phases.map((phase) => {
+            const isComp = phase.status === 'COMPLETED';
+            const isProd = phase.status === 'IN_PROGRESS';
+            return (
+              <Card key={phase.id} className={`border-0 relative overflow-hidden group transition-all duration-500 ${isComp ? 'bg-gradient-to-br from-[#10B981] to-[#047857]' : isProd ? 'bg-gradient-to-br from-[#0EA5E9] to-[#0369A1]' : 'bg-card border border-border shadow-sm'}`}>
+                <CardContent className="p-6 flex flex-col items-center justify-center text-center space-y-3 relative z-10">
+                  <h4 className={`font-black text-[10px] uppercase tracking-widest Montserrat ${isComp || isProd ? 'text-white/80' : 'text-muted-foreground'}`}>{phase.name}</h4>
+                  {isComp ? (
+                    <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-md shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+                      <CheckCircle className="w-8 h-8 text-white" />
+                    </div>
+                  ) : isProd ? (
+                    <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-md shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+                      <div className="text-2xl font-black text-white Montserrat">{phase.completionPercentage}%</div>
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-secondary/50 rounded-2xl">
+                      <Clock className="w-8 h-8 text-muted-foreground" />
+                    </div>
+                  )}
+                  <Badge variant="none" className={`text-[9px] font-black tracking-widest uppercase px-2 py-0.5 rounded-md ${isComp || isProd ? 'bg-white/20 text-white' : 'bg-secondary text-muted-foreground border border-border'}`}>
+                    {phase.status.replace('_', ' ')}
+                  </Badge>
+                </CardContent>
+                <div className="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
+              </Card>
+            );
+          })}
+          <Card className="border-0 bg-gradient-to-br from-[#F59E0B] to-[#B45309] shadow-[0_10px_40px_-10px_rgba(245,158,11,0.3)] relative overflow-hidden group">
+            <CardContent className="p-6 flex flex-col items-center justify-center text-center space-y-1">
+              <h4 className="font-black text-[10px] text-white/80 uppercase tracking-widest Montserrat">Target Launch</h4>
+              <div className="text-4xl font-black text-white Montserrat">
+                {overview.daysToLaunch !== null && overview.daysToLaunch !== undefined 
+                  ? Math.abs(overview.daysToLaunch) 
+                  : 'TBD'}
+              </div>
+              <span className="text-[10px] font-black text-white/60 uppercase tracking-widest Montserrat">
+                {overview.daysToLaunch !== null && overview.daysToLaunch !== undefined 
+                  ? (overview.daysToLaunch < 0 ? 'Days Overdue' : 'Days Remaining')
+                  : 'No Deadline'}
+              </span>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Project Description */}
       {project.description && (
@@ -472,7 +489,7 @@ const ProjectView = () => {
 
       {/* Metrics */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
-        {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
+        {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && project.name.toLowerCase() !== 'general' && (
           <Card className="bg-card border-border ring-1 ring-border shadow-2xl relative overflow-hidden group lg:col-span-2">
             <CardHeader className="flex flex-row items-center justify-between pb-4">
               <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-widest Montserrat">Total Commitment</CardTitle>
@@ -487,7 +504,7 @@ const ProjectView = () => {
             </CardContent>
           </Card>
         )}
-        {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
+        {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && project.name.toLowerCase() !== 'general' && (
           <Card className="bg-card border-border ring-1 ring-border shadow-2xl relative overflow-hidden group">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-widest Montserrat">Current Utilization</CardTitle>
@@ -502,7 +519,7 @@ const ProjectView = () => {
             </CardContent>
           </Card>
         )}
-        {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
+        {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && project.name.toLowerCase() !== 'general' && (
           <Card className="bg-card border-border ring-1 ring-border shadow-2xl relative overflow-hidden group">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-widest Montserrat">NET Balance (Remaining)</CardTitle>
@@ -554,7 +571,7 @@ const ProjectView = () => {
           )}
           <div className="min-w-0">
             <h2 className="text-xl sm:text-2xl font-black Montserrat text-foreground whitespace-normal break-words leading-tight">{project.name}</h2>
-            {project.endDate && (
+            {project.endDate && project.name.toLowerCase() !== 'general' && (
               <p className="text-xs text-muted-foreground Montserrat font-medium mt-1">
                 DUE: {new Date(project.endDate).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}
               </p>
@@ -575,7 +592,7 @@ const ProjectView = () => {
                   New Task
                 </Button>
               )}
-              {user?.role !== 'CLIENT' && user?.role !== 'MEMBER' && (
+              {(user?.role === 'ADMIN' || user?.permissions?.['reports.export']) && (
                 <Button variant="outline" size="sm" onClick={exportProfessionalReport} className="bg-secondary border-border text-foreground Montserrat font-bold rounded-lg sm:rounded-xl px-2 sm:px-4 text-[10px] sm:text-sm h-7 sm:h-9">
                   <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                   Report
@@ -628,11 +645,7 @@ const ProjectView = () => {
                             <p className="text-xs text-muted-foreground">Assigned to: {task.assignees?.map(a => a.user?.name).join(', ') || 'Unassigned'}</p>
                           </div>
                           <div className="flex items-center gap-2">
-                            {user?.role !== 'CLIENT' && (
-                              <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={(e) => { e.stopPropagation(); startTimer(task.id, id, task.title); }}>
-                                <Clock className="w-4 h-4" />
-                              </Button>
-                            )}
+                            {/* Timer button removed */}
                             <Badge variant="outline" className="whitespace-nowrap shrink-0 text-[10px] sm:text-xs px-2 py-0.5">{task.daysUntilDue} days</Badge>
                           </div>
                         </div>
@@ -820,6 +833,16 @@ const ProjectView = () => {
           </div>
         </DialogContent>
       </Dialog>
+      <TaskDetailsModal 
+        open={showDetailsDialog}
+        onOpenChange={setShowDetailsDialog}
+        task={selectedTask}
+        canEdit={checkCanEditTask(selectedTask)}
+        onEditClick={() => {
+            setShowDetailsDialog(false);
+            setShowEditDialog(true);
+        }}
+      />
       <Dialog open={showRemoveMemberDialog} onOpenChange={setShowRemoveMemberDialog}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>

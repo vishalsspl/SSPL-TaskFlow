@@ -111,8 +111,12 @@ function PermissionGuard({ permKey, children }) {
   
   if (user?.role === 'ADMIN') return children;
   
-  if (permKey && user?.permissions && user.permissions[permKey] === false) {
-    return <RestrictedAccess feature={permKey} />;
+  if (permKey && user?.permissions) {
+    const keys = permKey.split(',');
+    const hasAnyAccess = keys.some(key => user.permissions[key] !== false);
+    if (!hasAnyAccess) {
+      return <RestrictedAccess feature={keys[0]} />;
+    }
   }
 
   return children;
@@ -253,7 +257,7 @@ function App() {
               />
               <Route
                 path="performance"
-                element={<FeatureGuard feature="performance"><PermissionGuard permKey="performance.viewOwn"><Performance /></PermissionGuard></FeatureGuard>}
+                element={<FeatureGuard feature="performance"><PermissionGuard permKey="performance.viewOwn,performance.viewAll"><Performance /></PermissionGuard></FeatureGuard>}
               />
               <Route
                 path="chat"
@@ -271,7 +275,7 @@ function App() {
               />
               <Route
                 path="tickets/new"
-                element={<FeatureGuard feature="tickets"><PermissionGuard permKey="tickets.view"><SubmitTicket /></PermissionGuard></FeatureGuard>}
+                element={<FeatureGuard feature="tickets"><PermissionGuard permKey="tickets.create"><SubmitTicket /></PermissionGuard></FeatureGuard>}
               />
               <Route
                 path="tickets/:id"

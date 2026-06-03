@@ -61,6 +61,7 @@ const Integrations = () => {
   const [showDisconnectDialog, setShowDisconnectDialog] = useState(false);
 
   const isAdmin = user?.role === 'ADMIN';
+  const canManage = user?.role === 'ADMIN' || user?.permissions?.['integrations.manage'];
 
   useEffect(() => {
     setHeader("Integrations", "Connect third-party tools to enhance your workflow", false);
@@ -524,7 +525,7 @@ const Integrations = () => {
                 <Github className="w-12 h-12 text-primary" />
               </div>
 
-              {!isAdmin ? (
+              {!canManage ? (
                 <div className="max-w-md space-y-2">
                   <p className="text-sm text-foreground font-bold Montserrat">GitHub Integration Pending</p>
                   <p className="text-xs text-muted-foreground leading-relaxed">
@@ -607,8 +608,8 @@ const Integrations = () => {
 
           ) : (
             <div className="space-y-6">
-              {/* ─── Available Repositories (Admin only) ─── */}
-              {isAdmin && (
+              {/* ─── Available Repositories (Manage permission only) ─── */}
+              {canManage && (
                 <>
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                     <h3 className="text-[11px] sm:text-sm font-black text-muted-foreground uppercase tracking-widest Montserrat flex items-center gap-2">
@@ -697,8 +698,10 @@ const Integrations = () => {
               {linkedProjects.length > 0 && (
                 <div className="space-y-3">
                   <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2 flex-wrap">
-                    <FolderGit2 className="w-4 h-4" />
-                    {isAdmin ? 'Linked Projects' : 'Your Linked Projects'} ({linkedProjects.length})
+                    <div className="flex items-center gap-3">
+                      <FolderGit2 className="w-4 h-4" />
+                      {canManage ? 'Linked Projects' : 'Your Linked Projects'} ({linkedProjects.length})
+                    </div>
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {linkedProjects.map((project) => (
@@ -723,7 +726,7 @@ const Integrations = () => {
                             </div>
                             
                             <div className="mt-2 flex flex-wrap items-center gap-3">
-                              {isAdmin && project.manager && (
+                              {canManage && project.manager && project.name.toLowerCase() !== 'general' && (
                                 <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-primary/5 border border-primary/10">
                                   <User className="w-2.5 h-2.5 text-primary" />
                                   <p className="text-[9px] font-black uppercase tracking-wider text-primary/80">
@@ -761,7 +764,7 @@ const Integrations = () => {
                                 </span>
                               )}
                               
-                              {isAdmin && (
+                              {canManage && (
                                 <Button
                                   variant="outline"
                                   size="sm"
@@ -785,7 +788,7 @@ const Integrations = () => {
               )}
 
               {/* No linked projects message for non-admin */}
-              {!isAdmin && linkedProjects.length === 0 && (
+              {!canManage && linkedProjects.length === 0 && (
                 <div className="flex flex-col items-center py-10 text-center space-y-3 text-muted-foreground">
                   <FolderGit2 className="w-10 h-10 opacity-30" />
                   <p className="text-sm">No linked repositories found for your projects.</p>

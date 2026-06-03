@@ -47,6 +47,7 @@ const KanbanBoard = ({
     onTaskUpdate, 
     isReadOnly, 
     onEdit, 
+    onCardClick,
     onDelete, 
     onStatusChange,
     onApprove,
@@ -155,10 +156,10 @@ const KanbanBoard = ({
             onDragEnd={handleDragEnd}
         >
             <div className="flex h-full w-full gap-2 sm:gap-4 overflow-x-auto pb-4 px-1 sm:px-0 no-scrollbar scroll-smooth snap-x snap-mandatory">
-                <KanbanColumn id="TODO" title="To Do" tasks={columns.TODO} isReadOnly={isReadOnly} disableDrag={isReadOnly || !canMoveCards} onEdit={onEdit} onDelete={onDelete} onStatusChange={onStatusChange} recentlyMovedId={recentlyMovedId} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} />
-                <KanbanColumn id="IN_PROGRESS" title="In Progress" tasks={columns.IN_PROGRESS} isReadOnly={isReadOnly} disableDrag={isReadOnly || !canMoveCards} onEdit={onEdit} onDelete={onDelete} onStatusChange={onStatusChange} recentlyMovedId={recentlyMovedId} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} />
-                <KanbanColumn id="IN_REVIEW" title="In Review" tasks={columns.IN_REVIEW} isReadOnly={isReadOnly} disableDrag={isReadOnly || !canMoveCards} onEdit={onEdit} onDelete={onDelete} onStatusChange={onStatusChange} recentlyMovedId={recentlyMovedId} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} />
-                <KanbanColumn id="COMPLETED" title="Completed" tasks={columns.COMPLETED} isReadOnly={isReadOnly} disableDrag={isReadOnly || !canMoveCards} onEdit={onEdit} onDelete={onDelete} onStatusChange={onStatusChange} recentlyMovedId={recentlyMovedId} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} />
+                <KanbanColumn id="TODO" title="To Do" tasks={columns.TODO} isReadOnly={isReadOnly} disableDrag={isReadOnly || !canMoveCards} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={onStatusChange} recentlyMovedId={recentlyMovedId} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} />
+                <KanbanColumn id="IN_PROGRESS" title="In Progress" tasks={columns.IN_PROGRESS} isReadOnly={isReadOnly} disableDrag={isReadOnly || !canMoveCards} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={onStatusChange} recentlyMovedId={recentlyMovedId} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} />
+                <KanbanColumn id="IN_REVIEW" title="In Review" tasks={columns.IN_REVIEW} isReadOnly={isReadOnly} disableDrag={isReadOnly || !canMoveCards} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={onStatusChange} recentlyMovedId={recentlyMovedId} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} />
+                <KanbanColumn id="COMPLETED" title="Completed" tasks={columns.COMPLETED} isReadOnly={isReadOnly} disableDrag={isReadOnly || !canMoveCards} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={onStatusChange} recentlyMovedId={recentlyMovedId} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} />
             </div>
 
             {createPortal(

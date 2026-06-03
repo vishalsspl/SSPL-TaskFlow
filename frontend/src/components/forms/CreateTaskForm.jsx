@@ -329,6 +329,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                                 { label: 'To Do', value: 'TODO' },
                                 { label: 'In Progress', value: 'IN_PROGRESS' },
                                 { label: 'In Review', value: 'IN_REVIEW' },
+                                { label: 'Blocked', value: 'BLOCKED' },
                                 ...(user?.role === 'MEMBER' ? [] : [{ label: 'Completed', value: 'COMPLETED' }])
                             ]}
                             placeholder="To Do"

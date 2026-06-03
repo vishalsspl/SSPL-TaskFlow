@@ -129,7 +129,7 @@ const TicketDetail = () => {
                                     </div>
                                     <CardTitle className="text-2xl mt-2">{ticket.title}</CardTitle>
                                 </div>
-                                {(user.role === 'ADMIN' || user.role === 'MANAGER') && (
+                                {(user.role === 'ADMIN' || user?.permissions?.['tickets.manage']) && (
                                     <div className="w-full sm:w-40">
                                         <SearchableSelect
                                             value={ticket.status}

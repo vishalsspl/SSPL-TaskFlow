@@ -374,15 +374,16 @@ const Performance = () => {
         }).catch(console.error);
     }, [setHeader]);
 
-    const canViewTeam = user?.role === 'ADMIN' || user?.role === 'MANAGER';
+    const canViewTeam = user?.role === 'ADMIN' || user?.permissions?.['performance.viewAll'];
+    const canViewOwn = user?.role === 'ADMIN' || user?.permissions?.['performance.viewOwn'] !== false;
 
     return (
         <div className="flex-1 flex flex-col h-full overflow-hidden p-0 sm:p-2 pt-2 gap-4">
             {canViewTeam ? (
-                <Tabs defaultValue={user?.role === 'ADMIN' ? 'project' : 'mine'} className="flex-1 flex flex-col min-h-0 w-full">
+                <Tabs defaultValue={(user?.role === 'ADMIN' || !canViewOwn) ? 'project' : 'mine'} className="flex-1 flex flex-col min-h-0 w-full">
                     <div className="px-3 sm:px-6 w-full shrink-0">
                         <TabsList className="bg-secondary/40 border border-border/60 rounded-xl flex-wrap h-auto w-full sm:w-fit justify-start bg-clip-padding">
-                            {user?.role !== 'ADMIN' && (
+                            {canViewOwn && user?.role !== 'ADMIN' && (
                                 <TabsTrigger value="mine" className="rounded-lg font-black text-[11px] sm:text-sm px-2 sm:px-4 py-1.5 flex-1 sm:flex-none">
                                     <UserIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2 shrink-0" /> My Performance
                                 </TabsTrigger>
@@ -395,7 +396,7 @@ const Performance = () => {
                             </TabsTrigger>
                         </TabsList>
                     </div>
-                    {user?.role !== 'ADMIN' && (
+                    {canViewOwn && user?.role !== 'ADMIN' && (
                         <TabsContent value="mine" className="flex-1 overflow-y-auto overflow-x-hidden mt-4 px-3 sm:px-6 pb-8">
                             <MyPerformance user={user} projects={projects} />
                         </TabsContent>
@@ -407,9 +408,13 @@ const Performance = () => {
                         <ProjectPerformance projects={projects} />
                     </TabsContent>
                 </Tabs>
-            ) : (
+            ) : canViewOwn ? (
                 <div className="overflow-y-auto overflow-x-hidden px-3 sm:px-6 pb-8">
                     <MyPerformance user={user} projects={projects} />
+                </div>
+            ) : (
+                <div className="flex items-center justify-center h-full">
+                    <p className="text-muted-foreground font-bold">You do not have access to view performance data.</p>
                 </div>
             )}
         </div>

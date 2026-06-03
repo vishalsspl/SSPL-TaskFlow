@@ -98,9 +98,9 @@ export const PERMISSION_MODULES = [
     icon: 'LifeBuoy',
     description: 'Support and issue tracking',
     permissions: [
-      { key: 'tickets.view', label: 'View Tickets', description: 'View support tickets', defaults: { MANAGER: true, MEMBER: false, CLIENT: true } },
-      { key: 'tickets.create', label: 'Create Tickets', description: 'Create support tickets', defaults: { MANAGER: true, MEMBER: false, CLIENT: true } },
-      { key: 'tickets.manage', label: 'Manage Tickets', description: 'Assign/close/resolve tickets', defaults: { MANAGER: true, MEMBER: false, CLIENT: false } }
+      { key: 'tickets.view', label: 'View Tickets', description: 'View support tickets', defaults: { MANAGER: false, MEMBER: false, CLIENT: true } },
+      { key: 'tickets.create', label: 'Create Tickets', description: 'Create support tickets', defaults: { MANAGER: false, MEMBER: false, CLIENT: true } },
+      { key: 'tickets.manage', label: 'Manage Tickets', description: 'Assign/close/resolve tickets', defaults: { MANAGER: false, MEMBER: false, CLIENT: false } }
     ]
   },
   {
@@ -120,7 +120,8 @@ export const PERMISSION_MODULES = [
     description: 'Custom reports and exports',
     permissions: [
       { key: 'reports.view', label: 'View Reports', description: 'View reports', defaults: { MANAGER: true, MEMBER: false, CLIENT: true } },
-      { key: 'reports.export', label: 'Export Reports', description: 'Export/download reports', defaults: { MANAGER: true, MEMBER: false, CLIENT: false } }
+      { key: 'reports.export', label: 'Export Reports', description: 'Export/download reports', defaults: { MANAGER: true, MEMBER: false, CLIENT: false } },
+      { key: 'reports.import', label: 'Import Excel Data', description: 'Import data from Excel sheets', defaults: { MANAGER: false, MEMBER: false, CLIENT: false } }
     ]
   }
 ];

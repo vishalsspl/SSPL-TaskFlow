@@ -428,6 +428,7 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = 
     );
 
     const isManagerOrAdmin = user.role === 'ADMIN' || user.role === 'MANAGER';
+    const canDeleteMessages = user.role === 'ADMIN' || user?.permissions?.['chat.deleteMessages'];
 
     return (
         <div className="flex flex-col h-full bg-card rounded-xl border border-border overflow-hidden shadow-2xl">
@@ -569,7 +570,7 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = 
                                                     </button>
                                                 )}
 
-                                                {(msg.userId === user.id || isManagerOrAdmin) && (
+                                                {canDeleteMessages && (
                                                     <button
                                                         onClick={() => handleDeleteMessage(msg.id)}
                                                         className="p-1.5 hover:bg-white/10 rounded text-gray-400 hover:text-red-500 transition-colors"

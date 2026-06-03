@@ -126,14 +126,19 @@ const TaskKanban = () => {
 
     const handleTaskClick = (task) => {
         if (user?.role === 'CLIENT') return;
-        const canEditTask = user?.role === 'ADMIN' || user?.permissions?.['tasks.editAny'] || (user?.role === 'MEMBER' && task.project?.allowMemberTaskCreation);
-        if (!canEditTask) {
-            setSelectedTask(task);
-            setShowDetailsDialog(true);
-            return;
-        }
+        setSelectedTask(task);
+        setShowDetailsDialog(true);
+    };
+
+    const handleEditClick = (task) => {
+        if (user?.role === 'CLIENT') return;
         setSelectedTask(task);
         setShowEditDialog(true);
+    };
+
+    const checkCanEditTask = (task) => {
+        if (!task) return false;
+        return user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.permissions?.['tasks.editAny'] || (user?.role === 'MEMBER' && task.project?.allowMemberTaskCreation);
     };
 
     const handleTaskUpdated = () => {
@@ -310,13 +315,15 @@ const TaskKanban = () => {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <h3 className="font-bold text-foreground Montserrat truncate group-hover:text-primary transition-colors">{project.name}</h3>
-                                        <p className="text-xs text-muted-foreground capitalize">{project.status?.toLowerCase()}</p>
+                                        {project.name.toLowerCase() !== 'general' && (
+                                            <p className="text-xs text-muted-foreground capitalize">{project.status?.toLowerCase()}</p>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
                                     <span>{project._count?.tasks || 0} tasks</span>
                                     <span>•</span>
-                                    <span>{project.manager?.name || 'No manager'}</span>
+                                    <span>{project.name.toLowerCase() === 'general' ? '-' : (project.manager?.name || 'No manager')}</span>
                                 </div>
                             </div>
                         ))}
@@ -411,7 +418,8 @@ const TaskKanban = () => {
                         }
                     }}
                     isReadOnly={isReadOnly}
-                    onEdit={(user?.role === 'ADMIN' || user?.permissions?.['tasks.editAny'] || user?.role === 'MEMBER') ? handleTaskClick : undefined}
+                    onCardClick={user?.role !== 'CLIENT' ? handleTaskClick : undefined}
+                    onEdit={user?.role !== 'CLIENT' ? handleEditClick : undefined}
                     onDelete={(user?.role === 'ADMIN' || user?.permissions?.['tasks.delete']) ? handleDeleteTask : undefined}
                     onStatusChange={isReadOnly ? undefined : handleStatusChange}
                     onApprove={handleApproveStatus}
@@ -449,6 +457,11 @@ const TaskKanban = () => {
                 open={showDetailsDialog}
                 onOpenChange={setShowDetailsDialog}
                 task={selectedTask}
+                canEdit={checkCanEditTask(selectedTask)}
+                onEditClick={() => {
+                    setShowDetailsDialog(false);
+                    setShowEditDialog(true);
+                }}
             />
 
             <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>

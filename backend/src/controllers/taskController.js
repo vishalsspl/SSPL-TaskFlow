@@ -23,7 +23,7 @@ export const getAllTasks = async (req, res) => {
       });
     }
 
-    const { projectId, status, priority, type, assignedTo, search, page, limit: rawLimit, sortBy, sortOrder = 'asc', dueDateFrom, dueDateTo, pointsMin, pointsMax } = req.query;
+    const { projectId, status, priority, type, assignedTo, search, page, limit: rawLimit, sortBy, sortOrder = 'asc', dueDateFrom, dueDateTo, pointsMin, pointsMax, progressMin, progressMax } = req.query;
 
   const where = {
     project: {
@@ -52,6 +52,16 @@ export const getAllTasks = async (req, res) => {
       where.storyPoints = {};
       if (!isNaN(min)) where.storyPoints.gte = min;
       if (!isNaN(max)) where.storyPoints.lte = max;
+    }
+  }
+
+  if (progressMin !== undefined || progressMax !== undefined) {
+    const pMin = progressMin !== undefined ? parseInt(progressMin) : undefined;
+    const pMax = progressMax !== undefined ? parseInt(progressMax) : undefined;
+    if (!isNaN(pMin) || !isNaN(pMax)) {
+      where.completionPercentage = {};
+      if (!isNaN(pMin)) where.completionPercentage.gte = pMin;
+      if (!isNaN(pMax)) where.completionPercentage.lte = pMax;
     }
   }
 

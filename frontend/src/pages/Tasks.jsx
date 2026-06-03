@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/sheet";
 import { MultiSearchableSelect } from "@/components/ui/multi-searchable-select";
 import { DatePicker } from '@/components/ui/date-picker';
+import { Slider } from '@/components/ui/slider';
 import {
   Table,
   TableBody,
@@ -66,7 +67,7 @@ import ConfirmDialog from '@/components/ConfirmDialog';
 import CreateTaskForm from '@/components/forms/CreateTaskForm';
 import TablePagination from '@/components/ui/table-pagination';
 import { useToast } from "@/hooks/use-toast";
-import { useTimerStore } from '@/store/timerStore';
+
 import { Edit2, Lock, ArrowUp, ArrowDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ImportTasksDialog from '@/components/ImportTasksDialog';
@@ -108,7 +109,7 @@ const Tasks = () => {
   const { user } = useAuthStore();
   const { setHeader, searchTerm: globalSearch, setSearchTerm: setGlobalSearch } = useHeaderStore();
   const { toast } = useToast();
-  const startTimer = useTimerStore(state => state.startTimer);
+
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -150,8 +151,10 @@ const Tasks = () => {
   const [dueDateTo, setDueDateTo] = useState(null);
   const [pointsMin, setPointsMin] = useState('');
   const [pointsMax, setPointsMax] = useState('');
+  const [progressFilter, setProgressFilter] = useState('');
 
   const canCreateTaskGlobal = user?.role === 'ADMIN' || user?.permissions?.['tasks.create'] || (user?.role === 'MEMBER' && projects.some(p => p.allowMemberTaskCreation));
+  const canImport = user?.role === 'ADMIN' || user?.permissions?.['reports.import'];
 
   // Debounce global search input
   useEffect(() => {
@@ -175,7 +178,7 @@ const Tasks = () => {
     fetchTasks();
     fetchProjects();
     fetchUsers();
-  }, [filter, projectFilter, priorityFilter, typeFilter, page, pageSize, debouncedSearch, sortBy, sortOrder, selectedProjectIds, selectedAssigneeIds, selectedStatuses, selectedTypes, selectedPriorities, dueDateFrom, dueDateTo, pointsMin, pointsMax]);
+  }, [filter, projectFilter, priorityFilter, typeFilter, page, pageSize, debouncedSearch, sortBy, sortOrder, selectedProjectIds, selectedAssigneeIds, selectedStatuses, selectedTypes, selectedPriorities, dueDateFrom, dueDateTo, pointsMin, pointsMax, progressFilter]);
 
   const fetchTasks = async () => {
     try {
@@ -202,6 +205,10 @@ const Tasks = () => {
       if (dueDateTo) params.dueDateTo = dueDateTo.toISOString();
       if (pointsMin !== '') params.pointsMin = pointsMin;
       if (pointsMax !== '') params.pointsMax = pointsMax;
+      if (progressFilter !== '' && progressFilter !== 'all') {
+         params.progressMin = progressFilter;
+         params.progressMax = progressFilter;
+      }
 
       const response = await api.get('/tasks', { params });
       setTasks(response.data.data);
@@ -585,6 +592,23 @@ const Tasks = () => {
                             </div>
                          </div>
 
+                         {/* Progress Filter */}
+                         <div className="space-y-2">
+                            <Label className="font-semibold text-foreground/90">Task Progress</Label>
+                            <Select value={progressFilter} onValueChange={setProgressFilter}>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select progress..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="all">Any Progress</SelectItem>
+                                <SelectItem value="0">0% (To Do)</SelectItem>
+                                <SelectItem value="50">50% (In Progress)</SelectItem>
+                                <SelectItem value="75">75% (In Review)</SelectItem>
+                                <SelectItem value="100">100% (Completed)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                         </div>
+
                          {/* Clear button */}
                          <Button variant="outline" className="w-full mt-4 text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => {
                              setSelectedProjectIds([]);
@@ -596,6 +620,7 @@ const Tasks = () => {
                              setDueDateTo(null);
                              setPointsMin('');
                              setPointsMax('');
+                             setProgressFilter('');
                          }}>
                            Clear Advanced Filters
                          </Button>
@@ -605,8 +630,8 @@ const Tasks = () => {
                 </div>
 
                 {/* Desktop Action Buttons */}
-                {canCreateTaskGlobal && (
-                  <div className="hidden md:flex items-center gap-2 shrink-0">
+                <div className="hidden md:flex items-center gap-2 shrink-0">
+                  {canImport && (
                     <Button
                       onClick={() => setShowImportDialog(true)}
                       variant="outline"
@@ -615,6 +640,8 @@ const Tasks = () => {
                       <FileSpreadsheet className="w-4 h-4" />
                       <span className="hidden xl:inline">Import Excel</span>
                     </Button>
+                  )}
+                  {canCreateTaskGlobal && (
                     <Button
                       onClick={() => setShowCreateDialog(true)}
                       className="min-w-[130px] px-5 h-10 rounded-xl flex items-center justify-center bg-primary hover:bg-primary/90 text-primary-foreground transition-all shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] font-bold Montserrat text-sm whitespace-nowrap"
@@ -622,8 +649,8 @@ const Tasks = () => {
                       <Plus className="w-4 h-4 mr-2" />
                       <span>New Task</span>
                     </Button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -767,7 +794,7 @@ const Tasks = () => {
                         <TableCell className="text-right pr-4">
                           <div className="flex items-center justify-end gap-1">
                             {(() => {
-                              const canEditBtn = user?.role === 'ADMIN' || user?.permissions?.['tasks.editAny'] || (user?.role === 'MEMBER' && task.project?.allowMemberTaskCreation);
+                              const canEditBtn = user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.permissions?.['tasks.editAny'] || (user?.role === 'MEMBER' && task.project?.allowMemberTaskCreation);
                               const canDeleteBtn = user?.role === 'ADMIN' || user?.permissions?.['tasks.delete'];
                               if (user?.role === 'CLIENT') return null;
                               

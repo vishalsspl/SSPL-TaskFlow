@@ -97,7 +97,7 @@ const TicketList = () => {
     return (
         <div className="flex-1 flex flex-col h-full overflow-hidden gap-4">
             <div className="flex items-center justify-start">
-                {user?.role === 'CLIENT' && (
+                {(user?.role === 'ADMIN' || user?.permissions?.['tickets.create']) && (
                     <Button onClick={() => navigate('/tickets/new')}>
                         <Plus className="w-4 h-4 mr-2" />
                         New Ticket

@@ -3,8 +3,9 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { 
     Calendar, User, CheckSquare, Bug, Zap, BookOpen, GitBranch, 
-    File as FileIcon, Clock, Layers, LayoutList, AlertCircle 
+    File as FileIcon, Clock, Layers, LayoutList, AlertCircle, Edit
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatDate, priorityColors, statusColors, taskTypeColors } from '@/lib/utils';
 import { getFileUrl } from '@/lib/api';
@@ -18,7 +19,7 @@ const getTaskProgress = (task) => {
     return 0;
 };
 
-const TaskDetailsModal = ({ open, onOpenChange, task }) => {
+const TaskDetailsModal = ({ open, onOpenChange, task, canEdit, onEditClick }) => {
     if (!task) return null;
 
     return (
@@ -47,9 +48,16 @@ const TaskDetailsModal = ({ open, onOpenChange, task }) => {
                                 </Badge>
                             </div>
                             
-                            <DialogTitle className="text-2xl sm:text-3xl font-black Montserrat leading-tight tracking-tight text-foreground">
-                                {task.title}
-                            </DialogTitle>
+                            <div className="flex justify-between items-start gap-4">
+                                <DialogTitle className="text-2xl sm:text-3xl font-black Montserrat leading-tight tracking-tight text-foreground">
+                                    {task.title}
+                                </DialogTitle>
+                                {canEdit && onEditClick && (
+                                    <Button onClick={onEditClick} variant="outline" size="sm" className="shrink-0 rounded-xl bg-background hover:bg-secondary/50 transition-colors shadow-sm">
+                                        <Edit className="w-4 h-4 mr-2" /> Edit Task
+                                    </Button>
+                                )}
+                            </div>
                         </div>
 
                         {task.rejectionReason && (

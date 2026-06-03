@@ -4,7 +4,7 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import KanbanCard from './KanbanCard';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-const KanbanColumn = ({ id, title, tasks, isReadOnly, disableDrag, onEdit, onDelete, onStatusChange, recentlyMovedId, highlightTaskId, highlightAction, onApprove, onReject }) => {
+const KanbanColumn = ({ id, title, tasks, isReadOnly, disableDrag, onEdit, onCardClick, onDelete, onStatusChange, recentlyMovedId, highlightTaskId, highlightAction, onApprove, onReject }) => {
     const { setNodeRef } = useDroppable({
         id: id,
         data: {
@@ -57,7 +57,7 @@ const KanbanColumn = ({ id, title, tasks, isReadOnly, disableDrag, onEdit, onDel
                 <div ref={setNodeRef} className="flex flex-col gap-3 min-h-[150px] pb-4 w-full max-w-[600px] sm:max-w-none mx-auto items-center sm:items-stretch">
                     <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
                         {tasks.map((task) => (
-                            <KanbanCard key={task.id} task={task} isReadOnly={isReadOnly} disableDrag={disableDrag} onEdit={onEdit} onDelete={onDelete} onStatusChange={onStatusChange} isHighlighted={task.id === recentlyMovedId || task.id === highlightTaskId} highlightAction={task.id === highlightTaskId ? highlightAction : null} onApprove={onApprove} onReject={onReject} />
+                            <KanbanCard key={task.id} task={task} isReadOnly={isReadOnly} disableDrag={disableDrag} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={onStatusChange} isHighlighted={task.id === recentlyMovedId || task.id === highlightTaskId} highlightAction={task.id === highlightTaskId ? highlightAction : null} onApprove={onApprove} onReject={onReject} />
                         ))}
                     </SortableContext>
                     {tasks.length === 0 && (

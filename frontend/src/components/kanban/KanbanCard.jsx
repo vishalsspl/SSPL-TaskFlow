@@ -5,7 +5,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, User, MoreVertical, Pencil, Trash2, ArrowRightLeft, Bug, Zap, BookOpen, GitBranch, CheckSquare, Clock, CheckCircle2, XCircle } from 'lucide-react';
 import { priorityColors, taskTypeColors } from '@/lib/utils';
-import { useTimerStore } from '@/store/timerStore';
 import { useAuthStore } from '@/store/authStore';
 import {
     DropdownMenu,
@@ -22,12 +21,13 @@ const STATUS_OPTIONS = [
     { value: 'TODO', label: 'To Do', color: '#F59E0B' },
     { value: 'IN_PROGRESS', label: 'In Progress', color: '#00A3FF' },
     { value: 'IN_REVIEW', label: 'In Review', color: '#D946EF' },
+    { value: 'BLOCKED', label: 'Blocked', color: '#F43F5E' },
     { value: 'COMPLETED', label: 'Completed', color: '#48A111' },
 ];
 
-const KanbanCard = ({ task, isReadOnly, disableDrag, onEdit, onDelete, onStatusChange, isHighlighted, highlightAction, onApprove, onReject }) => {
+const KanbanCard = ({ task, isReadOnly, disableDrag, onEdit, onCardClick, onDelete, onStatusChange, isHighlighted, highlightAction, onApprove, onReject }) => {
     const { user } = useAuthStore();
-    const canTrackTime = user?.role !== 'CLIENT';
+    const canEditTask = user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.permissions?.['tasks.editAny'] || (user?.role === 'MEMBER' && task.project?.allowMemberTaskCreation);
     const pendingTag = task.tags?.find(t => t.startsWith('PENDING_APPROVAL:'));
     const isPendingApproval = !!pendingTag;
 
@@ -45,9 +45,9 @@ const KanbanCard = ({ task, isReadOnly, disableDrag, onEdit, onDelete, onStatusC
             task,
         },
         disabled: disableDrag ?? isReadOnly,
-    });
 
-    const startTimer = useTimerStore(state => state.startTimer);
+
+    });
 
     const style = {
         transform: CSS.Transform.toString(transform),
@@ -84,6 +84,7 @@ const KanbanCard = ({ task, isReadOnly, disableDrag, onEdit, onDelete, onStatusC
         <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="mb-3 touch-none group w-full max-w-[550px] sm:max-w-none mx-auto px-2 sm:px-0">
             <Card
                 className={`bg-card/60 backdrop-blur-sm border ${disableDrag ? '' : 'cursor-grab active:cursor-grabbing'} hover:border-primary/40 hover:bg-accent/50 transition-all duration-300 rounded-xl sm:rounded-2xl overflow-hidden shadow-xl ${highlightClasses}`}
+                onClick={() => onCardClick && onCardClick(task)}
             >
                 <div className="p-3 sm:p-2.5 space-y-2 sm:space-y-1.5">
                     <div className="flex items-start justify-between gap-2">
@@ -106,7 +107,7 @@ const KanbanCard = ({ task, isReadOnly, disableDrag, onEdit, onDelete, onStatusC
                                     {task.storyPoints} PTS
                                 </span>
                             )}
-                            {!isReadOnly && (onEdit || onDelete || onStatusChange || canTrackTime) && (
+                            {!isReadOnly && ((onEdit && canEditTask) || onDelete || onStatusChange) && (
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <button
@@ -118,7 +119,7 @@ const KanbanCard = ({ task, isReadOnly, disableDrag, onEdit, onDelete, onStatusC
                                         </button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="w-48 bg-card border-border text-foreground">
-                                        {onEdit && (
+                                        {(onEdit && canEditTask) && (
                                             <DropdownMenuItem
                                                 onClick={(e) => { e.stopPropagation(); onEdit(task); }}
                                                 className="cursor-pointer"
@@ -147,21 +148,9 @@ const KanbanCard = ({ task, isReadOnly, disableDrag, onEdit, onDelete, onStatusC
                                                 </DropdownMenuSubContent>
                                             </DropdownMenuSub>
                                         )}
-                                        {canTrackTime && (
-                                            <>
-                                                <DropdownMenuSeparator className="bg-border" />
-                                                <DropdownMenuItem
-                                                    onClick={(e) => { e.stopPropagation(); startTimer(task.id, task.projectId || task.project?.id, task.title); }}
-                                                    className="text-primary focus:text-primary cursor-pointer"
-                                                >
-                                                    <Clock className="w-4 h-4 mr-2" />
-                                                    Start Timer
-                                                </DropdownMenuItem>
-                                            </>
-                                        )}
+
                                         {onDelete && (
                                             <>
-                                                {!canTrackTime && <DropdownMenuSeparator className="bg-border" />}
                                                 <DropdownMenuItem
                                                     onClick={(e) => { e.stopPropagation(); onDelete(task.id); }}
                                                     className="text-destructive focus:text-destructive cursor-pointer"
@@ -179,7 +168,6 @@ const KanbanCard = ({ task, isReadOnly, disableDrag, onEdit, onDelete, onStatusC
 
                     <h4
                         className="text-[10px] sm:text-[11px] font-bold text-foreground Montserrat leading-tight group-hover:text-primary transition-colors line-clamp-2 cursor-pointer"
-                        onClick={() => onEdit && onEdit(task)}
                     >
                         {task.title}
                     </h4>

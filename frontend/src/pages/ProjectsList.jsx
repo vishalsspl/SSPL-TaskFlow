@@ -484,8 +484,9 @@ const ProjectsList = () => {
                   </div>
                 </div>
 
-
-                {/* Status */}
+                {formData.name?.toLowerCase() !== 'general' && (
+                  <>
+                    {/* Status */}
                 <div className="space-y-2">
                   <Label htmlFor="status" className="text-foreground/90 font-semibold mobile-reduce-label">Status <span className="text-red-500">*</span></Label>
                   <div className="relative">
@@ -517,6 +518,7 @@ const ProjectsList = () => {
                       options={users.filter(u => u.role === 'MANAGER').map(user => ({ label: user.name, value: user.id }))}
                       placeholder="Select Manager"
                       className="!pl-10 mobile-reduce-input"
+                      disabled={formData.name?.toLowerCase() === 'general'}
                     />
                   </div>
                 </div>
@@ -577,6 +579,8 @@ const ProjectsList = () => {
                     />
                   </div>
                 </div>
+                  </>
+                )}
 
                 {/* Description - Full Width */}
                 <div className="md:col-span-2 space-y-2">
@@ -892,7 +896,7 @@ const ProjectsList = () => {
                             )}
                           </TableCell>
                           <TableCell>
-                            {project.manager ? (
+                            {project.manager && project.name.toLowerCase() !== 'general' ? (
                               <div className="text-sm">
                                 <p className="font-medium">{project.manager.name}</p>
                               </div>
@@ -901,14 +905,18 @@ const ProjectsList = () => {
                             )}
                           </TableCell>
                           <TableCell>
-                            <div className="text-xs font-bold text-foreground/90 text-center">
-                              <p>{project.startDate ? formatDate(project.startDate) : 'N/A'}</p>
-                              <p className="text-[11px] text-foreground/70 font-medium mt-0.5">to {project.endDate ? formatDate(project.endDate) : 'Ongoing'}</p>
-                            </div>
+                            {project.name.toLowerCase() === 'general' ? (
+                              <div className="text-center text-muted-foreground text-xs">-</div>
+                            ) : (
+                              <div className="text-xs font-bold text-foreground/90 text-center">
+                                <p>{project.startDate ? formatDate(project.startDate) : 'N/A'}</p>
+                                <p className="text-[11px] text-foreground/70 font-medium mt-0.5">to {project.endDate ? formatDate(project.endDate) : 'Ongoing'}</p>
+                              </div>
+                            )}
                           </TableCell>
                           {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
                             <TableCell>
-                              {project.totalBudget ? (
+                              {project.totalBudget && project.name.toLowerCase() !== 'general' ? (
                                 <span className="text-sm font-bold" style={{ color: rowColor }}>
                                   {formatCurrency(Number(project.totalBudget))}
                                 </span>
@@ -918,12 +926,16 @@ const ProjectsList = () => {
                             </TableCell>
                           )}
                           <TableCell>
-                            <span
-                              className="text-xs font-bold px-2 py-1 rounded-full"
-                              style={{ background: statusStyle.bg, color: statusStyle.text, border: `1px solid ${statusStyle.border} ` }}
-                            >
-                              {project.status.replace('_', ' ')}
-                            </span>
+                            {project.name.toLowerCase() === 'general' ? (
+                              <div className="text-muted-foreground text-xs">-</div>
+                            ) : (
+                              <span
+                                className="text-xs font-bold px-2 py-1 rounded-full"
+                                style={{ background: statusStyle.bg, color: statusStyle.text, border: `1px solid ${statusStyle.border} ` }}
+                              >
+                                {project.status.replace('_', ' ')}
+                              </span>
+                            )}
                           </TableCell>
                           <TableCell>
                             <span
@@ -955,7 +967,7 @@ const ProjectsList = () => {
                           {(canEdit || canDelete || canManageMembers) && (
                             <TableCell className="text-center">
                               <div className="flex items-center justify-center gap-2" onClick={(e) => e.stopPropagation()}>
-                                {canManageMembers && (
+                                {canManageMembers && project.name.toLowerCase() !== 'general' && (
                                   <Button
                                     variant="ghost"
                                     size="icon"
@@ -970,7 +982,7 @@ const ProjectsList = () => {
                                     <UserPlus className="w-4 h-4" />
                                   </Button>
                                 )}
-                                {canEdit && (
+                                {canEdit && !(user?.role === 'MANAGER' && project.name.toLowerCase() === 'general') && (
                                   <Button
                                     variant="ghost"
                                     size="icon"
@@ -979,7 +991,7 @@ const ProjectsList = () => {
                                     <Edit2 className="w-4 h-4" />
                                   </Button>
                                 )}
-                                {canDelete && (
+                                {canDelete && !(user?.role === 'MANAGER' && project.name.toLowerCase() === 'general') && (
                                   <Button
                                     variant="ghost"
                                     size="icon"
@@ -1015,18 +1027,20 @@ const ProjectsList = () => {
                         <div className="flex-1 min-w-0">
                           <p className="font-bold text-sm text-foreground truncate">{project.name}</p>
                         </div>
-                        <span
-                          className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"
-                          style={{ background: statusStyle.bg, color: statusStyle.text, border: `1px solid ${statusStyle.border}` }}
-                        >
-                          {project.status.replace('_', ' ')}
-                        </span>
+                        {project.name.toLowerCase() !== 'general' && (
+                          <span
+                            className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"
+                            style={{ background: statusStyle.bg, color: statusStyle.text, border: `1px solid ${statusStyle.border}` }}
+                          >
+                            {project.status.replace('_', ' ')}
+                          </span>
+                        )}
                       </div>
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-xs text-muted-foreground">
-                        {project.manager && <span>👤 {project.manager.name}</span>}
+                        {project.manager && project.name.toLowerCase() !== 'general' && <span>👤 {project.manager.name}</span>}
                         {project.client && <span style={{ color: rowColor }}>🏢 {project.client.name}</span>}
                         <span style={{ color: rowColor }}>📋 {project._count.tasks} tasks</span>
-                        {project.totalBudget && (user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
+                        {project.totalBudget && project.name.toLowerCase() !== 'general' && (user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
                           <span className="font-bold" style={{ color: rowColor }}>{formatCurrency(Number(project.totalBudget))}</span>
                         )}
                       </div>
@@ -1047,7 +1061,7 @@ const ProjectsList = () => {
                       )}
                       {(canEdit || canDelete || canManageMembers) && (
                         <div className="flex gap-2 mt-3" onClick={(e) => e.stopPropagation()}>
-                          {canManageMembers && (
+                          {canManageMembers && project.name.toLowerCase() !== 'general' && (
                             <Button 
                               variant="ghost" 
                               size="icon" 
@@ -1062,12 +1076,12 @@ const ProjectsList = () => {
                               <UserPlus className="w-4 h-4" />
                             </Button>
                           )}
-                          {canEdit && (
+                          {canEdit && !(user?.role === 'MANAGER' && project.name.toLowerCase() === 'general') && (
                             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(project)}>
                               <Edit2 className="w-4 h-4" />
                             </Button>
                           )}
-                          {canDelete && (
+                          {canDelete && !(user?.role === 'MANAGER' && project.name.toLowerCase() === 'general') && (
                             <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive/90 hover:bg-destructive/10" onClick={() => handleDelete(project.id, project.name)}>
                               <Trash2 className="w-4 h-4" />
                             </Button>

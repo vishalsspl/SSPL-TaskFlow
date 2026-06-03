@@ -650,12 +650,12 @@ const Dashboard = () => {
                               </div>
                               <div className="flex items-center gap-1.5">
                                 <Users className="w-3 h-3" style={{ color: col.border }} />
-                                <span className="truncate">{project.manager?.name || 'No manager'}</span>
+                                <span className="truncate">{project.name.toLowerCase() === 'general' ? '-' : (project.manager?.name || 'No manager')}</span>
                               </div>
                             </div>
                           </div>
                           <div className="text-right ml-4 shrink-0 space-y-1">
-                            {project.totalBudget && (user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
+                            {project.totalBudget && project.name.toLowerCase() !== 'general' && (user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
                               <p className="text-sm font-black Montserrat" style={{ color: col.text }}>{formatCurrency(Number(project.totalBudget))}</p>
                             )}
                             <div className="flex items-center gap-2 justify-end">

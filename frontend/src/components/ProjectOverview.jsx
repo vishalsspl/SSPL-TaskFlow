@@ -93,7 +93,7 @@ const ProjectOverview = ({ projectId }) => {
             <div className="flex flex-col gap-2">
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                     <h2 className="text-xl sm:text-2xl font-bold text-foreground leading-tight">{project.name}</h2>
-                    {project.endDate && (
+                    {project.endDate && project.name.toLowerCase() !== 'general' && (
                         <div className="flex w-fit items-center text-xs sm:text-sm text-muted-foreground bg-muted px-3 py-1 rounded-full border shrink-0">
                             <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1.5" />
                             <span>Due: {formatDate(project.endDate)}</span>
@@ -132,51 +132,53 @@ const ProjectOverview = ({ projectId }) => {
             </div>
 
             {/* Phase Tracker */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-4">
-                {phases.map((phase) => (
-                    <Card key={phase.id} className={phase.status === 'COMPLETED' ? 'bg-green-500/10 border-green-400/50' : phase.status === 'IN_PROGRESS' ? 'bg-blue-500/10 border-blue-400/50' : 'bg-muted/50'}>
-                        <CardContent className="p-3 sm:p-4 text-center">
-                            <h3 className="font-semibold text-[10px] sm:text-[11px] lg:text-xs tracking-tight text-foreground mb-2 leading-tight">{phase.name}</h3>
-                            {phase.status === 'COMPLETED' ? (
-                                <div className="flex flex-col items-center gap-1">
-                                    <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-green-500 flex items-center justify-center">
-                                        <CheckCircle className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+            {project.name.toLowerCase() !== 'general' && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-4">
+                    {phases.map((phase) => (
+                        <Card key={phase.id} className={phase.status === 'COMPLETED' ? 'bg-green-500/10 border-green-400/50' : phase.status === 'IN_PROGRESS' ? 'bg-blue-500/10 border-blue-400/50' : 'bg-muted/50'}>
+                            <CardContent className="p-3 sm:p-4 text-center">
+                                <h3 className="font-semibold text-[10px] sm:text-[11px] lg:text-xs tracking-tight text-foreground mb-2 leading-tight">{phase.name}</h3>
+                                {phase.status === 'COMPLETED' ? (
+                                    <div className="flex flex-col items-center gap-1">
+                                        <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-green-500 flex items-center justify-center">
+                                            <CheckCircle className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+                                        </div>
+                                        <p className="text-[10px] sm:text-xs text-green-700 font-medium">Completed</p>
                                     </div>
-                                    <p className="text-[10px] sm:text-xs text-green-700 font-medium">Completed</p>
-                                </div>
-                            ) : phase.status === 'IN_PROGRESS' ? (
-                                <div className="flex flex-col items-center gap-1">
-                                    <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-card border border-green-500 flex items-center justify-center">
-                                        <span className="text-[10px] sm:text-sm font-bold text-green-600 leading-none">{phase.completionPercentage}%</span>
+                                ) : phase.status === 'IN_PROGRESS' ? (
+                                    <div className="flex flex-col items-center gap-1">
+                                        <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-card border border-green-500 flex items-center justify-center">
+                                            <span className="text-[10px] sm:text-sm font-bold text-green-600 leading-none">{phase.completionPercentage}%</span>
+                                        </div>
+                                        <p className="text-[10px] sm:text-xs text-blue-700 font-medium">In Progress</p>
                                     </div>
-                                    <p className="text-[10px] sm:text-xs text-blue-700 font-medium">In Progress</p>
-                                </div>
-                            ) : (
-                                <div className="flex flex-col items-center gap-1">
-                                    <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-card border border-border flex items-center justify-center">
-                                        <Clock className="w-4 h-4 sm:w-6 sm:h-6 text-muted-foreground" />
+                                ) : (
+                                    <div className="flex flex-col items-center gap-1">
+                                        <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-card border border-border flex items-center justify-center">
+                                            <Clock className="w-4 h-4 sm:w-6 sm:h-6 text-muted-foreground" />
+                                        </div>
+                                        <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">Waiting</p>
                                     </div>
-                                    <p className="text-[10px] sm:text-xs text-muted-foreground font-medium">Waiting</p>
+                                )}
+                            </CardContent>
+                        </Card>
+                    ))}
+                    {/* Projected Launch Date Card */}
+                    <Card className="bg-green-500/10 border-green-400/50 hidden md:block">
+                        <CardContent className="p-2 sm:p-4 text-center">
+                            <h3 className="font-semibold text-[10px] sm:text-base text-foreground mb-1 sm:mb-2">
+                                Projected Launch
+                            </h3>
+                            <div className="flex flex-col items-center">
+                                <Calendar className="w-5 h-5 sm:w-8 sm:h-8 text-green-600 dark:text-green-500 mb-0.5" />
+                                <div className="text-xs sm:text-xl font-bold text-foreground">
+                                    {overview.daysToLaunch || 'N/A'} Days
                                 </div>
-                            )}
+                            </div>
                         </CardContent>
                     </Card>
-                ))}
-                {/* Projected Launch Date Card */}
-                <Card className="bg-green-500/10 border-green-400/50 hidden md:block">
-                    <CardContent className="p-2 sm:p-4 text-center">
-                        <h3 className="font-semibold text-[10px] sm:text-base text-foreground mb-1 sm:mb-2">
-                            Projected Launch
-                        </h3>
-                        <div className="flex flex-col items-center">
-                            <Calendar className="w-5 h-5 sm:w-8 sm:h-8 text-green-600 dark:text-green-500 mb-0.5" />
-                            <div className="text-xs sm:text-xl font-bold text-foreground">
-                                {overview.daysToLaunch || 'N/A'} Days
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+                </div>
+            )}
 
             {/* Extra Data Grids */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6 mt-2 sm:mt-6">

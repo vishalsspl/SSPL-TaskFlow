@@ -132,6 +132,8 @@ const ChatPage = () => {
     const channelsUnread = channels.reduce((acc, room) => acc + (unreadCounts[room.isGlobal ? 'global' : room.id] || 0), 0);
     const dmsUnread = dms.reduce((acc, room) => acc + (unreadCounts[room.id] || 0), 0);
 
+    const canCreateRooms = user?.role === 'ADMIN' || user?.permissions?.['chat.createRooms'];
+
     if (loading) {
         return (
             <div className="flex items-center justify-center h-[calc(100vh-8rem)]">
@@ -253,14 +255,16 @@ const ChatPage = () => {
                                 <div className="space-y-1.5">
                                     <div className="flex items-center justify-between mb-3 px-2">
                                         <span className="text-[10px] font-black Montserrat uppercase tracking-widest text-muted-foreground">Private Chats</span>
-                                        <Button 
-                                            variant="ghost" 
-                                            size="sm" 
-                                            onClick={() => setIsAddDMOpen(true)}
-                                            className="h-6 px-2 text-[9px] uppercase font-black tracking-widest text-primary hover:bg-primary/10 rounded"
-                                        >
-                                            <Plus className="w-3 h-3 mr-1" /> New DM
-                                        </Button>
+                                        {canCreateRooms && (
+                                            <Button 
+                                                variant="ghost" 
+                                                size="sm" 
+                                                onClick={() => setIsAddDMOpen(true)}
+                                                className="h-6 px-2 text-[9px] uppercase font-black tracking-widest text-primary hover:bg-primary/10 rounded"
+                                            >
+                                                <Plus className="w-3 h-3 mr-1" /> New DM
+                                            </Button>
+                                        )}
                                     </div>
                                     
                                     {dms.length === 0 ? (
