@@ -1349,8 +1349,9 @@ const Timesheets = () => {
             )}
 
             <Dialog open={isLogDialogOpen} onOpenChange={setIsLogDialogOpen}>
-                <DialogContent className="bg-card border-border shadow-2xl rounded-2xl max-w-md">
-                    <DialogHeader>
+                <DialogContent className="bg-card border-border shadow-2xl rounded-2xl w-[95vw] max-w-md max-h-[85vh] p-0 flex flex-col overflow-hidden">
+                    <div className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar">
+                        <DialogHeader>
                         <DialogTitle className="text-2xl font-black Montserrat">{editingEntryId ? 'Edit Project Hours' : 'Log Project Hours'}</DialogTitle>
                         <DialogDescription className="font-medium text-xs">Fill in the details below to record your work time.</DialogDescription>
                         
@@ -1381,8 +1382,7 @@ const Timesheets = () => {
                         </div>
                     </DialogHeader>
 
-                    <ScrollArea className="max-h-[65vh] pr-4 -mr-4">
-                    <div className="space-y-3 py-1">
+                    <div className="space-y-3 py-4">
                         <div className="space-y-1.5">
                             <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Log Date</Label>
                             <DatePicker
@@ -1625,10 +1625,9 @@ const Timesheets = () => {
                             </div>
                         </div>
                     </div>
-                    </ScrollArea>
 
-                    <DialogFooter>
-                        <Button variant="ghost" onClick={() => setIsLogDialogOpen(false)} className="rounded-xl font-bold">Cancel</Button>
+                    <DialogFooter className="mt-2 pt-4 border-t border-border/50">
+                        <Button variant="ghost" onClick={() => setIsLogDialogOpen(false)} className="rounded-xl font-bold w-full sm:w-auto">Cancel</Button>
                         <Button
                             onClick={handleLogHours}
                             className="bg-primary hover:bg-primary/90 text-white font-black rounded-xl px-8"
@@ -1637,6 +1636,7 @@ const Timesheets = () => {
                             {submitting ? "Saving..." : (editingEntryId ? "Update Hours" : "Log Hours")}
                         </Button>
                     </DialogFooter>
+                    </div>
                 </DialogContent>
             </Dialog>
 

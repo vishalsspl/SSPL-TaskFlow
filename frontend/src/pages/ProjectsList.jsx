@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { format } from 'date-fns';
+import { format, differenceInWeeks, differenceInDays } from 'date-fns';
 import {
   Dialog,
   DialogContent,
@@ -398,6 +398,40 @@ const ProjectsList = () => {
     '#F97316', // Orange
     '#D946EF', // Magenta/Pink
   ];
+
+  const getVarianceText = (project) => {
+    if (!project.endDate) return null;
+    const endDate = new Date(project.endDate);
+    const now = new Date();
+    
+    // Normalize to midnight for accurate day calculation
+    endDate.setHours(0,0,0,0);
+    now.setHours(0,0,0,0);
+    
+    const isCompleted = project.status === 'COMPLETED';
+    const weeksDiff = differenceInWeeks(endDate, now);
+    const daysDiff = differenceInDays(endDate, now);
+    
+    if (isCompleted) {
+      if (daysDiff > 0) {
+        if (weeksDiff > 0) return `${weeksDiff} week${weeksDiff > 1 ? 's' : ''} Ahead`;
+        return `${daysDiff} day${daysDiff > 1 ? 's' : ''} Ahead`;
+      }
+      return null;
+    } else {
+      if (daysDiff < 0) {
+        const absWeeks = Math.abs(weeksDiff);
+        const absDays = Math.abs(daysDiff);
+        if (absWeeks > 0) return `${absWeeks} week${absWeeks > 1 ? 's' : ''} Overdue`;
+        return `${absDays} day${absDays > 1 ? 's' : ''} Overdue`;
+      } else if (daysDiff > 0) {
+        if (weeksDiff > 0) return `${weeksDiff} week${weeksDiff > 1 ? 's' : ''} to go`;
+        return `${daysDiff} day${daysDiff > 1 ? 's' : ''} to go`;
+      } else {
+        return "Due today";
+      }
+    }
+  };
 
   const filteredProjects = projects.filter(project => {
     // Search, status, and category filtering now done on backend
@@ -929,12 +963,19 @@ const ProjectsList = () => {
                             {project.name.toLowerCase() === 'general' ? (
                               <div className="text-muted-foreground text-xs">-</div>
                             ) : (
-                              <span
-                                className="text-xs font-bold px-2 py-1 rounded-full"
-                                style={{ background: statusStyle.bg, color: statusStyle.text, border: `1px solid ${statusStyle.border} ` }}
-                              >
-                                {project.status.replace('_', ' ')}
-                              </span>
+                              <div className="flex flex-col gap-1.5 items-start">
+                                <span
+                                  className="text-xs font-bold px-2 py-1 rounded-full"
+                                  style={{ background: statusStyle.bg, color: statusStyle.text, border: `1px solid ${statusStyle.border} ` }}
+                                >
+                                  {project.status.replace('_', ' ')}
+                                </span>
+                                {getVarianceText(project) && (
+                                  <span className="text-[10px] font-semibold text-muted-foreground whitespace-nowrap">
+                                    {getVarianceText(project)}
+                                  </span>
+                                )}
+                              </div>
                             )}
                           </TableCell>
                           <TableCell>
@@ -1028,12 +1069,19 @@ const ProjectsList = () => {
                           <p className="font-bold text-sm text-foreground truncate">{project.name}</p>
                         </div>
                         {project.name.toLowerCase() !== 'general' && (
-                          <span
-                            className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"
-                            style={{ background: statusStyle.bg, color: statusStyle.text, border: `1px solid ${statusStyle.border}` }}
-                          >
-                            {project.status.replace('_', ' ')}
-                          </span>
+                          <div className="flex flex-col items-end gap-1">
+                            <span
+                              className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"
+                              style={{ background: statusStyle.bg, color: statusStyle.text, border: `1px solid ${statusStyle.border}` }}
+                            >
+                              {project.status.replace('_', ' ')}
+                            </span>
+                            {getVarianceText(project) && (
+                              <span className="text-[9px] font-semibold text-muted-foreground whitespace-nowrap">
+                                {getVarianceText(project)}
+                              </span>
+                            )}
+                          </div>
                         )}
                       </div>
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-xs text-muted-foreground">

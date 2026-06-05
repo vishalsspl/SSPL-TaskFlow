@@ -264,15 +264,7 @@ const TaskKanban = () => {
     if (!selectedProjectId) {
         return (
             <div className="p-4 h-full flex flex-col bg-background overflow-y-auto">
-                <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
-                    <div className="min-w-0">
-                        <h1 className="text-2xl font-black Montserrat text-foreground tracking-tight">
-                            Task <span className="text-primary">Kanban</span>
-                        </h1>
-                        <p className="mt-2 text-sm text-muted-foreground Montserrat">
-                            Select a project to view its Kanban board
-                        </p>
-                    </div>
+                <div className="mb-8 flex justify-start">
 
                     <div className="bg-secondary/30 border border-border/60 p-2 rounded-2xl flex flex-wrap items-center gap-2 sm:gap-3">
                         <SearchableSelect
