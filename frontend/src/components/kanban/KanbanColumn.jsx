@@ -2,7 +2,6 @@ import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import KanbanCard from './KanbanCard';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 const KanbanColumn = ({ id, title, tasks, isReadOnly, disableDrag, onEdit, onCardClick, onDelete, onStatusChange, recentlyMovedId, highlightTaskId, highlightAction, onApprove, onReject }) => {
     const { setNodeRef } = useDroppable({
@@ -36,11 +35,11 @@ const KanbanColumn = ({ id, title, tasks, isReadOnly, disableDrag, onEdit, onCar
     return (
         <div 
             id={id}
-            className={`flex flex-col h-full flex-1 
+            className={`flex flex-col flex-1 
             min-w-[calc(100vw-3rem)] 
             md:min-w-0
-            rounded-2xl p-1 sm:p-2 mx-1 my-1 transition-all duration-300 snap-center ${getColumnColor(id)}`}>
-            <div className="flex items-center justify-between mb-3 px-1">
+            rounded-2xl p-1 sm:p-2 mx-1 my-1 transition-all duration-300 snap-center overflow-hidden ${getColumnColor(id)}`}>
+            <div className="flex items-center justify-between mb-3 px-1 shrink-0 relative z-10">
                 <div className="flex items-center gap-2.5">
                     <div
                         className="w-2 h-2 rounded-full shadow-[0_0_8px]"
@@ -53,7 +52,7 @@ const KanbanColumn = ({ id, title, tasks, isReadOnly, disableDrag, onEdit, onCar
                 </span>
             </div>
 
-            <ScrollArea className="flex-1 pr-1">
+            <div className="flex-1 overflow-y-auto pr-1 min-h-0 kanban-scroll" style={{ WebkitOverflowScrolling: 'touch' }}>
                 <div ref={setNodeRef} className="flex flex-col gap-3 min-h-[150px] pb-4 w-full max-w-[600px] sm:max-w-none mx-auto items-center sm:items-stretch">
                     <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
                         {tasks.map((task) => (
@@ -66,7 +65,7 @@ const KanbanColumn = ({ id, title, tasks, isReadOnly, disableDrag, onEdit, onCar
                         </div>
                     )}
                 </div>
-            </ScrollArea>
+            </div>
         </div>
     );
 };

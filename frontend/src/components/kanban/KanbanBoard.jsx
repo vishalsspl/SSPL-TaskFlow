@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
     DndContext,
     DragOverlay,
     closestCorners,
     KeyboardSensor,
-    PointerSensor,
+    MouseSensor,
+    TouchSensor,
     useSensor,
     useSensors,
 } from '@dnd-kit/core';
@@ -13,9 +14,14 @@ import KanbanColumn from './KanbanColumn';
 import KanbanCard from './KanbanCard';
 import { createPortal } from 'react-dom';
 import { useToast } from '@/hooks/use-toast';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 // Priority order: URGENT > HIGH > MEDIUM > LOW
 const PRIORITY_ORDER = { URGENT: 0, HIGH: 2, MEDIUM: 3, LOW: 4 };
+
+const COLUMN_IDS = ['TODO', 'IN_PROGRESS', 'IN_REVIEW', 'COMPLETED'];
+const COLUMN_LABELS = { TODO: 'To Do', IN_PROGRESS: 'In Progress', IN_REVIEW: 'In Review', COMPLETED: 'Completed' };
+const COLUMN_COLORS = { TODO: '#F59E0B', IN_PROGRESS: '#00A3FF', IN_REVIEW: '#D946EF', COMPLETED: '#48A111' };
 
 const sortTasks = (tasks, columnId) => {
     if (columnId === 'COMPLETED') {
@@ -59,7 +65,34 @@ const KanbanBoard = ({
     const { toast } = useToast();
     const [activeId, setActiveId] = useState(null);
     const [recentlyMovedId, setRecentlyMovedId] = useState(null);
+    const [isMobile, setIsMobile] = useState(false);
+    const [activeColumnIndex, setActiveColumnIndex] = useState(0);
+    const scrollRef = useRef(null);
     const activeTask = activeId ? tasks.find(t => t.id === activeId) : null;
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    // Track which column is visible via scroll position
+    const handleScroll = useCallback(() => {
+        const container = scrollRef.current;
+        if (!container || !isMobile) return;
+        const scrollLeft = container.scrollLeft;
+        const columnWidth = container.scrollWidth / 4;
+        const index = Math.round(scrollLeft / columnWidth);
+        setActiveColumnIndex(Math.min(Math.max(index, 0), 3));
+    }, [isMobile]);
+
+    useEffect(() => {
+        const container = scrollRef.current;
+        if (!container) return;
+        container.addEventListener('scroll', handleScroll, { passive: true });
+        return () => container.removeEventListener('scroll', handleScroll);
+    }, [handleScroll]);
 
     // Clear the highlight after 2 seconds
     useEffect(() => {
@@ -70,7 +103,7 @@ const KanbanBoard = ({
     }, [recentlyMovedId]);
 
     const sensors = useSensors(
-        useSensor(PointerSensor, {
+        useSensor(MouseSensor, {
             activationConstraint: {
                 distance: 5,
             },
@@ -81,15 +114,32 @@ const KanbanBoard = ({
     );
 
     const canMoveCards = currentUser?.role === 'ADMIN' || currentUser?.permissions?.['kanban.moveCards'];
+    const actuallyDisableDrag = isReadOnly || !canMoveCards || isMobile;
+
+    const scrollToColumn = (index) => {
+        const container = scrollRef.current;
+        if (!container) return;
+        const columnWidth = container.scrollWidth / 4;
+        container.scrollTo({ left: columnWidth * index, behavior: 'smooth' });
+        setActiveColumnIndex(index);
+    };
+
+    const goLeft = () => {
+        if (activeColumnIndex > 0) scrollToColumn(activeColumnIndex - 1);
+    };
+
+    const goRight = () => {
+        if (activeColumnIndex < 3) scrollToColumn(activeColumnIndex + 1);
+    };
 
     const handleDragStart = (event) => {
-        if (isReadOnly || !canMoveCards) return;
+        if (actuallyDisableDrag) return;
         setActiveId(event.active.id);
     };
 
     const handleDragEnd = async (event) => {
         setActiveId(null);
-        if (isReadOnly || !canMoveCards) return;
+        if (actuallyDisableDrag) return;
 
         const { active, over } = event;
         if (!over) return;
@@ -129,15 +179,29 @@ const KanbanBoard = ({
                 
                 // Auto-scroll on mobile
                 if (window.innerWidth < 768) {
-                    setTimeout(() => {
-                        const element = document.getElementById(newStatus);
-                        if (element) {
-                            element.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                        }
-                    }, 100);
+                    const targetIndex = COLUMN_IDS.indexOf(newStatus);
+                    if (targetIndex !== -1) {
+                        setTimeout(() => scrollToColumn(targetIndex), 100);
+                    }
                 }
             }
             onTaskUpdate(activeTaskId, newStatus);
+        }
+    };
+
+    const handleManualStatusChange = (taskId, newStatus) => {
+        setRecentlyMovedId(taskId);
+        
+        // Auto-scroll on mobile
+        if (window.innerWidth < 768) {
+            const targetIndex = COLUMN_IDS.indexOf(newStatus);
+            if (targetIndex !== -1) {
+                setTimeout(() => scrollToColumn(targetIndex), 100);
+            }
+        }
+
+        if (onStatusChange) {
+            onStatusChange(taskId, newStatus);
         }
     };
 
@@ -155,16 +219,63 @@ const KanbanBoard = ({
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
         >
-            <div className="flex h-full w-full gap-2 sm:gap-4 overflow-x-auto pb-4 px-1 sm:px-0 no-scrollbar scroll-smooth snap-x snap-mandatory">
-                <KanbanColumn id="TODO" title="To Do" tasks={columns.TODO} isReadOnly={isReadOnly} disableDrag={isReadOnly || !canMoveCards} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={onStatusChange} recentlyMovedId={recentlyMovedId} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} />
-                <KanbanColumn id="IN_PROGRESS" title="In Progress" tasks={columns.IN_PROGRESS} isReadOnly={isReadOnly} disableDrag={isReadOnly || !canMoveCards} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={onStatusChange} recentlyMovedId={recentlyMovedId} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} />
-                <KanbanColumn id="IN_REVIEW" title="In Review" tasks={columns.IN_REVIEW} isReadOnly={isReadOnly} disableDrag={isReadOnly || !canMoveCards} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={onStatusChange} recentlyMovedId={recentlyMovedId} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} />
-                <KanbanColumn id="COMPLETED" title="Completed" tasks={columns.COMPLETED} isReadOnly={isReadOnly} disableDrag={isReadOnly || !canMoveCards} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={onStatusChange} recentlyMovedId={recentlyMovedId} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} />
+            <div className="relative h-full flex flex-col">
+                {/* Columns container */}
+                <div ref={scrollRef} className="flex flex-1 min-h-0 w-full gap-2 sm:gap-4 overflow-x-auto pb-0 sm:pb-4 px-1 sm:px-0 no-scrollbar scroll-smooth snap-x snap-mandatory">
+                    <KanbanColumn id="TODO" title="To Do" tasks={columns.TODO} isReadOnly={isReadOnly} disableDrag={actuallyDisableDrag} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={handleManualStatusChange} recentlyMovedId={recentlyMovedId} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} />
+                    <KanbanColumn id="IN_PROGRESS" title="In Progress" tasks={columns.IN_PROGRESS} isReadOnly={isReadOnly} disableDrag={actuallyDisableDrag} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={handleManualStatusChange} recentlyMovedId={recentlyMovedId} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} />
+                    <KanbanColumn id="IN_REVIEW" title="In Review" tasks={columns.IN_REVIEW} isReadOnly={isReadOnly} disableDrag={actuallyDisableDrag} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={handleManualStatusChange} recentlyMovedId={recentlyMovedId} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} />
+                    <KanbanColumn id="COMPLETED" title="Completed" tasks={columns.COMPLETED} isReadOnly={isReadOnly} disableDrag={actuallyDisableDrag} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={handleManualStatusChange} recentlyMovedId={recentlyMovedId} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} />
+                </div>
+
+                {/* Mobile Navigation Bar */}
+                {isMobile && (
+                    <div className="shrink-0 flex items-center justify-between gap-2 px-2 py-2 bg-card/80 backdrop-blur-md border-t border-border rounded-b-xl">
+                        {/* Left Arrow */}
+                        <button
+                            onClick={goLeft}
+                            disabled={activeColumnIndex === 0}
+                            className={`p-2 rounded-xl transition-all ${activeColumnIndex === 0 ? 'opacity-20 cursor-not-allowed' : 'bg-secondary/60 hover:bg-secondary active:scale-90 text-foreground shadow-md'}`}
+                        >
+                            <ChevronLeft className="w-5 h-5" />
+                        </button>
+
+                        {/* Column Indicator Dots + Label */}
+                        <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+                            <span className="text-[10px] font-black Montserrat uppercase tracking-widest truncate" style={{ color: COLUMN_COLORS[COLUMN_IDS[activeColumnIndex]] }}>
+                                {COLUMN_LABELS[COLUMN_IDS[activeColumnIndex]]}
+                            </span>
+                            <div className="flex items-center gap-2">
+                                {COLUMN_IDS.map((colId, i) => (
+                                    <button
+                                        key={colId}
+                                        onClick={() => scrollToColumn(i)}
+                                        className="p-0.5 transition-all"
+                                    >
+                                        <div
+                                            className={`rounded-full transition-all duration-300 ${i === activeColumnIndex ? 'w-5 h-2' : 'w-2 h-2 opacity-40'}`}
+                                            style={{ backgroundColor: COLUMN_COLORS[colId] }}
+                                        />
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Right Arrow */}
+                        <button
+                            onClick={goRight}
+                            disabled={activeColumnIndex === 3}
+                            className={`p-2 rounded-xl transition-all ${activeColumnIndex === 3 ? 'opacity-20 cursor-not-allowed' : 'bg-secondary/60 hover:bg-secondary active:scale-90 text-foreground shadow-md'}`}
+                        >
+                            <ChevronRight className="w-5 h-5" />
+                        </button>
+                    </div>
+                )}
             </div>
 
             {createPortal(
                 <DragOverlay>
-                    {activeTask ? <KanbanCard task={activeTask} isReadOnly={isReadOnly} disableDrag={isReadOnly || !canMoveCards} /> : null}
+                    {activeTask ? <KanbanCard task={activeTask} isReadOnly={isReadOnly} disableDrag={actuallyDisableDrag} /> : null}
                 </DragOverlay>,
                 document.body
             )}

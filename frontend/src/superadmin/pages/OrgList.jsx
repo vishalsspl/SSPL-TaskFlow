@@ -122,7 +122,7 @@ const OrgList = () => {
   };
 
   const provisionOrg = async () => {
-    if (!newOrg.name || !newOrg.adminName || !newOrg.adminEmail || !newOrg.adminPassword) {
+    if (!newOrg.name || !newOrg.industry || !newOrg.size || !newOrg.website || !newOrg.country || !newOrg.plan || !newOrg.adminName || !newOrg.adminEmail || !newOrg.adminPassword) {
       toast({ title: 'Missing fields', description: 'Please fill in all required fields', variant: 'destructive' });
       return;
     }
@@ -133,10 +133,10 @@ const OrgList = () => {
         email: newOrg.adminEmail,
         password: newOrg.adminPassword,
         organizationName: newOrg.name,
-        industry: newOrg.industry || undefined,
-        size: newOrg.size || undefined,
-        website: newOrg.website || undefined,
-        country: newOrg.country || undefined,
+        industry: newOrg.industry,
+        size: newOrg.size,
+        website: newOrg.website,
+        country: newOrg.country,
         timezone: newOrg.timezone || 'Asia/Kolkata',
       });
       if (newOrg.plan !== 'FREE') {
@@ -239,6 +239,13 @@ const OrgList = () => {
 
   // ── Render ────────────────────────────────────────────────────────────
 
+  const handleCreateOpenChange = (open) => {
+    setCreateOpen(open);
+    if (!open) {
+      setNewOrg({ name: '', industry: '', size: '', website: '', country: '', timezone: 'Asia/Kolkata', plan: 'FREE', adminName: '', adminEmail: '', adminPassword: '' });
+    }
+  };
+
   return (
     <div className="flex-1 flex flex-col min-h-screen lg:min-h-0 p-0 pt-0 gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
       <Card className="flex-1 flex flex-col min-h-0 border-none sm:border shadow-none sm:shadow-sm">
@@ -326,7 +333,7 @@ const OrgList = () => {
         saving={saving} 
         globalTiers={globalTiers}
       />
-      <OrgCreateDialog open={createOpen} onOpenChange={setCreateOpen} newOrg={newOrg} setNewOrg={setNewOrg} onProvision={provisionOrg} saving={saving} />
+      <OrgCreateDialog open={createOpen} onOpenChange={handleCreateOpenChange} newOrg={newOrg} setNewOrg={setNewOrg} onProvision={provisionOrg} saving={saving} />
       <DeleteConfirmDialog
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}

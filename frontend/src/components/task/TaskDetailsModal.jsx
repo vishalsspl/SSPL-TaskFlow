@@ -48,13 +48,13 @@ const TaskDetailsModal = ({ open, onOpenChange, task, canEdit, onEditClick }) =>
                                 </Badge>
                             </div>
                             
-                            <div className="flex justify-between items-start gap-4">
-                                <DialogTitle className="text-2xl sm:text-3xl font-black Montserrat leading-tight tracking-tight text-foreground">
+                            <div className="flex justify-between items-start gap-3 sm:gap-4">
+                                <DialogTitle className="text-xl sm:text-3xl font-black Montserrat leading-tight tracking-tight text-foreground break-words overflow-hidden">
                                     {task.title}
                                 </DialogTitle>
                                 {canEdit && onEditClick && (
-                                    <Button onClick={onEditClick} variant="outline" size="sm" className="shrink-0 rounded-xl bg-background hover:bg-secondary/50 transition-colors shadow-sm">
-                                        <Edit className="w-4 h-4 mr-2" /> Edit Task
+                                    <Button onClick={onEditClick} variant="outline" size="sm" className="shrink-0 rounded-xl bg-background hover:bg-secondary/50 transition-colors shadow-sm h-8 sm:h-9 px-2 sm:px-3">
+                                        <Edit className="w-4 h-4 sm:mr-2" /> <span className="hidden sm:inline">Edit Task</span>
                                     </Button>
                                 )}
                             </div>
@@ -72,21 +72,21 @@ const TaskDetailsModal = ({ open, onOpenChange, task, canEdit, onEditClick }) =>
                         )}
 
                         {/* 2. Meta Info Row (Notion/Linear style) */}
-                        <div className="flex flex-wrap items-center gap-4 sm:gap-6 p-4 sm:p-5 bg-secondary/30 rounded-2xl border border-border/50">
+                        <div className="grid grid-cols-2 md:flex md:flex-wrap items-start md:items-center gap-4 sm:gap-6 p-4 sm:p-5 bg-secondary/30 rounded-2xl border border-border/50">
                             
                             {/* Project */}
                             <div className="flex flex-col gap-1.5">
                                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest Montserrat">Project</span>
-                                <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                                    <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center">
+                                <div className="flex items-center gap-2 text-sm font-semibold text-foreground overflow-hidden">
+                                    <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
                                         <Layers className="w-3 h-3 text-primary" />
                                     </div>
-                                    {task.project?.name || 'No Project'}
+                                    <span className="truncate">{task.project?.name || 'No Project'}</span>
                                 </div>
                             </div>
 
                             {/* Assignees */}
-                            <div className="flex flex-col gap-1.5 border-l border-border/50 pl-6">
+                            <div className="flex flex-col gap-1.5 md:border-l md:border-border/50 md:pl-6">
                                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest Montserrat">Assignees</span>
                                 <div className="flex items-center">
                                     {task.assignees && task.assignees.length > 0 ? (
@@ -113,7 +113,7 @@ const TaskDetailsModal = ({ open, onOpenChange, task, canEdit, onEditClick }) =>
 
                             {/* Due Date */}
                             {task.dueDate && (
-                                <div className="flex flex-col gap-1.5 border-l border-border/50 pl-6">
+                                <div className="flex flex-col gap-1.5 md:border-l md:border-border/50 md:pl-6">
                                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest Montserrat">Due Date</span>
                                     <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                                         <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
@@ -124,7 +124,7 @@ const TaskDetailsModal = ({ open, onOpenChange, task, canEdit, onEditClick }) =>
 
                             {/* Story Points */}
                             {task.storyPoints > 0 && (
-                                <div className="flex flex-col gap-1.5 border-l border-border/50 pl-6">
+                                <div className="flex flex-col gap-1.5 md:border-l md:border-border/50 md:pl-6">
                                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest Montserrat">Points</span>
                                     <div className="flex items-center">
                                         <span className="text-sm font-black text-primary bg-primary/10 px-2 py-0.5 rounded-md">

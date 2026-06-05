@@ -271,7 +271,7 @@ const Signup = () => {
         variant="ghost"
         size="icon"
         className={cn(
-          "fixed top-8 left-8 z-50 rounded-full border backdrop-blur-md transition-all group w-12 h-12",
+          "fixed top-3 left-3 sm:top-8 sm:left-8 z-50 rounded-full border backdrop-blur-md transition-all group w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center",
           isDarkMode ? "text-white/50 hover:text-white hover:bg-white/10 border-white/5" : "text-slate-400 hover:text-slate-900 bg-white border-slate-200 shadow-sm"
         )}
         onClick={() => (step === 0 ? navigate('/') : setStep(0))}

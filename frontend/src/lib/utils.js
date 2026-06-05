@@ -65,6 +65,7 @@ export const statusColors = {
   IN_PROGRESS: 'bg-[#00A3FF]/10 text-[#00A3FF] border border-[#00A3FF]/20 Montserrat font-bold',
   IN_REVIEW: 'bg-purple-500/10 text-purple-400 border border-purple-500/20 Montserrat font-bold',
   COMPLETED: 'bg-[#48A111]/10 text-[#48A111] border border-[#48A111]/20 Montserrat font-bold',
+  BLOCKED: 'bg-[#F43F5E]/10 text-[#F43F5E] border border-[#F43F5E]/20 Montserrat font-bold',
 };
 
 export const taskTypeColors = {

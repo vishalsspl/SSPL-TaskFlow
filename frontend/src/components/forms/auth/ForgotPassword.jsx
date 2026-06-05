@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, CheckCircle, ArrowLeft, Mail } from 'lucide-react';
+import logoImg from '@/assets/logo1.png';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -46,17 +47,7 @@ const ForgotPassword = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center pb-4">
           <div className="flex flex-col items-center justify-center mb-4 space-y-3">
-            {orgInfo && (
-              <>
-                {orgInfo.logoUrl ? (
-                  <img src={orgInfo.logoUrl} alt="Logo" className="h-20 w-auto object-contain" />
-                ) : (
-                  <div className="w-20 h-20 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-4xl">
-                    {orgInfo.name?.charAt(0) || 'T'}
-                  </div>
-                )}
-              </>
-            )}
+            <img src={logoImg} alt="TaskFlow Logo" className="h-24 w-auto object-contain drop-shadow-md" />
           </div>
           <CardTitle className="text-2xl">Forgot Password</CardTitle>
           {!success && (

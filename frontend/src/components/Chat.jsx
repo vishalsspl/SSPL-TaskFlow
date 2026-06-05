@@ -432,14 +432,14 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = 
 
     return (
         <div className="flex flex-col h-full bg-card rounded-xl border border-border overflow-hidden shadow-2xl">
-            <div className="p-4 border-b border-border bg-secondary/20 flex items-center justify-between">
+            <div className="p-4 border-b border-border bg-secondary/20 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-3 min-w-0">
                     {onBack && (
                         <Button
                             variant="ghost"
                             size="sm"
                             onClick={onBack}
-                            className="h-8 gap-1.5 text-muted-foreground hover:text-foreground hover:bg-white/5 rounded-lg shrink-0 px-2"
+                            className="sm:hidden h-8 gap-1.5 text-muted-foreground hover:text-foreground hover:bg-white/5 rounded-lg shrink-0 px-2"
                         >
                             <ChevronLeft className="w-4 h-4" />
                             <span className="text-xs font-bold Montserrat">Back</span>
@@ -459,7 +459,7 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = 
                 )}
             </div>
 
-            <ScrollArea className="flex-1 p-4">
+            <div className="flex-1 p-4 overflow-y-auto min-h-0 touch-pan-y" style={{ WebkitOverflowScrolling: 'touch' }}>
                 <div className="space-y-4">
                     {messages.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full py-20 text-center">
@@ -627,9 +627,9 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = 
                     )}
                     <div ref={messagesEndRef} />
                 </div>
-            </ScrollArea>
+            </div>
 
-            <form onSubmit={handleSendMessage} className="relative p-4 bg-secondary/20 border-t border-border flex flex-col gap-2">
+            <form onSubmit={handleSendMessage} className="relative p-4 bg-secondary/20 border-t border-border flex flex-col gap-2 shrink-0">
                 {/* Reply Preview */}
                 {replyingTo && (
                     <div className="flex items-center justify-between p-3 bg-primary/10 rounded-2xl border-2 border-primary/30 mb-2 animate-in fade-in zoom-in-95 slide-in-from-bottom-4 duration-300 backdrop-blur-md">

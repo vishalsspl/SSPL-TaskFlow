@@ -797,6 +797,7 @@ export const changePassword = async (req, res) => {
   const userId = req.user.id;
 
   if (!currentPassword || !newPassword) return res.status(400).json({ error: 'Current and new password required' });
+  if (currentPassword === newPassword) return res.status(400).json({ error: 'New password cannot be the same as the current password' });
   if (newPassword.length < 6) return res.status(400).json({ error: 'New password must be at least 6 characters' });
 
   // Verify against MAIN DB

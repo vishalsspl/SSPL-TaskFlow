@@ -53,10 +53,18 @@ const TaskKanban = () => {
     const [showRejectDialog, setShowRejectDialog] = useState(false);
 
     const [managerFilter, setManagerFilter] = useState('all');
+    const [isMobile, setIsMobile] = useState(false);
 
     const isReadOnly = user?.role === 'CLIENT';
     const navigate = useNavigate();
     const location = useLocation();
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 768);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     useEffect(() => {
         const params = new URLSearchParams(location.search);
@@ -95,9 +103,9 @@ const TaskKanban = () => {
         if (!selectedProjectId) {
             setHeader("Task Kanban", "Select a project to view its Kanban board", true, "Search projects...");
         } else {
-            setHeader("Task Kanban", "Orchestrate tasks with drag-and-drop", true, "Find tasks...");
+            setHeader("Task Kanban", isMobile ? "Use 3-dots menu to change status" : "Orchestrate tasks with drag-and-drop", true, "Find tasks...");
         }
-    }, [selectedProjectId, setHeader]);
+    }, [selectedProjectId, setHeader, isMobile]);
 
     const fetchData = async () => {
         try {
@@ -335,7 +343,7 @@ const TaskKanban = () => {
 
     return (
         <div className="p-2 sm:p-4 h-full flex flex-col bg-background no-scrollbar overflow-hidden">
-            <div className="flex flex-col gap-2 sm:gap-3 mb-2 sm:mb-3">
+            <div className="flex flex-col gap-2 sm:gap-3 mb-2 sm:mb-3 shrink-0">
                 <div className="flex flex-col gap-2 sm:gap-3">
                         <div className="flex items-center gap-2">
                             {projects.length > 1 && (
@@ -352,12 +360,12 @@ const TaskKanban = () => {
                                 {projects.find(p => p.id === selectedProjectId)?.name || 'Project Kanban'}
                             </h1>
                         </div>
-                        <p className="mt-1 sm:mt-2 text-[9px] sm:text-[10px] text-gray-500 font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] Montserrat flex items-center gap-1.5 sm:gap-2">
-                            <Layers className="w-2.5 h-2.5 sm:w-3 h-3 text-primary shrink-0" />
+                        <p className="mt-1 sm:mt-2 ml-1.5 sm:ml-0 text-[9px] sm:text-[10px] text-gray-500 font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] Montserrat flex items-center gap-1.5 sm:gap-2">
+                            <Layers className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-primary shrink-0" />
                             <span className="truncate">
                                 {isReadOnly
                                     ? 'View-only access to progress'
-                                    : 'Orchestrate tasks with drag-and-drop'}
+                                    : (isMobile ? 'Use 3-dots menu to change status' : 'Orchestrate tasks with drag-and-drop')}
                             </span>
                         </p>
                     </div>
@@ -406,7 +414,7 @@ const TaskKanban = () => {
                     </div>
                 </div>
 
-            <div className="flex-1 overflow-hidden rounded-xl sm:rounded-3xl bg-card/50 border border-border p-1.5 sm:p-3 md:p-4 glass">
+            <div className="flex-1 min-h-0 rounded-xl sm:rounded-3xl bg-card/50 border border-border p-1.5 sm:p-3 md:p-4 glass flex flex-col overflow-hidden">
                 <KanbanBoard
                     tasks={filteredTasks}
                     onTaskUpdate={async (taskId, newStatus) => {

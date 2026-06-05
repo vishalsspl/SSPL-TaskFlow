@@ -24,7 +24,7 @@ const OrgEditDialog = ({ editOrg, setEditOrg, onSave, saving, globalTiers }) => 
 
   return (
     <Dialog open={!!editOrg} onOpenChange={(open) => !open && setEditOrg(null)}>
-      <DialogContent className="rounded-xl max-w-2xl p-0 border border-border/40 shadow-2xl backdrop-blur-2xl bg-white/95 dark:bg-black/95 overflow-hidden">
+      <DialogContent className="rounded-xl max-w-2xl p-0 border border-border/40 shadow-2xl backdrop-blur-2xl bg-white/95 dark:bg-black/95 overflow-hidden max-h-[90vh] sm:max-h-[85vh] flex flex-col">
         <DialogHeader className="p-8 pb-4">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center shadow-inner">
@@ -39,7 +39,7 @@ const OrgEditDialog = ({ editOrg, setEditOrg, onSave, saving, globalTiers }) => 
           </div>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[70vh]">
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
           <div className="p-8 pt-4 space-y-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {/* Status */}
@@ -232,7 +232,7 @@ const OrgEditDialog = ({ editOrg, setEditOrg, onSave, saving, globalTiers }) => 
               </div>
             )}
           </div>
-        </ScrollArea>
+        </div>
 
         <DialogFooter className="p-8 pt-6 flex sm:justify-between items-center gap-4 border-t border-border/10">
           <Button variant="ghost" className="rounded-lg font-semibold text-xs tracking-widest h-12 px-6" onClick={() => setEditOrg(null)}>

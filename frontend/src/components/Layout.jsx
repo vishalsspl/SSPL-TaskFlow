@@ -487,7 +487,7 @@ const Layout = () => {
         <GlobalTimer />
 
         {/* Main content */}
-        <main className={`flex-1 overflow-y-auto ${location.pathname === '/task-board' ? 'p-0' : 'px-3 py-3 sm:px-4 sm:py-4 lg:p-6'} transition-all duration-300`}>
+        <main className={`flex-1 ${location.pathname === '/task-board' || location.pathname === '/chat' ? 'overflow-hidden p-0' : 'overflow-y-auto px-3 py-3 sm:px-4 sm:py-4 lg:p-6'} transition-all duration-300`}>
           <Outlet />
         </main>
       </div>

@@ -306,11 +306,20 @@ const Timesheets = () => {
     const handleToday = () => setCurrentDate(new Date());
 
     const handleLogHours = async () => {
-        if (loggingMode !== 'leave' && (!newEntry.projectId || (!newEntry.taskId && !editingEntryId) || !newEntry.date)) {
+        if (!newEntry.date) {
             toast({
                 variant: "destructive",
                 title: "Validation Error",
-                description: "Please select a project, a task, and a log date."
+                description: "Please select a log date."
+            });
+            return;
+        }
+
+        if (loggingMode !== 'leave' && (!newEntry.projectId || (!newEntry.taskId && !editingEntryId))) {
+            toast({
+                variant: "destructive",
+                title: "Validation Error",
+                description: "Please select a project and a task."
             });
             return;
         }
@@ -1597,7 +1606,7 @@ const Timesheets = () => {
                         <div className="space-y-2">
                             <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Description</Label>
                             <Input
-                                placeholder={loggingMode === 'leave' ? 'Reason for leave (optional)...' : 'Briefly describe what you worked on...'}
+                                placeholder={loggingMode === 'leave' ? 'Reason for leave (optional)...' : 'Briefly describe what you worked on... (Optional)'}
                                 value={newEntry.description}
                                 onChange={(e) => setNewEntry({ ...newEntry, description: e.target.value })}
                                 className="bg-muted/30 border-border rounded-xl font-medium h-11 pb-2"

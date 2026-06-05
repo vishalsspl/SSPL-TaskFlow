@@ -15,6 +15,7 @@ import {
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
+    DropdownMenuPortal,
 } from '@/components/ui/dropdown-menu';
 
 const STATUS_OPTIONS = [
@@ -81,7 +82,7 @@ const KanbanCard = ({ task, isReadOnly, disableDrag, onEdit, onCardClick, onDele
     }
 
     return (
-        <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="mb-3 touch-none group w-full max-w-[550px] sm:max-w-none mx-auto px-2 sm:px-0">
+        <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="mb-3 group w-full max-w-[550px] sm:max-w-none mx-auto px-2 sm:px-0">
             <Card
                 className={`bg-card/60 backdrop-blur-sm border ${disableDrag ? '' : 'cursor-grab active:cursor-grabbing'} hover:border-primary/40 hover:bg-accent/50 transition-all duration-300 rounded-xl sm:rounded-2xl overflow-hidden shadow-xl ${highlightClasses}`}
                 onClick={() => onCardClick && onCardClick(task)}
@@ -118,34 +119,45 @@ const KanbanCard = ({ task, isReadOnly, disableDrag, onEdit, onCardClick, onDele
                                             <MoreVertical className="w-4 h-4" />
                                         </button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-48 bg-card border-border text-foreground">
+                                    <DropdownMenuContent 
+                                        align="end" 
+                                        className="w-40 sm:w-48 bg-card border-border text-foreground"
+                                        onClick={(e) => e.stopPropagation()}
+                                        onPointerDown={(e) => e.stopPropagation()}
+                                    >
                                         {(onEdit && canEditTask) && (
                                             <DropdownMenuItem
                                                 onClick={(e) => { e.stopPropagation(); onEdit(task); }}
-                                                className="cursor-pointer"
+                                                className="cursor-pointer text-xs sm:text-sm py-2 sm:py-1.5"
                                             >
-                                                <Pencil className="w-4 h-4 mr-2" />
+                                                <Pencil className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />
                                                 Edit Task
                                             </DropdownMenuItem>
                                         )}
                                         {onStatusChange && !(user?.role === 'MEMBER' && task.status === 'COMPLETED') && (
                                             <DropdownMenuSub>
-                                                <DropdownMenuSubTrigger className="cursor-pointer">
-                                                    <ArrowRightLeft className="w-4 h-4 mr-2" />
+                                                <DropdownMenuSubTrigger 
+                                                    className="cursor-pointer text-xs sm:text-sm py-2 sm:py-1.5"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    onPointerDown={(e) => e.stopPropagation()}
+                                                >
+                                                    <ArrowRightLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />
                                                     Change Status
                                                 </DropdownMenuSubTrigger>
-                                                <DropdownMenuSubContent className="bg-card border-border text-foreground">
-                                                    {STATUS_OPTIONS.filter(s => s.value !== task.status && !(user?.role === 'MEMBER' && s.value === 'COMPLETED')).map((status) => (
-                                                        <DropdownMenuItem
-                                                            key={status.value}
-                                                            onClick={(e) => { e.stopPropagation(); onStatusChange(task.id, status.value); }}
-                                                            className="cursor-pointer"
-                                                        >
-                                                            <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: status.color }} />
-                                                            {status.label}
-                                                        </DropdownMenuItem>
-                                                    ))}
-                                                </DropdownMenuSubContent>
+                                                <DropdownMenuPortal>
+                                                    <DropdownMenuSubContent className="w-36 sm:w-40 bg-card border-border text-foreground">
+                                                        {STATUS_OPTIONS.filter(s => s.value !== task.status && !(user?.role === 'MEMBER' && s.value === 'COMPLETED')).map((status) => (
+                                                            <DropdownMenuItem
+                                                                key={status.value}
+                                                                onClick={(e) => { e.stopPropagation(); onStatusChange(task.id, status.value); }}
+                                                                className="cursor-pointer text-xs sm:text-sm py-2 sm:py-1.5"
+                                                            >
+                                                                <div className="w-2 h-2 rounded-full mr-2" style={{ backgroundColor: status.color }} />
+                                                                {status.label}
+                                                            </DropdownMenuItem>
+                                                        ))}
+                                                    </DropdownMenuSubContent>
+                                                </DropdownMenuPortal>
                                             </DropdownMenuSub>
                                         )}
 
@@ -153,9 +165,9 @@ const KanbanCard = ({ task, isReadOnly, disableDrag, onEdit, onCardClick, onDele
                                             <>
                                                 <DropdownMenuItem
                                                     onClick={(e) => { e.stopPropagation(); onDelete(task.id); }}
-                                                    className="text-destructive focus:text-destructive cursor-pointer"
+                                                    className="text-destructive focus:text-destructive cursor-pointer text-xs sm:text-sm py-2 sm:py-1.5"
                                                 >
-                                                    <Trash2 className="w-4 h-4 mr-2" />
+                                                    <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-2" />
                                                     Delete Task
                                                 </DropdownMenuItem>
                                             </>

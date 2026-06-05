@@ -34,7 +34,7 @@ const OrgCreateDialog = ({ open, onOpenChange, newOrg, setNewOrg, onProvision, s
                   value={newOrg.name} onChange={e => setNewOrg(p => ({ ...p, name: e.target.value }))} />
               </div>
               <div className="space-y-2 flex flex-col">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-foreground/70 ml-1">Plan</Label>
+                <Label className="text-[10px] font-bold uppercase tracking-widest text-foreground/70 ml-1">Plan *</Label>
                 <Select value={newOrg.plan} onValueChange={v => setNewOrg(p => ({ ...p, plan: v }))}>
                   <SelectTrigger className="w-full px-4 h-11 rounded-xl border-border bg-background text-sm font-medium outline-none text-left">
                     <SelectValue />
@@ -50,7 +50,7 @@ const OrgCreateDialog = ({ open, onOpenChange, newOrg, setNewOrg, onProvision, s
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2 flex flex-col">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-foreground/70 ml-1">Industry</Label>
+                <Label className="text-[10px] font-bold uppercase tracking-widest text-foreground/70 ml-1">Industry *</Label>
                 <Select value={newOrg.industry} onValueChange={v => setNewOrg(p => ({ ...p, industry: v }))}>
                   <SelectTrigger className="w-full px-4 h-11 rounded-xl border-border bg-background text-sm font-medium outline-none text-left">
                     <SelectValue placeholder="Select Industry" />
@@ -63,7 +63,7 @@ const OrgCreateDialog = ({ open, onOpenChange, newOrg, setNewOrg, onProvision, s
                 </Select>
               </div>
               <div className="space-y-2 flex flex-col">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-foreground/70 ml-1">Company Size</Label>
+                <Label className="text-[10px] font-bold uppercase tracking-widest text-foreground/70 ml-1">Company Size *</Label>
                 <Select value={newOrg.size} onValueChange={v => setNewOrg(p => ({ ...p, size: v }))}>
                   <SelectTrigger className="w-full px-4 h-11 rounded-xl border-border bg-background text-sm font-medium outline-none text-left">
                     <SelectValue placeholder="Select Size" />
@@ -79,12 +79,12 @@ const OrgCreateDialog = ({ open, onOpenChange, newOrg, setNewOrg, onProvision, s
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2 flex flex-col">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-foreground/70 ml-1">Website</Label>
+                <Label className="text-[10px] font-bold uppercase tracking-widest text-foreground/70 ml-1">Website *</Label>
                 <Input placeholder="https://company.com" className="h-11 px-4 rounded-xl bg-background border-border font-medium text-sm"
                   value={newOrg.website} onChange={e => setNewOrg(p => ({ ...p, website: e.target.value }))} />
               </div>
               <div className="space-y-2 flex flex-col">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-foreground/70 ml-1">Country</Label>
+                <Label className="text-[10px] font-bold uppercase tracking-widest text-foreground/70 ml-1">Country *</Label>
                 <Select value={newOrg.country} onValueChange={v => setNewOrg(p => ({ ...p, country: v }))}>
                   <SelectTrigger className="w-full px-4 h-11 rounded-xl border-border bg-background text-sm font-medium outline-none text-left">
                     <SelectValue placeholder="Select Country" />
@@ -110,19 +110,19 @@ const OrgCreateDialog = ({ open, onOpenChange, newOrg, setNewOrg, onProvision, s
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-bold uppercase tracking-widest text-foreground/70 ml-1">Admin Name</Label>
+                  <Label className="text-[10px] font-bold uppercase tracking-widest text-foreground/70 ml-1">Admin Name *</Label>
                   <Input placeholder="Enter admin name" className="h-11 px-4 rounded-xl bg-background border-border font-medium text-sm"
                     value={newOrg.adminName} onChange={e => setNewOrg(p => ({ ...p, adminName: e.target.value }))} />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-bold uppercase tracking-widest text-foreground/70 ml-1">Admin Email</Label>
+                  <Label className="text-[10px] font-bold uppercase tracking-widest text-foreground/70 ml-1">Admin Email *</Label>
                   <Input placeholder="admin@domain.io" type="email" className="h-11 px-4 rounded-xl bg-background border-border font-medium text-sm"
                     value={newOrg.adminEmail} onChange={e => setNewOrg(p => ({ ...p, adminEmail: e.target.value }))} />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-foreground/70 ml-1">Password</Label>
+                <Label className="text-[10px] font-bold uppercase tracking-widest text-foreground/70 ml-1">Password *</Label>
                 <Input placeholder="••••••••" type="password" className="h-11 px-4 rounded-xl bg-background border-border font-medium text-sm font-mono"
                   value={newOrg.adminPassword} onChange={e => setNewOrg(p => ({ ...p, adminPassword: e.target.value }))} />
               </div>

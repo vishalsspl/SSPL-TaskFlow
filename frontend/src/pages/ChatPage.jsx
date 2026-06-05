@@ -23,7 +23,7 @@ const ChatPage = () => {
     const [rooms, setRooms] = useState([]);
     const [activeRoom, setActiveRoomState] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [isListExpanded, setIsListExpanded] = useState(false);
+    const [mobileView, setMobileView] = useState('list'); // 'list' or 'chat'
     const [activeList, setActiveList] = useState('channels'); // 'channels' or 'dms'
     const { unreadCounts, setActiveRoom } = useChatStore();
     const { user } = useAuthStore();
@@ -77,7 +77,7 @@ const ChatPage = () => {
         const roomKey = room.isGlobal ? 'global' : room.id;
         setActiveRoomState(room);
         setActiveRoom(roomKey); // This clears unread count in the global store
-        setIsListExpanded(false); // Auto-collapse on mobile
+        setMobileView('chat'); // Switch to chat view on mobile
     };
 
     const fetchAvailableUsers = async () => {
@@ -143,36 +143,16 @@ const ChatPage = () => {
     }
 
     return (
-        <div className="h-[calc(100vh-4rem)] sm:h-[calc(100vh-8rem)] flex flex-col gap-3 sm:gap-6">
+        <div className="h-full flex flex-col gap-2 sm:gap-4 p-2 sm:p-4">
 
-            <div className="flex-1 min-h-0 flex flex-col sm:flex-row gap-3 sm:gap-6 overflow-hidden relative">
-                {/* Mobile Collapsed Header */}
-                {!isListExpanded && (
-                    <div className="sm:hidden flex items-center justify-between p-3.5 bg-gradient-to-r from-secondary/50 to-card rounded-2xl border border-primary/20 mt-1 cursor-pointer hover:border-primary/40 active:scale-[0.98] transition-all shadow-xl group" onClick={() => setIsListExpanded(true)}>
-                        <div className="flex items-center gap-3 min-w-0 flex-1">
-                            <div className="p-2.5 bg-primary/20 rounded-xl group-hover:bg-primary/30 transition-colors shrink-0">
-                                {activeRoom?.isGlobal ? <Hash className="w-4 h-4 text-primary" /> : <FolderKanban className="w-4 h-4 text-primary" />}
-                            </div>
-                            <div className="min-w-0 flex-1 pr-2">
-                                <p className="text-[9px] font-black Montserrat uppercase tracking-widest text-primary/80 mb-0.5">Current Project</p>
-                                <p className="font-bold text-[13px] text-foreground Montserrat whitespace-nowrap overflow-hidden text-ellipsis">{activeRoom?.name}</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                            <div className="p-1.5 rounded-full bg-background border border-border shadow-md group-hover:border-primary/50 transition-colors">
-                                <ChevronRight className="w-3.5 h-3.5 text-foreground group-hover:translate-x-0.5 transition-transform" />
-                            </div>
-                        </div>
-                    </div>
-                )}
+            <div className="flex-1 min-h-0 flex flex-col sm:flex-row gap-0 sm:gap-4 overflow-hidden relative">
 
-                {/* Room list — dropdown on mobile, vertical sidebar on sm+ */}
-                <div className={`${!isListExpanded ? 'hidden sm:flex' : 'flex absolute inset-x-0 sm:inset-auto top-[64px] sm:top-0 z-50 shadow-2xl sm:shadow-none'} sm:relative sm:w-[320px] flex-shrink-0 flex-col min-h-0 max-h-[65vh] sm:max-h-none overflow-hidden bg-card/95 backdrop-blur-xl sm:bg-card rounded-2xl border border-primary/20 sm:border-border sm:border-y-0 sm:border-r-0 transition-all`}>
+                {/* Room list — Full width on mobile when in 'list' view, fixed sidebar on desktop */}
+                <div className={`${mobileView === 'list' ? 'flex' : 'hidden'} sm:flex w-full sm:w-[320px] flex-shrink-0 flex-col min-h-0 bg-card rounded-2xl border border-border sm:border-y-0 sm:border-r-0 transition-all`}>
                     <ScrollArea className="flex-1 rounded-2xl w-full">
                         <div className="flex flex-col gap-1 p-3 sm:p-4 w-full overflow-hidden box-border">
                             <div className="flex items-center justify-between px-2 mb-3 sm:hidden">
-                                <span className="text-[10px] font-black Montserrat uppercase tracking-widest text-muted-foreground flex items-center gap-2"><FolderKanban className="w-3.5 h-3.5" /> Project Channels</span>
-                                <Button variant="ghost" size="icon" onClick={() => setIsListExpanded(false)} className="h-7 w-7 rounded-full bg-secondary/50 hover:bg-secondary"><X className="w-3.5 h-3.5" /></Button>
+                                <span className="text-[10px] font-black Montserrat uppercase tracking-widest text-muted-foreground flex items-center gap-2"><FolderKanban className="w-3.5 h-3.5" /> Chat Channels</span>
                             </div>
 
                             {/* TABS */}
@@ -321,13 +301,14 @@ const ChatPage = () => {
                     </ScrollArea>
                 </div>
 
-                <div className="flex-1 flex flex-col min-w-0">
+                <div className={`${mobileView === 'chat' ? 'flex' : 'hidden'} sm:flex flex-1 flex-col min-w-0 min-h-0`}>
                     {activeRoom && (
                         <Chat
                             key={activeRoom.id}
                             projectId={activeRoom.isGlobal ? null : activeRoom.id}
                             title={activeRoom.name}
                             isDM={activeRoom.isDM}
+                            onBack={() => setMobileView('list')}
                         />
                     )}
                 </div>

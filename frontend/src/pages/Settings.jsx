@@ -156,6 +156,10 @@ const Settings = () => {
       toast({ title: 'Password too short', description: 'New password must be at least 6 characters.', variant: 'destructive' });
       return;
     }
+    if (passwordData.newPassword === passwordData.currentPassword) {
+      toast({ title: 'Invalid Password', description: 'New password cannot be the same as the current password', variant: 'destructive' });
+      return;
+    }
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       toast({ title: 'Mismatch', description: 'New passwords do not match.', variant: 'destructive' });
       return;

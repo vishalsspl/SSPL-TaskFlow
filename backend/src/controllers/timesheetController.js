@@ -140,15 +140,52 @@ export const getTimeEntries = async (req, res) => {
 };
 
 export const createTimeEntry = async (req, res) => {
-    const { projectId, taskId, date, hours, description, billable = true } = req.body;
+    let { projectId, taskId, date, hours, description, billable = true } = req.body;
 
-    if (!projectId || !taskId || !date || !hours) {
+    const LEAVE_TAGS = ['[Sick Leave]', '[Casual Leave]', '[Paid Leave]', '[Unpaid Leave]'];
+    const isLeaveEntry = description && LEAVE_TAGS.some(tag => description.includes(tag));
+
+    if (!date || !hours) {
+        return res.status(400).json({ error: 'Date and hours are required' });
+    }
+
+    if (!isLeaveEntry && (!projectId || !taskId)) {
         return res.status(400).json({ error: 'Project, task, date, and hours are required' });
     }
 
-    // Allow future dates (up to 31 days) for leave entries only
-    const LEAVE_TAGS = ['[Sick Leave]', '[Casual Leave]', '[Paid Leave]', '[Unpaid Leave]'];
-    const isLeaveEntry = description && LEAVE_TAGS.some(tag => description.includes(tag));
+    if (isLeaveEntry) {
+        // Database schema requires projectId and taskId. We automatically assign leave logs to a system project.
+        let leaveProject = await req.db.project.findFirst({
+            where: { name: 'Leave Tracker', organizationId: req.user.organizationId }
+        });
+        if (!leaveProject) {
+            leaveProject = await req.db.project.create({
+                data: {
+                    name: 'Leave Tracker',
+                    description: 'System project for tracking leaves',
+                    category: 'INTERNAL',
+                    organizationId: req.user.organizationId
+                }
+            });
+        }
+
+        let leaveTask = await req.db.task.findFirst({
+            where: { projectId: leaveProject.id, title: 'Leave Log' }
+        });
+        if (!leaveTask) {
+            leaveTask = await req.db.task.create({
+                data: {
+                    title: 'Leave Log',
+                    projectId: leaveProject.id,
+                    type: 'TASK'
+                }
+            });
+        }
+
+        projectId = leaveProject.id;
+        taskId = leaveTask.id;
+    }
+
     const entryDate = new Date(date);
     const now = new Date();
 

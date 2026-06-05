@@ -36,6 +36,11 @@ const ChangePassword = () => {
             return;
         }
 
+        if (formData.newPassword === formData.currentPassword) {
+            toast({ title: "Invalid Password", description: "New password cannot be the same as the current password", variant: "destructive" });
+            return;
+        }
+
         setLoading(true);
         try {
             await api.post('/auth/change-password', {
