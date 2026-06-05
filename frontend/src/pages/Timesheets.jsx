@@ -731,43 +731,47 @@ const Timesheets = () => {
                     });
 
                     const leaveHours = leaveEntries.reduce((sum, e) => sum + parseFloat(e.hours), 0);
-                    const billableHours = workEntries.filter(e => e.billable).reduce((sum, e) => sum + parseFloat(e.hours), 0);
-                    const prodHours = workEntries.filter(e => !e.billable).reduce((sum, e) => sum + parseFloat(e.hours), 0);
-                    
-                    let nonProdHours = 0;
-                    const userWorkEntries = {};
-                    workEntries.forEach(e => {
-                        if (!userWorkEntries[e.userId]) userWorkEntries[e.userId] = [];
-                        userWorkEntries[e.userId].push(e);
+
+                    // --- Defect #25: Correct categorisation ---
+                    // Production  = all project work entries tied to a REAL project (not "General" / "Leave Tracker")
+                    // Non-Prod    = work entries tied to "General" project or with no project
+                    // Billable    = subset of production entries that are marked billable
+                    // Leave       = leave entries (already separated above)
+
+                    const productionEntries = workEntries.filter(e => {
+                        const projName = (e.project?.name || '').toLowerCase();
+                        return e.projectId && projName !== 'general' && projName !== 'leave tracker';
                     });
-                    
-                    Object.values(userWorkEntries).forEach(uEntries => {
-                        const uProd = uEntries.reduce((s, e) => s + parseFloat(e.hours), 0);
-                        let uNonProd = uEntries.reduce((s, e) => s + getNonProductiveHoursForEntry(e), 0);
-                        const hasDirect = uEntries.some(e => e.isManual && (!e.description || !e.description.includes('[')));
-                        if (hasDirect && orgShiftSettings?.startTime && orgShiftSettings?.endTime) {
-                            const tShift = calculateCustomHours(orgShiftSettings.startTime, orgShiftSettings.endTime).total;
-                            uNonProd = Math.max(0, tShift - uProd);
-                        }
-                        nonProdHours += uNonProd;
+                    const nonProductionEntries = workEntries.filter(e => {
+                        const projName = (e.project?.name || '').toLowerCase();
+                        return !e.projectId || projName === 'general' || projName === 'leave tracker';
                     });
-                    
-                    const totalDayHours = billableHours + prodHours + nonProdHours + leaveHours;
-                    return { day, billableHours, prodHours, nonProdHours, leaveHours, totalDayHours };
+
+                    const productionHours = productionEntries.reduce((sum, e) => sum + parseFloat(e.hours), 0);
+                    const nonProdHours = nonProductionEntries.reduce((sum, e) => sum + parseFloat(e.hours), 0);
+                    const billableHours = productionEntries.filter(e => e.billable).reduce((sum, e) => sum + parseFloat(e.hours), 0);
+
+                    // Total Worked = Production + Non-Production (excludes leave)
+                    const totalWorkedHours = productionHours + nonProdHours;
+                    // Total Day   = Worked + Leave
+                    const totalDayHours = totalWorkedHours + leaveHours;
+
+                    return { day, productionHours, nonProdHours, billableHours, leaveHours, totalWorkedHours, totalDayHours };
                 });
 
                 // Weekly totals
-                const weeklyBillable = weekData.reduce((s, d) => s + d.billableHours, 0);
-                const weeklyProd = weekData.reduce((s, d) => s + d.prodHours, 0);
+                const weeklyProduction = weekData.reduce((s, d) => s + d.productionHours, 0);
                 const weeklyNonProd = weekData.reduce((s, d) => s + d.nonProdHours, 0);
+                const weeklyBillable = weekData.reduce((s, d) => s + d.billableHours, 0);
                 const weeklyLeave = weekData.reduce((s, d) => s + d.leaveHours, 0);
-                const weeklyTotal = weeklyBillable + weeklyProd + weeklyNonProd + weeklyLeave;
+                const weeklyWorked = weekData.reduce((s, d) => s + d.totalWorkedHours, 0);
+                const weeklyTotal = weeklyWorked + weeklyLeave;
                 const pct = (v) => weeklyTotal > 0 ? Math.round((v / weeklyTotal) * 100) : 0;
 
                 return (
                     <>
                         <div className="flex sm:grid overflow-x-auto sm:overflow-visible pb-2 sm:pb-0 snap-x snap-mandatory sm:grid-cols-7 gap-2 sm:gap-3">
-                            {weekData.map(({ day, billableHours, prodHours, nonProdHours, leaveHours, totalDayHours }) => {
+                            {weekData.map(({ day, productionHours, nonProdHours, billableHours, leaveHours, totalWorkedHours, totalDayHours }) => {
                                 const isToday = isSameDay(day, new Date());
                                 const isSelected = selectedDateFilter && isSameDay(day, selectedDateFilter);
                                 const dayPct = (v) => totalDayHours > 0 ? Math.round((v / totalDayHours) * 100) : 0;
@@ -797,19 +801,19 @@ const Timesheets = () => {
                                         <CardContent className="relative z-10 p-1 sm:p-2 flex-1 flex flex-col justify-center">
                                             <div className="flex flex-col items-center justify-center">
                                                 <span className={`text-sm sm:text-lg font-black Montserrat ${hasAnyHours ? 'text-green-500' : 'text-muted-foreground opacity-30'}`}>
-                                                    {hasAnyHours ? totalDayHours.toFixed(1) : '0.0'}
+                                                    {hasAnyHours ? totalWorkedHours.toFixed(2) : '0.00'}
                                                 </span>
                                                 {hasAnyHours ? (
                                                     <div className="flex flex-col items-center mt-1 w-full space-y-0.5">
-                                                        {billableHours > 0 && <span className="text-[7px] sm:text-[9px] font-bold text-amber-500 uppercase">Bill: {billableHours.toFixed(1)}h ({dayPct(billableHours)}%)</span>}
-                                                        <span className="text-[7px] sm:text-[9px] font-bold text-green-500 uppercase">Prod: {prodHours.toFixed(1)}h ({dayPct(prodHours)}%)</span>
-                                                        <span className="text-[7px] sm:text-[9px] font-bold text-red-500 uppercase">Non: {nonProdHours.toFixed(1)}h ({dayPct(nonProdHours)}%)</span>
+                                                        <span className="text-[7px] sm:text-[9px] font-bold text-green-500 uppercase">Prod: {productionHours.toFixed(2)}h ({dayPct(productionHours)}%)</span>
+                                                        <span className="text-[7px] sm:text-[9px] font-bold text-red-500 uppercase">Non: {nonProdHours.toFixed(2)}h ({dayPct(nonProdHours)}%)</span>
                                                         {leaveHours > 0 && (
-                                                            <span className="text-[7px] sm:text-[9px] font-bold text-blue-500 uppercase">Leave: {leaveHours.toFixed(1)}h ({dayPct(leaveHours)}%)</span>
+                                                            <span className="text-[7px] sm:text-[9px] font-bold text-blue-500 uppercase">Leave: {leaveHours.toFixed(2)}h ({dayPct(leaveHours)}%)</span>
                                                         )}
+                                                        {billableHours > 0 && <span className="text-[7px] sm:text-[9px] font-bold text-amber-500 uppercase">Bill: {billableHours.toFixed(2)}h ({dayPct(billableHours)}%)</span>}
                                                     </div>
                                                 ) : (
-                                                    <span className="hidden sm:block text-[9px] font-bold text-muted-foreground uppercase mt-1">Total Hrs</span>
+                                                    <span className="hidden sm:block text-[9px] font-bold text-muted-foreground uppercase mt-1">Worked Hrs</span>
                                                 )}
                                             </div>
                                         </CardContent>
@@ -829,44 +833,43 @@ const Timesheets = () => {
                                             </div>
                                             <div>
                                                 <p className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-muted-foreground">Weekly Summary</p>
-                                                <p className="text-lg sm:text-xl font-black Montserrat text-foreground">{weeklyTotal.toFixed(1)} <span className="text-xs font-bold text-muted-foreground">Total Hours</span></p>
+                                                <p className="text-lg sm:text-xl font-black Montserrat text-foreground">{weeklyWorked.toFixed(2)} <span className="text-xs font-bold text-muted-foreground">Worked Hrs</span> <span className="text-sm text-muted-foreground/60">/ {weeklyTotal.toFixed(2)} Total</span></p>
                                             </div>
                                         </div>
                                         <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
-                                            <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/20 rounded-lg px-2.5 py-1.5 sm:px-3 sm:py-2">
-                                                <div className="h-2 w-2 rounded-full bg-amber-500"></div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-amber-600">Billable</span>
-                                                    <span className="text-xs sm:text-sm font-black Montserrat text-amber-600">{weeklyBillable.toFixed(1)}h <span className="text-[9px] font-bold">({pct(weeklyBillable)}%)</span></span>
-                                                </div>
-                                            </div>
                                             <div className="flex items-center gap-1.5 bg-green-500/10 border border-green-500/20 rounded-lg px-2.5 py-1.5 sm:px-3 sm:py-2">
                                                 <div className="h-2 w-2 rounded-full bg-green-500"></div>
                                                 <div className="flex flex-col">
-                                                    <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-green-600">Productive</span>
-                                                    <span className="text-xs sm:text-sm font-black Montserrat text-green-600">{weeklyProd.toFixed(1)}h <span className="text-[9px] font-bold">({pct(weeklyProd)}%)</span></span>
+                                                    <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-green-600">Production</span>
+                                                    <span className="text-xs sm:text-sm font-black Montserrat text-green-600">{weeklyProduction.toFixed(2)}h <span className="text-[9px] font-bold">({pct(weeklyProduction)}%)</span></span>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-1.5 bg-red-500/10 border border-red-500/20 rounded-lg px-2.5 py-1.5 sm:px-3 sm:py-2">
                                                 <div className="h-2 w-2 rounded-full bg-red-500"></div>
                                                 <div className="flex flex-col">
-                                                    <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-red-600">Non-Productive</span>
-                                                    <span className="text-xs sm:text-sm font-black Montserrat text-red-600">{weeklyNonProd.toFixed(1)}h <span className="text-[9px] font-bold">({pct(weeklyNonProd)}%)</span></span>
+                                                    <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-red-600">Non-Production</span>
+                                                    <span className="text-xs sm:text-sm font-black Montserrat text-red-600">{weeklyNonProd.toFixed(2)}h <span className="text-[9px] font-bold">({pct(weeklyNonProd)}%)</span></span>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-1.5 bg-blue-500/10 border border-blue-500/20 rounded-lg px-2.5 py-1.5 sm:px-3 sm:py-2">
                                                 <div className="h-2 w-2 rounded-full bg-blue-500"></div>
                                                 <div className="flex flex-col">
                                                     <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-blue-600">Leave</span>
-                                                    <span className="text-xs sm:text-sm font-black Montserrat text-blue-600">{weeklyLeave.toFixed(1)}h <span className="text-[9px] font-bold">({pct(weeklyLeave)}%)</span></span>
+                                                    <span className="text-xs sm:text-sm font-black Montserrat text-blue-600">{weeklyLeave.toFixed(2)}h <span className="text-[9px] font-bold">({pct(weeklyLeave)}%)</span></span>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/20 rounded-lg px-2.5 py-1.5 sm:px-3 sm:py-2">
+                                                <div className="h-2 w-2 rounded-full bg-amber-500"></div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-amber-600">Billable</span>
+                                                    <span className="text-xs sm:text-sm font-black Montserrat text-amber-600">{weeklyBillable.toFixed(2)}h <span className="text-[9px] font-bold">({pct(weeklyBillable)}%)</span></span>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                     {/* Progress bar */}
                                     <div className="mt-3 h-2.5 w-full rounded-full bg-muted/30 overflow-hidden flex">
-                                        {weeklyBillable > 0 && <div className="h-full bg-amber-500 transition-all duration-500" style={{ width: `${pct(weeklyBillable)}%` }}></div>}
-                                        {weeklyProd > 0 && <div className="h-full bg-green-500 transition-all duration-500" style={{ width: `${pct(weeklyProd)}%` }}></div>}
+                                        {weeklyProduction > 0 && <div className="h-full bg-green-500 transition-all duration-500" style={{ width: `${pct(weeklyProduction)}%` }}></div>}
                                         {weeklyNonProd > 0 && <div className="h-full bg-red-500 transition-all duration-500" style={{ width: `${pct(weeklyNonProd)}%` }}></div>}
                                         {weeklyLeave > 0 && <div className="h-full bg-blue-500 transition-all duration-500" style={{ width: `${pct(weeklyLeave)}%` }}></div>}
                                     </div>

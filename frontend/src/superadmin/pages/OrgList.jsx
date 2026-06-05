@@ -99,6 +99,7 @@ const OrgList = () => {
     setSaving(true);
     try {
       await api.put(`/superadmin/orgs/${editOrg.id}`, {
+        name: editOrg.name,
         plan: editOrg.plan,
         status: editOrg.status,
         maxUsers: Number(editOrg.maxUsers),

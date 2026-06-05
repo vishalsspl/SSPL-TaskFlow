@@ -45,11 +45,10 @@ const OrgEditDialog = ({ editOrg, setEditOrg, onSave, saving, globalTiers }) => 
             <div className="space-y-2">
               <Label className="text-xs font-medium ml-1 opacity-70">Organization Name</Label>
               <div className="relative">
-                <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/60 z-10" />
                 <Input
                   value={editOrg?.name || ''}
                   onChange={(e) => setEditOrg({ ...editOrg, name: e.target.value })}
-                  className="pl-11 h-12 bg-background/50 border-border/40 font-bold focus-visible:ring-primary/20 text-xs rounded-lg"
+                  className="px-4 h-12 bg-background/50 border-border/40 font-bold focus-visible:ring-primary/20 text-xs rounded-lg"
                   placeholder="Organization Name"
                 />
               </div>
