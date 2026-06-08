@@ -1240,8 +1240,8 @@ export const updateTaskStatus = async (req, res) => {
       }
     }
 
-    // Notify Manager for Approval if requested by Member
-    if (req.user.role === 'MEMBER') {
+    // Notify Manager for Approval if requested by Member AND it requires approval
+    if (req.user.role === 'MEMBER' && status === 'IN_REVIEW') {
       const approverTag = updatedTags.find(t => t.startsWith('APPROVER:'));
       let managerId = approverTag ? approverTag.split(':')[1] : existingTask.project?.managerId;
 

@@ -428,9 +428,9 @@ const Tasks = () => {
         </DialogContent>
       </Dialog>
 
-      <Card className="flex-1 flex flex-col min-h-0 border-none sm:border shadow-none sm:shadow-sm">
-        <CardContent className="flex-1 flex flex-col min-h-0 pt-2 sm:pt-4 px-1 sm:px-4">
-          <div className="bg-secondary/40 p-2 rounded-2xl mb-6 mt-4 shadow-inner backdrop-blur-sm" style={{ border: '1px solid var(--table-border)' }}>
+      {/* ─── Filter Toolbar ─── */}
+      <div className="flex-none px-0 sm:px-0">
+        <div className="bg-secondary/40 p-2 rounded-2xl mb-2 mt-4 shadow-inner backdrop-blur-sm" style={{ border: '1px solid var(--table-border)' }}>
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3">
               <div className="flex flex-row items-center gap-2 w-full xl:w-auto">
                 <Button
@@ -661,6 +661,11 @@ const Tasks = () => {
               </div>
             </div>
           </div>
+        </div>
+
+      {/* ─── Main Content Card ─── */}
+      <Card className="flex-1 flex flex-col min-h-0 border-none sm:border shadow-none sm:shadow-sm">
+        <CardContent className="flex-1 flex flex-col min-h-0 pt-0 sm:pt-4 px-1 sm:px-4">
           <div className="flex-1 overflow-y-auto min-h-0">
             {/* Desktop Table */}
             <div className="hidden sm:block">

@@ -107,9 +107,10 @@ const TicketList = () => {
 
     return (
         <div className="flex-1 flex flex-col h-full overflow-hidden gap-4">
-            <Card className="flex-1 flex flex-col min-h-0">
-                <CardContent className="flex-1 flex flex-col min-h-0 pt-6">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+            {/* ─── Filter Toolbar ─── */}
+            <div className="flex-none">
+                <div className="bg-secondary/40 px-2 py-2.5 sm:py-3 rounded-2xl shadow-inner backdrop-blur-sm" style={{ border: '1px solid var(--table-border)' }}>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div className="flex items-center justify-start">
                             {(user?.role === 'ADMIN' || user?.permissions?.['tickets.create']) && (
                                 <Button onClick={() => navigate('/tickets/new')}>
@@ -152,6 +153,12 @@ const TicketList = () => {
                             </Select>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            {/* ─── Main Content Card ─── */}
+            <Card className="flex-1 flex flex-col min-h-0 border-none sm:border shadow-none sm:shadow-sm">
+                <CardContent className="flex-1 flex flex-col min-h-0 pt-0 sm:pt-4 px-1 sm:px-4">
                     <div className="flex-1 overflow-y-auto min-h-0">
                         {/* Desktop Table */}
                         <div className="hidden sm:block">

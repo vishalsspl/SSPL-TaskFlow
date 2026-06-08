@@ -414,7 +414,8 @@ const Layout = () => {
                 <Input
                   type="search"
                   placeholder={searchPlaceholder}
-                  className="w-full h-10 pl-10 sm:pl-10 rounded-2xl bg-secondary/30 border-white/5 focus:bg-secondary/50 focus:border-primary/30 transition-all Montserrat text-sm shadow-inner"
+                  className="w-full h-10 pl-10 sm:pl-10 rounded-2xl bg-secondary/30 border hover:bg-secondary/50 focus:bg-secondary/50 transition-all Montserrat text-sm shadow-inner"
+                  style={{ borderColor: 'var(--input-border)' }}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />

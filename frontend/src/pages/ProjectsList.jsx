@@ -683,9 +683,9 @@ const ProjectsList = () => {
         </DialogContent>
       </Dialog>
 
-      <Card className="flex-1 flex flex-col min-h-0 border-none sm:border shadow-none sm:shadow-sm">
-        <CardContent className="flex-1 flex flex-col min-h-0 pt-2 sm:pt-4 px-2 sm:px-4">
-          <div className="bg-secondary/40 p-2 rounded-2xl mb-6 mt-4 shadow-inner backdrop-blur-sm" style={{ border: '1px solid var(--table-border)' }}>
+      {/* ─── Filter Toolbar ─── */}
+      <div className="flex-none px-0 sm:px-0">
+        <div className="bg-secondary/40 p-2 rounded-2xl mb-2 shadow-inner backdrop-blur-sm" style={{ border: '1px solid var(--table-border)' }}>
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
               <div className="flex flex-row items-center gap-2 sm:min-w-[40px] w-full lg:w-auto">
                 <Button
@@ -858,6 +858,11 @@ const ProjectsList = () => {
               </div>
             </div>
           </div>
+        </div>
+
+      {/* ─── Main Content Card ─── */}
+      <Card className="flex-1 flex flex-col min-h-0 border-none sm:border shadow-none sm:shadow-sm">
+        <CardContent className="flex-1 flex flex-col min-h-0 pt-0 sm:pt-4 px-2 sm:px-4">
           {filteredProjects.length === 0 ? (
             <div className="text-center py-12">
               <FolderKanban className="w-12 h-12 text-muted-foreground mx-auto mb-4" />

@@ -429,18 +429,7 @@ const Signup = () => {
                     </div>
                   </Field>
 
-                  {/* Org not found error */}
-                  {orgCheckError && (
-                    <div className={cn(
-                      "mt-3 p-3 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300 border",
-                      isDarkMode
-                        ? "bg-red-500/10 border-red-500/20 text-red-300"
-                        : "bg-red-50 border-red-200 text-red-600 shadow-sm"
-                    )}>
-                      <AlertCircle className={cn("w-5 h-5 shrink-0", isDarkMode ? "text-red-400" : "text-red-500")} />
-                      <p className="text-sm font-medium">{orgCheckError}</p>
-                    </div>
-                  )}
+
 
                 </div>
 

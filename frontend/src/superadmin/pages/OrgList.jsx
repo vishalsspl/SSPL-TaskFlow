@@ -127,6 +127,11 @@ const OrgList = () => {
       toast({ title: 'Missing fields', description: 'Please fill in all required fields', variant: 'destructive' });
       return;
     }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newOrg.adminEmail.trim())) {
+      toast({ title: 'Invalid Email', description: 'Please enter a valid email address.', variant: 'destructive' });
+      return;
+    }
     setSaving(true);
     try {
       await api.post('/auth/signup', {
