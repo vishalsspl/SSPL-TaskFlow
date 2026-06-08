@@ -430,12 +430,13 @@ const Tasks = () => {
 
       <Card className="flex-1 flex flex-col min-h-0 border-none sm:border shadow-none sm:shadow-sm">
         <CardContent className="flex-1 flex flex-col min-h-0 pt-2 sm:pt-4 px-1 sm:px-4">
-          <div className="bg-secondary/20 backdrop-blur-md p-2 rounded-2xl mb-6 mt-4 shadow-inner border border-white/5 shadow-xl">
+          <div className="bg-secondary/40 p-2 rounded-2xl mb-6 mt-4 shadow-inner backdrop-blur-sm" style={{ border: '1px solid var(--table-border)' }}>
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3">
               <div className="flex flex-row items-center gap-2 w-full xl:w-auto">
                 <Button
                   variant="outline"
-                  className={`h-10 w-10 p-0 md:hidden rounded-xl border-border/40 ${showFiltersMobile ? 'bg-primary/20 text-primary border-primary/30' : 'text-muted-foreground'}`}
+                  className={`h-10 w-10 p-0 md:hidden rounded-xl border ${showFiltersMobile ? 'bg-primary/20 text-primary border-primary/30' : 'text-muted-foreground'}`}
+                  style={!showFiltersMobile ? { borderColor: 'var(--input-border)' } : undefined}
                   onClick={() => setShowFiltersMobile(!showFiltersMobile)}
                 >
                   <Filter className="w-4 h-4" />
@@ -458,28 +459,32 @@ const Tasks = () => {
                     value={projectFilter}
                     onChange={(val) => setProjectFilter(val || 'all')}
                     placeholder="Project"
-                    className="w-full md:w-[140px] h-10 rounded-xl bg-background/50 border-border/40 hover:bg-background transition-all"
+                    className="w-full md:w-[140px] h-10 rounded-xl bg-background/50 border hover:bg-background transition-all"
+                    style={{ borderColor: 'var(--input-border)' }}
                   />
                   <SearchableSelect
                     options={managerOptions}
                     value={managerFilter}
                     onChange={setManagerFilter}
                     placeholder="Manager"
-                    className="w-full md:w-[140px] h-10 rounded-xl bg-background/50 border-border/40 hover:bg-background transition-all"
+                    className="w-full md:w-[140px] h-10 rounded-xl bg-background/50 border hover:bg-background transition-all"
+                    style={{ borderColor: 'var(--input-border)' }}
                   />
                   <SearchableSelect
                     options={priorityOptions}
                     value={priorityFilter}
                     onChange={setPriorityFilter}
                     placeholder="Priority"
-                    className="w-full md:w-[130px] h-10 rounded-xl bg-background/50 border-border/40 hover:bg-background transition-all"
+                    className="w-full md:w-[130px] h-10 rounded-xl bg-background/50 border hover:bg-background transition-all"
+                    style={{ borderColor: 'var(--input-border)' }}
                   />
                   <SearchableSelect
                     options={typeOptions}
                     value={typeFilter}
                     onChange={setTypeFilter}
                     placeholder="Type"
-                    className="w-full md:w-[130px] h-10 rounded-xl bg-background/50 border-border/40 hover:bg-background transition-all"
+                    className="w-full md:w-[130px] h-10 rounded-xl bg-background/50 border hover:bg-background transition-all"
+                    style={{ borderColor: 'var(--input-border)' }}
                   />
                   <SearchableSelect
                     value={filter}
@@ -492,13 +497,14 @@ const Tasks = () => {
                       { label: 'Completed', value: 'COMPLETED' }
                     ]}
                     placeholder="Status"
-                    className="w-full md:w-[130px] h-10 rounded-xl bg-background/50 border-border/40 hover:bg-background transition-all"
+                    className="w-full md:w-[130px] h-10 rounded-xl bg-background/50 border hover:bg-background transition-all"
+                    style={{ borderColor: 'var(--input-border)' }}
                   />
                   
                   {/* Advanced Filters */}
                   <Sheet>
                     <SheetTrigger asChild>
-                      <Button variant="outline" className="h-10 rounded-xl border-border/40 hover:bg-accent/20 font-semibold text-foreground/80 whitespace-nowrap">
+                      <Button variant="outline" className="h-10 rounded-xl border hover:bg-accent/20 font-semibold text-foreground/80 whitespace-nowrap" style={{ borderColor: 'var(--input-border)' }}>
                         <Filter className="w-4 h-4 mr-2" />
                         Advanced Filters
                         {(selectedProjectIds.length > 0 || selectedAssigneeIds.length > 0 || selectedStatuses.length > 0 || selectedTypes.length > 0 || selectedPriorities.length > 0 || dueDateFrom || dueDateTo || pointsMin || pointsMax) && (
@@ -635,7 +641,8 @@ const Tasks = () => {
                     <Button
                       onClick={() => setShowImportDialog(true)}
                       variant="outline"
-                      className="h-10 px-4 rounded-xl border-border/40 hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-primary font-medium transition-all flex items-center gap-2"
+                      className="h-10 px-4 rounded-xl border hover:border-primary/40 hover:bg-primary/5 text-muted-foreground hover:text-primary font-medium transition-all flex items-center gap-2"
+                      style={{ borderColor: 'var(--input-border)' }}
                     >
                       <FileSpreadsheet className="w-4 h-4" />
                       <span className="hidden xl:inline">Import Excel</span>

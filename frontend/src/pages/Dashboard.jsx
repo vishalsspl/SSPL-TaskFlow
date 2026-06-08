@@ -659,10 +659,14 @@ const Dashboard = () => {
                               <p className="text-sm font-black Montserrat" style={{ color: col.text }}>{formatCurrency(Number(project.totalBudget))}</p>
                             )}
                             <div className="flex items-center gap-2 justify-end">
-                              <div className="w-16 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                                <div className="h-full rounded-full" style={{ width: `${project.progress}%`, backgroundColor: col.border }} />
-                              </div>
-                              <span className="text-[10px] font-black text-gray-400 Montserrat">{project.progress}%</span>
+                              {project.name.toLowerCase() !== 'general' && project.name.toLowerCase() !== 'general tasks' && (
+                                <>
+                                  <div className="w-16 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                    <div className="h-full rounded-full" style={{ width: `${project.progress}%`, backgroundColor: col.border }} />
+                                  </div>
+                                  <span className="text-[10px] font-black text-gray-400 Montserrat">{project.progress}%</span>
+                                </>
+                              )}
                             </div>
                           </div>
                         </div>

@@ -593,7 +593,7 @@ const Team = () => {
         </Dialog>
 
         {/* ─── Filter Toolbar ─── */}
-        <div className="bg-secondary/40 px-2 py-2.5 sm:py-3 rounded-2xl mb-1 shadow-inner backdrop-blur-sm mt-2 border border-border/40">
+        <div className="bg-secondary/40 px-2 py-2.5 sm:py-3 rounded-2xl mb-1 shadow-inner backdrop-blur-sm mt-2" style={{ border: '1px solid var(--table-border)' }}>
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 w-full">
             
             {/* Left side: Tabs and Mobile Icons */}
@@ -640,7 +640,7 @@ const Team = () => {
                       onClick={() => { setPage(1); setSelectedManagerId('ALL'); }}
                       className={`group gap-1.5 sm:gap-2 h-10 sm:h-11 px-2.5 xl:px-4 rounded-xl font-medium transition-all duration-300 text-xs sm:text-sm shrink-0 border ${selectedManagerId === 'ALL'
                         ? 'bg-primary/10 text-primary border-primary/30 shadow-[0_0_15px_rgba(var(--primary),0.1)]'
-                        : 'bg-secondary/40 text-muted-foreground border-transparent hover:bg-secondary/60 hover:text-foreground'}`}
+                        : 'bg-secondary/40 text-muted-foreground hover:bg-secondary/60 hover:text-foreground'}`}
                       style={selectedManagerId !== 'ALL' ? { borderColor: 'var(--input-border)' } : {}}
                     >
                       <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 transition-transform group-hover:scale-110" />
@@ -654,7 +654,8 @@ const Team = () => {
                         onClick={() => { setPage(1); setSelectedManagerId('MANAGERS_LIST'); }}
                         className={`group gap-1.5 sm:gap-2 h-10 sm:h-11 px-2.5 xl:px-4 rounded-xl font-medium transition-all duration-300 text-xs sm:text-sm shrink-0 border ${selectedManagerId === 'MANAGERS_LIST'
                           ? 'bg-[#0EA5E9]/10 text-[#0EA5E9] border-[#0EA5E9]/30 shadow-[0_0_15px_rgba(14,165,233,0.1)]'
-                          : 'bg-secondary/40 text-muted-foreground border-transparent hover:bg-secondary/60 hover:text-foreground'}`}
+                          : 'bg-secondary/40 text-muted-foreground hover:bg-secondary/60 hover:text-foreground'}`}
+                        style={selectedManagerId !== 'MANAGERS_LIST' ? { borderColor: 'var(--input-border)' } : {}}
                       >
                         <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 transition-transform group-hover:scale-110" />
                         <span className="hidden sm:inline">Managers</span>
@@ -667,7 +668,8 @@ const Team = () => {
                         onClick={() => { setPage(1); setSelectedManagerId('CLIENTS_LIST'); }}
                         className={`group gap-1.5 sm:gap-2 h-10 sm:h-11 px-2.5 xl:px-4 rounded-xl font-medium transition-all duration-300 text-xs sm:text-sm shrink-0 border ${selectedManagerId === 'CLIENTS_LIST'
                           ? 'bg-[#8B5CF6]/10 text-[#8B5CF6] border-[#8B5CF6]/30 shadow-[0_0_15px_rgba(139,92,246,0.1)]'
-                          : 'bg-secondary/40 text-muted-foreground border-transparent hover:bg-secondary/60 hover:text-foreground'}`}
+                          : 'bg-secondary/40 text-muted-foreground hover:bg-secondary/60 hover:text-foreground'}`}
+                        style={selectedManagerId !== 'CLIENTS_LIST' ? { borderColor: 'var(--input-border)' } : {}}
                       >
                         <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 transition-transform group-hover:scale-110" />
                         <span className="hidden sm:inline">Clients</span>
@@ -679,7 +681,8 @@ const Team = () => {
                       onClick={() => { setPage(1); setSelectedManagerId('MEMBERS_LIST'); }}
                       className={`group gap-1.5 sm:gap-2 h-10 sm:h-11 px-2.5 xl:px-4 rounded-xl font-medium transition-all duration-300 text-xs sm:text-sm shrink-0 border ${selectedManagerId === 'MEMBERS_LIST'
                         ? 'bg-[#10B981]/10 text-[#10B981] border-[#10B981]/30 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
-                        : 'bg-secondary/40 text-muted-foreground border-transparent hover:bg-secondary/60 hover:text-foreground'}`}
+                        : 'bg-secondary/40 text-muted-foreground hover:bg-secondary/60 hover:text-foreground'}`}
+                      style={selectedManagerId !== 'MEMBERS_LIST' ? { borderColor: 'var(--input-border)' } : {}}
                     >
                       <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 transition-transform group-hover:scale-110" />
                       <span className="hidden sm:inline">Members</span>
@@ -691,7 +694,8 @@ const Team = () => {
                         onClick={() => { setPage(1); setSelectedManagerId('PENDING'); }}
                         className={`group gap-1.5 sm:gap-2 h-10 sm:h-11 px-2.5 xl:px-4 rounded-xl font-medium transition-all duration-300 text-xs sm:text-sm shrink-0 border ${selectedManagerId === 'PENDING'
                           ? 'bg-orange-500/10 text-orange-500 border-orange-500/30 shadow-[0_0_15px_rgba(249,115,22,0.1)]'
-                          : 'bg-secondary/40 text-orange-500/60 border-transparent hover:bg-secondary/60 hover:text-orange-500'}`}
+                          : 'bg-secondary/40 text-orange-500/60 hover:bg-secondary/60 hover:text-orange-500'}`}
+                        style={selectedManagerId !== 'PENDING' ? { borderColor: 'var(--input-border)' } : {}}
                       >
                         <UserCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 transition-transform group-hover:scale-110" />
                         <span className="hidden sm:inline">Pending</span>
@@ -879,7 +883,7 @@ const Team = () => {
           {currentUser?.role === 'MEMBER' ? (
             <div className="space-y-6">
               {/* Managers Table */}
-              <Card>
+              <Card className="border-none sm:border shadow-none sm:shadow-sm">
                 <CardHeader>
                   <CardTitle>My Managers</CardTitle>
                   <CardDescription>Managers associated with your projects</CardDescription>
@@ -932,7 +936,7 @@ const Team = () => {
               </Card>
 
               {/* Clients Table */}
-              <Card>
+              <Card className="border-none sm:border shadow-none sm:shadow-sm">
                 <CardHeader>
                   <CardTitle>My Clients</CardTitle>
                   <CardDescription>Clients associated with your projects</CardDescription>
@@ -987,10 +991,17 @@ const Team = () => {
           ) : (
             /* Existing Logic for ADMIN/MANAGER */
             selectedManagerId !== 'MANAGERS_LIST' && (selectedManagerId === 'PENDING' ? (
-              <Card className="border-orange-200 bg-orange-50/10">
+              <Card className="border-none sm:border shadow-none sm:shadow-sm border-orange-200 bg-orange-50/10">
                 <CardHeader>
-                  <CardTitle className="text-orange-900">Pending Approvals</CardTitle>
-                  <CardDescription>Review and approve new user signups</CardDescription>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2 text-orange-700">
+                        Pending Approvals
+                        <Badge variant="secondary" className="bg-orange-100 text-orange-700 hover:bg-orange-100">{pendingUsers.length}</Badge>
+                      </CardTitle>
+                      <CardDescription className="text-orange-700/70">Users waiting for administrator approval to join the platform.</CardDescription>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -1049,7 +1060,7 @@ const Team = () => {
                 </CardContent>
               </Card>
             ) : (
-              <Card className="flex-1 flex flex-col min-h-0">
+              <Card className="flex-1 flex flex-col min-h-0 border-none sm:border shadow-none sm:shadow-sm">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -1270,7 +1281,6 @@ const Team = () => {
               </Card>
             )))
           }
-
 
           <ConfirmDialog
             open={showRemoveFromTeamDialog}

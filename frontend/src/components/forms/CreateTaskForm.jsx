@@ -32,8 +32,12 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
     const { toast } = useToast();
     const { user } = useAuthStore();
     const isEdit = !!task;
+    
+    const generalProject = projects.find(p => p.name === 'General' || p.name === 'General Tasks');
+    const defaultGeneralId = generalProject?.id || '';
+
     const [formData, setFormData] = useState({
-        projectId: task?.projectId || initialProjectId,
+        projectId: task ? (task.projectId || defaultGeneralId) : (initialProjectId || defaultGeneralId),
         phaseId: task?.phaseId || '',
         title: task?.title || '',
         description: task?.description || '',
@@ -107,7 +111,15 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
             return;
         }
 
-        if (formData.projectId && !formData.phaseId) {
+        const selectedProjectObj = projects.find(p => p.id === formData.projectId);
+        const isGeneralProj = !formData.projectId || 
+            formData.projectId === defaultGeneralId ||
+            selectedProjectObj?.name === 'General' || 
+            selectedProjectObj?.name === 'General Tasks' || 
+            task?.project?.name === 'General' || 
+            task?.project?.name === 'General Tasks';
+
+        if (formData.projectId && !isGeneralProj && !formData.phaseId) {
             toast({ title: "Validation Error", description: "Please select a project phase.", variant: "destructive" });
             return;
         }
@@ -150,7 +162,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
 
             if (!isEdit) {
                 setFormData({
-                    projectId: initialProjectId,
+                    projectId: initialProjectId || defaultGeneralId,
                     phaseId: '',
                     title: '',
                     description: '',
@@ -214,7 +226,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                             value={formData.projectId}
                             onChange={(value) => handleProjectChange(value)}
                             disabled={!!initialProjectId || isEdit}
-                            options={[{ label: 'None (General Tasks)', value: '' }, ...projects.filter(p => p.name !== 'General' && p.name !== 'General Tasks' && (user?.role === 'ADMIN' || user?.role === 'MANAGER' || p.allowMemberTaskCreation)).map((p) => ({ label: p.name, value: p.id }))]}
+                            options={[{ label: 'None (General Tasks)', value: defaultGeneralId }, ...projects.filter(p => p.id !== defaultGeneralId && (user?.role === 'ADMIN' || user?.role === 'MANAGER' || p.allowMemberTaskCreation)).map((p) => ({ label: p.name, value: p.id }))]}
                             placeholder="Select Project"
                             className="!pl-10 relative mobile-reduce-input"
                         />

@@ -690,7 +690,8 @@ const ProjectsList = () => {
               <div className="flex flex-row items-center gap-2 sm:min-w-[40px] w-full lg:w-auto">
                 <Button
                   variant="outline"
-                  className={`h-11 w-11 p-0 shrink-0 sm:hidden rounded-xl border-border/40 ${showFiltersMobile ? 'bg-primary/10 text-primary border-primary/30' : 'text-muted-foreground'}`}
+                  className={`h-11 w-11 p-0 shrink-0 sm:hidden rounded-xl border ${showFiltersMobile ? 'bg-primary/10 text-primary border-primary/30' : 'text-muted-foreground'}`}
+                  style={!showFiltersMobile ? { borderColor: 'var(--input-border)' } : undefined}
                   onClick={() => setShowFiltersMobile(!showFiltersMobile)}
                 >
                   <Filter className="w-4 h-4" />
@@ -714,7 +715,8 @@ const ProjectsList = () => {
                     onChange={handleManagerFilterChange}
                     placeholder="All Managers"
                     searchPlaceholder="Search manager..."
-                    className="w-full sm:w-[155px] h-11 rounded-xl bg-background border-border/40 hover:bg-accent/20 transition-all"
+                    className="w-full sm:w-[155px] h-11 rounded-xl bg-background border hover:bg-accent/20 transition-all"
+                    style={{ borderColor: 'var(--input-border)' }}
                   />
                   {user?.role !== 'CLIENT' && (
                     <SearchableSelect
@@ -723,7 +725,7 @@ const ProjectsList = () => {
                       onChange={setClientFilter}
                       placeholder="All Clients"
                       searchPlaceholder="Search client..."
-                      className="w-full sm:w-[155px] h-11 rounded-xl bg-background border-border/40 hover:bg-accent/20 transition-all"
+                      className="w-full sm:w-[155px] h-11 rounded-xl bg-background border hover:bg-accent/20 transition-all"
                       style={{ borderColor: 'var(--input-border)' }}
                     />
                   )}
@@ -739,13 +741,14 @@ const ProjectsList = () => {
                       { label: 'Cancelled', value: 'CANCELLED' }
                     ]}
                     placeholder="Status"
-                    className="w-full sm:w-[155px] h-11 rounded-xl bg-background border-border/40 hover:bg-accent/20 transition-all font-semibold"
+                    className="w-full sm:w-[155px] h-11 rounded-xl bg-background border hover:bg-accent/20 transition-all font-semibold"
+                    style={{ borderColor: 'var(--input-border)' }}
                   />
 
                   {/* Advanced Filters */}
                   <Sheet>
                     <SheetTrigger asChild>
-                      <Button variant="outline" className="h-11 rounded-xl border-border/40 hover:bg-accent/20 font-semibold text-foreground/80 whitespace-nowrap">
+                      <Button variant="outline" className="h-11 rounded-xl border hover:bg-accent/20 font-semibold text-foreground/80 whitespace-nowrap" style={{ borderColor: 'var(--input-border)' }}>
                         <Filter className="w-4 h-4 mr-2" />
                         Advanced Filters
                         {(selectedManagerIds.length > 0 || selectedProjectIds.length > 0 || startDateFrom || startDateTo || tasksMin || tasksMax) && (

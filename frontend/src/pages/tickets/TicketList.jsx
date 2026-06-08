@@ -21,6 +21,13 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Plus, MessageSquare, Clock, Search } from 'lucide-react';
 import { formatRelativeTime } from '@/lib/utils';
 import TablePagination from '@/components/ui/table-pagination';
@@ -32,6 +39,8 @@ const TicketList = () => {
     const { setHeader, searchTerm: globalSearch } = useHeaderStore();
     const navigate = useNavigate();
     const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [statusFilter, setStatusFilter] = useState('ALL');
+    const [priorityFilter, setPriorityFilter] = useState('ALL');
 
     // Pagination state
     const [page, setPage] = useState(1);
@@ -59,6 +68,8 @@ const TicketList = () => {
             try {
                 const params = { page, limit: pageSize };
                 if (debouncedSearch) params.search = debouncedSearch;
+                if (statusFilter !== 'ALL') params.status = statusFilter;
+                if (priorityFilter !== 'ALL') params.priority = priorityFilter;
                 const response = await api.get('/tickets', { params });
                 setTickets(response.data.data);
                 setTotalPages(response.data.pagination.totalPages);
@@ -70,7 +81,7 @@ const TicketList = () => {
             }
         };
         fetchTickets();
-    }, [page, pageSize, debouncedSearch]);
+    }, [page, pageSize, debouncedSearch, statusFilter, priorityFilter]);
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -96,18 +107,51 @@ const TicketList = () => {
 
     return (
         <div className="flex-1 flex flex-col h-full overflow-hidden gap-4">
-            <div className="flex items-center justify-start">
-                {(user?.role === 'ADMIN' || user?.permissions?.['tickets.create']) && (
-                    <Button onClick={() => navigate('/tickets/new')}>
-                        <Plus className="w-4 h-4 mr-2" />
-                        New Ticket
-                    </Button>
-                )}
-            </div>
-
-
             <Card className="flex-1 flex flex-col min-h-0">
                 <CardContent className="flex-1 flex flex-col min-h-0 pt-6">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+                        <div className="flex items-center justify-start">
+                            {(user?.role === 'ADMIN' || user?.permissions?.['tickets.create']) && (
+                                <Button onClick={() => navigate('/tickets/new')}>
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    New Ticket
+                                </Button>
+                            )}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
+                            <Select
+                                value={statusFilter}
+                                onValueChange={(val) => { setStatusFilter(val); setPage(1); }}
+                            >
+                                <SelectTrigger className="w-[140px] h-9 bg-background border-border text-xs sm:text-sm font-medium">
+                                    <SelectValue placeholder="All Statuses" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="ALL">All Statuses</SelectItem>
+                                    <SelectItem value="OPEN">Open</SelectItem>
+                                    <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                                    <SelectItem value="RESOLVED">Resolved</SelectItem>
+                                    <SelectItem value="CLOSED">Closed</SelectItem>
+                                </SelectContent>
+                            </Select>
+
+                            <Select
+                                value={priorityFilter}
+                                onValueChange={(val) => { setPriorityFilter(val); setPage(1); }}
+                            >
+                                <SelectTrigger className="w-[140px] h-9 bg-background border-border text-xs sm:text-sm font-medium">
+                                    <SelectValue placeholder="All Priorities" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="ALL">All Priorities</SelectItem>
+                                    <SelectItem value="LOW">Low</SelectItem>
+                                    <SelectItem value="MEDIUM">Medium</SelectItem>
+                                    <SelectItem value="HIGH">High</SelectItem>
+                                    <SelectItem value="URGENT">Urgent</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
                     <div className="flex-1 overflow-y-auto min-h-0">
                         {/* Desktop Table */}
                         <div className="hidden sm:block">

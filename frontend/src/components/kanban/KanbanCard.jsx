@@ -108,7 +108,7 @@ const KanbanCard = ({ task, isReadOnly, disableDrag, onEdit, onCardClick, onDele
                                     {task.storyPoints} PTS
                                 </span>
                             )}
-                            {!isReadOnly && ((onEdit && canEditTask) || onDelete || onStatusChange) && (
+                            {!isReadOnly && !(user?.role === 'MEMBER' && task.status === 'COMPLETED') && ((onEdit && canEditTask) || onDelete || onStatusChange) && (
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <button

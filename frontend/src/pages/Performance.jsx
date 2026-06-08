@@ -14,7 +14,8 @@ import {
 } from '@/components/ui/select';
 import {
     CheckCircle2, Clock, AlertTriangle, TrendingUp, FolderKanban,
-    Target, Zap, BarChart2, Users, DollarSign, User as UserIcon
+    Target, Zap, BarChart2, Users, DollarSign, User as UserIcon,
+    ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { SearchableSelect } from '@/components/ui/searchable-select';
@@ -42,6 +43,11 @@ const PerformanceDashboardView = ({ data, hoursTitle = "Hours by Project" }) => 
     const { summary = {}, tasksByStatus = {}, hoursByProject = [], recentTasks = [] } = data || {};
     const statusData = Object.entries(tasksByStatus || {}).map(([name, value]) => ({ name, value }));
     const totalStatusTasks = statusData.reduce((sum, item) => sum + item.value, 0);
+
+    const [taskPage, setTaskPage] = useState(1);
+    const tasksPerPage = 10;
+    const totalTaskPages = Math.ceil(recentTasks.length / tasksPerPage);
+    const paginatedTasks = recentTasks.slice((taskPage - 1) * tasksPerPage, taskPage * tasksPerPage);
 
     return (
         <div className="space-y-4 sm:space-y-6">
@@ -72,8 +78,8 @@ const PerformanceDashboardView = ({ data, hoursTitle = "Hours by Project" }) => 
                             <p className="text-sm text-muted-foreground text-center py-8">No hours logged yet</p>
                         ) : (
                             <ResponsiveContainer width="100%" height={200}>
-                                <BarChart data={hoursByProject}>
-                                    <XAxis dataKey="name" tick={{ fontSize: 11, fontWeight: 700 }} />
+                                <BarChart data={hoursByProject} margin={{ bottom: 20 }}>
+                                    <XAxis dataKey="name" tick={{ fontSize: 10, fontWeight: 700 }} interval={0} angle={-25} textAnchor="end" height={40} />
                                     <YAxis tick={{ fontSize: 11 }} />
                                     <Tooltip 
                                         formatter={(v) => [`${v}h`, 'Hours']} 
@@ -93,23 +99,25 @@ const PerformanceDashboardView = ({ data, hoursTitle = "Hours by Project" }) => 
                     <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-black uppercase tracking-wider text-muted-foreground">Tasks by Status</CardTitle>
                     </CardHeader>
-                    <CardContent className="flex items-center gap-4">
-                        <ResponsiveContainer width="50%" height={180}>
-                            <PieChart>
-                                <Pie data={statusData.filter(d => d.value > 0)} dataKey="value" cx="50%" cy="50%" outerRadius={70}>
-                                    {statusData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                                </Pie>
-                                <Tooltip 
-                                    formatter={(value, name) => {
-                                        const percent = totalStatusTasks > 0 ? Math.round((value / totalStatusTasks) * 100) : 0;
-                                        return [`${value} (${percent}%)`, name.replace('_', ' ').replace('TODO', 'TO DO')];
-                                    }}
-                                    contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))', fontSize: '12px', padding: '8px 12px' }}
-                                    itemStyle={{ color: 'hsl(var(--foreground))', fontWeight: 700 }}
-                                />
-                            </PieChart>
-                        </ResponsiveContainer>
-                        <div className="space-y-2 flex-1">
+                    <CardContent className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+                        <div className="w-full sm:w-1/2 h-[180px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie data={statusData.filter(d => d.value > 0)} dataKey="value" cx="50%" cy="50%" outerRadius={70}>
+                                        {statusData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                                    </Pie>
+                                    <Tooltip 
+                                        formatter={(value, name) => {
+                                            const percent = totalStatusTasks > 0 ? Math.round((value / totalStatusTasks) * 100) : 0;
+                                            return [`${value} (${percent}%)`, name.replace('_', ' ').replace('TODO', 'TO DO')];
+                                        }}
+                                        contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))', fontSize: '12px', padding: '8px 12px' }}
+                                        itemStyle={{ color: 'hsl(var(--foreground))', fontWeight: 700 }}
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+                        <div className="space-y-2 w-full sm:flex-1">
                             {statusData.map((s, i) => {
                                 const percent = totalStatusTasks > 0 ? Math.round((s.value / totalStatusTasks) * 100) : 0;
                                 return (
@@ -138,28 +146,60 @@ const PerformanceDashboardView = ({ data, hoursTitle = "Hours by Project" }) => 
                     {recentTasks.length === 0 ? (
                         <p className="text-sm text-muted-foreground text-center py-6">No tasks assigned</p>
                     ) : (
-                        <div className="divide-y divide-border">
-                            {recentTasks.map(task => {
-                                const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'COMPLETED';
-                                const STATUS_COLORS = { TODO: '#64748B', IN_PROGRESS: '#0EA5E9', IN_REVIEW: '#F59E0B', COMPLETED: '#48A111', BLOCKED: '#F43F5E' };
-                                return (
-                                    <div key={task.id} className="py-3 flex items-center justify-between">
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-bold truncate">{task.title}</p>
-                                            <p className="text-xs text-muted-foreground">{task.project?.name}</p>
+                        <div className="flex flex-col">
+                            <div className="divide-y divide-border">
+                                {paginatedTasks.map(task => {
+                                    const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'COMPLETED';
+                                    const STATUS_COLORS = { TODO: '#64748B', IN_PROGRESS: '#0EA5E9', IN_REVIEW: '#F59E0B', COMPLETED: '#48A111', BLOCKED: '#F43F5E' };
+                                    return (
+                                        <div key={task.id} className="py-3 flex items-center justify-between">
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-bold truncate">{task.title}</p>
+                                                <p className="text-xs text-muted-foreground">{task.project?.name}</p>
+                                            </div>
+                                            <div className="flex items-center gap-2 ml-4">
+                                                {isOverdue && <Badge className="text-[9px] bg-red-500/10 text-red-500 border-red-500/20">OVERDUE</Badge>}
+                                                <span className="text-[10px] font-black px-2 py-0.5 rounded-full" style={{ background: `${STATUS_COLORS[task.status]}20`, color: STATUS_COLORS[task.status] }}>
+                                                    {task.status.replace('_', ' ').replace('TODO', 'TO DO')}
+                                                </span>
+                                                {task.storyPoints > 0 && (
+                                                    <span className="text-xs font-black text-muted-foreground">{task.storyPoints}sp</span>
+                                                )}
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-2 ml-4">
-                                            {isOverdue && <Badge className="text-[9px] bg-red-500/10 text-red-500 border-red-500/20">OVERDUE</Badge>}
-                                            <span className="text-[10px] font-black px-2 py-0.5 rounded-full" style={{ background: `${STATUS_COLORS[task.status]}20`, color: STATUS_COLORS[task.status] }}>
-                                                {task.status.replace('_', ' ').replace('TODO', 'TO DO')}
-                                            </span>
-                                            {task.storyPoints > 0 && (
-                                                <span className="text-xs font-black text-muted-foreground">{task.storyPoints}sp</span>
-                                            )}
-                                        </div>
+                                    );
+                                })}
+                            </div>
+                            
+                            {/* Pagination Controls */}
+                            {totalTaskPages > 1 && (
+                                <div className="flex items-center justify-between mt-4 pt-4 border-t border-border/50">
+                                    <p className="text-xs text-muted-foreground font-bold">
+                                        Showing {(taskPage - 1) * tasksPerPage + 1} to {Math.min(taskPage * tasksPerPage, recentTasks.length)} of {recentTasks.length}
+                                    </p>
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="h-8 w-8 p-0 rounded-lg"
+                                            onClick={() => setTaskPage(p => Math.max(1, p - 1))}
+                                            disabled={taskPage === 1}
+                                        >
+                                            <ChevronLeft className="h-4 w-4" />
+                                        </Button>
+                                        <div className="text-xs font-black px-2">{taskPage} / {totalTaskPages}</div>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="h-8 w-8 p-0 rounded-lg"
+                                            onClick={() => setTaskPage(p => Math.min(totalTaskPages, p + 1))}
+                                            disabled={taskPage === totalTaskPages}
+                                        >
+                                            <ChevronRight className="h-4 w-4" />
+                                        </Button>
                                     </div>
-                                );
-                            })}
+                                </div>
+                            )}
                         </div>
                     )}
                 </CardContent>

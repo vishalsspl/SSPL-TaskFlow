@@ -256,7 +256,7 @@ const ProjectView = () => {
               <h2>1. Executive Summary</h2>
               <div class="summary-box">
                 The "${project.name}" project is currently in its <strong>${project.status.toLowerCase().replace('_', ' ')}</strong> phase. 
-                The project is tracking a progress of <strong>${overview.progressPercentage}%</strong> based on effort-based story points. 
+                ${project.name.toLowerCase() !== 'general' && project.name.toLowerCase() !== 'general tasks' ? `The project is tracking a progress of <strong>${overview.progressPercentage}%</strong> based on effort-based story points.` : ''} 
                 Current milestones are aligned with the target completion date of <strong>${formatDate(project.endDate)}</strong>.
               </div>
             </div>
@@ -536,19 +536,21 @@ const ProjectView = () => {
             </CardContent>
           </Card>
         )}
-        <Card className="bg-card border-border ring-1 ring-border shadow-2xl relative overflow-hidden group">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-widest Montserrat">Effort Completion</CardTitle>
-            <div className="p-1.5 bg-white/5 rounded-lg"><Layers className="h-3.5 w-3.5 text-[#8B5CF6]" /></div>
-          </CardHeader>
-          <CardContent className="min-w-0">
-            <div className="text-xl font-black text-foreground Montserrat truncate">{overview.progressPercentage}%</div>
-            <p className="text-[10px] text-muted-foreground mt-1 Montserrat font-bold italic">{overview.completedStoryPoints} of {overview.totalStoryPoints} pts done</p>
-            <div className="mt-4 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-              <div className="h-full bg-[#8B5CF6] shadow-[0_0_8px_rgba(139,92,246,0.5)] transition-all duration-1000" style={{ width: `${overview.progressPercentage}%` }} />
-            </div>
-          </CardContent>
-        </Card>
+        {project.name.toLowerCase() !== 'general' && project.name.toLowerCase() !== 'general tasks' && (
+          <Card className="bg-card border-border ring-1 ring-border shadow-2xl relative overflow-hidden group">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-[10px] font-black text-muted-foreground uppercase tracking-widest Montserrat">Effort Completion</CardTitle>
+              <div className="p-1.5 bg-white/5 rounded-lg"><Layers className="h-3.5 w-3.5 text-[#8B5CF6]" /></div>
+            </CardHeader>
+            <CardContent className="min-w-0">
+              <div className="text-xl font-black text-foreground Montserrat truncate">{overview.progressPercentage}%</div>
+              <p className="text-[10px] text-muted-foreground mt-1 Montserrat font-bold italic">{overview.completedStoryPoints} of {overview.totalStoryPoints} pts done</p>
+              <div className="mt-4 h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                <div className="h-full bg-[#8B5CF6] shadow-[0_0_8px_rgba(139,92,246,0.5)] transition-all duration-1000" style={{ width: `${overview.progressPercentage}%` }} />
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </TabsContent>
   );

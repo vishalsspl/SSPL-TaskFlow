@@ -60,7 +60,7 @@ const KanbanColumn = ({ id, title, tasks, isReadOnly, disableDrag, onEdit, onCar
                         ))}
                     </SortableContext>
                     {tasks.length === 0 && (
-                        <div className="flex flex-col items-center justify-center h-32 border-2 border-dashed border-white/5 rounded-2xl text-gray-600 text-[10px] font-black uppercase tracking-widest Montserrat gap-2">
+                        <div className="hidden sm:flex flex-col items-center justify-center h-32 border-2 border-dashed border-white/5 rounded-2xl text-gray-600 text-[10px] font-black uppercase tracking-widest Montserrat gap-2">
                             <span>Drop tasks here</span>
                         </div>
                     )}

@@ -90,13 +90,21 @@ export const getAllTickets = async (req, res) => {
             });
         }
 
-        const { search, page, limit: rawLimit } = req.query;
+        const { search, page, limit: rawLimit, status, priority } = req.query;
 
         const where = { organizationId: req.user.organizationId };
 
         // Clients only see their own tickets
         if (req.user.role === 'CLIENT') {
             where.clientId = req.user.id;
+        }
+
+        if (status && status !== 'ALL') {
+            where.status = status;
+        }
+
+        if (priority && priority !== 'ALL') {
+            where.priority = priority;
         }
 
         // Backend search filter

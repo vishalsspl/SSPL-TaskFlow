@@ -360,7 +360,7 @@ const Layout = () => {
   return (
     <div className="h-screen w-full bg-background flex overflow-hidden">
       {/* Desktop Sidebar */}
-      <aside className={`hidden md:flex ${isSidebarOpen ? 'w-52' : 'w-16'} flex-col border-r border-border bg-card shadow-2xl transition-all duration-300 shrink-0`}>
+      <aside className={`hidden md:flex ${isSidebarOpen ? 'w-52' : 'w-16'} flex-col border-r border-border bg-card transition-all duration-300 shrink-0`}>
         <NavContent />
       </aside>
 

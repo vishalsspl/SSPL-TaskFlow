@@ -26,8 +26,10 @@ export function SearchableSelect({
     searchPlaceholder = "Search...",
     emptyMessage = "No results found.",
     className,
+    style,
     disabled = false,
-    renderOption // Optional custom render function: (option) => ReactNode
+    renderOption, // Optional custom render function: (option) => ReactNode
+    ...props
 }) {
     const [open, setOpen] = React.useState(false)
 
@@ -44,7 +46,9 @@ export function SearchableSelect({
                     role="combobox"
                     aria-expanded={open}
                     className={cn("w-full justify-between font-normal min-h-10 h-auto py-2", !value && "text-muted-foreground", className)}
+                    style={style}
                     disabled={disabled}
+                    {...props}
                 >
                     <div className="flex items-center gap-2 truncate flex-1 text-left">
                         {selectedOption?.icon && <span className="shrink-0">{selectedOption.icon}</span>}
