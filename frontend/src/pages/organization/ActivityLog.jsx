@@ -147,19 +147,20 @@ const ActivityLog = () => {
 
   return (
     <div className="flex-1 flex flex-col min-h-screen lg:min-h-0 p-0 pt-0 gap-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
+      <div className="flex-none px-0 sm:px-0">
+        <div className="bg-secondary/40 p-2 rounded-2xl mb-2 shadow-inner backdrop-blur-sm" style={{ border: '1px solid var(--table-border)' }}>
+          <AuditFilters
+            action={action}
+            setAction={setAction}
+            entity={entity}
+            setEntity={setEntity}
+            setPage={setPage}
+            onExport={handleExportCSV}
+          />
+        </div>
+      </div>
       <Card className="flex-1 flex flex-col min-h-0 border-none sm:border shadow-none sm:shadow-sm">
         <CardContent className="flex-1 flex flex-col min-h-0 pt-2 sm:pt-4 px-2 sm:px-4">
-          
-          <div className="bg-secondary/10 p-2 rounded-2xl mb-8 border border-border/5 shadow-inner mt-4">
-            <AuditFilters
-              action={action}
-              setAction={setAction}
-              entity={entity}
-              setEntity={setEntity}
-              setPage={setPage}
-              onExport={handleExportCSV}
-            />
-          </div>
 
           <div className="flex-1 overflow-y-auto min-h-0 space-y-4 pr-1 scrollbar-thin scrollbar-thumb-primary/10">
             {loading ? (

@@ -61,7 +61,8 @@ const AuditFilters = ({ action, setAction, entity, setEntity, setPage, onExport,
             <Button
               variant="ghost"
               role="combobox"
-              className="h-14 w-full sm:min-w-[210px] sm:w-auto rounded-2xl bg-secondary/20 dark:bg-black/80 border border-border/10 dark:border-white/5 hover:bg-secondary/30 dark:hover:bg-black text-foreground dark:text-white flex items-center justify-between px-6 group transition-all"
+              className="h-14 w-full sm:min-w-[210px] sm:w-auto rounded-2xl bg-background border hover:bg-accent/20 text-foreground dark:text-white flex items-center justify-between px-6 group transition-all"
+              style={{ borderColor: 'var(--input-border)' }}
             >
               <span className="text-sm font-bold tracking-tight opacity-70 group-hover:opacity-100 transition-opacity">
                 {currentActionLabel}
@@ -129,7 +130,8 @@ const AuditFilters = ({ action, setAction, entity, setEntity, setPage, onExport,
               <Button
                 variant="ghost"
                 role="combobox"
-                className="h-14 w-full sm:min-w-[210px] sm:w-auto rounded-2xl bg-secondary/20 dark:bg-black/80 border border-border/10 dark:border-white/5 hover:bg-secondary/30 dark:hover:bg-black text-foreground dark:text-white flex items-center justify-between px-6 group transition-all"
+                className="h-14 w-full sm:min-w-[210px] sm:w-auto rounded-2xl bg-background border hover:bg-accent/20 text-foreground dark:text-white flex items-center justify-between px-6 group transition-all"
+                style={{ borderColor: 'var(--input-border)' }}
               >
                 <span className="text-sm font-bold tracking-tight opacity-70 group-hover:opacity-100 transition-opacity">
                   {currentEntityLabel}
@@ -195,7 +197,8 @@ const AuditFilters = ({ action, setAction, entity, setEntity, setPage, onExport,
           type="button"
           variant="ghost"
           onClick={onExport}
-          className="h-14 w-full sm:w-auto rounded-2xl px-8 font-black text-xs tracking-tight bg-secondary/10 dark:bg-black border border-border/10 dark:border-white/5 hover:bg-secondary/20 dark:hover:bg-black/80 text-foreground dark:text-white flex items-center justify-center sm:justify-start gap-4 transition-all active:scale-[0.98] group"
+          className="h-14 w-full sm:w-auto rounded-2xl px-8 font-black text-xs tracking-tight bg-background border hover:bg-accent/20 text-foreground dark:text-white flex items-center justify-center sm:justify-start gap-4 transition-all active:scale-[0.98] group"
+          style={{ borderColor: 'var(--input-border)' }}
         >
           <div className="w-6 h-6 rounded-lg bg-emerald-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
             <Download className="w-3.5 h-3.5 text-emerald-500" />
