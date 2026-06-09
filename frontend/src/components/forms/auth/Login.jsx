@@ -151,7 +151,7 @@ const Login = () => {
                   required
                   className={cn(
                     "!pl-10 transition-all duration-300",
-                    isDarkMode ? "bg-white/5 border-white/10 text-white placeholder:text-white/30" : "bg-white border-slate-200 text-slate-900 placeholder:text-slate-500",
+                    isDarkMode ? "bg-white/5 border-white/10 text-white placeholder:text-white/30" : "bg-white border-slate-200 text-slate-900 placeholder:text-slate-400",
                     "focus-visible:ring-[#48A111]/30 focus-visible:border-[#48A111]/50",
                     fieldErrors.email && "border-red-500/50 ring-red-500/10"
                   )}
@@ -176,7 +176,7 @@ const Login = () => {
                   required
                   className={cn(
                     "!pl-10 pr-10 transition-all duration-300",
-                    isDarkMode ? "bg-white/5 border-white/10 text-white placeholder:text-white/30" : "bg-white border-slate-200 text-slate-900 placeholder:text-slate-500",
+                    isDarkMode ? "bg-white/5 border-white/10 text-white placeholder:text-white/30" : "bg-white border-slate-200 text-slate-900 placeholder:text-slate-400",
                     "focus-visible:ring-[#48A111]/30 focus-visible:border-[#48A111]/50",
                     fieldErrors.password && "border-red-500/50 ring-red-500/10"
                   )}

@@ -202,16 +202,19 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = 
 
     useEffect(() => {
         fetchAvailableUsers();
-        if (addMemberOpen && projectId) {
+        if (projectId && !isDirectMessage) {
             fetchProjectMembers();
         }
-    }, [addMemberOpen, projectId]);
+    }, [projectId]);
 
     const fetchProjectMembers = async () => {
         try {
             const response = await api.get(`/projects/${projectId}`);
-            // Extract user IDs from workloads
+            // Extract user IDs from workloads and include the manager
             const memberIds = (response.data.workloads || []).map(w => w.userId);
+            if (response.data.managerId && !memberIds.includes(response.data.managerId)) {
+                memberIds.push(response.data.managerId);
+            }
             setProjectMembers(memberIds);
         } catch (error) {
             console.error('Failed to fetch project members:', error);
@@ -221,7 +224,7 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = 
     const fetchAvailableUsers = async () => {
         setIsSearching(true);
         try {
-            const response = await api.get('/users?teamOnly=true');
+            const response = await api.get('/users?orgMembersOnly=true');
             setAvailableUsers(response.data.filter(u => u.role !== 'CLIENT'));
         } catch (error) {
             console.error('Failed to fetch users:', error);
@@ -665,6 +668,7 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = 
                         <div className="absolute bottom-[80px] left-16 z-50 bg-card border border-border rounded-xl shadow-2xl w-64 max-h-48 overflow-y-auto">
                             {availableUsers
                                 .filter(u => u.name.toLowerCase().includes(mentionSearch.toLowerCase()))
+                                .filter(u => !projectId || isDirectMessage || projectMembers.includes(u.id))
                                 .map((u) => (
                                     <button
                                         key={u.id}
@@ -681,7 +685,7 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = 
                                         </div>
                                     </button>
                                 ))}
-                            {availableUsers.filter(u => u.name.toLowerCase().includes(mentionSearch.toLowerCase())).length === 0 && (
+                            {availableUsers.filter(u => u.name.toLowerCase().includes(mentionSearch.toLowerCase()) && (!projectId || isDirectMessage || projectMembers.includes(u.id))).length === 0 && (
                                 <div className="p-3 text-center text-xs text-muted-foreground Montserrat">No users found</div>
                             )}
                         </div>

@@ -498,7 +498,7 @@ const Settings = () => {
                           value={passwordData.currentPassword}
                           onChange={e => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
                           placeholder="••••••••"
-                          className="h-14 px-6 rounded-2xl bg-background/50 border-border/40 font-bold placeholder:font-normal placeholder:text-muted-foreground/50 focus:ring-4 focus:ring-red-500/10 transition-all"
+                          className="h-14 px-6 rounded-2xl bg-background/50 border-border/40 font-bold placeholder:font-normal placeholder:text-muted-foreground/30 focus:ring-4 focus:ring-red-500/10 transition-all"
                         />
                         <button type="button" onClick={() => setShowCurrentPw(!showCurrentPw)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                           {showCurrentPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -514,7 +514,7 @@ const Settings = () => {
                           value={passwordData.newPassword}
                           onChange={e => setPasswordData({ ...passwordData, newPassword: e.target.value })}
                           placeholder="••••••••"
-                          className="h-14 px-6 rounded-2xl bg-background/50 border-border/40 font-bold placeholder:font-normal placeholder:text-muted-foreground/50 focus:ring-4 focus:ring-red-500/10 transition-all"
+                          className="h-14 px-6 rounded-2xl bg-background/50 border-border/40 font-bold placeholder:font-normal placeholder:text-muted-foreground/30 focus:ring-4 focus:ring-red-500/10 transition-all"
                         />
                         <button type="button" onClick={() => setShowNewPw(!showNewPw)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                           {showNewPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -530,7 +530,7 @@ const Settings = () => {
                           value={passwordData.confirmPassword}
                           onChange={e => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
                           placeholder="••••••••"
-                          className="h-14 px-6 rounded-2xl bg-background/50 border-border/40 font-bold placeholder:font-normal placeholder:text-muted-foreground/50 focus:ring-4 focus:ring-red-500/10 transition-all"
+                          className="h-14 px-6 rounded-2xl bg-background/50 border-border/40 font-bold placeholder:font-normal placeholder:text-muted-foreground/30 focus:ring-4 focus:ring-red-500/10 transition-all"
                         />
                         <button type="button" onClick={() => setShowConfirmPw(!showConfirmPw)} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                           {showConfirmPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

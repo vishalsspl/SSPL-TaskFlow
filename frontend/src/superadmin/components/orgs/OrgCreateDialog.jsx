@@ -30,7 +30,7 @@ const OrgCreateDialog = ({ open, onOpenChange, newOrg, setNewOrg, onProvision, s
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2 flex flex-col">
                 <Label className="text-[10px] font-bold uppercase tracking-widest text-foreground/70 ml-1">Organization Name *</Label>
-                <Input placeholder="Enter organization name" className="h-11 px-4 rounded-xl bg-background border-border font-medium text-sm focus-visible:ring-primary/20"
+                <Input placeholder="Enter organization name" className="h-11 px-4 rounded-xl bg-background border-border font-medium text-sm placeholder:font-normal placeholder:text-muted-foreground/40 focus-visible:ring-primary/20"
                   value={newOrg.name} onChange={e => setNewOrg(p => ({ ...p, name: e.target.value }))} />
               </div>
               <div className="space-y-2 flex flex-col">
@@ -79,8 +79,8 @@ const OrgCreateDialog = ({ open, onOpenChange, newOrg, setNewOrg, onProvision, s
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2 flex flex-col">
-                <Label className="text-[10px] font-bold uppercase tracking-widest text-foreground/70 ml-1">Website *</Label>
-                <Input placeholder="https://company.com" className="h-11 px-4 rounded-xl bg-background border-border font-medium text-sm"
+                <Label className="text-[10px] font-bold uppercase tracking-widest text-foreground/70 ml-1">Website (Optional)</Label>
+                <Input placeholder="https://company.com" className="h-11 px-4 rounded-xl bg-background border-border font-medium text-sm placeholder:font-normal placeholder:text-muted-foreground/40"
                   value={newOrg.website} onChange={e => setNewOrg(p => ({ ...p, website: e.target.value }))} />
               </div>
               <div className="space-y-2 flex flex-col">
@@ -111,19 +111,19 @@ const OrgCreateDialog = ({ open, onOpenChange, newOrg, setNewOrg, onProvision, s
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label className="text-[10px] font-bold uppercase tracking-widest text-foreground/70 ml-1">Admin Name *</Label>
-                  <Input placeholder="Enter admin name" className="h-11 px-4 rounded-xl bg-background border-border font-medium text-sm"
+                  <Input placeholder="Enter admin name" className="h-11 px-4 rounded-xl bg-background border-border font-medium text-sm placeholder:font-normal placeholder:text-muted-foreground/40"
                     value={newOrg.adminName} onChange={e => setNewOrg(p => ({ ...p, adminName: e.target.value }))} />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-[10px] font-bold uppercase tracking-widest text-foreground/70 ml-1">Admin Email *</Label>
-                  <Input placeholder="admin@domain.io" type="email" className="h-11 px-4 rounded-xl bg-background border-border font-medium text-sm"
+                  <Input placeholder="admin@domain.io" type="email" className="h-11 px-4 rounded-xl bg-background border-border font-medium text-sm placeholder:font-normal placeholder:text-muted-foreground/40"
                     value={newOrg.adminEmail} onChange={e => setNewOrg(p => ({ ...p, adminEmail: e.target.value }))} />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label className="text-[10px] font-bold uppercase tracking-widest text-foreground/70 ml-1">Password *</Label>
-                <Input placeholder="••••••••" type="password" className="h-11 px-4 rounded-xl bg-background border-border font-medium text-sm font-mono"
+                <Input placeholder="••••••••" type="password" className="h-11 px-4 rounded-xl bg-background border-border font-medium text-sm font-mono placeholder:font-normal placeholder:text-muted-foreground/40"
                   value={newOrg.adminPassword} onChange={e => setNewOrg(p => ({ ...p, adminPassword: e.target.value }))} />
               </div>
             </div>

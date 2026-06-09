@@ -386,7 +386,7 @@ const PlatformSettings = () => {
               type={showCurrentPw ? 'text' : 'password'}
               value={passwordData.currentPassword}
               onChange={e => setPasswordData(prev => ({ ...prev, currentPassword: e.target.value }))}
-              className="h-14 rounded-2xl bg-background/50 border-border/40 px-5 !pr-12 font-bold focus:ring-4 focus:ring-primary/10 transition-all shadow-inner"
+              className="h-14 rounded-2xl bg-background/50 border-border/40 px-5 !pr-12 font-bold placeholder:font-normal placeholder:text-muted-foreground/40 focus:ring-4 focus:ring-primary/10 transition-all shadow-inner"
               placeholder="Enter current password"
             />
             <button type="button" onClick={() => setShowCurrentPw(!showCurrentPw)} className="absolute right-4 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground transition-colors">
@@ -400,7 +400,7 @@ const PlatformSettings = () => {
               type={showNewPw ? 'text' : 'password'}
               value={passwordData.newPassword}
               onChange={e => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
-              className="h-14 rounded-2xl bg-background/50 border-border/40 px-5 !pr-12 font-bold focus:ring-4 focus:ring-primary/10 transition-all shadow-inner"
+              className="h-14 rounded-2xl bg-background/50 border-border/40 px-5 !pr-12 font-bold placeholder:font-normal placeholder:text-muted-foreground/40 focus:ring-4 focus:ring-primary/10 transition-all shadow-inner"
               placeholder="Enter new password"
             />
             <button type="button" onClick={() => setShowNewPw(!showNewPw)} className="absolute right-4 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground transition-colors">
@@ -414,7 +414,7 @@ const PlatformSettings = () => {
               type={showConfirmPw ? 'text' : 'password'}
               value={passwordData.confirmPassword}
               onChange={e => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-              className="h-14 rounded-2xl bg-background/50 border-border/40 px-5 !pr-12 font-bold focus:ring-4 focus:ring-primary/10 transition-all shadow-inner"
+              className="h-14 rounded-2xl bg-background/50 border-border/40 px-5 !pr-12 font-bold placeholder:font-normal placeholder:text-muted-foreground/40 focus:ring-4 focus:ring-primary/10 transition-all shadow-inner"
               placeholder="Confirm new password"
             />
             <button type="button" onClick={() => setShowConfirmPw(!showConfirmPw)} className="absolute right-4 top-1/2 -translate-y-1/2 text-foreground/40 hover:text-foreground transition-colors">

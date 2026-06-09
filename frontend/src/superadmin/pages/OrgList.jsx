@@ -123,13 +123,18 @@ const OrgList = () => {
   };
 
   const provisionOrg = async () => {
-    if (!newOrg.name || !newOrg.industry || !newOrg.size || !newOrg.website || !newOrg.country || !newOrg.plan || !newOrg.adminName || !newOrg.adminEmail || !newOrg.adminPassword) {
+    if (!newOrg.name || !newOrg.industry || !newOrg.size || !newOrg.country || !newOrg.plan || !newOrg.adminName || !newOrg.adminEmail || !newOrg.adminPassword) {
       toast({ title: 'Missing fields', description: 'Please fill in all required fields', variant: 'destructive' });
       return;
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newOrg.adminEmail.trim())) {
       toast({ title: 'Invalid Email', description: 'Please enter a valid email address.', variant: 'destructive' });
+      return;
+    }
+
+    if (newOrg.website && !/^(https?:\/\/)?([\w\d-]+\.)+\w{2,}(\/.*)?$/.test(newOrg.website.trim())) {
+      toast({ title: 'Invalid Website', description: 'Please enter a valid website URL.', variant: 'destructive' });
       return;
     }
     setSaving(true);
