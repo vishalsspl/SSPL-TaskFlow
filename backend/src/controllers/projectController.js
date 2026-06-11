@@ -287,11 +287,13 @@ export const getAllProjects = async (req, res) => {
         .reduce((sum, t) => sum + (t.storyPoints || 0), 0);
 
       let progress = 0;
+      const memberTaskCount = tasks.length;
+      
       if (totalStoryPoints > 0) {
         progress = Math.round((completedStoryPoints / totalStoryPoints) * 100);
-      } else if (project._count?.tasks > 0) {
+      } else if (memberTaskCount > 0) {
         const completedTasks = tasks.filter(t => t.status === 'COMPLETED').length;
-        progress = Math.round((completedTasks / project._count.tasks) * 100);
+        progress = Math.round((completedTasks / memberTaskCount) * 100);
       }
 
       const taskStats = {
@@ -303,6 +305,12 @@ export const getAllProjects = async (req, res) => {
       };
 
       const { tasks: _, ...projectWithoutTasks } = project;
+      
+      // Override _count.tasks with the filtered tasks length so UI shows only their tasks
+      if (projectWithoutTasks._count) {
+        projectWithoutTasks._count.tasks = memberTaskCount;
+      }
+
       return { ...projectWithoutTasks, progress, taskStats };
     });
 
