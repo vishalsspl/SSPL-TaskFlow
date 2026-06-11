@@ -46,6 +46,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
         priority: task?.priority || 'MEDIUM',
         completionPercentage: task?.completionPercentage || 0,
         dueDate: task?.dueDate ? new Date(task.dueDate) : null,
+        completedAt: task?.completedAt ? new Date(task.completedAt) : null,
         tags: task?.tags?.join(', ') || '',
         storyPoints: task?.storyPoints || 0,
         type: task?.type || 'TASK',
@@ -153,6 +154,10 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                 assigneeIds: formData.assigneeId ? [formData.assigneeId] : [],
                 storyPoints: Number(formData.storyPoints),
             };
+
+            if ((user?.role === 'ADMIN' || user?.role === 'MANAGER') && (formData.status === 'COMPLETED' || Number(formData.completionPercentage) === 100)) {
+                payload.completedAt = formData.completedAt;
+            }
 
             if (isEdit) {
                 await api.put(`/tasks/${task.id}`, payload);
@@ -295,7 +300,18 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                                     .filter(u => {
                                         // Members can only assign to themselves (or are disabled anyway)
                                         if (user?.role === 'MEMBER') return u.id === user.id;
-                                        // Admins/Managers can only assign to project members (if a project is selected)
+                                        
+                                        // Admins/Managers can only assign to project members (if a specific project is selected)
+                                        const selectedProjectObj = projects.find(p => p.id === formData.projectId);
+                                        const isGeneralProject = !formData.projectId || 
+                                            formData.projectId === defaultGeneralId ||
+                                            selectedProjectObj?.name === 'General' || 
+                                            selectedProjectObj?.name === 'General Tasks' || 
+                                            task?.project?.name === 'General' || 
+                                            task?.project?.name === 'General Tasks';
+
+                                        if (isGeneralProject) return true;
+
                                         if (formData.projectId && projectMemberIds.length > 0) {
                                             return projectMemberIds.includes(u.id) || u.id === user.id;
                                         }
@@ -382,6 +398,21 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                         />
                     </div>
                 </div>
+
+                {/* Completed Date - Only for Admin/Manager when status is Completed */}
+                {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (formData.status === 'COMPLETED' || formData.completionPercentage === 100) && (
+                    <div className="space-y-2">
+                        <Label htmlFor="completedAt" className="text-foreground/90 font-semibold mobile-reduce-label text-green-600">Completed On</Label>
+                        <div className="relative">
+                            <DatePicker
+                                date={formData.completedAt || new Date()}
+                                setDate={(date) => setFormData({ ...formData, completedAt: date })}
+                                placeholder="Select completed date"
+                                className="mobile-reduce-input"
+                            />
+                        </div>
+                    </div>
+                )}
 
                 {/* Story Points */}
                 <div className="space-y-2">
