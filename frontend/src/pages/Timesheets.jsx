@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { format, startOfWeek, addDays, isSameDay, parseISO } from 'date-fns';
+import { format, startOfWeek, addDays, isSameDay, parseISO, differenceInDays } from 'date-fns';
 import {
     Clock,
     ChevronLeft,
@@ -46,6 +46,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DatePicker } from '@/components/ui/date-picker';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import DeleteConfirmDialog from '@/components/ui/delete-confirm-dialog';
 import { Switch } from '@/components/ui/switch';
@@ -165,7 +167,7 @@ const Timesheets = () => {
     const isTimerRunning = useTimerStore(state => state.isRunning);
     const prevIsTimerRunning = useRef(isTimerRunning);
 
-    const [currentDate, setCurrentDate] = useState(new Date());
+    const [dateRange, setDateRange] = useState({ from: addDays(new Date(), -6), to: new Date() });
     const [activeTab, setActiveTab] = useState('my-entries');
     const [entries, setEntries] = useState([]);
     const [pendingLeaves, setPendingLeaves] = useState([]);
@@ -217,7 +219,22 @@ const Timesheets = () => {
         billable: false
     });
 
-    const weekDays = useMemo(() => [...Array(7)].map((_, i) => addDays(currentDate, -6 + i)), [currentDate]);
+    const weekDays = useMemo(() => {
+        if (!dateRange?.from) return [];
+        const days = [];
+        let curr = new Date(dateRange.from);
+        curr.setHours(0,0,0,0);
+        const end = dateRange.to ? new Date(dateRange.to) : new Date(curr);
+        end.setHours(0,0,0,0);
+        
+        let maxDays = 31; // prevent massive rendering
+        while (curr <= end && maxDays > 0) {
+            days.push(new Date(curr));
+            curr = addDays(curr, 1);
+            maxDays--;
+        }
+        return days;
+    }, [dateRange]);
 
     const fetchOrgShift = useCallback(async () => {
         try {
@@ -233,9 +250,13 @@ const Timesheets = () => {
 
     const fetchEntries = useCallback(async () => {
         try {
+            if (!weekDays || weekDays.length === 0) {
+                setLoading(false);
+                return;
+            }
             const startD = new Date(weekDays[0]);
             startD.setHours(0, 0, 0, 0);
-            const endD = new Date(weekDays[6]);
+            const endD = new Date(weekDays[weekDays.length - 1]);
             endD.setHours(23, 59, 59, 999);
             
             const startDate = startD.toISOString();
@@ -301,9 +322,15 @@ const Timesheets = () => {
         prevIsTimerRunning.current = isTimerRunning;
     }, [isTimerRunning, fetchEntries]);
 
-    const handlePrevWeek = () => setCurrentDate(addDays(currentDate, -7));
-    const handleNextWeek = () => setCurrentDate(addDays(currentDate, 7));
-    const handleToday = () => setCurrentDate(new Date());
+    const handlePrevRange = () => {
+        const shift = dateRange.to ? differenceInDays(dateRange.to, dateRange.from) + 1 : 1;
+        setDateRange({ from: addDays(dateRange.from, -shift), to: dateRange.to ? addDays(dateRange.to, -shift) : undefined });
+    };
+    const handleNextRange = () => {
+        const shift = dateRange.to ? differenceInDays(dateRange.to, dateRange.from) + 1 : 1;
+        setDateRange({ from: addDays(dateRange.from, shift), to: dateRange.to ? addDays(dateRange.to, shift) : undefined });
+    };
+    const handleToday = () => setDateRange({ from: addDays(new Date(), -6), to: new Date() });
 
     const handleLogHours = async () => {
         if (!newEntry.date) {
@@ -372,6 +399,40 @@ const Timesheets = () => {
         if (loggingMode !== 'leave' && newEntry.date > new Date()) {
             toast({ variant: "destructive", title: "Validation Error", description: "Cannot log work hours for future dates. Use Leave Log for future entries." });
             return;
+        }
+
+        if (loggingMode !== 'leave' && newEntry.projectId) {
+            const selectedProject = projects.find(p => p.id === newEntry.projectId);
+            if (selectedProject) {
+                const entryDate = new Date(newEntry.date);
+                entryDate.setHours(0, 0, 0, 0);
+
+                if (selectedProject.startDate) {
+                    const startDate = new Date(selectedProject.startDate);
+                    startDate.setHours(0, 0, 0, 0);
+                    if (entryDate < startDate) {
+                        toast({
+                            variant: "destructive",
+                            title: "Validation Error",
+                            description: `Cannot log hours before the project's start date (${format(startDate, 'PP')}).`
+                        });
+                        return;
+                    }
+                }
+                
+                if (selectedProject.endDate) {
+                    const endDate = new Date(selectedProject.endDate);
+                    endDate.setHours(0, 0, 0, 0);
+                    if (entryDate > endDate) {
+                        toast({
+                            variant: "destructive",
+                            title: "Validation Error",
+                            description: `Cannot log hours after the project's end date (${format(endDate, 'PP')}).`
+                        });
+                        return;
+                    }
+                }
+            }
         }
 
         const usedHours = getUsedHoursForDate(newEntry.date, editingEntryId);
@@ -553,9 +614,9 @@ const Timesheets = () => {
         const status = entry.status;
         const reviewerText = entry.reviewer ? ` by ${entry.reviewer.name.split(' ')[0]}` : '';
         switch (status) {
-            case 'APPROVED': return <Badge className="bg-green-500/10 text-green-500 border-green-500/20 font-bold uppercase text-[10px] tracking-wider">Approved{reviewerText}</Badge>;
-            case 'REJECTED': return <Badge variant="destructive" className="font-bold uppercase text-[10px] tracking-wider">Rejected{reviewerText}</Badge>;
-            default: return <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20 font-bold uppercase text-[10px] tracking-wider">Pending</Badge>;
+            case 'APPROVED': return <Badge className="bg-green-500/10 text-green-500 border-green-500/20 font-bold uppercase text-[9px] sm:text-[10px] tracking-wider whitespace-nowrap">Approved{reviewerText}</Badge>;
+            case 'REJECTED': return <Badge variant="destructive" className="font-bold uppercase text-[9px] sm:text-[10px] tracking-wider whitespace-nowrap">Rejected{reviewerText}</Badge>;
+            default: return <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20 font-bold uppercase text-[9px] sm:text-[10px] tracking-wider whitespace-nowrap">Pending</Badge>;
         }
     };
 
@@ -569,16 +630,33 @@ const Timesheets = () => {
     };
 
     const getCleanDescription = (desc) => {
-        if (!desc) return 'No description provided';
+        if (!desc) return '';
         let clean = desc;
+
+        let isLeave = /\[(?:Sick Leave|Casual Leave|Paid Leave|Unpaid Leave)\]/.test(clean);
+
+        // Remove Leave tags (e.g. [Sick Leave] - [Full Day])
+        clean = clean.replace(/\[(?:Sick Leave|Casual Leave|Paid Leave|Unpaid Leave)\]\s*-\s*\[(?:1\/4 Day|1\/2 Day|3\/4 Day|Full Day)\]\s*(?:-\s*)?/gi, '');
+        
+        // Remove trailing shift strings
+        clean = clean.replace(/\s*-\s*\[(?:Custom Shift|Direct Hours):.*?\]/gi, '');
+        clean = clean.replace(/^Logged for \[(?:Custom Shift|Direct Hours):.*?\]$/gi, '');
+
+        // Remove any leftover bracket format just in case
         if (clean.includes('[') && clean.includes(']')) {
             const bracketMatch = clean.match(/\[(.*?)\]/);
             if (bracketMatch) {
                 const text = bracketMatch[1];
-                clean = clean.replace(` - [${text}]`, '').replace(`Logged for [${text}]`, '').trim();
+                if (text.includes('Custom Shift') || text.includes('Direct Hours')) {
+                    clean = clean.replace(` - [${text}]`, '').replace(`Logged for [${text}]`, '');
+                }
             }
         }
-        return clean || 'No description provided';
+
+        clean = clean.trim();
+        
+        if (!clean && !isLeave) return 'No description provided';
+        return clean;
     };
 
     const getPortionTags = (desc) => {
@@ -622,8 +700,24 @@ const Timesheets = () => {
         return user.role === 'MANAGER';
     }, [user]);
     
+    const ProjectFilterDropdown = (
+        <Select value={selectedProjectFilter} onValueChange={setSelectedProjectFilter}>
+            <SelectTrigger className="w-[150px] sm:w-[200px] h-9 rounded-xl font-bold bg-muted/30 border-border">
+                <SelectValue placeholder="Filter Project" />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl border-border bg-card">
+                <SelectItem value="all" className="font-bold cursor-pointer rounded-lg">All Projects</SelectItem>
+                {projects.map(p => (
+                    <SelectItem key={p.id} value={p.id} className="font-bold cursor-pointer rounded-lg">
+                        {p.name}
+                    </SelectItem>
+                ))}
+            </SelectContent>
+        </Select>
+    );
+
     return (
-        <div className="flex-1 space-y-4 p-0 sm:p-2 overflow-y-auto no-scrollbar h-full">
+        <div className="flex-1 space-y-4 p-0 sm:p-2 overflow-y-auto overflow-x-hidden no-scrollbar h-full w-full max-w-full">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-card p-4 rounded-xl border border-border shadow-sm">
                 <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                     {!isOrgAdmin && (
@@ -673,42 +767,69 @@ const Timesheets = () => {
                                     ))}
                                 </SelectContent>
                             </Select>
-                            <Select value={selectedProjectFilter} onValueChange={setSelectedProjectFilter}>
-                                <SelectTrigger className="w-full sm:w-[200px] h-10 rounded-xl font-bold bg-muted/30 border-border">
-                                    <SelectValue placeholder="Filter Project" />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-xl border-border bg-card">
-                                    <SelectItem value="all" className="font-bold cursor-pointer rounded-lg">All Projects</SelectItem>
-                                    {projects.map(p => (
-                                        <SelectItem key={p.id} value={p.id} className="font-bold cursor-pointer rounded-lg">
-                                            {p.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
                         </>
                     )}
                 </div>
                 <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
                     <div className="flex items-center gap-2 w-full justify-center sm:w-auto">
-                        <Button variant="outline" size="icon" onClick={handlePrevWeek} className="rounded-lg h-9 w-9 shrink-0">
+                        <Button variant="outline" size="icon" onClick={handlePrevRange} className="rounded-lg h-9 w-9 shrink-0">
                             <ChevronLeft className="h-4 w-4" />
                         </Button>
                         <Button variant="outline" onClick={handleToday} className="rounded-lg h-9 font-bold px-4 flex-1 sm:flex-none">
                             Today
                         </Button>
-                        <Button variant="outline" size="icon" onClick={handleNextWeek} className="rounded-lg h-9 w-9 shrink-0">
+                        <Button variant="outline" size="icon" onClick={handleNextRange} className="rounded-lg h-9 w-9 shrink-0">
                             <ChevronRight className="h-4 w-4" />
                         </Button>
                     </div>
-                    <h2 className="font-black Montserrat text-sm sm:text-lg text-foreground whitespace-nowrap">
-                        {format(weekDays[0], 'MMM d')} – {format(weekDays[6], 'MMM d')}
-                        <span className="hidden sm:inline">, {format(weekDays[6], 'yyyy')}</span>
-                    </h2>
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button variant="outline" className="relative h-auto py-1.5 px-4 rounded-xl border border-primary/20 bg-background hover:bg-primary/5 shadow-sm transition-all duration-300 min-w-[240px] flex items-center justify-start overflow-hidden group">
+                                <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary group-hover:w-1.5 transition-all duration-300" />
+                                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary mr-3 group-hover:scale-110 transition-transform duration-300">
+                                    <Clock className="w-4 h-4" />
+                                </div>
+                                <div className="flex flex-col items-start flex-1 text-left justify-center">
+                                    <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5 leading-none">Timeline</span>
+                                    <span className="text-xs sm:text-sm font-black text-foreground font-['Montserrat'] tracking-tight leading-none">
+                                        {dateRange?.from ? (
+                                            dateRange.to ? (
+                                                <>{format(dateRange.from, "MMM d")} - {format(dateRange.to, "MMM d, yyyy")}</>
+                                            ) : (
+                                                format(dateRange.from, "MMM d, yyyy")
+                                            )
+                                        ) : (
+                                            <span>Pick a date range</span>
+                                        )}
+                                    </span>
+                                </div>
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0 border-border shadow-2xl rounded-2xl overflow-hidden flex flex-col" align="end">
+                            <div className="bg-muted/30 border-b border-border/50 px-3 py-2.5 text-center flex items-center justify-center gap-2">
+                                <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Select up to 31 days</span>
+                            </div>
+                            <Calendar
+                                className="border-0 shadow-none"
+                                initialFocus
+                                mode="range"
+                                defaultMonth={dateRange?.from}
+                                selected={dateRange}
+                                onSelect={setDateRange}
+                                disabled={(date) => {
+                                    if (dateRange?.from && !dateRange?.to) {
+                                        return Math.abs(differenceInDays(date, dateRange.from)) > 30;
+                                    }
+                                    return false;
+                                }}
+                            />
+                        </PopoverContent>
+                    </Popover>
                 </div>
             </div>
 
-            {activeTab !== 'leave-logs' && (() => {
+            {activeTab !== 'leave-logs' && weekDays && weekDays.length > 0 && (() => {
                 // Pre-calculate all 7 days for weekly summary
                 const weekData = weekDays.map((day) => {
                     // Calculate target entries based on mode and filters
@@ -732,46 +853,46 @@ const Timesheets = () => {
 
                     const leaveHours = leaveEntries.reduce((sum, e) => sum + parseFloat(e.hours), 0);
 
-                    // --- Defect #25: Correct categorisation ---
-                    // Productive  = all project work entries tied to a REAL project (including "General")
-                    // Non-Productive = work entries with no project or tied to "Leave Tracker"
-                    // Billable    = subset of productive entries that are marked billable
+                    // Productive  = ALL explicitly logged work hours (Prj Bill + Prj NonBill + GenTasks)
+                    // Non-Productive = Org Biz Hrs - Productive - Leave (idle/unaccounted time)
+                    // Billable    = subset of work entries marked as billable
                     // Leave       = leave entries (already separated above)
 
-                    const productionEntries = workEntries.filter(e => {
-                        const projName = (e.project?.name || '').toLowerCase();
-                        return e.projectId && projName !== 'leave tracker';
-                    });
-                    const nonProductionEntries = workEntries.filter(e => {
-                        const projName = (e.project?.name || '').toLowerCase();
-                        return !e.projectId || projName === 'leave tracker';
-                    });
+                    const productiveHours = workEntries.reduce((sum, e) => sum + parseFloat(e.hours), 0);
+                    const billableHours = workEntries.filter(e => e.billable).reduce((sum, e) => sum + parseFloat(e.hours), 0);
 
-                    const productionHours = productionEntries.reduce((sum, e) => sum + parseFloat(e.hours), 0);
-                    const nonProdHours = nonProductionEntries.reduce((sum, e) => sum + parseFloat(e.hours), 0);
-                    const billableHours = productionEntries.filter(e => e.billable).reduce((sum, e) => sum + parseFloat(e.hours), 0);
+                    // Org Biz Hrs: full shift on working days (Mon-Fri), 0 on weekends
+                    const dayOfWeek = day.getDay();
+                    const isWorkingDay = dayOfWeek !== 0 && dayOfWeek !== 6;
+                    const shiftHours = calculateCustomHours(orgShiftSettings?.startTime || '10:00 AM', orgShiftSettings?.endTime || '07:30 PM').total;
+                    const orgBizHrs = isWorkingDay ? shiftHours : 0;
 
-                    // Total Worked = Production + Non-Production (excludes leave)
-                    const totalWorkedHours = productionHours + nonProdHours;
-                    // Total Day   = Worked + Leave
-                    const totalDayHours = totalWorkedHours + leaveHours;
+                    // Total Day = max of Org Biz Hrs or actual logged (handles overtime & weekends)
+                    const totalDayHours = Math.max(orgBizHrs, productiveHours + leaveHours);
 
-                    return { day, productionHours, nonProdHours, billableHours, leaveHours, totalWorkedHours, totalDayHours };
+                    // Non-Productive = remaining shift time after Productive + Leave
+                    const nonProdHours = Math.max(0, totalDayHours - productiveHours - leaveHours);
+
+                    // Total Worked = productive hours only
+                    const totalWorkedHours = productiveHours;
+
+                    return { day, productiveHours, nonProdHours, billableHours, leaveHours, totalWorkedHours, totalDayHours, orgBizHrs };
                 });
 
                 // Weekly totals
-                const weeklyProduction = weekData.reduce((s, d) => s + d.productionHours, 0);
+                const weeklyProductive = weekData.reduce((s, d) => s + d.productiveHours, 0);
                 const weeklyNonProd = weekData.reduce((s, d) => s + d.nonProdHours, 0);
                 const weeklyBillable = weekData.reduce((s, d) => s + d.billableHours, 0);
                 const weeklyLeave = weekData.reduce((s, d) => s + d.leaveHours, 0);
                 const weeklyWorked = weekData.reduce((s, d) => s + d.totalWorkedHours, 0);
-                const weeklyTotal = weeklyWorked + weeklyLeave;
+                // Denominator = Strictly Total Org Biz Hrs for the week
+                const weeklyTotal = weekData.reduce((s, d) => s + d.orgBizHrs, 0);
                 const pct = (v) => weeklyTotal > 0 ? Math.round((v / weeklyTotal) * 100) : 0;
 
                 return (
                     <>
-                        <div className="flex sm:grid overflow-x-auto no-scrollbar sm:overflow-visible pb-2 pt-1 sm:pb-0 sm:pt-0 px-1 sm:px-0 -mx-1 sm:mx-0 snap-x snap-mandatory sm:grid-cols-7 gap-2 sm:gap-3">
-                            {weekData.map(({ day, productionHours, nonProdHours, billableHours, leaveHours, totalWorkedHours, totalDayHours }) => {
+                        <div className="flex sm:grid overflow-x-auto no-scrollbar sm:overflow-visible py-2 px-2 sm:p-0 snap-x snap-mandatory sm:grid-cols-7 gap-3">
+                            {weekData.map(({ day, productiveHours, nonProdHours, billableHours, leaveHours, totalWorkedHours, totalDayHours }) => {
                                 const isToday = isSameDay(day, new Date());
                                 const isSelected = selectedDateFilter && isSameDay(day, selectedDateFilter);
                                 const dayPct = (v) => totalDayHours > 0 ? Math.round((v / totalDayHours) * 100) : 0;
@@ -788,7 +909,7 @@ const Timesheets = () => {
                                         {/* Leave background fill */}
                                         {leaveHours > 0 && (
                                             <div 
-                                                className="absolute bottom-0 left-0 right-0 bg-amber-100 dark:bg-amber-500/15 pointer-events-none transition-all duration-500" 
+                                                className="absolute bottom-0 left-0 right-0 bg-blue-200 dark:bg-blue-500/25 pointer-events-none transition-all duration-500" 
                                                 style={{ height: `${dayPct(leaveHours)}%` }} 
                                             />
                                         )}
@@ -805,7 +926,7 @@ const Timesheets = () => {
                                                 </span>
                                                 {hasAnyHours ? (
                                                     <div className="flex flex-col items-center mt-1 w-full space-y-0.5">
-                                                        <span className="text-[7px] sm:text-[9px] font-bold text-green-500 uppercase">Productive: {dayPct(productionHours)}%</span>
+                                                        <span className="text-[7px] sm:text-[9px] font-bold text-green-500 uppercase">Productive: {dayPct(productiveHours)}%</span>
                                                         <span className="text-[7px] sm:text-[9px] font-bold text-red-500 uppercase">Non-Productive: {dayPct(nonProdHours)}%</span>
                                                         <span className="text-[7px] sm:text-[9px] font-bold text-blue-500 uppercase">Leave: {dayPct(leaveHours)}%</span>
                                                         <span className="text-[7px] sm:text-[9px] font-bold text-amber-500 uppercase">Bill: {dayPct(billableHours)}%</span>
@@ -839,7 +960,7 @@ const Timesheets = () => {
                                                 <div className="h-2 w-2 rounded-full bg-green-500 shrink-0"></div>
                                                 <div className="flex flex-col min-w-0">
                                                     <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-green-600 truncate">Productive</span>
-                                                    <span className="text-xs sm:text-sm font-black Montserrat text-green-600 truncate">{weeklyProduction.toFixed(2)}h <span className="text-[8px] sm:text-[9px] font-bold">({pct(weeklyProduction)}%)</span></span>
+                                                    <span className="text-xs sm:text-sm font-black Montserrat text-green-600 truncate">{weeklyProductive.toFixed(2)}h <span className="text-[8px] sm:text-[9px] font-bold">({pct(weeklyProductive)}%)</span></span>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-1.5 bg-red-500/10 border border-red-500/20 rounded-lg px-2 py-1.5 sm:px-3 sm:py-2 w-full lg:w-auto">
@@ -867,7 +988,7 @@ const Timesheets = () => {
                                     </div>
                                     {/* Progress bar */}
                                     <div className="mt-3 h-2.5 w-full rounded-full bg-muted/30 overflow-hidden flex">
-                                        {weeklyProduction > 0 && <div className="h-full bg-green-500 transition-all duration-500" style={{ width: `${pct(weeklyProduction)}%` }}></div>}
+                                        {weeklyProductive > 0 && <div className="h-full bg-green-500 transition-all duration-500" style={{ width: `${pct(weeklyProductive)}%` }}></div>}
                                         {weeklyNonProd > 0 && <div className="h-full bg-red-500 transition-all duration-500" style={{ width: `${pct(weeklyNonProd)}%` }}></div>}
                                         {weeklyLeave > 0 && <div className="h-full bg-blue-500 transition-all duration-500" style={{ width: `${pct(weeklyLeave)}%` }}></div>}
                                     </div>
@@ -881,14 +1002,17 @@ const Timesheets = () => {
             {isOrgAdmin ? (
                 <div className="space-y-4">
                     <Card className="border-border bg-card shadow-xl overflow-hidden rounded-2xl">
-                        <CardHeader className="border-b border-border bg-muted/20">
-                            <CardTitle className="text-lg font-black Montserrat">
-                                {selectedMemberFilter === 'all' 
-                                    ? 'All Team Logs' 
-                                    : `Logs for ${uniqueUsers.find(u => u.id === selectedMemberFilter)?.name || 'Member'}`}
-                                {selectedDateFilter && ` - ${format(selectedDateFilter, 'MMM d, yyyy')}`}
-                            </CardTitle>
-                            <CardDescription className="text-xs font-medium">Review, approve, or reject time logs from your team</CardDescription>
+                        <CardHeader className="border-b border-border bg-muted/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div>
+                                <CardTitle className="text-lg font-black Montserrat">
+                                    {selectedMemberFilter === 'all' 
+                                        ? 'All Team Logs' 
+                                        : `Logs for ${uniqueUsers.find(u => u.id === selectedMemberFilter)?.name || 'Member'}`}
+                                    {selectedDateFilter && ` - ${format(selectedDateFilter, 'MMM d, yyyy')}`}
+                                </CardTitle>
+                                <CardDescription className="text-xs font-medium">Review, approve, or reject time logs from your team</CardDescription>
+                            </div>
+                            <div className="shrink-0">{ProjectFilterDropdown}</div>
                         </CardHeader>
                         <CardContent className="p-0">
                             <ScrollArea className="h-[400px]">
@@ -952,7 +1076,14 @@ const Timesheets = () => {
                                                     </div>
                                                     <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 shrink-0">
                                                         <div className="text-right">
-                                                            <p className="text-sm font-black Montserrat">{entry.hours}h</p>
+                                                            <div className="flex items-center justify-end gap-2">
+                                                                {entry.billable && (
+                                                                    <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20 text-[9px] h-4 px-1.5 py-0 uppercase font-bold tracking-widest">
+                                                                        Billable
+                                                                    </Badge>
+                                                                )}
+                                                                <p className="text-sm font-black Montserrat">{entry.hours}h</p>
+                                                            </div>
                                                         </div>
                                                         <div className="flex items-center gap-3">
                                                             {getStatusBadge(entry)}
@@ -1009,9 +1140,12 @@ const Timesheets = () => {
 
                 <TabsContent value="my-entries" className="space-y-4">
                     <Card className="border-border bg-card shadow-xl overflow-hidden rounded-2xl">
-                        <CardHeader className="border-b border-border bg-muted/20">
-                            <CardTitle className="text-lg font-black Montserrat">Daily Details - {format(selectedDateFilter, 'MMMM d, yyyy')}</CardTitle>
-                            <CardDescription className="text-xs font-medium">Detailed breakdown of your logged time for the selected day</CardDescription>
+                        <CardHeader className="border-b border-border bg-muted/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div>
+                                <CardTitle className="text-lg font-black Montserrat">Daily Details - {format(selectedDateFilter, 'MMMM d, yyyy')}</CardTitle>
+                                <CardDescription className="text-xs font-medium">Detailed breakdown of your logged time for the selected day</CardDescription>
+                            </div>
+                            <div className="shrink-0">{ProjectFilterDropdown}</div>
                         </CardHeader>
                         <CardContent className="p-0">
                             <ScrollArea className="h-[400px]">
@@ -1028,9 +1162,9 @@ const Timesheets = () => {
                                             .filter(e => selectedProjectFilter === 'all' ? true : e.projectId === selectedProjectFilter)
                                             .sort((a, b) => new Date(b.date) - new Date(a.date))
                                             .map((entry) => (
-                                                <div key={entry.id} className="p-4 flex items-center justify-between hover:bg-muted/30 transition-colors group">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="h-10 w-10 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-center shrink-0">
+                                                <div key={entry.id} className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:bg-muted/30 transition-colors group">
+                                                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                                                        <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-primary/5 border border-primary/10 flex items-center justify-center shrink-0">
                                                             <span className="font-black text-primary text-xs">{format(parseISO(entry.date), 'dd')}</span>
                                                         </div>
                                                         <div className="min-w-0">
@@ -1063,12 +1197,19 @@ const Timesheets = () => {
                                                             })()}
                                                         </div>
                                                     </div>
-                                                    <div className="flex items-center gap-6">
-                                                        <div className="text-right sr-only sm:not-sr-only">
-                                                            <p className="text-sm font-black Montserrat">{entry.hours}h</p>
-                                                            <p className="text-[10px] text-muted-foreground font-bold uppercase">{format(parseISO(entry.date), 'MMM d, EEE')}</p>
+                                                    <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-6 shrink-0">
+                                                        <div className="text-left sm:text-right">
+                                                            <div className="flex items-center justify-start sm:justify-end gap-2 mb-0.5">
+                                                                {entry.billable && (
+                                                                    <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20 text-[9px] h-4 px-1.5 py-0 uppercase font-bold tracking-widest">
+                                                                        Billable
+                                                                    </Badge>
+                                                                )}
+                                                                <p className="text-sm font-black Montserrat">{entry.hours}h</p>
+                                                            </div>
+                                                            <p className="text-[10px] text-muted-foreground font-bold uppercase hidden sm:block">{format(parseISO(entry.date), 'MMM d, EEE')}</p>
                                                         </div>
-                                                        <div className="flex items-center gap-3">
+                                                        <div className="flex items-center gap-2 sm:gap-3">
                                                             {getStatusBadge(entry)}
                                                             {entry.status === 'PENDING' && (
                                                                 <div className="flex items-center gap-1 transition-all">
@@ -1133,9 +1274,12 @@ const Timesheets = () => {
 
                 <TabsContent value="team-logs" className="space-y-4">
                     <Card className="border-border bg-card shadow-xl overflow-hidden rounded-2xl">
-                        <CardHeader className="border-b border-border bg-muted/20">
-                            <CardTitle className="text-lg font-black Montserrat">Team Logs</CardTitle>
-                            <CardDescription className="text-xs font-medium">Review, approve, or reject time logs from your team</CardDescription>
+                        <CardHeader className="border-b border-border bg-muted/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div>
+                                <CardTitle className="text-lg font-black Montserrat">Team Logs</CardTitle>
+                                <CardDescription className="text-xs font-medium">Review, approve, or reject time logs from your team</CardDescription>
+                            </div>
+                            <div className="shrink-0">{ProjectFilterDropdown}</div>
                         </CardHeader>
                         <CardContent className="p-0">
                             <ScrollArea className="h-[400px]">
@@ -1192,7 +1336,14 @@ const Timesheets = () => {
                                                     </div>
                                                     <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 shrink-0">
                                                         <div className="text-right">
-                                                            <p className="text-sm font-black Montserrat">{entry.hours}h</p>
+                                                            <div className="flex items-center justify-end gap-2">
+                                                                {entry.billable && (
+                                                                    <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20 text-[9px] h-4 px-1.5 py-0 uppercase font-bold tracking-widest">
+                                                                        Billable
+                                                                    </Badge>
+                                                                )}
+                                                                <p className="text-sm font-black Montserrat">{entry.hours}h</p>
+                                                            </div>
                                                         </div>
                                                         <div className="flex items-center gap-3">
                                                             {getStatusBadge(entry)}

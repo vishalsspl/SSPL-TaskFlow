@@ -30,7 +30,7 @@ const STEPS = {
   RESULTS: 'results',
 };
 
-const ImportTasksDialog = ({ open, onOpenChange, onImportComplete }) => {
+const ImportTasksDialog = ({ open, onOpenChange, onImportComplete, users = [] }) => {
   const { toast } = useToast();
   const fileInputRef = useRef(null);
   const [step, setStep] = useState(STEPS.INFO);
@@ -121,6 +121,17 @@ const ImportTasksDialog = ({ open, onOpenChange, onImportComplete }) => {
           if (!item.projectName) rowErrors.push('Missing Project Name');
 
           if (item.dueDate && isNaN(new Date(item.dueDate).getTime())) rowErrors.push('Invalid Due Date format');
+
+          if (item.assigneeEmails) {
+            const emails = [...new Set(item.assigneeEmails.split(',').map(e => e.trim().toLowerCase()).filter(e => e))];
+            if (emails.length > 0) {
+              const registeredEmails = users.map(u => u.email.toLowerCase());
+              const unregistered = emails.filter(e => !registeredEmails.includes(e));
+              if (unregistered.length > 0) {
+                rowErrors.push(`Assignee email(s) not registered: ${unregistered.join(', ')}`);
+              }
+            }
+          }
 
           if (rowErrors.length > 0) errors.push(`Row ${idx + 2}: ${rowErrors.join(', ')}`);
           return { ...item, _rowNum: idx + 2, _valid: rowErrors.length === 0, _errors: rowErrors };

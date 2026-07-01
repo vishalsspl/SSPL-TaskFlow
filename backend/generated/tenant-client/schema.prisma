@@ -176,8 +176,9 @@ model Task {
   priority        Priority   @default(MEDIUM)
   type            TaskType   @default(TASK)
 
-  completionPercentage Int  @default(0)
+  completionPercentage Int       @default(0)
   storyPoints          Int?
+  completedAt          DateTime?
 
   dueDate     DateTime?
   tags        String[]  @default([])

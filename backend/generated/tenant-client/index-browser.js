@@ -214,6 +214,7 @@ exports.Prisma.TaskScalarFieldEnum = {
   type: 'type',
   completionPercentage: 'completionPercentage',
   storyPoints: 'storyPoints',
+  completedAt: 'completedAt',
   dueDate: 'dueDate',
   tags: 'tags',
   attachments: 'attachments',

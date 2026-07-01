@@ -226,7 +226,7 @@ const SuperAdminLayout = () => {
                   <Input
                     type="search"
                     placeholder={searchPlaceholder}
-                    className="w-full h-10 px-4 rounded-xl bg-secondary/10 border-border/5 focus:bg-background focus:ring-4 focus:ring-[#48A111]/10 focus:border-[#48A111]/30 transition-all text-xs font-bold shadow-inner Montserrat"
+                    className="w-full h-10 px-4 rounded-xl bg-secondary/10 border-border/5 focus:bg-background focus:ring-4 focus:ring-[#48A111]/10 focus:border-[#48A111]/30 transition-all text-xs font-bold placeholder:font-medium placeholder:text-muted-foreground/40 shadow-inner Montserrat"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
@@ -261,7 +261,7 @@ const SuperAdminLayout = () => {
               <Input
                 type="search"
                 placeholder={searchPlaceholder}
-                className="w-full h-10 px-4 rounded-xl bg-secondary/10 border-border/5 focus:bg-background focus:ring-2 focus:ring-[#48A111]/10 focus:border-[#48A111]/30 transition-all text-xs font-bold shadow-inner Montserrat"
+                className="w-full h-10 px-4 rounded-xl bg-secondary/10 border-border/5 focus:bg-background focus:ring-2 focus:ring-[#48A111]/10 focus:border-[#48A111]/30 transition-all text-xs font-bold placeholder:font-medium placeholder:text-muted-foreground/40 shadow-inner Montserrat"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />

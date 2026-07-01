@@ -768,6 +768,33 @@ export const sendTimesheetStatusEmail = async (to, userName, projectName, status
   }
 };
 
+export const sendLeaveStatusEmail = async (to, userName, leaveType, status, managerName, hours, baseUrl) => {
+  try {
+    if (!to) return null;
+    const isApproved = status === 'APPROVED';
+    const info = await transporter.sendMail({
+      from: DEFAULT_FROM, to,
+      subject: `[TaskFlow] Leave ${isApproved ? 'Approved' : 'Rejected'}`,
+      html: buildEmailTemplate({
+        actionSummary: `<strong>${managerName}</strong> ${isApproved ? 'approved' : 'rejected'} your leave request.`,
+        refLabel: `TaskFlow / Leave`,
+        refTitle: `Leave ${isApproved ? 'Approved' : 'Rejected'}`,
+        bodyLines: [
+          `Hello ${userName},`,
+          `Your leave request of <strong>${hours}h</strong> for <strong>${leaveType}</strong> has been <strong>${status.toLowerCase()}</strong>.`
+        ],
+        ctaUrl: `${getBaseUrl(baseUrl)}/timesheets`,
+        ctaLabel: 'View your timesheets in TaskFlow'
+      }),
+    });
+    console.log(`[EmailService] Leave Status Email sent to ${to}: ${info.messageId}`);
+    return info;
+  } catch (error) {
+    console.error(`[EmailService] Error sending leave status email to ${to}:`, error);
+    return null;
+  }
+};
+
 export const sendNewOrgSignupNotificationToSuperAdmin = async (superAdminEmail, superAdminName, orgDetails, adminDetails, baseUrl) => {
   try {
     if (!superAdminEmail) return null;

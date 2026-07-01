@@ -178,6 +178,7 @@ model Task {
 
   completionPercentage Int @default(0)
   storyPoints          Int?
+  completedAt          DateTime?
 
   dueDate DateTime?
   tags    String[]  @default([])
@@ -358,6 +359,7 @@ model Notification {
   type    String
   link    String?
   isRead  Boolean @default(false)
+  readAt  DateTime?
 
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)

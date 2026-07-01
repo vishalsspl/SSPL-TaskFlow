@@ -129,7 +129,7 @@ const ProjectView = () => {
 
   const checkCanEditTask = (task) => {
     if (!task) return false;
-    return user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.permissions?.['tasks.editAny'] || (user?.role === 'MEMBER' && task.project?.allowMemberTaskCreation);
+    return user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.permissions?.['tasks.editAny'];
   };
 
   const handleRemoveMember = async () => {

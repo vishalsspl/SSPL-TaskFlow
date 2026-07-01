@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/select';
 import { DatePicker } from '@/components/ui/date-picker';
 import { format } from 'date-fns';
-import { RefreshCw, Plus, X, MoreVertical, Clock, AlertCircle, User, ClipboardList, Filter, Pencil, Trash2, ArrowRightLeft } from 'lucide-react';
+import { RefreshCw, Plus, X, MoreVertical, Clock, AlertCircle, User, ClipboardList, Filter, Pencil, Trash2, ArrowRightLeft, CheckSquare, XCircle, CheckCircle2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -554,7 +554,11 @@ const Kanban = () => {
                         {/* ── Meta Info (Tasks due soon) ── */}
                         <div className="mb-4">
                           <p className="text-[12px] font-medium text-gray-500">
-                            {overdue ? (
+                            {task.completedAt ? (
+                              <span className="text-green-500 flex items-center gap-1 font-bold">
+                                <CheckCircle2 className="w-3 h-3" /> Completed On: {format(new Date(task.completedAt), 'MMM d, yyyy')}
+                              </span>
+                            ) : overdue ? (
                               <span className="text-red-500 flex items-center gap-1">
                                 <AlertCircle className="w-3 h-3" /> Overdue
                               </span>
@@ -563,7 +567,7 @@ const Kanban = () => {
                                 <Clock className="w-3 h-3" /> Due today
                               </span>
                             ) : daysLeft !== null ? (
-                              `6 Tasks due soon` // Hardcoded placeholder like mockup? Or real? Mockup says "6 Tasks due soon"
+                              `${daysLeft} Days Left`
                             ) : (
                               'No due date'
                             )}

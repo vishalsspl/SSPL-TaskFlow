@@ -68,7 +68,7 @@ import CreateTaskForm from '@/components/forms/CreateTaskForm';
 import TablePagination from '@/components/ui/table-pagination';
 import { useToast } from "@/hooks/use-toast";
 
-import { Edit2, Lock, ArrowUp, ArrowDown } from 'lucide-react';
+import { Edit2, Lock, ArrowUp, ArrowDown, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ImportTasksDialog from '@/components/ImportTasksDialog';
 import TaskDetailsModal from '@/components/task/TaskDetailsModal';
@@ -265,13 +265,8 @@ const Tasks = () => {
 
   const handleTaskClick = (task) => {
     if (user?.role === 'CLIENT') return;
-    if (user?.role === 'MEMBER') {
-      setSelectedTask(task);
-      setShowDetailsDialog(true);
-      return;
-    }
     setSelectedTask(task);
-    setShowEditDialog(true);
+    setShowDetailsDialog(true);
   };
 
   const handleDelete = (task) => {
@@ -338,10 +333,43 @@ const Tasks = () => {
       new Map(
         projects
           .filter(p => p.manager)
+          .filter(p => projectFilter !== 'all' ? p.id === projectFilter : true)
           .map(p => [p.manager.id, { value: p.manager.id, label: p.manager.name }])
       ).values()
     ),
   ];
+
+  const projectOptions = [
+    { value: 'all', label: 'All Projects' },
+    ...projects
+      .filter(p => managerFilter ? p.manager?.id === managerFilter : true)
+      .map(p => ({ value: p.id, label: p.name }))
+  ];
+
+  const handleManagerFilterChange = (value) => {
+    setManagerFilter(value);
+    setPage(1);
+    
+    if (value && projectFilter !== 'all') {
+      const selectedProject = projects.find(p => p.id === projectFilter);
+      if (selectedProject && selectedProject.manager?.id !== value) {
+        setProjectFilter('all');
+      }
+    }
+  };
+
+  const handleProjectFilterChange = (value) => {
+    const projId = value || 'all';
+    setProjectFilter(projId);
+    setPage(1);
+
+    if (projId !== 'all' && managerFilter) {
+      const selectedProject = projects.find(p => p.id === projId);
+      if (selectedProject && selectedProject.manager?.id !== managerFilter) {
+        setManagerFilter('');
+      }
+    }
+  };
 
   const priorityOptions = [
     { value: '', label: 'All Priorities' },
@@ -455,9 +483,9 @@ const Tasks = () => {
               <div className="flex flex-col md:flex-row items-center gap-3 w-full xl:w-auto flex-1 justify-end">
                 <div className={`flex-col md:flex-row flex-wrap items-center gap-2 w-full md:w-auto ${showFiltersMobile ? 'flex' : 'hidden md:flex'}`}>
                   <SearchableSelect
-                    options={[{ value: 'all', label: 'All Projects' }, ...projects.map(p => ({ value: p.id, label: p.name }))]}
+                    options={projectOptions}
                     value={projectFilter}
-                    onChange={(val) => setProjectFilter(val || 'all')}
+                    onChange={handleProjectFilterChange}
                     placeholder="Project"
                     className="w-full md:w-[140px] h-10 rounded-xl bg-background/50 border hover:bg-background transition-all"
                     style={{ borderColor: 'var(--input-border)' }}
@@ -465,7 +493,7 @@ const Tasks = () => {
                   <SearchableSelect
                     options={managerOptions}
                     value={managerFilter}
-                    onChange={setManagerFilter}
+                    onChange={handleManagerFilterChange}
                     placeholder="Manager"
                     className="w-full md:w-[140px] h-10 rounded-xl bg-background/50 border hover:bg-background transition-all"
                     style={{ borderColor: 'var(--input-border)' }}
@@ -709,7 +737,7 @@ const Tasks = () => {
                                         task.status === 'COMPLETED' ? '#48A111' : '#EF4444'
                                 }}
                               />
-                              <p className="font-bold Montserrat leading-tight text-foreground group-hover:text-primary transition-colors">{task.title}</p>
+                              <p className="text-sm font-bold Montserrat leading-tight text-foreground group-hover:text-primary transition-colors">{task.title}</p>
   
                               {/* Styled Custom Tooltip */}
                               {task.description && (
@@ -785,7 +813,27 @@ const Tasks = () => {
                         <TableCell className="text-xs font-black Montserrat text-foreground">
                           {task.storyPoints || 0}
                         </TableCell>
-                        <TableCell className="text-[11px] font-bold Montserrat text-foreground/90">{formatDate(task.dueDate)}</TableCell>
+                        <TableCell className="text-[11px] font-bold Montserrat text-foreground/90 whitespace-nowrap">
+                          {task.completedAt ? (
+                            <div className="flex flex-col gap-1">
+                              <div className="flex items-center gap-1.5 text-green-500">
+                                <CheckSquare className="w-3.5 h-3.5 shrink-0" />
+                                <span>{formatDate(task.completedAt)}</span>
+                              </div>
+                              {task.dueDate && (
+                                <div className="flex items-center gap-1.5 text-muted-foreground/60 text-[9px]">
+                                  <Calendar className="w-3 h-3 shrink-0" />
+                                  <span>{formatDate(task.dueDate)}</span>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1.5 text-foreground/90">
+                              <Calendar className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
+                              <span>{task.dueDate ? formatDate(task.dueDate) : "No Date"}</span>
+                            </div>
+                          )}
+                        </TableCell>
                         <TableCell>
                           <div className="space-y-1.5">
                             <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
@@ -886,7 +934,7 @@ const Tasks = () => {
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
                           {(() => {
-                            const canEditBtn = user?.role === 'ADMIN' || user?.permissions?.['tasks.editAny'] || (user?.role === 'MEMBER' && task.project?.allowMemberTaskCreation);
+                            const canEditBtn = user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.permissions?.['tasks.editAny'] || (user?.role === 'MEMBER' && task.project?.allowMemberTaskCreation);
                             const canDeleteBtn = user?.role === 'ADMIN' || user?.permissions?.['tasks.delete'];
                             if (user?.role === 'CLIENT') return null;
                             
@@ -907,7 +955,8 @@ const Tasks = () => {
                                     className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      handleTaskClick(task);
+                                      setSelectedTask(task);
+                                      setShowEditDialog(true);
                                     }}
                                   >
                                     <Edit2 className="h-4 w-4" />
@@ -951,12 +1000,17 @@ const Tasks = () => {
                           <span>📁</span>
                           <span className="truncate max-w-[130px] font-medium">{task.project.name}</span>
                         </div>
-                        {task.dueDate && (
+                        {task.completedAt ? (
+                          <div className="flex items-center gap-1.5 text-green-500">
+                            <CheckCircle2 className="w-3 h-3" />
+                            <span className="font-bold">Completed: {formatDate(task.completedAt)}</span>
+                          </div>
+                        ) : task.dueDate ? (
                           <div className="flex items-center gap-1.5">
                             <span>📅</span>
                             <span className="font-medium">{formatDate(task.dueDate)}</span>
                           </div>
-                        )}
+                        ) : null}
                       </div>
                       <div>
                         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black tracking-widest uppercase shadow-sm border border-black/5 ${statusColors[task.status] || ''}`}>
@@ -1008,6 +1062,7 @@ const Tasks = () => {
         open={showImportDialog}
         onOpenChange={setShowImportDialog}
         onImportComplete={fetchTasks}
+        users={users}
       />
     </div>
   );

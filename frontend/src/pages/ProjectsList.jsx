@@ -114,6 +114,7 @@ const ProjectsList = () => {
 
   const [showFiltersMobile, setShowFiltersMobile] = useState(false);
   const [filteredClientIds, setFilteredClientIds] = useState(null);
+  const [filteredManagerIds, setFilteredManagerIds] = useState(null);
 
   // Pagination state
   const [page, setPage] = useState(1);
@@ -445,6 +446,7 @@ const ProjectsList = () => {
     { label: 'All Managers', value: '' },
     ...users
       .filter(u => u.role === 'MANAGER')
+      .filter(u => filteredManagerIds ? filteredManagerIds.has(u.id) : true)
       .map(u => ({ label: u.name, value: u.id }))
   ];
 
@@ -458,25 +460,53 @@ const ProjectsList = () => {
 
   const handleManagerFilterChange = async (value) => {
     setManagerFilter(value);
-    setClientFilter('');
     setPage(1);
 
     if (!value) {
       setFilteredClientIds(null);
+      if (!clientFilter) setFilteredManagerIds(null);
       return;
     }
 
     try {
-      // Fetch all projects for this manager (no page param = flat array)
       const response = await api.get('/projects', { params: { managerId: value } });
       const projects = Array.isArray(response.data) ? response.data : response.data.data || [];
       const clientIds = new Set(
         projects.filter(p => p.clientId).map(p => p.clientId)
       );
       setFilteredClientIds(clientIds);
+      if (clientFilter && !clientIds.has(clientFilter)) {
+        setClientFilter('');
+      }
     } catch (error) {
       console.error('Failed to fetch manager projects:', error);
       setFilteredClientIds(null);
+    }
+  };
+
+  const handleClientFilterChange = async (value) => {
+    setClientFilter(value);
+    setPage(1);
+
+    if (!value) {
+      setFilteredManagerIds(null);
+      if (!managerFilter) setFilteredClientIds(null);
+      return;
+    }
+
+    try {
+      const response = await api.get('/projects', { params: { clientId: value } });
+      const projects = Array.isArray(response.data) ? response.data : response.data.data || [];
+      const managerIds = new Set(
+        projects.filter(p => p.managerId).map(p => p.managerId)
+      );
+      setFilteredManagerIds(managerIds);
+      if (managerFilter && !managerIds.has(managerFilter)) {
+        setManagerFilter('');
+      }
+    } catch (error) {
+      console.error('Failed to fetch client projects:', error);
+      setFilteredManagerIds(null);
     }
   };
 
@@ -722,7 +752,7 @@ const ProjectsList = () => {
                     <SearchableSelect
                       options={clientOptions}
                       value={clientFilter}
-                      onChange={setClientFilter}
+                      onChange={handleClientFilterChange}
                       placeholder="All Clients"
                       searchPlaceholder="Search client..."
                       className="w-full sm:w-[155px] h-11 rounded-xl bg-background border hover:bg-accent/20 transition-all"
@@ -877,7 +907,7 @@ const ProjectsList = () => {
               <div className="hidden sm:block">
                 <Table>
                   <TableHeader>
-                    <TableRow style={{ borderLeft: '4px solid transparent' }}>
+                    <TableRow>
                       <TableHead className="cursor-pointer select-none" onClick={() => handleSort('name')}>Project Name {renderSortIcon('name')}</TableHead>
                       <TableHead className="cursor-pointer select-none" onClick={() => handleSort('client')}>Client {renderSortIcon('client')}</TableHead>
                       <TableHead className="cursor-pointer select-none" onClick={() => handleSort('manager')}>Manager {renderSortIcon('manager')}</TableHead>
@@ -897,13 +927,14 @@ const ProjectsList = () => {
                             <TableRow
                               key={project.id}
                               className="cursor-pointer transition-all relative group/row hover:z-50 hover:bg-accent/10"
-                              style={{ borderLeft: `4px solid ${rowColor} `, background: `${rowColor} 0d` }}
+                              style={{ background: `${rowColor} 0d` }}
                               onClick={() => {
                                 setSelectedOverviewProject(project);
                                 setShowOverviewDialog(true);
                               }}
                             >
                               <TableCell className="relative text-left pl-6">
+                                <div className="absolute left-0 top-0 bottom-0 w-1" style={{ backgroundColor: rowColor }} />
                                 <div className="flex items-center gap-2">
                                   <p className="font-semibold text-foreground">{project.name}</p>
                                 </div>
@@ -947,14 +978,20 @@ const ProjectsList = () => {
                             )}
                           </TableCell>
                           <TableCell>
-                            {project.name.toLowerCase() === 'general' ? (
-                              <div className="text-center text-muted-foreground text-xs">-</div>
-                            ) : (
-                              <div className="text-xs font-bold text-foreground/90 text-center">
-                                <p>{project.startDate ? formatDate(project.startDate) : 'N/A'}</p>
-                                <p className="text-[11px] text-foreground/70 font-medium mt-0.5">to {project.endDate ? formatDate(project.endDate) : 'Ongoing'}</p>
-                              </div>
-                            )}
+                            <div className="flex flex-col items-center justify-center w-full h-full">
+                              {project.name.toLowerCase() === 'general' ? (
+                                <span className="text-muted-foreground text-xs">-</span>
+                              ) : (
+                                <>
+                                  <span className="text-xs font-bold text-foreground/90">
+                                    {project.startDate ? formatDate(project.startDate) : 'N/A'}
+                                  </span>
+                                  <span className="text-[11px] text-foreground/70 font-medium mt-0.5">
+                                    to {project.endDate ? formatDate(project.endDate) : 'Ongoing'}
+                                  </span>
+                                </>
+                              )}
+                            </div>
                           </TableCell>
                           {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
                             <TableCell>

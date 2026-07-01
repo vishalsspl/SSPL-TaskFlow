@@ -743,3 +743,21 @@ Stack: ReferenceError: sendEmail is not defined
 Path: /api/projects/b9316bb8-f442-477a-8436-9e6e570f8e09
 User: 454265a3-1777-413b-a49f-8735ef6ffa2a
 ---
+2026-06-12T06:47:29.252Z [GLOBAL_ERROR] 
+Invalid `prisma.task.update()` invocation:
+
+
+Foreign key constraint violated: `Task_phaseId_fkey (index)`
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.task.update()` invocation:
+
+
+Foreign key constraint violated: `Task_phaseId_fkey (index)`
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async updateTask (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/taskController.js:710:16)
+Path: /api/tasks/ae8ea00d-cb67-401b-b136-0c58302cbcb3
+User: 454265a3-1777-413b-a49f-8735ef6ffa2a
+---

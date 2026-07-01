@@ -67,13 +67,13 @@ const OrgEditDialog = ({ editOrg, setEditOrg, onSave, saving, globalTiers }) => 
                         <ChevronDown className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" />
                       </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-56 rounded-lg shadow-2xl border-border/40 bg-black/90 backdrop-blur-xl p-2">
+                    <DropdownMenuContent align="start" className="w-56 rounded-lg shadow-2xl border-border/40 bg-background dark:bg-black/95 backdrop-blur-xl p-2">
                       {['TRIAL', 'ACTIVE', 'SUSPENDED', 'CANCELLED'].map((s) => (
                         <DropdownMenuItem
                           key={s}
                           className={cn(
-                            "rounded-xl cursor-pointer font-semibold text-xs py-3 mb-1 transition-all",
-                            editOrg?.status === s ? "bg-orange-500 text-white" : "hover:bg-primary/10"
+                            "rounded-xl cursor-pointer font-semibold text-xs py-3 mb-1 transition-all text-foreground dark:text-white",
+                            editOrg?.status === s ? "bg-orange-500 text-white dark:text-white" : "hover:bg-primary/10 focus:bg-primary/10"
                           )}
                           onClick={() => setEditOrg((p) => ({ ...p, status: s }))}
                         >
@@ -97,13 +97,13 @@ const OrgEditDialog = ({ editOrg, setEditOrg, onSave, saving, globalTiers }) => 
                         <ChevronDown className="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" />
                       </div>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-56 rounded-lg shadow-2xl border-border/40 bg-black/90 backdrop-blur-xl p-2">
+                    <DropdownMenuContent align="start" className="w-56 rounded-lg shadow-2xl border-border/40 bg-background dark:bg-black/95 backdrop-blur-xl p-2">
                       {['FREE', 'STARTER', 'PRO', 'ENTERPRISE'].map((planVal) => (
                         <DropdownMenuItem
                           key={planVal}
                           className={cn(
-                            "rounded-xl cursor-pointer font-semibold text-xs py-3 mb-1 transition-all",
-                            editOrg?.plan === planVal ? "bg-orange-500 text-white" : "hover:bg-primary/10"
+                            "rounded-xl cursor-pointer font-semibold text-xs py-3 mb-1 transition-all text-foreground dark:text-white",
+                            editOrg?.plan === planVal ? "bg-orange-500 text-white dark:text-white" : "hover:bg-primary/10 focus:bg-primary/10"
                           )}
                           onClick={() => {
                             const planId = planVal;

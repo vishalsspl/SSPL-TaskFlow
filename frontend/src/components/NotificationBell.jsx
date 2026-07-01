@@ -65,6 +65,9 @@ const NotificationBell = () => {
       case 'WORKLOG_SUBMITTED':
       case 'TIMESHEET_APPROVED':
       case 'TIMESHEET_REJECTED':
+      case 'LEAVE_SUBMITTED':
+      case 'LEAVE_APPROVED':
+      case 'LEAVE_REJECTED':
         return '/timesheets';
       case 'TASK_ASSIGNED':
       case 'TASK_STATUS_UPDATED':
@@ -110,13 +113,16 @@ const NotificationBell = () => {
         return <div className="p-1.5 bg-amber-500/10 rounded-full"><Activity className="w-3.5 h-3.5 text-amber-500" /></div>;
       case 'TASK_APPROVED':
       case 'TIMESHEET_APPROVED':
+      case 'LEAVE_APPROVED':
         return <div className="p-1.5 bg-primary/20 rounded-full"><CheckCircle2 className="w-3.5 h-3.5 text-primary" /></div>;
       case 'TASK_REJECTED':
       case 'TIMESHEET_REJECTED':
+      case 'LEAVE_REJECTED':
         return <div className="p-1.5 bg-destructive/10 rounded-full"><XCircle className="w-3.5 h-3.5 text-destructive" /></div>;
       case 'CHAT_MESSAGE':
         return <div className="p-1.5 bg-sky-500/10 rounded-full"><MessageSquare className="w-3.5 h-3.5 text-sky-500" /></div>;
       case 'WORKLOG_SUBMITTED':
+      case 'LEAVE_SUBMITTED':
         return <div className="p-1.5 bg-amber-500/10 rounded-full"><Clock className="w-3.5 h-3.5 text-amber-500" /></div>;
       case 'NEW_ORG_SIGNUP':
         return <div className="p-1.5 bg-[#48A111]/20 rounded-full shadow-[0_0_10px_rgba(72,161,17,0.2)]"><Building2 className="w-3.5 h-3.5 text-[#48A111]" /></div>;

@@ -49,7 +49,8 @@ function Calendar({
                     buttonVariants({ variant: "ghost" }),
                     "h-8 w-8 p-0 font-semibold text-foreground hover:bg-primary/20 hover:text-primary transition-all rounded-lg text-xs"
                 ),
-                day_range_end: "day-range-end",
+                day_range_start: "day-range-start",
+                day_range_end: "day-range-end !bg-blue-500 hover:!bg-blue-600 focus:!bg-blue-600 !text-white !shadow-[0_0_15px_rgba(59,130,246,0.5)]",
                 day_selected:
                     "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)] font-black",
                 day_today: "bg-accent text-accent-foreground font-bold border border-primary/20",

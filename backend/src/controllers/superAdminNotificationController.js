@@ -22,7 +22,7 @@ export const markSuperAdminAsRead = async (req, res) => {
   try {
     await prisma.$executeRaw`
       UPDATE "Notification" 
-      SET "isRead" = true 
+      SET "isRead" = true, "readAt" = CURRENT_TIMESTAMP
       WHERE "id" = ${id} AND "userId" = ${req.user.id}
     `;
 
@@ -37,7 +37,7 @@ export const markAllSuperAdminAsRead = async (req, res) => {
   try {
     await prisma.$executeRaw`
       UPDATE "Notification" 
-      SET "isRead" = true 
+      SET "isRead" = true, "readAt" = CURRENT_TIMESTAMP
       WHERE "userId" = ${req.user.id} AND "isRead" = false
     `;
 

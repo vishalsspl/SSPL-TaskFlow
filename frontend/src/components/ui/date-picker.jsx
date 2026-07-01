@@ -21,7 +21,7 @@ export function DatePicker({ date, setDate, className, placeholder = "Pick a dat
                     variant={"outline"}
                     className={cn(
                         "w-full justify-start text-left font-normal Montserrat text-[11px] sm:text-xs bg-secondary border-border hover:bg-accent px-3",
-                        !date && "text-muted-foreground",
+                        !date && "text-muted-foreground/50",
                         className
                     )}
                 >

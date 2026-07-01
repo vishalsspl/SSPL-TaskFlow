@@ -30,6 +30,7 @@ export const markAsRead = async (req, res) => {
       },
       data: {
         isRead: true,
+        readAt: new Date(),
       },
     });
 
@@ -50,6 +51,7 @@ export const markAllAsRead = async (req, res) => {
       },
       data: {
         isRead: true,
+        readAt: new Date(),
       },
     });
 

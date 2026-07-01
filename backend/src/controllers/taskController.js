@@ -521,11 +521,21 @@ export const bulkCreateTasks = async (req, res) => {
       // 4. Lookup Assignees
       let assigneeIds = [];
       if (assigneeEmails) {
-        const emails = assigneeEmails.split(',').map(e => e.trim().toLowerCase()).filter(e => e);
-        const users = await req.db.user.findMany({
-          where: { email: { in: emails }, organizationId }
-        });
-        assigneeIds = users.map(u => u.id);
+        const emails = [...new Set(assigneeEmails.split(',').map(e => e.trim().toLowerCase()).filter(e => e))];
+        if (emails.length > 0) {
+          const users = await req.db.user.findMany({
+            where: { email: { in: emails }, organizationId }
+          });
+          
+          if (users.length !== emails.length) {
+            const foundEmails = users.map(u => u.email.toLowerCase());
+            const notFoundEmails = emails.filter(e => !foundEmails.includes(e));
+            results.push({ row: rowNum, title, status: 'FAILED', error: `Assignee email(s) not registered: ${notFoundEmails.join(', ')}` });
+            failCount++;
+            continue;
+          }
+          assigneeIds = users.map(u => u.id);
+        }
       }
 
       // ── Normalize Data ──
@@ -717,7 +727,7 @@ export const updateTask = async (req, res) => {
       completionPercentage,
       dueDate: dueDate !== undefined ? (dueDate ? new Date(dueDate) : null) : undefined,
       tags,
-      phaseId,
+      phaseId: phaseId === '' ? null : phaseId,
       storyPoints: storyPoints !== undefined ? (storyPoints ? parseInt(storyPoints) : 0) : undefined,
       type: type !== undefined ? type : undefined,
       attachments: attachments !== undefined ? attachments : undefined,
@@ -744,11 +754,11 @@ export const updateTask = async (req, res) => {
     const logData = {
       userId: req.user.id,
       organizationId: req.user.organizationId,
-      projectId: task.projectId,
+      projectId: task.projectId || task.project?.id || existingTask?.projectId || null,
       action: 'UPDATED',
       entity: 'task',
       entityId: task.id,
-      details: { title: task.title, changes: req.body },
+      details: { title: task.title, projectName: task.project?.name || null, changes: req.body },
     };
 
     // 1. Log to tenant DB
@@ -1064,7 +1074,7 @@ export const updateTaskProgress = async (req, res) => {
       const logData = {
         userId: req.user.id,
         organizationId: req.user.organizationId,
-        projectId: task.projectId,
+        projectId: task.projectId || existingTask?.projectId || null,
         action: 'UPDATED',
         entity: 'task',
         entityId: task.id,
@@ -1173,12 +1183,13 @@ export const updateTaskStatus = async (req, res) => {
       const logData = {
         userId: req.user.id,
         organizationId: req.user.organizationId,
-        projectId: task.projectId,
+        projectId: task.projectId || task.project?.id || existingTask?.projectId || null,
         action: 'UPDATED',
         entity: 'task',
         entityId: task.id,
         details: {
           title: task.title,
+          projectName: task.project?.name || null,
           action: 'Status Updated',
           status,
           oldStatus: existingTask.status
@@ -1244,6 +1255,8 @@ export const updateTaskStatus = async (req, res) => {
     if (req.user.role === 'MEMBER' && status === 'IN_REVIEW') {
       const approverTag = updatedTags.find(t => t.startsWith('APPROVER:'));
       let managerId = approverTag ? approverTag.split(':')[1] : existingTask.project?.managerId;
+      const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
+      const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
 
       if (managerId) {
         createNotification(req, {
@@ -1253,6 +1266,15 @@ export const updateTaskStatus = async (req, res) => {
           type: 'TASK_APPROVAL_REQUEST',
           link: `/task-board?project=${existingTask.projectId}&highlight=${task.id}&action=pending`
         });
+        
+        // Send email to manager
+        if (hasEmailSupport && sendEmail) {
+          const manager = await req.db.user.findUnique({ where: { id: managerId } });
+          if (manager?.email) {
+            sendTaskStatusUpdateEmail(manager.email, task.title, task.project.name, status, req.user.name, origin)
+              .catch(err => console.error('Failed to send approval email to manager:', err));
+          }
+        }
       } else {
         const admins = await req.db.user.findMany({ where: { organizationId: req.user.organizationId, role: 'ADMIN' } });
         for (const admin of admins) {
@@ -1263,6 +1285,12 @@ export const updateTaskStatus = async (req, res) => {
             type: 'TASK_APPROVAL_REQUEST',
             link: `/task-board?project=${existingTask.projectId}&highlight=${task.id}&action=pending`
           });
+          
+          // Send email to admin
+          if (hasEmailSupport && sendEmail && admin.email) {
+            sendTaskStatusUpdateEmail(admin.email, task.title, task.project.name, status, req.user.name, origin)
+              .catch(err => console.error('Failed to send approval email to admin:', err));
+          }
         }
       }
     }

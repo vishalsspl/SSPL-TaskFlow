@@ -63,7 +63,7 @@ export function MultiSearchableSelect({
                     disabled={disabled}
                     className={cn(
                         "w-full justify-between font-normal h-auto py-1.5",
-                        !value.length && "text-muted-foreground",
+                        !value.length && "text-muted-foreground/50",
                         className
                     )}
                 >

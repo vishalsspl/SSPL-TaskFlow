@@ -122,6 +122,17 @@ const TaskDetailsModal = ({ open, onOpenChange, task, canEdit, onEditClick }) =>
                                 </div>
                             )}
 
+                            {/* Completed On */}
+                            {task.completedAt && (
+                                <div className="flex flex-col gap-1.5 md:border-l md:border-border/50 md:pl-6">
+                                    <span className="text-[10px] font-bold text-green-500 uppercase tracking-widest Montserrat">Completed On</span>
+                                    <div className="flex items-center gap-2 text-sm font-semibold text-green-600">
+                                        <CheckSquare className="w-3.5 h-3.5" />
+                                        {formatDate(task.completedAt)}
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Story Points */}
                             {task.storyPoints > 0 && (
                                 <div className="flex flex-col gap-1.5 md:border-l md:border-border/50 md:pl-6">

@@ -31,6 +31,7 @@ import path from 'path';
 import prisma from './lib/prisma.js';
 import tenantDbManager from './lib/tenantDbManager.js';
 import { attachIo } from './middleware/socketMiddleware.js';
+import { initCronJobs } from './utils/cronJobs.js';
 
 
 // dotenv.config(); is now handled by the import above
@@ -396,6 +397,9 @@ app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Error handler (must be last)
 app.use(errorHandler);
+
+// Initialize scheduled tasks
+initCronJobs();
 
 httpServer.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);

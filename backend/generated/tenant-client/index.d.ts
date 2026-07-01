@@ -7929,6 +7929,7 @@ export namespace Prisma {
     type: $Enums.TaskType | null
     completionPercentage: number | null
     storyPoints: number | null
+    completedAt: Date | null
     dueDate: Date | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -7946,6 +7947,7 @@ export namespace Prisma {
     type: $Enums.TaskType | null
     completionPercentage: number | null
     storyPoints: number | null
+    completedAt: Date | null
     dueDate: Date | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -7963,6 +7965,7 @@ export namespace Prisma {
     type: number
     completionPercentage: number
     storyPoints: number
+    completedAt: number
     dueDate: number
     tags: number
     attachments: number
@@ -7994,6 +7997,7 @@ export namespace Prisma {
     type?: true
     completionPercentage?: true
     storyPoints?: true
+    completedAt?: true
     dueDate?: true
     createdAt?: true
     updatedAt?: true
@@ -8011,6 +8015,7 @@ export namespace Prisma {
     type?: true
     completionPercentage?: true
     storyPoints?: true
+    completedAt?: true
     dueDate?: true
     createdAt?: true
     updatedAt?: true
@@ -8028,6 +8033,7 @@ export namespace Prisma {
     type?: true
     completionPercentage?: true
     storyPoints?: true
+    completedAt?: true
     dueDate?: true
     tags?: true
     attachments?: true
@@ -8134,6 +8140,7 @@ export namespace Prisma {
     type: $Enums.TaskType
     completionPercentage: number
     storyPoints: number | null
+    completedAt: Date | null
     dueDate: Date | null
     tags: string[]
     attachments: JsonValue
@@ -8172,6 +8179,7 @@ export namespace Prisma {
     type?: boolean
     completionPercentage?: boolean
     storyPoints?: boolean
+    completedAt?: boolean
     dueDate?: boolean
     tags?: boolean
     attachments?: boolean
@@ -8197,6 +8205,7 @@ export namespace Prisma {
     type?: boolean
     completionPercentage?: boolean
     storyPoints?: boolean
+    completedAt?: boolean
     dueDate?: boolean
     tags?: boolean
     attachments?: boolean
@@ -8218,6 +8227,7 @@ export namespace Prisma {
     type?: boolean
     completionPercentage?: boolean
     storyPoints?: boolean
+    completedAt?: boolean
     dueDate?: boolean
     tags?: boolean
     attachments?: boolean
@@ -8259,6 +8269,7 @@ export namespace Prisma {
       type: $Enums.TaskType
       completionPercentage: number
       storyPoints: number | null
+      completedAt: Date | null
       dueDate: Date | null
       tags: string[]
       attachments: Prisma.JsonValue
@@ -8673,6 +8684,7 @@ export namespace Prisma {
     readonly type: FieldRef<"Task", 'TaskType'>
     readonly completionPercentage: FieldRef<"Task", 'Int'>
     readonly storyPoints: FieldRef<"Task", 'Int'>
+    readonly completedAt: FieldRef<"Task", 'DateTime'>
     readonly dueDate: FieldRef<"Task", 'DateTime'>
     readonly tags: FieldRef<"Task", 'String[]'>
     readonly attachments: FieldRef<"Task", 'Json'>
@@ -20144,6 +20156,7 @@ export namespace Prisma {
     type: 'type',
     completionPercentage: 'completionPercentage',
     storyPoints: 'storyPoints',
+    completedAt: 'completedAt',
     dueDate: 'dueDate',
     tags: 'tags',
     attachments: 'attachments',
@@ -21154,6 +21167,7 @@ export namespace Prisma {
     type?: EnumTaskTypeFilter<"Task"> | $Enums.TaskType
     completionPercentage?: IntFilter<"Task"> | number
     storyPoints?: IntNullableFilter<"Task"> | number | null
+    completedAt?: DateTimeNullableFilter<"Task"> | Date | string | null
     dueDate?: DateTimeNullableFilter<"Task"> | Date | string | null
     tags?: StringNullableListFilter<"Task">
     attachments?: JsonFilter<"Task">
@@ -21178,6 +21192,7 @@ export namespace Prisma {
     type?: SortOrder
     completionPercentage?: SortOrder
     storyPoints?: SortOrderInput | SortOrder
+    completedAt?: SortOrderInput | SortOrder
     dueDate?: SortOrderInput | SortOrder
     tags?: SortOrder
     attachments?: SortOrder
@@ -21205,6 +21220,7 @@ export namespace Prisma {
     type?: EnumTaskTypeFilter<"Task"> | $Enums.TaskType
     completionPercentage?: IntFilter<"Task"> | number
     storyPoints?: IntNullableFilter<"Task"> | number | null
+    completedAt?: DateTimeNullableFilter<"Task"> | Date | string | null
     dueDate?: DateTimeNullableFilter<"Task"> | Date | string | null
     tags?: StringNullableListFilter<"Task">
     attachments?: JsonFilter<"Task">
@@ -21229,6 +21245,7 @@ export namespace Prisma {
     type?: SortOrder
     completionPercentage?: SortOrder
     storyPoints?: SortOrderInput | SortOrder
+    completedAt?: SortOrderInput | SortOrder
     dueDate?: SortOrderInput | SortOrder
     tags?: SortOrder
     attachments?: SortOrder
@@ -21256,6 +21273,7 @@ export namespace Prisma {
     type?: EnumTaskTypeWithAggregatesFilter<"Task"> | $Enums.TaskType
     completionPercentage?: IntWithAggregatesFilter<"Task"> | number
     storyPoints?: IntNullableWithAggregatesFilter<"Task"> | number | null
+    completedAt?: DateTimeNullableWithAggregatesFilter<"Task"> | Date | string | null
     dueDate?: DateTimeNullableWithAggregatesFilter<"Task"> | Date | string | null
     tags?: StringNullableListFilter<"Task">
     attachments?: JsonWithAggregatesFilter<"Task">
@@ -22738,6 +22756,7 @@ export namespace Prisma {
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
+    completedAt?: Date | string | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -22762,6 +22781,7 @@ export namespace Prisma {
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
+    completedAt?: Date | string | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -22782,6 +22802,7 @@ export namespace Prisma {
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -22806,6 +22827,7 @@ export namespace Prisma {
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -22828,6 +22850,7 @@ export namespace Prisma {
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
+    completedAt?: Date | string | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -22845,6 +22868,7 @@ export namespace Prisma {
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -22864,6 +22888,7 @@ export namespace Prisma {
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -24544,6 +24569,7 @@ export namespace Prisma {
     type?: SortOrder
     completionPercentage?: SortOrder
     storyPoints?: SortOrder
+    completedAt?: SortOrder
     dueDate?: SortOrder
     tags?: SortOrder
     attachments?: SortOrder
@@ -24568,6 +24594,7 @@ export namespace Prisma {
     type?: SortOrder
     completionPercentage?: SortOrder
     storyPoints?: SortOrder
+    completedAt?: SortOrder
     dueDate?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -24585,6 +24612,7 @@ export namespace Prisma {
     type?: SortOrder
     completionPercentage?: SortOrder
     storyPoints?: SortOrder
+    completedAt?: SortOrder
     dueDate?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -29506,6 +29534,7 @@ export namespace Prisma {
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
+    completedAt?: Date | string | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -29528,6 +29557,7 @@ export namespace Prisma {
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
+    completedAt?: Date | string | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -29926,6 +29956,7 @@ export namespace Prisma {
     type?: EnumTaskTypeFilter<"Task"> | $Enums.TaskType
     completionPercentage?: IntFilter<"Task"> | number
     storyPoints?: IntNullableFilter<"Task"> | number | null
+    completedAt?: DateTimeNullableFilter<"Task"> | Date | string | null
     dueDate?: DateTimeNullableFilter<"Task"> | Date | string | null
     tags?: StringNullableListFilter<"Task">
     attachments?: JsonFilter<"Task">
@@ -30044,6 +30075,7 @@ export namespace Prisma {
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
+    completedAt?: Date | string | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -30066,6 +30098,7 @@ export namespace Prisma {
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
+    completedAt?: Date | string | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -30485,6 +30518,7 @@ export namespace Prisma {
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
+    completedAt?: Date | string | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -30508,6 +30542,7 @@ export namespace Prisma {
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
+    completedAt?: Date | string | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -30608,6 +30643,7 @@ export namespace Prisma {
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -30631,6 +30667,7 @@ export namespace Prisma {
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -30839,6 +30876,7 @@ export namespace Prisma {
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
+    completedAt?: Date | string | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -30862,6 +30900,7 @@ export namespace Prisma {
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
+    completedAt?: Date | string | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -31027,6 +31066,7 @@ export namespace Prisma {
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -31050,6 +31090,7 @@ export namespace Prisma {
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -31187,6 +31228,7 @@ export namespace Prisma {
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
+    completedAt?: Date | string | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -31210,6 +31252,7 @@ export namespace Prisma {
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
+    completedAt?: Date | string | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -31375,6 +31418,7 @@ export namespace Prisma {
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -31398,6 +31442,7 @@ export namespace Prisma {
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -34954,6 +34999,7 @@ export namespace Prisma {
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
+    completedAt?: Date | string | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -35038,6 +35084,7 @@ export namespace Prisma {
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -35060,6 +35107,7 @@ export namespace Prisma {
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -35081,6 +35129,7 @@ export namespace Prisma {
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -35186,6 +35235,7 @@ export namespace Prisma {
     type?: $Enums.TaskType
     completionPercentage?: number
     storyPoints?: number | null
+    completedAt?: Date | string | null
     dueDate?: Date | string | null
     tags?: TaskCreatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -35203,6 +35253,7 @@ export namespace Prisma {
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -35225,6 +35276,7 @@ export namespace Prisma {
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue
@@ -35246,6 +35298,7 @@ export namespace Prisma {
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     tags?: TaskUpdatetagsInput | string[]
     attachments?: JsonNullValueInput | InputJsonValue

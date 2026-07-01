@@ -1,6 +1,6 @@
 import prisma from '../lib/prisma.js';
 import { createNotification } from '../utils/notifications.js';
-import { sendTimesheetSubmissionEmail, sendLeaveSubmissionEmail, sendTimesheetStatusEmail } from '../services/emailService.js';
+import { sendTimesheetSubmissionEmail, sendLeaveSubmissionEmail, sendTimesheetStatusEmail, sendLeaveStatusEmail } from '../services/emailService.js';
 import { hasPermission } from '../middleware/auth.js';
 const include = {
     user: { select: { id: true, name: true, email: true, avatar: true } },
@@ -273,18 +273,47 @@ export const createTimeEntry = async (req, res) => {
         console.error('[CreateTimeEntry] Failed to log activity:', logErr.message);
     }
 
-    if (project && project.managerId && project.managerId !== req.user.id) {
-        const manager = await req.db.user.findUnique({
-            where: { id: project.managerId },
-            select: { email: true, name: true }
+    let targetManagers = [];
+
+    if (isLeaveEntry) {
+        const currentUser = await req.db.user.findUnique({
+            where: { id: req.user.id },
+            select: { managerId: true }
         });
         
-        if (manager) {
+        if (currentUser?.managerId) {
+            targetManagers.push(currentUser.managerId);
+        } else {
+            // Fallback to all admins if no direct manager is assigned
+            const admins = await req.db.user.findMany({
+                where: { organizationId: req.user.organizationId, role: { in: ['ADMIN', 'MANAGER'] } },
+                select: { id: true }
+            });
+            targetManagers = admins.map(a => a.id);
+        }
+    } else {
+        if (project && project.managerId) {
+            targetManagers.push(project.managerId);
+        }
+    }
+
+    // Remove self from notifications to avoid notifying yourself of your own submission
+    targetManagers = [...new Set(targetManagers.filter(id => id !== req.user.id))];
+
+    if (targetManagers.length > 0) {
+        const managers = await req.db.user.findMany({
+            where: { id: { in: targetManagers } },
+            select: { id: true, email: true, name: true }
+        });
+        
+        for (const manager of managers) {
             await createNotification(req, {
-                userId: project.managerId,
-                title: 'Timesheet Requires Approval',
-                message: `${req.user.name} logged ${hours}h on ${project.name}`,
-                type: 'WORKLOG_SUBMITTED' // Using existing icon from worklog
+                userId: manager.id,
+                title: isLeaveEntry ? 'Leave Requires Approval' : 'Timesheet Requires Approval',
+                message: isLeaveEntry 
+                    ? `${req.user.name} applied for leave on ${date}` 
+                    : `${req.user.name} logged ${hours}h on ${project?.name || 'Project'}`,
+                type: isLeaveEntry ? 'LEAVE_SUBMITTED' : 'WORKLOG_SUBMITTED' 
             });
 
             const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
@@ -294,7 +323,7 @@ export const createTimeEntry = async (req, res) => {
                 const leaveType = match ? match[1] : 'Leave';
                 await sendLeaveSubmissionEmail(manager.email, manager.name, req.user.name, leaveType, hours, date, origin);
             } else {
-                await sendTimesheetSubmissionEmail(manager.email, manager.name, req.user.name, project.name, hours, date, origin);
+                await sendTimesheetSubmissionEmail(manager.email, manager.name, req.user.name, project?.name || 'Project', hours, date, origin);
             }
         }
     }
@@ -410,23 +439,42 @@ export const updateTimeEntryStatus = async (req, res) => {
 
     // Ensure we don't notify loop if the user approves their own entry (if they are a manager acting as admin)
     if (existingEntry.userId !== req.user.id && (status === 'APPROVED' || status === 'REJECTED')) {
+        const isLeaveEntry = existingEntry.project?.name === 'Leave Tracker';
+
         await createNotification(req, {
             userId: existingEntry.userId,
-            title: `Timesheet ${status === 'APPROVED' ? 'Approved' : 'Rejected'}`,
-            message: `Your time log for ${existingEntry.project?.name || 'Leave'} has been ${status.toLowerCase()}`,
-            type: `TIMESHEET_${status}`
+            title: isLeaveEntry ? `Leave ${status === 'APPROVED' ? 'Approved' : 'Rejected'}` : `Timesheet ${status === 'APPROVED' ? 'Approved' : 'Rejected'}`,
+            message: isLeaveEntry 
+                ? `Your leave request has been ${status.toLowerCase()}` 
+                : `Your time log for ${existingEntry.project?.name || 'Leave'} has been ${status.toLowerCase()}`,
+            type: isLeaveEntry ? `LEAVE_${status}` : `TIMESHEET_${status}`
         });
 
         const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
-        await sendTimesheetStatusEmail(
-            existingEntry.user.email,
-            existingEntry.user.name,
-            existingEntry.project?.name || 'Leave',
-            status,
-            req.user.name,
-            existingEntry.hours,
-            origin
-        );
+        
+        if (isLeaveEntry) {
+            const match = existingEntry.description?.match(/\[(.*?)\]/);
+            const leaveType = match ? match[1] : 'Leave';
+            await sendLeaveStatusEmail(
+                existingEntry.user.email,
+                existingEntry.user.name,
+                leaveType,
+                status,
+                req.user.name,
+                existingEntry.hours,
+                origin
+            );
+        } else {
+            await sendTimesheetStatusEmail(
+                existingEntry.user.email,
+                existingEntry.user.name,
+                existingEntry.project?.name || 'Leave',
+                status,
+                req.user.name,
+                existingEntry.hours,
+                origin
+            );
+        }
     }
 
     // Log activity
