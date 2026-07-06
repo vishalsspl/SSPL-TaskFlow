@@ -910,8 +910,8 @@ const Timesheets = () => {
                 const weeklyBillable = weekData.reduce((s, d) => s + d.billableHours, 0);
                 const weeklyLeave = weekData.reduce((s, d) => s + d.leaveHours, 0);
                 const weeklyWorked = weekData.reduce((s, d) => s + d.totalWorkedHours, 0);
-                // Denominator = Strictly Total Org Biz Hrs for the week
-                const weeklyTotal = weekData.reduce((s, d) => s + d.orgBizHrs, 0);
+                // Denominator = Scales with overtime to prevent exceeding 100%
+                const weeklyTotal = weekData.reduce((s, d) => s + d.totalDayHours, 0);
                 const pct = (v) => weeklyTotal > 0 ? Math.round((v / weeklyTotal) * 100) : 0;
 
                 return (
