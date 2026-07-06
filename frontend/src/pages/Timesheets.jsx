@@ -206,7 +206,7 @@ const Timesheets = () => {
         startTime: '10:00 AM',
         endTime: '07:30 PM',
         breakHours: '1.5',
-        holidaysStr: ''
+        holidays: []
     });
 
     const [newEntry, setNewEntry] = useState({
@@ -247,7 +247,7 @@ const Timesheets = () => {
                 setOrgShiftSettings({ ...settings, holidays: settings.holidays || [] });
                 setShiftForm({
                     ...settings,
-                    holidaysStr: (settings.holidays || []).join(', ')
+                    holidays: (settings.holidays || []).map(d => new Date(d + 'T00:00:00'))
                 });
             }
         } catch (err) {
@@ -507,9 +507,8 @@ const Timesheets = () => {
     const handleSaveShiftSettings = async () => {
         try {
             setSubmitting(true);
-            const holidaysArray = shiftForm.holidaysStr.split(',').map(s => s.trim()).filter(Boolean);
+            const holidaysArray = shiftForm.holidays.map(d => format(d, 'yyyy-MM-dd'));
             const dataToSave = { ...shiftForm, holidays: holidaysArray };
-            delete dataToSave.holidaysStr;
             
             await api.put('/organizations/me', { shiftSettings: dataToSave });
             setOrgShiftSettings(dataToSave);
@@ -1863,13 +1862,15 @@ const Timesheets = () => {
                         </div>
                         <div className="space-y-2">
                             <Label className="text-xs font-bold text-muted-foreground uppercase">Holidays (YYYY-MM-DD)</Label>
-                            <Input 
-                                placeholder="e.g. 2026-07-06, 2026-12-25" 
-                                value={shiftForm.holidaysStr} 
-                                onChange={(e) => setShiftForm({...shiftForm, holidaysStr: e.target.value})}
-                                className="rounded-xl font-bold"
-                            />
-                            <p className="text-[10px] text-muted-foreground">Comma separated list of holiday dates. On these days, Org Biz Hrs will be 0.</p>
+                            <div className="bg-card border border-border/50 rounded-xl overflow-hidden p-2 flex justify-center">
+                                <Calendar
+                                    mode="multiple"
+                                    selected={shiftForm.holidays}
+                                    onSelect={(dates) => setShiftForm({ ...shiftForm, holidays: dates || [] })}
+                                    className="rounded-md"
+                                />
+                            </div>
+                            <p className="text-[10px] text-muted-foreground">Select multiple holiday dates. On these days, Org Biz Hrs will be 0.</p>
                         </div>
 
                     </div>
