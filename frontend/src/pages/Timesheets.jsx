@@ -350,7 +350,7 @@ const Timesheets = () => {
         if (!newEntry.date) {
             toast({
                 variant: "destructive",
-                title: "Validation Error",
+                title: "Missing Details",
                 description: "Please select a log date."
             });
             return;
@@ -359,7 +359,7 @@ const Timesheets = () => {
         if (loggingMode !== 'leave' && (!newEntry.projectId || (!newEntry.taskId && !editingEntryId))) {
             toast({
                 variant: "destructive",
-                title: "Validation Error",
+                title: "Missing Details",
                 description: "Please select a project and a task."
             });
             return;
@@ -371,11 +371,11 @@ const Timesheets = () => {
         if (loggingMode === 'custom') {
             const { total, productive, nonProductive } = calculateCustomHours(newEntry.startTime, newEntry.endTime);
             if (total <= 0) {
-                toast({ variant: "destructive", title: "Validation Error", description: "Please select a valid time range." });
+                toast({ variant: "destructive", title: "Action Required", description: "Please select a valid time range." });
                 return;
             }
             if (productive <= 0) {
-                toast({ variant: "destructive", title: "Validation Error", description: "Productive hours cannot be zero or negative. Please reduce break duration." });
+                toast({ variant: "destructive", title: "Action Required", description: "Productive hours cannot be zero or negative. Please reduce break duration." });
                 return;
             }
             productiveHours = productive;
@@ -385,7 +385,7 @@ const Timesheets = () => {
         } else if (loggingMode === 'direct') {
             productiveHours = parseFloat(newEntry.customHours);
             if (isNaN(productiveHours) || productiveHours <= 0) {
-                toast({ variant: "destructive", title: "Validation Error", description: "Please enter a valid number of hours." });
+                toast({ variant: "destructive", title: "Action Required", description: "Please enter a valid number of hours." });
                 return;
             }
             const timeText = `Direct Hours: ${productiveHours}h`;
@@ -393,7 +393,7 @@ const Timesheets = () => {
             description = baseDesc ? `${baseDesc} - [${timeText}]` : `Logged for [${timeText}]`;
         } else if (loggingMode === 'leave') {
             if (!newEntry.leaveType || !newEntry.portion) {
-                toast({ variant: "destructive", title: "Validation Error", description: "Please select a leave type and duration." });
+                toast({ variant: "destructive", title: "Missing Details", description: "Please select a leave type and duration." });
                 return;
             }
             const portionInfo = getDynamicPortions(orgShiftSettings).find(p => p.id === newEntry.portion);
@@ -411,7 +411,7 @@ const Timesheets = () => {
         }
 
         if (loggingMode !== 'leave' && newEntry.date > new Date()) {
-            toast({ variant: "destructive", title: "Validation Error", description: "Cannot log work hours for future dates. Use Leave Log for future entries." });
+            toast({ variant: "destructive", title: "Invalid Date", description: "Cannot log work hours for future dates. Use Leave Log for future entries." });
             return;
         }
 
@@ -427,7 +427,7 @@ const Timesheets = () => {
                     if (entryDate < startDate) {
                         toast({
                             variant: "destructive",
-                            title: "Validation Error",
+                            title: "Invalid Date",
                             description: `Cannot log hours before the project's start date (${format(startDate, 'PP')}).`
                         });
                         return;
@@ -440,7 +440,7 @@ const Timesheets = () => {
                     if (entryDate > endDate) {
                         toast({
                             variant: "destructive",
-                            title: "Validation Error",
+                            title: "Invalid Date",
                             description: `Cannot log hours after the project's end date (${format(endDate, 'PP')}).`
                         });
                         return;
@@ -451,7 +451,7 @@ const Timesheets = () => {
 
         const usedHours = getUsedHoursForDate(newEntry.date, editingEntryId);
         if (usedHours + productiveHours > 24) {
-            toast({ variant: "destructive", title: "Validation Error", description: "You can't add hours above 24 hours in a single day." });
+            toast({ variant: "destructive", title: "Limit Exceeded", description: "You can't add hours above 24 hours in a single day." });
             return;
         }
 
