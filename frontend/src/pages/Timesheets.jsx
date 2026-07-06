@@ -198,13 +198,15 @@ const Timesheets = () => {
     const [orgShiftSettings, setOrgShiftSettings] = useState({
         startTime: '10:00 AM',
         endTime: '07:30 PM',
-        breakHours: '1.5'
+        breakHours: '1.5',
+        holidays: []
     });
     const [isShiftDialogOpen, setIsShiftDialogOpen] = useState(false);
     const [shiftForm, setShiftForm] = useState({
         startTime: '10:00 AM',
         endTime: '07:30 PM',
-        breakHours: '1.5'
+        breakHours: '1.5',
+        holidaysStr: ''
     });
 
     const [newEntry, setNewEntry] = useState({
@@ -241,8 +243,12 @@ const Timesheets = () => {
         try {
             const res = await api.get('/organizations/me');
             if (res.data?.customFeatures?.shiftSettings) {
-                setOrgShiftSettings(res.data.customFeatures.shiftSettings);
-                setShiftForm(res.data.customFeatures.shiftSettings);
+                const settings = res.data.customFeatures.shiftSettings;
+                setOrgShiftSettings({ ...settings, holidays: settings.holidays || [] });
+                setShiftForm({
+                    ...settings,
+                    holidaysStr: (settings.holidays || []).join(', ')
+                });
             }
         } catch (err) {
             // ignore silently
@@ -501,8 +507,12 @@ const Timesheets = () => {
     const handleSaveShiftSettings = async () => {
         try {
             setSubmitting(true);
-            await api.put('/organizations/me', { shiftSettings: shiftForm });
-            setOrgShiftSettings(shiftForm);
+            const holidaysArray = shiftForm.holidaysStr.split(',').map(s => s.trim()).filter(Boolean);
+            const dataToSave = { ...shiftForm, holidays: holidaysArray };
+            delete dataToSave.holidaysStr;
+            
+            await api.put('/organizations/me', { shiftSettings: dataToSave });
+            setOrgShiftSettings(dataToSave);
             setIsShiftDialogOpen(false);
             toast({ title: "Success", description: "Organization shift settings updated successfully." });
         } catch (err) {
@@ -873,9 +883,12 @@ const Timesheets = () => {
                     const productiveHours = workEntries.reduce((sum, e) => sum + parseFloat(e.hours), 0);
                     const billableHours = workEntries.filter(e => e.billable).reduce((sum, e) => sum + parseFloat(e.hours), 0);
 
-                    // Org Biz Hrs: full shift on working days (Mon-Fri), 0 on weekends
+                    // Org Biz Hrs: full shift on working days (Mon-Fri), 0 on weekends and holidays
                     const dayOfWeek = day.getDay();
-                    const isWorkingDay = dayOfWeek !== 0 && dayOfWeek !== 6;
+                    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                    const dateStr = format(day, 'yyyy-MM-dd');
+                    const isHoliday = orgShiftSettings?.holidays?.includes(dateStr);
+                    const isWorkingDay = !isWeekend && !isHoliday;
                     const shiftHours = calculateCustomHours(orgShiftSettings?.startTime || '10:00 AM', orgShiftSettings?.endTime || '07:30 PM').total;
                     const orgBizHrs = isWorkingDay ? shiftHours : 0;
 
@@ -1847,6 +1860,16 @@ const Timesheets = () => {
                                     {TIME_OPTIONS.map(t => <SelectItem key={t} value={t} className="font-bold">{t}</SelectItem>)}
                                 </SelectContent>
                             </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-xs font-bold text-muted-foreground uppercase">Holidays (YYYY-MM-DD)</Label>
+                            <Input 
+                                placeholder="e.g. 2026-07-06, 2026-12-25" 
+                                value={shiftForm.holidaysStr} 
+                                onChange={(e) => setShiftForm({...shiftForm, holidaysStr: e.target.value})}
+                                className="rounded-xl font-bold"
+                            />
+                            <p className="text-[10px] text-muted-foreground">Comma separated list of holiday dates. On these days, Org Biz Hrs will be 0.</p>
                         </div>
 
                     </div>
