@@ -304,6 +304,9 @@ const Timesheets = () => {
         if (!projectId) return;
         try {
             const params = { projectId };
+            if (user?.role === 'MEMBER') {
+                params.assignedTo = user.id;
+            }
             const response = await api.get('/tasks', { params });
             setTasks(response.data);
         } catch (error) {
