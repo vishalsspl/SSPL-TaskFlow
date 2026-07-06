@@ -15,7 +15,8 @@ import {
     Check,
     X,
     User as UserIcon,
-    Settings
+    Settings,
+    RotateCcw
 } from 'lucide-react';
 import api from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
@@ -224,7 +225,7 @@ const Timesheets = () => {
         const days = [];
         let curr = new Date(dateRange.from);
         curr.setHours(0,0,0,0);
-        const end = dateRange.to ? new Date(dateRange.to) : new Date(curr);
+        const end = dateRange.to ? new Date(dateRange.to) : addDays(curr, 6);
         end.setHours(0,0,0,0);
         
         let maxDays = 31; // prevent massive rendering
@@ -330,7 +331,14 @@ const Timesheets = () => {
         const shift = dateRange.to ? differenceInDays(dateRange.to, dateRange.from) + 1 : 1;
         setDateRange({ from: addDays(dateRange.from, shift), to: dateRange.to ? addDays(dateRange.to, shift) : undefined });
     };
-    const handleToday = () => setDateRange({ from: addDays(new Date(), -6), to: new Date() });
+    const handleToday = () => {
+        setDateRange({ from: addDays(new Date(), -6), to: new Date() });
+        setSelectedDateFilter(new Date());
+    };
+    const handleReset = () => {
+        setDateRange({ from: addDays(new Date(), -6), to: new Date() });
+        setSelectedDateFilter(new Date());
+    };
 
     const handleLogHours = async () => {
         if (!newEntry.date) {
@@ -781,6 +789,9 @@ const Timesheets = () => {
                         <Button variant="outline" size="icon" onClick={handleNextRange} className="rounded-lg h-9 w-9 shrink-0">
                             <ChevronRight className="h-4 w-4" />
                         </Button>
+                        <Button variant="outline" size="icon" onClick={handleReset} title="Reset to Current Week" className="rounded-lg h-9 w-9 shrink-0 text-muted-foreground hover:text-primary hover:bg-primary/10">
+                            <RotateCcw className="h-4 w-4" />
+                        </Button>
                     </div>
                     <Popover>
                         <PopoverTrigger asChild>
@@ -808,7 +819,7 @@ const Timesheets = () => {
                         <PopoverContent className="w-auto p-0 border-border shadow-2xl rounded-2xl overflow-hidden flex flex-col" align="end">
                             <div className="bg-muted/30 border-b border-border/50 px-3 py-2.5 text-center flex items-center justify-center gap-2">
                                 <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Select up to 31 days</span>
+                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Select 7 to 31 days</span>
                             </div>
                             <Calendar
                                 className="border-0 shadow-none"
@@ -819,7 +830,8 @@ const Timesheets = () => {
                                 onSelect={setDateRange}
                                 disabled={(date) => {
                                     if (dateRange?.from && !dateRange?.to) {
-                                        return Math.abs(differenceInDays(date, dateRange.from)) > 30;
+                                        const diff = Math.abs(differenceInDays(date, dateRange.from));
+                                        return diff > 30 || diff < 6;
                                     }
                                     return false;
                                 }}

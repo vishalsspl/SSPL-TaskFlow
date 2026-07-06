@@ -8,6 +8,7 @@ import {
   addProjectMember,
   removeProjectMember,
   bulkCreateProjects,
+  updateProjectPhase,
 } from '../controllers/projectController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import attachTenantDb from '../middleware/tenantMiddleware.js';
@@ -27,5 +28,6 @@ router.put('/:id', authorize('ADMIN', 'MANAGER'), updateProject);
 router.delete('/:id', authorize('ADMIN', 'MANAGER'), deleteProject);
 router.post('/:id/members', authorize('ADMIN', 'MANAGER'), addProjectMember);
 router.delete('/:id/members/:userId', authorize('ADMIN', 'MANAGER'), removeProjectMember);
+router.put('/:id/phases/:phaseId', authorize('ADMIN', 'MANAGER'), updateProjectPhase);
 
 export default router;

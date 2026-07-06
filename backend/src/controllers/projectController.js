@@ -1412,3 +1412,51 @@ export const removeProjectMember = async (req, res) => {
     res.status(500).json({ error: 'Failed to remove project member' });
   }
 };
+
+export const updateProjectPhase = async (req, res) => {
+  const { id, phaseId } = req.params;
+  const { status } = req.body;
+
+  try {
+    const phase = await req.db.phase.findFirst({
+      where: {
+        id: phaseId,
+        projectId: id,
+      },
+      include: {
+        project: true
+      }
+    });
+
+    if (!phase) {
+      return res.status(404).json({ error: 'Phase not found' });
+    }
+
+    if (req.user.role === 'MANAGER' && phase.project.managerId !== req.user.id) {
+      return res.status(403).json({ error: 'Unauthorized: You are not the manager of this project.' });
+    }
+
+    const updatedPhase = await req.db.phase.update({
+      where: { id: phaseId },
+      data: { status }
+    });
+
+    // Log activity
+    await req.db.activityLog.create({
+      data: {
+        userId: req.user.id,
+        organizationId: req.user.organizationId,
+        projectId: id,
+        action: 'PHASE_UPDATED',
+        entity: 'phase',
+        entityId: phaseId,
+        details: { phaseName: phase.name, oldStatus: phase.status, newStatus: status },
+      },
+    });
+
+    res.json(updatedPhase);
+  } catch (error) {
+    console.error('Error updating project phase:', error);
+    res.status(500).json({ error: 'Failed to update phase' });
+  }
+};

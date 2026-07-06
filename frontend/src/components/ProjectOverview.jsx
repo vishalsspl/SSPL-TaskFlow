@@ -4,6 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
+    DropdownMenu,
+    DropdownMenuTrigger,
+    DropdownMenuContent,
+    DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
+import { useAuthStore } from '@/store/authStore';
+import {
     Table,
     TableBody,
     TableCell,
@@ -32,10 +39,20 @@ import {
 import { formatDate, priorityColors } from '@/lib/utils';
 
 const ProjectOverview = ({ projectId }) => {
+    const { user } = useAuthStore();
     const [dashboard, setDashboard] = useState(null);
     const [loading, setLoading] = useState(true);
     const [overduePage, setOverduePage] = useState(1);
     const [isMobile, setIsMobile] = useState(false);
+
+    const handleUpdatePhaseStatus = async (phaseId, status) => {
+        try {
+            await api.put(`/projects/${projectId}/phases/${phaseId}`, { status });
+            fetchDashboard();
+        } catch (error) {
+            console.error('Failed to update phase status:', error);
+        }
+    };
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -76,7 +93,7 @@ const ProjectOverview = ({ projectId }) => {
         return null; // Don't render anything if no data
     }
 
-    const { project, overview, phases, overdueTasks, workloads, upcomingDeadlines } = dashboard;
+    const { project, overview, phases, overdueTasks, workloads, upcomingDeadlines, tasks } = dashboard;
 
     const totalOverduePages = Math.ceil((overdueTasks?.length || 0) / itemsPerPage);
     const currentOverduePage = Math.min(overduePage, Math.max(1, totalOverduePages));
@@ -134,9 +151,12 @@ const ProjectOverview = ({ projectId }) => {
             {/* Phase Tracker */}
             {project.name.toLowerCase() !== 'general' && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-4">
-                    {phases.map((phase) => (
-                        <Card key={phase.id} className={phase.status === 'COMPLETED' ? 'bg-green-500/10 border-green-400/50' : phase.status === 'IN_PROGRESS' ? 'bg-blue-500/10 border-blue-400/50' : 'bg-muted/50'}>
-                            <CardContent className="p-3 sm:p-4 text-center">
+                    {phases.map((phase) => {
+                        const hasTasks = tasks && tasks.some(task => task.phaseId === phase.id);
+                        const isManagerOrAdmin = user?.role === 'ADMIN' || (user?.role === 'MANAGER' && project.managerId === user?.id);
+                        const canEdit = isManagerOrAdmin && !hasTasks;
+                        const phaseContent = (
+                            <CardContent className={`p-3 sm:p-4 text-center ${canEdit ? 'cursor-pointer hover:bg-muted/50 transition-colors' : ''}`}>
                                 <h3 className="font-semibold text-[10px] sm:text-[11px] lg:text-xs tracking-tight text-foreground mb-2 leading-tight">{phase.name}</h3>
                                 {phase.status === 'COMPLETED' ? (
                                     <div className="flex flex-col items-center gap-1">
@@ -161,8 +181,27 @@ const ProjectOverview = ({ projectId }) => {
                                     </div>
                                 )}
                             </CardContent>
-                        </Card>
-                    ))}
+                        );
+
+                        return (
+                            <Card key={phase.id} className={phase.status === 'COMPLETED' ? 'bg-green-500/10 border-green-400/50' : phase.status === 'IN_PROGRESS' ? 'bg-blue-500/10 border-blue-400/50' : 'bg-muted/50'}>
+                                {canEdit ? (
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            {phaseContent}
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent>
+                                            <DropdownMenuItem onClick={() => handleUpdatePhaseStatus(phase.id, 'WAITING')}>Waiting</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleUpdatePhaseStatus(phase.id, 'IN_PROGRESS')}>In Progress</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleUpdatePhaseStatus(phase.id, 'COMPLETED')}>Completed</DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                ) : (
+                                    phaseContent
+                                )}
+                            </Card>
+                        );
+                    })}
                     {/* Projected Launch Date Card */}
                     <Card className="bg-green-500/10 border-green-400/50 hidden md:block">
                         <CardContent className="p-2 sm:p-4 text-center">
