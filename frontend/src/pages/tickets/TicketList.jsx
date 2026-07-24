@@ -112,7 +112,7 @@ const TicketList = () => {
                 <div className="bg-secondary/40 px-2 py-2.5 sm:py-3 rounded-2xl shadow-inner backdrop-blur-sm" style={{ border: '1px solid var(--table-border)' }}>
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div className="flex items-center justify-start">
-                            {(user?.role === 'ADMIN' || user?.permissions?.['tickets.create']) && (
+                            {user?.role === 'CLIENT' && (
                                 <Button onClick={() => navigate('/tickets/new')}>
                                     <Plus className="w-4 h-4 mr-2" />
                                     New Ticket

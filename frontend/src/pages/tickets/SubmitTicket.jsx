@@ -27,10 +27,19 @@ const SubmitTicket = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!title || !description) {
+        if (!title.trim() || !description.trim()) {
             toast({
                 title: "Error",
                 description: "Please fill in all the required fields.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        if (!/[a-zA-Z0-9]/.test(title)) {
+            toast({
+                title: "Validation Error",
+                description: "Ticket title must contain meaningful alphanumeric characters.",
                 variant: "destructive",
             });
             return;
@@ -73,7 +82,7 @@ const SubmitTicket = () => {
                 <form onSubmit={handleSubmit}>
                     <CardContent className="space-y-4 px-4 sm:px-6">
                         <div className="space-y-2">
-                            <Label htmlFor="title" className="text-foreground/90 font-semibold">Ticket Title</Label>
+                            <Label htmlFor="title" className="text-foreground/90 font-semibold">Ticket Title <span className="text-red-500">*</span></Label>
                             <Input
                                 id="title"
                                 placeholder="Brief summary of the issue"
@@ -85,7 +94,7 @@ const SubmitTicket = () => {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="priority" className="text-foreground/90 font-semibold">Priority</Label>
+                            <Label htmlFor="priority" className="text-foreground/90 font-semibold">Priority <span className="text-red-500">*</span></Label>
                             <SearchableSelect
                                 value={priority}
                                 onChange={setPriority}
@@ -100,7 +109,7 @@ const SubmitTicket = () => {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="description" className="text-foreground/90 font-semibold">Description</Label>
+                            <Label htmlFor="description" className="text-foreground/90 font-semibold">Description <span className="text-red-500">*</span></Label>
                             <RichTextEditor
                                 id="description"
                                 value={description}

@@ -235,16 +235,14 @@ const ChatPage = () => {
                                 <div className="space-y-1.5">
                                     <div className="flex items-center justify-between mb-3 px-2">
                                         <span className="text-[10px] font-black Montserrat uppercase tracking-widest text-muted-foreground">Private Chats</span>
-                                        {canCreateRooms && (
-                                            <Button 
-                                                variant="ghost" 
-                                                size="sm" 
-                                                onClick={() => setIsAddDMOpen(true)}
-                                                className="h-6 px-2 text-[9px] uppercase font-black tracking-widest text-primary hover:bg-primary/10 rounded"
-                                            >
-                                                <Plus className="w-3 h-3 mr-1" /> New DM
-                                            </Button>
-                                        )}
+                                        <Button 
+                                            variant="ghost" 
+                                            size="sm" 
+                                            onClick={() => setIsAddDMOpen(true)}
+                                            className="h-6 px-2 text-[9px] uppercase font-black tracking-widest text-primary hover:bg-primary/10 rounded"
+                                        >
+                                            <Plus className="w-3 h-3 mr-1" /> New DM
+                                        </Button>
                                     </div>
                                     
                                     {dms.length === 0 ? (

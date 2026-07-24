@@ -59,6 +59,8 @@ import {
   Sun,
   Moon,
   ShieldCheck,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { useChatStore } from '@/store/chatStore';
 import { useHeaderStore } from '@/store/headerStore';
@@ -113,10 +115,6 @@ const Layout = () => {
     console.log('Layout Notification Status:', { totalUnread, isConnected, path: location.pathname });
   }, [totalUnread, isConnected, location.pathname]);
 
-  // Auto-collapse sidebar on Kanban board, expand otherwise
-  useEffect(() => {
-    setIsSidebarOpen(location.pathname !== '/task-board');
-  }, [location.pathname]);
 
   if (user?.mustChangePassword && user?.role !== 'ADMIN') {
     return <Navigate to="/change-password" replace />;
@@ -222,9 +220,7 @@ const Layout = () => {
     <div className="flex flex-col h-full">
       {/* Logo - click to toggle sidebar */}
       <div
-        className={`flex items-center ${(isMobile || isSidebarOpen) ? 'gap-2 px-4' : 'justify-center'} h-16 cursor-pointer`}
-        onClick={() => !isMobile && setIsSidebarOpen(!isSidebarOpen)}
-        title={(isMobile || isSidebarOpen) ? 'Collapse sidebar' : 'Expand sidebar'}
+        className={`flex items-center ${(isMobile || isSidebarOpen) ? 'gap-2 px-4' : 'justify-center'} h-16`}
       >
         {user?.organization?.logoUrl ? (
           <img src={user.organization.logoUrl} alt="Logo" className="h-12 w-12 object-contain shrink-0" />
@@ -248,9 +244,11 @@ const Layout = () => {
         )}
       </div>
 
-      <Separator />
+      <div className="px-4 mb-2">
+        <Separator className="opacity-10" />
+      </div>
 
-      <nav className="flex-1 px-4 pt-4 space-y-1 overflow-y-auto no-scrollbar">
+      <nav className={`flex-1 px-4 ${!isMobile ? 'pt-2' : 'pt-4'} space-y-1 overflow-y-auto no-scrollbar`}>
         {navigation
           .filter(item => {
             // Admin only features (Internal Admin config)
@@ -360,8 +358,17 @@ const Layout = () => {
   return (
     <div className="h-screen w-full bg-background flex overflow-hidden">
       {/* Desktop Sidebar */}
-      <aside className={`hidden md:flex ${isSidebarOpen ? 'w-52' : 'w-16'} flex-col border-r border-border bg-card transition-all duration-300 shrink-0`}>
+      <aside className={`hidden md:flex ${isSidebarOpen ? 'w-52' : 'w-16'} flex-col border-r border-border bg-card transition-all duration-300 shrink-0 relative group`}>
         <NavContent />
+        
+        {/* Sidebar Toggle Arrow on Border */}
+        <button
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className="absolute -right-3 top-[76px] w-6 h-6 rounded-full z-50 border border-border bg-background shadow-md flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/50 transition-all focus:outline-none ring-4 ring-background"
+          title={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
+        >
+          {isSidebarOpen ? <ChevronLeft className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+        </button>
       </aside>
 
       {/* Content Wrapper */}

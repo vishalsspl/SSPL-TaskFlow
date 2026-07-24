@@ -3,7 +3,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, User, MoreVertical, Pencil, Trash2, ArrowRightLeft, Bug, Zap, BookOpen, GitBranch, CheckSquare, Clock, CheckCircle2, XCircle } from 'lucide-react';
+import { Calendar, User, MoreVertical, Pencil, Trash2, ArrowRightLeft, Bug, Zap, BookOpen, GitBranch, CheckSquare, Clock, CheckCircle2, XCircle, Square } from 'lucide-react';
 import { priorityColors, taskTypeColors } from '@/lib/utils';
 import { useAuthStore } from '@/store/authStore';
 import {
@@ -26,7 +26,7 @@ const STATUS_OPTIONS = [
     { value: 'COMPLETED', label: 'Completed', color: '#48A111' },
 ];
 
-const KanbanCard = ({ task, isReadOnly, disableDrag, onEdit, onCardClick, onDelete, onStatusChange, isHighlighted, highlightAction, onApprove, onReject }) => {
+const KanbanCard = ({ task, isReadOnly, disableDrag, onEdit, onCardClick, onDelete, onStatusChange, isHighlighted, highlightAction, onApprove, onReject, isSelected, onToggleSelect, currentUser }) => {
     const { user } = useAuthStore();
     const canEditTask = user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.permissions?.['tasks.editAny'] || (user?.role === 'MEMBER' && task.project?.allowMemberTaskCreation);
     const pendingTag = task.tags?.find(t => t.startsWith('PENDING_APPROVAL:'));
@@ -186,9 +186,19 @@ const KanbanCard = ({ task, isReadOnly, disableDrag, onEdit, onCardClick, onDele
 
                     {isPendingApproval && (
                         <div className="flex items-center justify-between mt-2 mb-1">
-                            <Badge variant="outline" className="text-amber-500 border-amber-500/50 bg-amber-500/10 text-[7px] sm:text-[8px] font-bold py-0 uppercase tracking-wider">
-                                Pending Approval
-                            </Badge>
+                            <div className="flex items-center gap-2">
+                                {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && onToggleSelect && (
+                                    <button 
+                                        onClick={(e) => { e.stopPropagation(); onToggleSelect(task.id); }}
+                                        className="text-amber-500 hover:text-amber-600 transition-colors"
+                                    >
+                                        {isSelected ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
+                                    </button>
+                                )}
+                                <Badge variant="outline" className="text-amber-500 border-amber-500/50 bg-amber-500/10 text-[7px] sm:text-[8px] font-bold py-0 uppercase tracking-wider">
+                                    Pending Approval
+                                </Badge>
+                            </div>
                             {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
                                 <div className="flex gap-1">
                                     <button

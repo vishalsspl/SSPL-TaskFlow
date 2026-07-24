@@ -197,6 +197,18 @@ const TaskKanban = () => {
         }
     };
 
+    const handleBulkApproveStatus = async (taskIds) => {
+        try {
+            await Promise.all(taskIds.map(taskId => api.post(`/tasks/${taskId}/approve-status`)));
+            toast({ title: 'Bulk Approval Successful', description: `${taskIds.length} tasks have been approved.` });
+            fetchData();
+        } catch (error) {
+            console.error('Failed to bulk approve status:', error);
+            toast({ title: 'Error', description: 'Failed to approve some tasks.', variant: 'destructive' });
+            fetchData();
+        }
+    };
+
     const handleRejectStatus = (taskId) => {
         setRejectTaskId(taskId);
         setRejectionReason('');
@@ -423,6 +435,7 @@ const TaskKanban = () => {
                     onDelete={(user?.role === 'ADMIN' || user?.permissions?.['tasks.delete']) ? handleDeleteTask : undefined}
                     onStatusChange={isReadOnly ? undefined : handleStatusChange}
                     onApprove={handleApproveStatus}
+                    onBulkApprove={handleBulkApproveStatus}
                     onReject={handleRejectStatus}
                     currentUser={user}
                     highlightTaskId={highlightTaskId}

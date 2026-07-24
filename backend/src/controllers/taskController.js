@@ -221,8 +221,8 @@ export const createTask = async (req, res) => {
     attachments = [],
   } = req.body;
 
-  if (!title) {
-    return res.status(400).json({ error: 'Title is required' });
+  if (!title || !String(title).trim()) {
+    return res.status(400).json({ error: 'Title is required and cannot be only blank spaces' });
   }
 
   // Handle optional project
@@ -472,8 +472,8 @@ export const bulkCreateTasks = async (req, res) => {
     } = row;
 
     // ── Basic Validation ──
-    if (!projectName || !title) {
-      results.push({ row: rowNum, title: title || '(empty)', status: 'FAILED', error: 'Project name and task title are required.' });
+    if (!projectName || !title || !String(title).trim()) {
+      results.push({ row: rowNum, title: title || '(empty)', status: 'FAILED', error: 'Project name and task title are required and cannot be empty.' });
       failCount++;
       continue;
     }
@@ -673,15 +673,34 @@ export const updateTask = async (req, res) => {
   });
   if (!existingTask) return res.status(404).json({ error: 'Task not found' });
 
-  if (title !== undefined && !/^[a-zA-Z0-9\s]+$/.test(title)) {
-    return res.status(400).json({ error: 'Task name cannot contain special characters. Only alphanumeric characters and spaces are allowed.' });
+  if (title !== undefined) {
+    if (!String(title).trim()) {
+      return res.status(400).json({ error: 'Task title cannot be empty or contain only blank spaces.' });
+    }
+    if (!/^[a-zA-Z0-9\s]+$/.test(title)) {
+      return res.status(400).json({ error: 'Task name cannot contain special characters. Only alphanumeric characters and spaces are allowed.' });
+    }
   }
 
   // Validate due date is not in the past ONLY if it's being changed to a new date
-  if (dueDate && new Date(dueDate).toISOString() !== new Date(existingTask.dueDate).toISOString()) {
+  let isDueDateChanged = false;
+  if (dueDate) {
+    if (!existingTask.dueDate) {
+      isDueDateChanged = true;
+    } else {
+      const oldDate = new Date(existingTask.dueDate);
+      const newDate = new Date(dueDate);
+      if (oldDate.getFullYear() !== newDate.getFullYear() || oldDate.getMonth() !== newDate.getMonth() || oldDate.getDate() !== newDate.getDate()) {
+        isDueDateChanged = true;
+      }
+    }
+  }
+
+  if (isDueDateChanged) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const taskDueDate = new Date(dueDate);
+    taskDueDate.setHours(0, 0, 0, 0);
     if (taskDueDate < today) {
       return res.status(400).json({ error: 'Due date cannot be in the past' });
     }

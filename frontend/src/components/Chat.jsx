@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { useTheme } from '@/components/ThemeProvider';
 import { useToast } from "@/hooks/use-toast";
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = false }) => {
     const { toast } = useToast();
@@ -43,6 +44,10 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = 
     const [isSearching, setIsSearching] = useState(false);
     const [invitingId, setInvitingId] = useState(null);
     const [projectMembers, setProjectMembers] = useState([]);
+    
+    // Remove member state
+    const [showRemoveDialog, setShowRemoveDialog] = useState(false);
+    const [memberToRemove, setMemberToRemove] = useState(null);
 
     // Edit/Delete/Reply/Forward state
     const [editingMsgId, setEditingMsgId] = useState(null);
@@ -50,6 +55,8 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = 
     const [replyingTo, setReplyingTo] = useState(null);
     const [forwardingMsg, setForwardingMsg] = useState(null);
     const [reactions, setReactions] = useState({}); // { messageId: { emoji: count } }
+    const [deleteMsgId, setDeleteMsgId] = useState(null);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
     // Mention state
     const [showMentionMenu, setShowMentionMenu] = useState(false);
@@ -253,10 +260,16 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = 
         }
     };
 
-    const handleRemoveMember = async (userId) => {
+    const handleRemoveMemberClick = (userId) => {
+        setMemberToRemove(userId);
+        setShowRemoveDialog(true);
+    };
+
+    const handleConfirmRemoveMember = async () => {
+        if (!memberToRemove) return;
         try {
-            await api.delete(`/projects/${projectId}/members/${userId}`);
-            setProjectMembers(prev => prev.filter(id => id !== userId));
+            await api.delete(`/projects/${projectId}/members/${memberToRemove}`);
+            setProjectMembers(prev => prev.filter(id => id !== memberToRemove));
             toast({
                 title: 'Success',
                 description: 'Member removed successfully',
@@ -267,6 +280,9 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = 
                 title: 'Error',
                 description: error.response?.data?.error || 'Failed to remove member',
             });
+        } finally {
+            setShowRemoveDialog(false);
+            setMemberToRemove(null);
         }
     };
 
@@ -450,7 +466,7 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = 
                     )}
                     <h3 className="font-bold text-lg Montserrat text-foreground truncate">{title}</h3>
                 </div>
-                {isManagerOrAdmin && projectId && !isDirectMessage && (
+                {projectId && !isDirectMessage && (
                     <Button
                         variant="ghost"
                         size="icon"
@@ -575,7 +591,10 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = 
 
                                                 {canDeleteMessages && (
                                                     <button
-                                                        onClick={() => handleDeleteMessage(msg.id)}
+                                                        onClick={() => {
+                                                            setDeleteMsgId(msg.id);
+                                                            setDeleteDialogOpen(true);
+                                                        }}
                                                         className="p-1.5 hover:bg-white/10 rounded text-gray-400 hover:text-red-500 transition-colors"
                                                         title="Delete"
                                                     >
@@ -714,6 +733,30 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = 
                 </div>
             </form>
 
+            <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <DialogContent className="bg-background border-border text-foreground w-[90vw] sm:max-w-[400px]">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl font-black Montserrat">Delete Message?</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <p className="text-sm text-muted-foreground Montserrat">This action cannot be undone. The message will be permanently deleted for everyone.</p>
+                    </div>
+                    <div className="flex justify-end gap-3">
+                        <Button variant="ghost" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+                        <Button variant="destructive" onClick={() => handleDeleteMessage(deleteMsgId)} className="Montserrat font-bold">Delete</Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            <ConfirmDialog
+                open={showRemoveDialog}
+                onOpenChange={setShowRemoveDialog}
+                onConfirm={handleConfirmRemoveMember}
+                title="Remove Member?"
+                description="Are you sure you want to remove this member from the chat channel? They will no longer have access to this conversation."
+                confirmText="Yes, Remove"
+            />
+
             {/* Add Member Dialog */}
             <Dialog open={addMemberOpen} onOpenChange={setAddMemberOpen}>
                 <DialogContent className="bg-background border-border text-foreground Montserrat w-[95vw] sm:max-w-md">
@@ -762,7 +805,7 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = 
                                                         variant="ghost"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            handleRemoveMember(u.id);
+                                                            handleRemoveMemberClick(u.id);
                                                         }}
                                                         className="h-8 text-red-500 hover:text-red-400 hover:bg-red-500/10 Montserrat text-[10px] font-bold"
                                                     >

@@ -3,7 +3,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import KanbanCard from './KanbanCard';
 
-const KanbanColumn = ({ id, title, tasks, isReadOnly, disableDrag, onEdit, onCardClick, onDelete, onStatusChange, recentlyMovedId, highlightTaskId, highlightAction, onApprove, onReject }) => {
+const KanbanColumn = ({ id, title, tasks, isReadOnly, disableDrag, onEdit, onCardClick, onDelete, onStatusChange, recentlyMovedId, highlightTaskId, highlightAction, onApprove, onReject, selectedTasks, onToggleSelect, onBulkApprove, currentUser }) => {
     const { setNodeRef } = useDroppable({
         id: id,
         data: {
@@ -52,11 +52,22 @@ const KanbanColumn = ({ id, title, tasks, isReadOnly, disableDrag, onEdit, onCar
                 </span>
             </div>
 
+            {id === 'IN_REVIEW' && selectedTasks?.length > 0 && (
+                <div className="mb-3 px-1 w-full">
+                    <button
+                        onClick={onBulkApprove}
+                        className="w-full bg-green-500/20 hover:bg-green-500/30 text-green-500 border border-green-500/30 text-[9px] sm:text-[10px] font-black uppercase tracking-wider py-1.5 sm:py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                    >
+                        Approve Selected ({selectedTasks.length})
+                    </button>
+                </div>
+            )}
+
             <div className="flex-1 overflow-y-auto pr-1 min-h-0 kanban-scroll" style={{ WebkitOverflowScrolling: 'touch' }}>
                 <div ref={setNodeRef} className="flex flex-col gap-3 min-h-[150px] pb-4 w-full max-w-[600px] sm:max-w-none mx-auto items-center sm:items-stretch">
                     <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
                         {tasks.map((task) => (
-                            <KanbanCard key={task.id} task={task} isReadOnly={isReadOnly} disableDrag={disableDrag} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={onStatusChange} isHighlighted={task.id === recentlyMovedId || task.id === highlightTaskId} highlightAction={task.id === highlightTaskId ? highlightAction : null} onApprove={onApprove} onReject={onReject} />
+                            <KanbanCard key={task.id} task={task} isReadOnly={isReadOnly} disableDrag={disableDrag} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={onStatusChange} isHighlighted={task.id === recentlyMovedId || task.id === highlightTaskId} highlightAction={task.id === highlightTaskId ? highlightAction : null} onApprove={onApprove} onReject={onReject} isSelected={selectedTasks?.includes(task.id)} onToggleSelect={onToggleSelect} currentUser={currentUser} />
                         ))}
                     </SortableContext>
                     {tasks.length === 0 && (

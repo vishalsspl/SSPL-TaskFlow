@@ -14,6 +14,10 @@ export const createTicket = async (req, res) => {
         return res.status(400).json({ error: 'Title and description are required' });
     }
 
+    if (!/[a-zA-Z0-9]/.test(title)) {
+        return res.status(400).json({ error: 'Ticket title must contain meaningful alphanumeric characters.' });
+    }
+
     try {
         const ticket = await req.db.ticket.create({
             data: {
@@ -100,11 +104,11 @@ export const getAllTickets = async (req, res) => {
         }
 
         if (status && status !== 'ALL') {
-            where.status = status;
+            where.status = { equals: status };
         }
 
         if (priority && priority !== 'ALL') {
-            where.priority = priority;
+            where.priority = { equals: priority };
         }
 
         // Backend search filter

@@ -134,9 +134,25 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        if (new Date(formData.dueDate) < today) {
-            toast({ title: "Validation Error", description: "Due date cannot be in the past.", variant: "destructive" });
-            return;
+        
+        let isDueDateChanged = false;
+        if (task?.dueDate) {
+            const oldDate = new Date(task.dueDate);
+            const newDate = new Date(formData.dueDate);
+            if (oldDate.getFullYear() !== newDate.getFullYear() || oldDate.getMonth() !== newDate.getMonth() || oldDate.getDate() !== newDate.getDate()) {
+                isDueDateChanged = true;
+            }
+        } else {
+            isDueDateChanged = true;
+        }
+
+        if (isDueDateChanged) {
+            const taskDueDate = new Date(formData.dueDate);
+            taskDueDate.setHours(0, 0, 0, 0);
+            if (taskDueDate < today) {
+                toast({ title: "Validation Error", description: "Due date cannot be in the past.", variant: "destructive" });
+                return;
+            }
         }
 
         if (Number(formData.storyPoints) < 0) {

@@ -443,14 +443,14 @@ const Team = () => {
   };
 
   const handleDelete = (user) => {
-    // If viewing a specific manager's team, "Delete" means "Remove from Team"
+    // If viewing a specific manager's team, or if the current user is a manager (they can only remove from their team), "Delete" means "Remove from Team"
     const isSpecificManagerView = selectedManagerId !== 'ALL' && 
                                   selectedManagerId !== 'MANAGERS_LIST' && 
                                   selectedManagerId !== 'CLIENTS_LIST' && 
                                   selectedManagerId !== 'MEMBERS_LIST' && 
                                   selectedManagerId !== 'PENDING';
                                   
-    if (isSpecificManagerView) {
+    if (isSpecificManagerView || currentUser?.role === 'MANAGER') {
       setUserToRemoveFromTeam(user);
       setShowRemoveFromTeamDialog(true);
     } else {

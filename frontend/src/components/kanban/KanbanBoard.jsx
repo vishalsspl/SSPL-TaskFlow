@@ -60,10 +60,12 @@ const KanbanBoard = ({
     onReject,
     currentUser,
     highlightTaskId,
-    highlightAction
+    highlightAction,
+    onBulkApprove
 }) => {
     const { toast } = useToast();
     const [activeId, setActiveId] = useState(null);
+    const [selectedTasks, setSelectedTasks] = useState([]);
     const [recentlyMovedId, setRecentlyMovedId] = useState(null);
     const [isMobile, setIsMobile] = useState(false);
     const [activeColumnIndex, setActiveColumnIndex] = useState(0);
@@ -212,6 +214,19 @@ const KanbanBoard = ({
         COMPLETED: sortTasks(tasks.filter(t => t.status === 'COMPLETED'), 'COMPLETED'),
     };
 
+    const toggleTaskSelection = (taskId) => {
+        setSelectedTasks(prev => 
+            prev.includes(taskId) ? prev.filter(id => id !== taskId) : [...prev, taskId]
+        );
+    };
+
+    const handleBulkApproveClick = () => {
+        if (onBulkApprove && selectedTasks.length > 0) {
+            onBulkApprove(selectedTasks);
+            setSelectedTasks([]);
+        }
+    };
+
     return (
         <DndContext
             sensors={sensors}
@@ -222,10 +237,10 @@ const KanbanBoard = ({
             <div className="relative h-full flex flex-col">
                 {/* Columns container */}
                 <div ref={scrollRef} className="flex flex-1 min-h-0 w-full gap-2 sm:gap-4 overflow-x-auto pb-0 sm:pb-4 px-1 sm:px-0 no-scrollbar scroll-smooth snap-x snap-mandatory">
-                    <KanbanColumn id="TODO" title="To Do" tasks={columns.TODO} isReadOnly={isReadOnly} disableDrag={actuallyDisableDrag} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={handleManualStatusChange} recentlyMovedId={recentlyMovedId} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} />
-                    <KanbanColumn id="IN_PROGRESS" title="In Progress" tasks={columns.IN_PROGRESS} isReadOnly={isReadOnly} disableDrag={actuallyDisableDrag} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={handleManualStatusChange} recentlyMovedId={recentlyMovedId} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} />
-                    <KanbanColumn id="IN_REVIEW" title="In Review" tasks={columns.IN_REVIEW} isReadOnly={isReadOnly} disableDrag={actuallyDisableDrag} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={handleManualStatusChange} recentlyMovedId={recentlyMovedId} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} />
-                    <KanbanColumn id="COMPLETED" title="Completed" tasks={columns.COMPLETED} isReadOnly={isReadOnly} disableDrag={actuallyDisableDrag} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={handleManualStatusChange} recentlyMovedId={recentlyMovedId} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} />
+                    <KanbanColumn id="TODO" title="To Do" tasks={columns.TODO} isReadOnly={isReadOnly} disableDrag={actuallyDisableDrag} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={handleManualStatusChange} recentlyMovedId={recentlyMovedId} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} selectedTasks={selectedTasks} onToggleSelect={toggleTaskSelection} onBulkApprove={handleBulkApproveClick} currentUser={currentUser} />
+                    <KanbanColumn id="IN_PROGRESS" title="In Progress" tasks={columns.IN_PROGRESS} isReadOnly={isReadOnly} disableDrag={actuallyDisableDrag} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={handleManualStatusChange} recentlyMovedId={recentlyMovedId} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} selectedTasks={selectedTasks} onToggleSelect={toggleTaskSelection} onBulkApprove={handleBulkApproveClick} currentUser={currentUser} />
+                    <KanbanColumn id="IN_REVIEW" title="In Review" tasks={columns.IN_REVIEW} isReadOnly={isReadOnly} disableDrag={actuallyDisableDrag} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={handleManualStatusChange} recentlyMovedId={recentlyMovedId} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} selectedTasks={selectedTasks} onToggleSelect={toggleTaskSelection} onBulkApprove={handleBulkApproveClick} currentUser={currentUser} />
+                    <KanbanColumn id="COMPLETED" title="Completed" tasks={columns.COMPLETED} isReadOnly={isReadOnly} disableDrag={actuallyDisableDrag} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={handleManualStatusChange} recentlyMovedId={recentlyMovedId} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} selectedTasks={selectedTasks} onToggleSelect={toggleTaskSelection} onBulkApprove={handleBulkApproveClick} currentUser={currentUser} />
                 </div>
 
                 {/* Mobile Navigation Bar */}
