@@ -58,9 +58,14 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = 
     const [deleteMsgId, setDeleteMsgId] = useState(null);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-    // Mention state
     const [showMentionMenu, setShowMentionMenu] = useState(false);
     const [mentionSearch, setMentionSearch] = useState('');
+
+    // Forward state
+    const [forwardDialogOpen, setForwardDialogOpen] = useState(false);
+    const [forwardRooms, setForwardRooms] = useState([]);
+    const [isForwarding, setIsForwarding] = useState(false);
+    const [forwardSearch, setForwardSearch] = useState('');
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -249,6 +254,20 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = 
                 title: 'Success',
                 description: 'Member added successfully',
             });
+            
+            if (socket) {
+                const addedUser = availableUsers.find(u => u.id === userId);
+                const userName = addedUser ? addedUser.name : 'A member';
+                const msg = `${userName} was added to the group.`;
+                const encryptedContent = await encrypt(msg);
+                socket.emit('send-message', {
+                    content: encryptedContent,
+                    userId: user.id,
+                    projectId: projectId,
+                    organizationId: user.organizationId,
+                    snippet: msg,
+                });
+            }
         } catch (error) {
             toast({
                 variant: 'destructive',
@@ -274,6 +293,21 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = 
                 title: 'Success',
                 description: 'Member removed successfully',
             });
+            
+            if (socket) {
+                // Try to find the user in availableUsers or users list
+                const removedUser = availableUsers.find(u => u.id === memberToRemove);
+                const userName = removedUser ? removedUser.name : 'A member';
+                const msg = `${userName} was removed from the group.`;
+                const encryptedContent = await encrypt(msg);
+                socket.emit('send-message', {
+                    content: encryptedContent,
+                    userId: user.id,
+                    projectId: projectId,
+                    organizationId: user.organizationId,
+                    snippet: msg,
+                });
+            }
         } catch (error) {
             toast({
                 variant: 'destructive',
@@ -431,14 +465,92 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = 
     };
 
     const handleDeleteMessage = (messageId) => {
-        if (!window.confirm('Are you sure you want to delete this message?')) return;
         if (!socket) return;
 
         socket.emit('delete-message', {
             messageId,
             projectId,
-            organizationId: user.organizationId
+            organizationId: user.organizationId,
+            userId: user.id,
+            userRole: user.role
         });
+        setDeleteDialogOpen(false);
+    };
+
+    const fetchForwardRooms = async () => {
+        try {
+            const response = await api.get('/chat/rooms');
+            setForwardRooms(Array.isArray(response.data) ? response.data.filter(r => !r.isDM) : []);
+        } catch (error) {
+            console.error('Failed to fetch rooms for forwarding:', error);
+        }
+    };
+
+    const handleForwardMessage = async (room) => {
+        if (!socket || !forwardingMsg) return;
+        setIsForwarding(true);
+        try {
+            const encryptedContent = await encrypt(forwardingMsg.content);
+            const targetProjectId = room.isGlobal ? null : room.id;
+
+            socket.emit('send-message', {
+                content: encryptedContent,
+                userId: user.id,
+                projectId: targetProjectId,
+                organizationId: user.organizationId,
+                snippet: forwardingMsg.content.substring(0, 100),
+                isForwarded: true
+            });
+            
+            toast({
+                title: "Message Forwarded",
+                description: `Successfully forwarded to ${room.name || 'chat'}`
+            });
+            setForwardDialogOpen(false);
+            setForwardingMsg(null);
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to forward message",
+                variant: "destructive"
+            });
+        } finally {
+            setIsForwarding(false);
+        }
+    };
+
+    const handleForwardToUser = async (targetUser) => {
+        if (!socket || !forwardingMsg) return;
+        setIsForwarding(true);
+        try {
+            const encryptedContent = await encrypt(forwardingMsg.content);
+            const ids = [user.id, targetUser.id].sort();
+            const dmId = `dm_${ids[0]}_${ids[1]}`;
+
+            socket.emit('send-message', {
+                content: encryptedContent,
+                userId: user.id,
+                projectId: dmId,
+                organizationId: user.organizationId,
+                snippet: forwardingMsg.content.substring(0, 100),
+                isForwarded: true
+            });
+            
+            toast({
+                title: "Message Forwarded",
+                description: `Successfully forwarded to ${targetUser.name}`
+            });
+            setForwardDialogOpen(false);
+            setForwardingMsg(null);
+        } catch (error) {
+            toast({
+                title: "Error",
+                description: "Failed to forward message",
+                variant: "destructive"
+            });
+        } finally {
+            setIsForwarding(false);
+        }
     };
 
     const filteredUsers = availableUsers.filter(u =>
@@ -466,7 +578,7 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = 
                     )}
                     <h3 className="font-bold text-lg Montserrat text-foreground truncate">{title}</h3>
                 </div>
-                {projectId && !isDirectMessage && (
+                {projectId && !isDirectMessage && isManagerOrAdmin && (
                     <Button
                         variant="ghost"
                         size="icon"
@@ -568,7 +680,8 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = 
                                                 <button
                                                     onClick={() => {
                                                         setForwardingMsg(msg);
-                                                        toast({ title: "Forwarding", description: "Select a chat to forward this message to." });
+                                                        setForwardDialogOpen(true);
+                                                        fetchForwardRooms();
                                                     }}
                                                     className="p-1.5 hover:bg-white/10 rounded text-gray-400 hover:text-primary transition-colors"
                                                     title="Forward"
@@ -589,7 +702,7 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = 
                                                     </button>
                                                 )}
 
-                                                {canDeleteMessages && (
+                                                {(user.role === 'ADMIN' || msg.userId === user.id) && (
                                                     <button
                                                         onClick={() => {
                                                             setDeleteMsgId(msg.id);
@@ -748,12 +861,70 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = 
                 </DialogContent>
             </Dialog>
 
+            <Dialog open={forwardDialogOpen} onOpenChange={(open) => {
+                setForwardDialogOpen(open);
+                if (!open) setForwardingMsg(null);
+            }}>
+                <DialogContent className="bg-background border-border text-foreground w-[90vw] sm:max-w-[400px]">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl font-black Montserrat">Forward Message</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-2">
+                        <Input 
+                            placeholder="Search chats..." 
+                            value={forwardSearch} 
+                            onChange={(e) => setForwardSearch(e.target.value)} 
+                            className="mb-4 bg-secondary/50 border-white/10"
+                        />
+                        <ScrollArea className="h-[50vh] max-h-[300px] pr-4">
+                            <div className="flex flex-col gap-2">
+                                {forwardRooms
+                                    .filter(r => (r.name || 'Unnamed').toLowerCase().includes(forwardSearch.toLowerCase()))
+                                    .map(room => (
+                                    <button
+                                        key={room.id}
+                                        onClick={() => handleForwardMessage(room)}
+                                        disabled={isForwarding}
+                                        className="flex items-center p-3 rounded-lg hover:bg-white/5 transition-colors w-full text-left border border-transparent hover:border-white/10"
+                                    >
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-bold Montserrat truncate">{room.name || 'Unnamed Channel'}</p>
+                                            <p className="text-xs text-muted-foreground">Channel</p>
+                                        </div>
+                                        {isForwarding ? <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" /> : <Forward className="w-4 h-4 text-muted-foreground" />}
+                                    </button>
+                                ))}
+                                {availableUsers
+                                    .filter(u => u.id !== user.id && u.name.toLowerCase().includes(forwardSearch.toLowerCase()))
+                                    .map(targetUser => (
+                                    <button
+                                        key={targetUser.id}
+                                        onClick={() => handleForwardToUser(targetUser)}
+                                        disabled={isForwarding}
+                                        className="flex items-center p-3 rounded-lg hover:bg-white/5 transition-colors w-full text-left border border-transparent hover:border-white/10"
+                                    >
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-bold Montserrat truncate">{targetUser.name}</p>
+                                            <p className="text-xs text-muted-foreground">Direct Message</p>
+                                        </div>
+                                        {isForwarding ? <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" /> : <Forward className="w-4 h-4 text-muted-foreground" />}
+                                    </button>
+                                ))}
+                                {forwardRooms.length === 0 && availableUsers.length === 0 && (
+                                    <p className="text-center text-muted-foreground py-4 text-sm">No chats or users found</p>
+                                )}
+                            </div>
+                        </ScrollArea>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
             <ConfirmDialog
                 open={showRemoveDialog}
                 onOpenChange={setShowRemoveDialog}
                 onConfirm={handleConfirmRemoveMember}
                 title="Remove Member?"
-                description="Are you sure you want to remove this member from the chat channel? They will no longer have access to this conversation."
+                description="Are you sure you want to remove this member from the chat channel? Please note that removing a member from the chat will also remove them from the project."
                 confirmText="Yes, Remove"
             />
 
