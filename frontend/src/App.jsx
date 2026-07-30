@@ -135,6 +135,33 @@ function App() {
     init();
   }, [initialize, token, syncUser]);
 
+  // ── Sync auth state across tabs ──────────────────────────────────────────
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'auth-storage') {
+        try {
+          const oldData = e.oldValue ? JSON.parse(e.oldValue) : null;
+          const newData = e.newValue ? JSON.parse(e.newValue) : null;
+          
+          const oldToken = oldData?.state?.token;
+          const newToken = newData?.state?.token;
+          const oldUserId = oldData?.state?.user?.id;
+          const newUserId = newData?.state?.user?.id;
+
+          // Only reload if the user actually changed (login, logout, or switched accounts)
+          // This prevents infinite reload loops when syncUser just updates the same user's data
+          if (oldToken !== newToken || oldUserId !== newUserId) {
+            window.location.reload();
+          }
+        } catch (err) {
+          console.error("Error parsing storage event", err);
+        }
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   // ── Periodic re-sync: refresh user permissions every 5 minutes ──────────
   useEffect(() => {
     if (!token) return;
