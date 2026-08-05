@@ -39,8 +39,8 @@ model Organization {
   primaryContactPhone String?
   address             String?
 
-  // Razorpay
-  razorpayCustomerId  String?
+  // Stripe
+  stripeCustomerId  String?
   currentPeriodStart  DateTime?
   currentPeriodEnd    DateTime?
 
@@ -136,9 +136,11 @@ model Invoice {
   description String?
   plan        OrgPlan?
 
-  razorpayOrderId   String?
-  razorpayPaymentId String?
-  invoiceNumber     String?   @unique
+  stripeSessionId       String?
+  stripePaymentIntentId String?
+  razorpayOrderId       String?
+  razorpayPaymentId     String?
+  invoiceNumber         String?   @unique
 
   dueDate DateTime?
   paidAt  DateTime?

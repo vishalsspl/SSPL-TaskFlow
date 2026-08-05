@@ -1,9 +1,10 @@
 import React from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CheckSquare, Square } from 'lucide-react';
 import KanbanCard from './KanbanCard';
 
-const KanbanColumn = ({ id, title, tasks, isReadOnly, disableDrag, onEdit, onCardClick, onDelete, onStatusChange, recentlyMovedId, highlightTaskId, highlightAction, onApprove, onReject, selectedTasks, onToggleSelect, onBulkApprove, currentUser }) => {
+const KanbanColumn = ({ id, title, tasks, isReadOnly, disableDrag, onEdit, onCardClick, onDelete, onStatusChange, recentlyMovedId, highlightTaskId, highlightAction, onApprove, onReject, selectedTasks, onToggleSelect, onToggleSelectAll, onBulkApprove, onBulkReject, currentUser }) => {
     const { setNodeRef } = useDroppable({
         id: id,
         data: {
@@ -11,6 +12,8 @@ const KanbanColumn = ({ id, title, tasks, isReadOnly, disableDrag, onEdit, onCar
             columnId: id,
         },
     });
+
+    const isAllSelected = tasks.length > 0 && tasks.every(t => selectedTasks?.includes(t.id));
 
     const getColumnColor = (status) => {
         switch (status) {
@@ -47,19 +50,38 @@ const KanbanColumn = ({ id, title, tasks, isReadOnly, disableDrag, onEdit, onCar
                     />
                     <h3 className="font-black text-[9px] sm:text-[10px] md:text-[11px] uppercase tracking-widest text-foreground Montserrat truncate max-w-[80px] sm:max-w-none">{title}</h3>
                 </div>
-                <span className="bg-foreground/10 text-foreground text-[8px] sm:text-[10px] px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md sm:rounded-lg font-black Montserrat ring-1 ring-foreground/10 shrink-0">
-                    {tasks.length}
-                </span>
+                <div className="flex items-center gap-2">
+                    {id === 'IN_REVIEW' && tasks.length > 0 && onToggleSelectAll && (currentUser?.role === 'ADMIN' || currentUser?.role === 'MANAGER') && (
+                        <button 
+                            onClick={() => onToggleSelectAll(tasks, !isAllSelected)}
+                            className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
+                            title="Select All"
+                        >
+                            {isAllSelected ? <CheckSquare className="w-4 h-4 text-primary" /> : <Square className="w-4 h-4" />}
+                        </button>
+                    )}
+                    <span className="bg-foreground/10 text-foreground text-[8px] sm:text-[10px] px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-md sm:rounded-lg font-black Montserrat ring-1 ring-foreground/10 shrink-0">
+                        {tasks.length}
+                    </span>
+                </div>
             </div>
 
             {id === 'IN_REVIEW' && selectedTasks?.length > 0 && (
-                <div className="mb-3 px-1 w-full">
+                <div className="mb-3 px-1 w-full flex flex-col gap-2">
                     <button
                         onClick={onBulkApprove}
                         className="w-full bg-green-500/20 hover:bg-green-500/30 text-green-500 border border-green-500/30 text-[9px] sm:text-[10px] font-black uppercase tracking-wider py-1.5 sm:py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5"
                     >
                         Approve Selected ({selectedTasks.length})
                     </button>
+                    {onBulkReject && (
+                        <button
+                            onClick={onBulkReject}
+                            className="w-full bg-red-500/20 hover:bg-red-500/30 text-red-500 border border-red-500/30 text-[9px] sm:text-[10px] font-black uppercase tracking-wider py-1.5 sm:py-2 rounded-lg transition-colors flex items-center justify-center gap-1.5"
+                        >
+                            Reject Selected ({selectedTasks.length})
+                        </button>
+                    )}
                 </div>
             )}
 

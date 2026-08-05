@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useHeaderStore } from '@/store/headerStore';
 import { useAuthStore } from '@/store/authStore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -31,6 +32,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
 const BillingPage = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { setHeader } = useHeaderStore();
   const { user, syncUser } = useAuthStore();
   const { toast } = useToast();
@@ -42,8 +44,52 @@ const BillingPage = () => {
 
   useEffect(() => {
     setHeader('Billing & Plans', 'Manage your subscription and payment history');
-    fetchData();
-  }, [setHeader]);
+    
+    // Check for Stripe redirect params
+    const success = searchParams.get('success');
+    const canceled = searchParams.get('canceled');
+    const sessionId = searchParams.get('session_id');
+
+    if (success && sessionId) {
+      verifyStripePayment(sessionId);
+    } else if (canceled) {
+      toast({
+        title: 'Payment Cancelled',
+        description: 'You can upgrade your plan anytime.',
+      });
+      // Clear URL params
+      setSearchParams(new URLSearchParams());
+      fetchData();
+    } else {
+      fetchData();
+    }
+  }, [setHeader, searchParams]);
+
+  const verifyStripePayment = async (sessionId) => {
+    try {
+      setLoading(true);
+      const res = await api.post('/billing/verify-payment', { session_id: sessionId });
+      toast({
+        title: '🎉 Payment Successful!',
+        description: `Your organization has been upgraded to the ${res.data.plan} plan.`,
+      });
+      // Clear URL params
+      setSearchParams(new URLSearchParams());
+      await fetchData();
+      await syncUser(api);
+    } catch (error) {
+      console.error('Failed to verify payment:', error);
+      toast({
+        title: 'Verification Failed',
+        description: 'Payment verification is pending or failed. Please contact support if the issue persists.',
+        variant: 'destructive',
+      });
+      setSearchParams(new URLSearchParams());
+      await fetchData();
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -66,79 +112,24 @@ const BillingPage = () => {
     }
   };
 
-  // ── Razorpay Payment Handler ──────────────────────────────────────────
+  // ── Stripe Checkout Handler ──────────────────────────────────────────
   const handleUpgrade = async (plan) => {
     try {
       setPaymentLoading(plan);
 
-      // 1. Create order on backend
+      // 1. Create order on backend (returns Stripe Checkout URL)
       const { data } = await api.post('/billing/create-order', {
         plan,
         billingCycle,
       });
 
-      // 2. Open Razorpay checkout
-      const options = {
-        key: data.key || import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: data.amount,
-        currency: data.currency,
-        name: 'SSPL TaskFlow',
-        description: `${plan} Plan - ${billingCycle} billing`,
-        order_id: data.orderId,
-        prefill: {
-          name: user?.name || '',
-          email: data.organization?.email || user?.email || '',
-        },
-        theme: {
-          color: '#48A111',
-        },
-        handler: async (response) => {
-          // 3. Verify payment on backend
-          try {
-            const verifyRes = await api.post('/billing/verify-payment', {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              invoiceId: data.invoiceId,
-            });
+      // 2. Redirect to Stripe Checkout
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      } else {
+        throw new Error('No checkout URL returned');
+      }
 
-            toast({
-              title: '🎉 Payment Successful!',
-              description: `Your organization has been upgraded to the ${verifyRes.data.plan} plan.`,
-            });
-
-            // Refresh data
-            await fetchData();
-            // Sync user to get updated plan info
-            await syncUser(api);
-          } catch (verifyError) {
-            toast({
-              title: 'Verification Failed',
-              description: 'Payment was received but verification failed. Please contact support.',
-              variant: 'destructive',
-            });
-          }
-        },
-        modal: {
-          ondismiss: () => {
-            setPaymentLoading(null);
-            toast({
-              title: 'Payment Cancelled',
-              description: 'You can upgrade your plan anytime.',
-            });
-          },
-        },
-      };
-
-      const razorpayInstance = new window.Razorpay(options);
-      razorpayInstance.on('payment.failed', (response) => {
-        toast({
-          title: 'Payment Failed',
-          description: response.error?.description || 'Something went wrong. Please try again.',
-          variant: 'destructive',
-        });
-      });
-      razorpayInstance.open();
     } catch (error) {
       console.error('Upgrade error:', error);
       toast({
@@ -146,7 +137,6 @@ const BillingPage = () => {
         description: error.response?.data?.error || 'Could not initiate payment. Please try again.',
         variant: 'destructive',
       });
-    } finally {
       setPaymentLoading(null);
     }
   };
@@ -177,7 +167,7 @@ const BillingPage = () => {
   const calculatePrice = (plan) => {
     if (!planData?.pricing) return '...';
     const price = plan === 'PRO' ? planData.pricing.pro : planData.pricing.starter;
-    const users = planData.currentUsers || 1;
+    const users = Math.max(planData.currentUsers || 1, 25);
     let total = price * users;
     if (billingCycle === 'annually') {
       total = total * 12 * (1 - (planData.pricing.annualDiscount || 17) / 100);
@@ -188,6 +178,11 @@ const BillingPage = () => {
   const getFeatures = (planName) => {
     const tiers = planData?.tiers || {};
     const tier = tiers[planName];
+
+    if (tier?.points) {
+      return tier.points.split('\n');
+    }
+
     if (planName === 'STARTER') {
       return [
         `Up to ${tier?.maxUsers || 30} Users`,
@@ -213,8 +208,8 @@ const BillingPage = () => {
       ];
     }
     return [
-      `Up to ${tier?.maxUsers || 1000}+ Users`,
-      `${tier?.maxProjects || 500}+ Projects`,
+      'Unlimited team members',
+      'Unlimited projects',
       'Everything in Pro',
       'SSO & SAML',
       'Custom Integrations',
@@ -228,7 +223,7 @@ const BillingPage = () => {
     {
       name: 'STARTER',
       title: 'Starter',
-      description: 'Essential tools for small teams',
+      description: planData?.tiers?.STARTER?.description || 'Essential tools for small teams',
       icon: <Zap className="w-6 h-6" />,
       color: 'from-blue-500/20 to-blue-600/10',
       accent: 'text-blue-500',
@@ -238,7 +233,7 @@ const BillingPage = () => {
     {
       name: 'PRO',
       title: 'Professional',
-      description: 'Scale your business with ease',
+      description: planData?.tiers?.PRO?.description || 'Scale your business with ease',
       icon: <Sparkles className="w-6 h-6" />,
       popular: true,
       color: 'from-primary/30 to-primary/10',
@@ -249,7 +244,7 @@ const BillingPage = () => {
     {
       name: 'ENTERPRISE',
       title: 'Enterprise',
-      description: 'Maximum power and security',
+      description: planData?.tiers?.ENTERPRISE?.description || 'Maximum power and security',
       icon: <ShieldCheck className="w-6 h-6" />,
       color: 'from-purple-500/20 to-purple-600/10',
       accent: 'text-purple-500',
@@ -273,7 +268,24 @@ const BillingPage = () => {
   const planOrder = { FREE: 0, STARTER: 1, PRO: 2, ENTERPRISE: 3 };
 
   return (
-    <div className="space-y-8 pb-20 max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto space-y-6">
+      
+      {/* ── EXPIRATION BANNER ── */}
+      {user?.organization?.isExpired && (
+        <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-4 flex items-start gap-4 shadow-lg shadow-red-500/5">
+          <div className="p-2 bg-red-500/20 rounded-lg shrink-0">
+            <AlertCircle className="w-5 h-5 text-red-500" />
+          </div>
+          <div>
+            <h3 className="text-red-500 font-bold text-lg mb-1 tracking-tight">Your 14-Day Free Trial Has Expired</h3>
+            <p className="text-sm text-red-500/80 font-medium">
+              You currently do not have access to your workspace. Please select a plan below and upgrade to regain full access.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ── HEADER ── */}
       {/* ── Current Plan Overview ──────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Plan Card */}
@@ -562,7 +574,7 @@ const BillingPage = () => {
                     <h3 className="text-lg font-bold text-foreground mb-1 uppercase tracking-wider">{plan.title}</h3>
                     <p className="text-[11px] text-muted-foreground mb-5 leading-relaxed font-medium">{plan.description}</p>
 
-                    <div className="flex items-baseline gap-1 mb-6">
+                    <div className="flex items-baseline gap-1 mb-2">
                       <span className="text-3xl font-extrabold text-foreground tracking-tighter">
                         {plan.name === 'ENTERPRISE' ? 'Custom' : calculatePrice(plan.name)}
                       </span>
@@ -572,6 +584,11 @@ const BillingPage = () => {
                         </span>
                       )}
                     </div>
+                    {plan.name !== 'ENTERPRISE' && (
+                      <div className="text-[10px] text-muted-foreground font-semibold mb-6">
+                        (Pricing for {Math.max(planData?.currentUsers || 1, 25)} users)
+                      </div>
+                    )}
 
                     <ul className="space-y-2.5 mb-8 flex-1">
                       {getFeatures(plan.name).map((feature, i) => (
@@ -622,7 +639,7 @@ const BillingPage = () => {
             <div className="flex items-center justify-center gap-2 mt-4 sm:mt-6 text-muted-foreground/40">
               <ShieldCheck className="w-3.5 h-3.5" />
               <span className="text-[8px] sm:text-[9px] font-bold tracking-[0.2em] uppercase">
-                Secure 256-bit encrypted payments via Razorpay
+                Secure 256-bit encrypted payments via Stripe
               </span>
             </div>
           </CardContent>

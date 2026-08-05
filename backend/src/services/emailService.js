@@ -123,6 +123,29 @@ const buildEmailTemplate = ({ actionSummary, refLabel, refTitle, bodyLines, fiel
 // Email Functions
 // ─────────────────────────────────────────────────────────────────────────────
 
+export const sendManagerTaskCreatedEmail = async (to, managerName, memberName, taskTitle, projectName, baseUrl) => {
+  try {
+    if (!to) return null;
+    const info = await transporter.sendMail({
+      from: DEFAULT_FROM, to,
+      subject: `[TaskFlow] New Task Created by ${memberName}`,
+      html: buildEmailTemplate({
+        greeting: `Hi ${managerName},`,
+        intro: `<strong>${memberName}</strong> has created a new task in <strong>${projectName}</strong>.`,
+        refLabel: 'Task Title',
+        refTitle: taskTitle,
+        ctaUrl: `${getBaseUrl(baseUrl)}/task-board`,
+        ctaLabel: 'View Task Board'
+      }),
+    });
+    console.log(`[EmailService] Manager Task Created Email sent to ${to}: ${info.messageId}`);
+    return info;
+  } catch (error) {
+    console.error(`[EmailService] Error sending manager task created email to ${to}:`, error);
+    return null;
+  }
+};
+
 export const sendTaskAssignmentEmail = async (to, taskTitle, projectName, assignedByName, { priority, dueDate, status, description, baseUrl } = {}) => {
   try {
     if (!to) return null;
@@ -509,6 +532,29 @@ export const sendTicketStatusUpdateNotification = async (to, ticketTitle, newSta
     return info;
   } catch (error) {
     console.error(`[EmailService] Error sending ticket status update email to ${to}:`, error);
+    return null;
+  }
+};
+
+export const sendTaskCommentEmail = async (to, taskTitle, commentAuthor, message, projectId, taskId, baseUrl) => {
+  try {
+    if (!to) return null;
+    const info = await transporter.sendMail({
+      from: DEFAULT_FROM, to,
+      subject: `[TaskFlow] New Comment on Task: ${taskTitle}`,
+      html: buildEmailTemplate({
+        actionSummary: `<strong>${commentAuthor}</strong> added a comment.`,
+        refLabel: 'TaskFlow / Tasks',
+        refTitle: taskTitle,
+        bodyLines: [`"${message}"`],
+        ctaUrl: `${getBaseUrl(baseUrl)}/task-board?project=${projectId}&highlight=${taskId}`,
+        ctaLabel: 'View Task'
+      }),
+    });
+    console.log(`[EmailService] Task Comment Email sent to ${to}: ${info.messageId}`);
+    return info;
+  } catch (error) {
+    console.error(`[EmailService] Error sending task comment email to ${to}:`, error);
     return null;
   }
 };

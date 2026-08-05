@@ -129,9 +129,9 @@ const SuperAdminBilling = () => {
       {/* ── Stats Overview ────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
         {[
-          { label: 'Total Revenue', value: `₹${invoices.filter(i => i.status === 'PAID').reduce((acc, curr) => acc + (getUnitPrice(curr) || Number(curr.amount) || 0), 0).toLocaleString('en-IN')}`, icon: CreditCard, color: 'text-primary' },
-          { label: 'Pending Payments', value: `₹${invoices.filter(i => i.status === 'PENDING').reduce((acc, curr) => acc + (getUnitPrice(curr) || Number(curr.amount) || 0), 0).toLocaleString('en-IN')}`, icon: Clock, color: 'text-amber-500' },
-          { label: 'Overdue Amount', value: `₹${invoices.filter(i => i.status === 'OVERDUE').reduce((acc, curr) => acc + (getUnitPrice(curr) || Number(curr.amount) || 0), 0).toLocaleString('en-IN')}`, icon: AlertCircle, color: 'text-rose-500' },
+          { label: 'Total Revenue', value: `₹${invoices.filter(i => i.status === 'PAID').reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0).toLocaleString('en-IN')}`, icon: CreditCard, color: 'text-primary' },
+          { label: 'Pending Payments', value: `₹${invoices.filter(i => i.status === 'PENDING').reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0).toLocaleString('en-IN')}`, icon: Clock, color: 'text-amber-500' },
+          { label: 'Overdue Amount', value: `₹${invoices.filter(i => i.status === 'OVERDUE').reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0).toLocaleString('en-IN')}`, icon: AlertCircle, color: 'text-rose-500' },
           { label: 'Active Invoices', value: invoices.length, icon: CheckCircle2, color: 'text-emerald-500' }
         ].map((stat, i) => (
           <Card key={i} className="rounded-2xl sm:rounded-[2rem] border-border/40 bg-white/50 dark:bg-black/40 backdrop-blur-xl shadow-xl overflow-hidden group transition-all hover:scale-[1.02]">
@@ -192,14 +192,14 @@ const SuperAdminBilling = () => {
                   <div className="flex justify-between items-start mb-3">
                     <div className="min-w-0 pr-2">
                       <span className="text-sm font-black text-foreground truncate block">{invoice.organization.name}</span>
-                      <p className="text-[10px] text-muted-foreground/60 font-bold truncate">{invoice.organization.billingEmail || 'No Email'}</p>
+                      <p className="text-[10px] text-muted-foreground/60 font-bold truncate">{invoice.organization.billingEmail || invoice.organization.users?.[0]?.email || 'No Email'}</p>
                     </div>
                     <div className="shrink-0">{getStatusBadge(invoice.status)}</div>
                   </div>
                   <div className="grid grid-cols-2 gap-3 mb-4 mt-2">
                     <div>
                       <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">Amount</p>
-                      <p className="text-xs font-black">{getUnitPrice(invoice) !== null ? `₹${getUnitPrice(invoice).toLocaleString('en-IN')}` : 'Custom'}</p>
+                      <p className="text-xs font-black">{invoice.amount ? `₹${Number(invoice.amount).toLocaleString('en-IN')}` : 'Custom'}</p>
                     </div>
                     <div>
                       <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">Plan</p>
@@ -209,9 +209,15 @@ const SuperAdminBilling = () => {
                       <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/60">Date</p>
                       <p className="text-[10px] font-black mt-0.5">{format(new Date(invoice.createdAt), 'MMM dd, yyyy')}</p>
                     </div>
-                    {invoice.dueDate && (
+                    {invoice.status === 'PAID' && invoice.organization?.currentPeriodEnd && (
                       <div>
-                        <p className="text-[9px] font-black uppercase tracking-widest text-rose-500/80">Expires</p>
+                        <p className="text-[9px] font-black uppercase tracking-widest text-emerald-500/80">Plan Expires</p>
+                        <p className="text-[10px] font-black text-emerald-500 mt-0.5">{format(new Date(invoice.organization.currentPeriodEnd), 'MMM dd, yyyy')}</p>
+                      </div>
+                    )}
+                    {invoice.status === 'PENDING' && invoice.dueDate && (
+                      <div>
+                        <p className="text-[9px] font-black uppercase tracking-widest text-rose-500/80">Due Date</p>
                         <p className="text-[10px] font-black text-rose-500 mt-0.5">{format(new Date(invoice.dueDate), 'MMM dd')}</p>
                       </div>
                     )}
@@ -272,13 +278,13 @@ const SuperAdminBilling = () => {
                       <TableCell className="py-6">
                         <div className="flex flex-col items-center">
                           <span className="text-sm font-black text-foreground">{invoice.organization.name}</span>
-                          <span className="text-[10px] text-muted-foreground/60 font-bold tracking-tight truncate max-w-[120px]">{invoice.organization.billingEmail || 'No Email'}</span>
+                          <span className="text-[10px] text-muted-foreground/60 font-bold tracking-tight truncate max-w-[120px]">{invoice.organization.billingEmail || invoice.organization.users?.[0]?.email || 'No Email'}</span>
                         </div>
                       </TableCell>
                       <TableCell className="py-6">
                         <div className="flex flex-col items-center gap-1.5">
                           <span className="text-base font-black text-foreground [text-shadow:0_1px_1px_rgba(0,0,0,0.05)]">
-                            {getUnitPrice(invoice) !== null ? `₹${getUnitPrice(invoice).toLocaleString('en-IN')}` : 'Custom'}
+                            {invoice.amount ? `₹${Number(invoice.amount).toLocaleString('en-IN')}` : 'Custom'}
                           </span>
                           <div className="flex items-center justify-center gap-2">
                              <Badge variant="outline" className="text-[8px] font-black tracking-wider uppercase px-1.5 py-0 border-primary/20 text-primary/70 bg-primary/5">{invoice.plan || 'Custom'}</Badge>
@@ -288,8 +294,11 @@ const SuperAdminBilling = () => {
                       <TableCell className="hidden sm:table-cell py-6">
                         <div className="flex flex-col items-center gap-0.5">
                           <span className="text-[10px] font-black text-foreground uppercase tracking-wider">{format(new Date(invoice.createdAt), 'MMM dd, yyyy')}</span>
-                          {invoice.dueDate && (
-                            <span className="text-[9px] text-rose-500/80 font-bold uppercase tracking-[0.1em] mt-0.5">Expires: {format(new Date(invoice.dueDate), 'MMM dd')}</span>
+                          {invoice.status === 'PAID' && invoice.organization?.currentPeriodEnd && (
+                            <span className="text-[9px] text-emerald-500/80 font-bold uppercase tracking-[0.1em] mt-0.5">Plan Expires: {format(new Date(invoice.organization.currentPeriodEnd), 'MMM dd, yyyy')}</span>
+                          )}
+                          {invoice.status === 'PENDING' && invoice.dueDate && (
+                            <span className="text-[9px] text-rose-500/80 font-bold uppercase tracking-[0.1em] mt-0.5">Due: {format(new Date(invoice.dueDate), 'MMM dd')}</span>
                           )}
                         </div>
                       </TableCell>

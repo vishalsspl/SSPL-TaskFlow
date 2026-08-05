@@ -96,9 +96,8 @@ export const getTimeEntries = async (req, res) => {
         });
     }
 
-    const [entries, attendanceSummary] = await Promise.all([
-        req.db.timeEntry.findMany({ where, include, orderBy: { date: 'desc' } }),
-        req.db.attendance.findMany({
+    const attendancePromise = req.db.attendance 
+        ? req.db.attendance.findMany({
             where: {
                 userId: where.userId || (req.user.role === 'MEMBER' ? req.user.id : undefined),
                 organizationId: req.user.organizationId,
@@ -106,6 +105,11 @@ export const getTimeEntries = async (req, res) => {
             },
             select: { clockIn: true, durationMinutes: true }
         })
+        : Promise.resolve([]);
+
+    const [entries, attendanceSummary] = await Promise.all([
+        req.db.timeEntry.findMany({ where, include, orderBy: { date: 'desc' } }),
+        attendancePromise
     ]);
 
         const reviewerLogs = await req.db.activityLog.findMany({
@@ -135,6 +139,7 @@ export const getTimeEntries = async (req, res) => {
         });
     } catch (error) {
         console.error('Error in getTimeEntries:', error);
+        import('fs').then(fs => fs.appendFileSync('debug_trace.log', 'getTimeEntries ERROR: ' + error.stack + '\n'));
         res.status(500).json({ error: 'Failed to fetch time entries', message: error.message });
     }
 };
@@ -671,6 +676,17 @@ export const getUserPerformance = async (req, res) => {
     if (projectId) timeWhere.projectId = projectId;
     if (dateFrom || dateTo) timeWhere.date = dateFilter;
 
+    const attendancePromise = req.db.attendance
+        ? req.db.attendance.findMany({
+            where: { 
+                userId, 
+                organizationId: orgId,
+                clockIn: { gte: dateFrom ? new Date(dateFrom) : undefined, lte: dateTo ? new Date(dateTo) : undefined }
+            },
+            select: { durationMinutes: true }
+        })
+        : Promise.resolve([]);
+
     const [tasks, timeEntries, workLogs, attendanceLogs] = await Promise.all([
         req.db.task.findMany({
             where: taskWhere,
@@ -689,14 +705,7 @@ export const getUserPerformance = async (req, res) => {
             where: { userId, project: { organizationId: orgId } },
             select: { minutes: true, loggedAt: true, task: { select: { id: true, title: true } } },
         }),
-        req.db.attendance.findMany({
-            where: { 
-                userId, 
-                organizationId: orgId,
-                clockIn: { gte: dateFrom ? new Date(dateFrom) : undefined, lte: dateTo ? new Date(dateTo) : undefined }
-            },
-            select: { durationMinutes: true }
-        }),
+        attendancePromise,
     ]);
 
     const attendanceHours = attendanceLogs.reduce((sum, log) => sum + ((log.durationMinutes || 0) / 60), 0);
@@ -773,10 +782,8 @@ export const getTeamPerformance = async (req, res) => {
         if (projectId) timeWhere.projectId = projectId;
         if (dateFrom || dateTo) timeWhere.date = dateFilter;
 
-        const [tasks, timeEntries, attendanceLogs] = await Promise.all([
-            req.db.task.findMany({ where: taskWhere, select: { status: true, dueDate: true, storyPoints: true, updatedAt: true } }),
-            req.db.timeEntry.findMany({ where: timeWhere, select: { hours: true, billable: true } }),
-            req.db.attendance.findMany({
+        const attendancePromise = req.db.attendance
+            ? req.db.attendance.findMany({
                 where: { 
                     userId: u.id, 
                     organizationId: orgId,
@@ -784,6 +791,12 @@ export const getTeamPerformance = async (req, res) => {
                 },
                 select: { durationMinutes: true }
             })
+            : Promise.resolve([]);
+
+        const [tasks, timeEntries, attendanceLogs] = await Promise.all([
+            req.db.task.findMany({ where: taskWhere, select: { status: true, dueDate: true, storyPoints: true, updatedAt: true } }),
+            req.db.timeEntry.findMany({ where: timeWhere, select: { hours: true, billable: true } }),
+            attendancePromise
         ]);
 
         const attendanceHours = attendanceLogs.reduce((sum, log) => sum + ((log.durationMinutes || 0) / 60), 0);

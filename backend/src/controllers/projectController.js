@@ -525,8 +525,8 @@ export const createProject = async (req, res) => {
     allowMemberTaskCreation = false,
   } = req.body;
 
-  if (!name || name.trim().length < 3 || name.trim().length > 100) {
-    return res.status(400).json({ error: 'Project name must be between 3 and 100 characters' });
+  if (!name || name.trim().length < 3 || name.trim().length > 30) {
+    return res.status(400).json({ error: 'Project name must be between 3 and 30 characters' });
   }
 
   const organizationId = req.user.organizationId;
@@ -562,8 +562,9 @@ export const createProject = async (req, res) => {
     return res.status(400).json({ error: 'Project name cannot start with a number' });
   }
 
-  if (!/^[a-zA-Z0-9\s]+$/.test(name)) {
-    return res.status(400).json({ error: 'Project name cannot contain special characters. Only alphanumeric characters and spaces are allowed.' });
+  const isAlphanumeric = (char) => /^[a-zA-Z0-9]$/.test(char);
+  if (!isAlphanumeric(name.trim()[0]) || !isAlphanumeric(name.trim()[name.trim().length - 1])) {
+    return res.status(400).json({ error: 'Project name cannot start or end with a special character' });
   }
 
   // Check for duplicate project name in the same organization
@@ -1025,12 +1026,20 @@ export const updateProject = async (req, res) => {
   const isClientChanged = clientId && clientId !== existingProject.clientId;
 
   // Validation
-  if (name !== undefined && (name.trim().length < 3 || name.trim().length > 100)) {
-    return res.status(400).json({ error: 'Project name must be between 3 and 100 characters' });
-  }
-
-  if (name !== undefined && !/^[a-zA-Z0-9\s]+$/.test(name)) {
-    return res.status(400).json({ error: 'Project name cannot contain special characters. Only alphanumeric characters and spaces are allowed.' });
+  if (name !== undefined) {
+    const trimmedName = name.trim();
+    if (trimmedName.length < 3 || trimmedName.length > 30) {
+      return res.status(400).json({ error: 'Project name must be between 3 and 30 characters' });
+    }
+    
+    if (/^\d/.test(trimmedName)) {
+      return res.status(400).json({ error: 'Project name cannot start with a number' });
+    }
+    
+    const isAlphanumeric = (char) => /^[a-zA-Z0-9]$/.test(char);
+    if (!isAlphanumeric(trimmedName[0]) || !isAlphanumeric(trimmedName[trimmedName.length - 1])) {
+      return res.status(400).json({ error: 'Project name cannot start or end with a special character' });
+    }
   }
 
   // Check for duplicate name — exclude the current project itself
@@ -1048,8 +1057,8 @@ export const updateProject = async (req, res) => {
     }
   }
 
-  const newStartDate = startDate ? new Date(startDate) : existingProject.startDate;
-  const newEndDate = endDate ? new Date(endDate) : existingProject.endDate;
+  const newStartDate = startDate === null ? null : (startDate ? new Date(startDate) : existingProject.startDate);
+  const newEndDate = endDate === null ? null : (endDate ? new Date(endDate) : existingProject.endDate);
 
   if (newStartDate && newEndDate && newEndDate <= newStartDate) {
     return res.status(400).json({ error: 'End Date must be strictly after Start Date' });
@@ -1073,8 +1082,8 @@ export const updateProject = async (req, res) => {
       name,
       description,
       clientId: clientId !== undefined ? (clientId || null) : undefined,
-      startDate: startDate ? new Date(startDate) : undefined,
-      endDate: endDate ? new Date(endDate) : undefined,
+      startDate: startDate === null ? null : (startDate ? new Date(startDate) : undefined),
+      endDate: endDate === null ? null : (endDate ? new Date(endDate) : undefined),
       totalBudget: totalBudget && totalBudget !== '' ? totalBudget : undefined,
       usedBudget: usedBudget && usedBudget !== '' ? usedBudget : undefined,
       managerId: managerId !== undefined ? (managerId || null) : undefined,

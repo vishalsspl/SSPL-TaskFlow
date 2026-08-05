@@ -84,15 +84,15 @@ export async function provisionTenantDatabase({ orgId, orgName, orgData, adminDa
   urlParts.pathname = `/${dbName}`;
   const tenantDbUrl = urlParts.toString();
 
-  // 4. Run Prisma migrations on the new database using tenant.prisma
-  console.log(`⏳ [TenantProvisioner] Running tenant migrations on "${dbName}"...`);
+  // 4. Run Prisma schema push on the new database using tenant.prisma
+  console.log(`⏳ [TenantProvisioner] Pushing tenant schema to "${dbName}"...`);
   try {
-    execSync(`npx prisma migrate deploy --schema=prisma/tenant/schema.prisma`, {
+    execSync(`npx prisma db push --schema=prisma/tenant/schema.prisma --accept-data-loss --skip-generate`, {
       env: { ...process.env, TENANT_DATABASE_URL: tenantDbUrl },
       stdio: 'inherit',
       cwd: backendRoot,
     });
-    console.log(`✅ [TenantProvisioner] Migrations applied to "${dbName}"`);
+    console.log(`✅ [TenantProvisioner] Schema pushed to "${dbName}"`);
   } catch (err) {
     console.error(`❌ [TenantProvisioner] Migration failed for "${dbName}":`, err.message);
     // Attempt cleanup: drop the database

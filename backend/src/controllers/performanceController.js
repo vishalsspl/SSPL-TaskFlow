@@ -22,7 +22,7 @@ export const getPerformanceStats = async (req, res) => {
         if (dateFrom) dateFilter.gte = new Date(dateFrom);
         if (dateTo) dateFilter.lte = new Date(dateTo);
 
-        const teamStats = await Promise.all(users.map(async (u) => {
+        let teamStatsResponse = await Promise.all(users.map(async (u) => {
             const taskWhere = {
                 project: { organizationId: orgId },
                 assignees: { some: { userId: u.id } },
@@ -63,7 +63,18 @@ export const getPerformanceStats = async (req, res) => {
             };
         }));
 
-        res.json(teamStats);
+        if (projectId) {
+            teamStatsResponse = teamStatsResponse.filter(stat => stat.totalTasks > 0 || stat.totalHours > 0);
+            
+            // Sort strong performers to the top
+            teamStatsResponse.sort((a, b) => {
+                if (b.velocity !== a.velocity) return b.velocity - a.velocity;
+                if (b.completionRate !== a.completionRate) return b.completionRate - a.completionRate;
+                return b.completedTasks - a.completedTasks;
+            });
+        }
+
+        res.json(teamStatsResponse);
     } catch (error) {
         console.error('Error fetching performance stats:', error);
         res.status(500).json({ error: 'Failed to fetch performance stats' });

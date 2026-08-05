@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -117,6 +118,7 @@ const Tasks = () => {
   const [managerFilter, setManagerFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
+  const [hideCompleted, setHideCompleted] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showImportDialog, setShowImportDialog] = useState(false);
   const [projects, setProjects] = useState([]);
@@ -178,7 +180,7 @@ const Tasks = () => {
     fetchTasks();
     fetchProjects();
     fetchUsers();
-  }, [filter, projectFilter, priorityFilter, typeFilter, page, pageSize, debouncedSearch, sortBy, sortOrder, selectedProjectIds, selectedAssigneeIds, selectedStatuses, selectedTypes, selectedPriorities, dueDateFrom, dueDateTo, pointsMin, pointsMax, progressFilter]);
+  }, [filter, projectFilter, priorityFilter, typeFilter, page, pageSize, debouncedSearch, sortBy, sortOrder, selectedProjectIds, selectedAssigneeIds, selectedStatuses, selectedTypes, selectedPriorities, dueDateFrom, dueDateTo, pointsMin, pointsMax, progressFilter, hideCompleted]);
 
   const fetchTasks = async () => {
     try {
@@ -208,6 +210,10 @@ const Tasks = () => {
       if (progressFilter !== '' && progressFilter !== 'all') {
          params.progressMin = progressFilter;
          params.progressMax = progressFilter;
+      }
+
+      if (hideCompleted) {
+         params.excludeStatus = 'COMPLETED';
       }
 
       const response = await api.get('/tasks', { params });
@@ -528,6 +534,10 @@ const Tasks = () => {
                     className="w-full md:w-[130px] h-10 rounded-xl bg-background/50 border hover:bg-background transition-all"
                     style={{ borderColor: 'var(--input-border)' }}
                   />
+                  <div className="flex items-center gap-2 mr-2">
+                    <Switch id="hide-completed" checked={hideCompleted} onCheckedChange={setHideCompleted} />
+                    <Label htmlFor="hide-completed" className="text-sm font-semibold text-foreground/80 cursor-pointer">Hide Completed</Label>
+                  </div>
                   
                   {/* Advanced Filters */}
                   <Sheet>
@@ -737,7 +747,10 @@ const Tasks = () => {
                                         task.status === 'COMPLETED' ? '#48A111' : '#EF4444'
                                 }}
                               />
-                              <p className="text-sm font-bold Montserrat leading-tight text-foreground group-hover:text-primary transition-colors">{task.title}</p>
+                              <p className="text-sm font-bold Montserrat leading-tight text-foreground group-hover:text-primary transition-colors">
+                                {task.shortId && <span className="text-muted-foreground mr-1.5 font-normal">[{task.shortId}]</span>}
+                                {task.title}
+                              </p>
   
                               {/* Styled Custom Tooltip */}
                               {task.description && (
@@ -746,13 +759,13 @@ const Tasks = () => {
                                   index === 0 ? "top-full mt-2" : "bottom-full mb-2"
                                 )}>
                                   <div 
-                                    className="text-xs rounded-xl shadow-2xl p-3 w-64 break-words whitespace-normal text-left font-bold leading-relaxed tracking-wide border border-white/10"
+                                    className="text-xs rounded-xl shadow-2xl px-3 py-1.5 w-max whitespace-nowrap text-center font-bold tracking-wide border border-white/10"
                                     style={{ 
                                       backgroundColor: getProjectColor(task.project?.id, projects),
                                       color: getContrastColor(getProjectColor(task.project?.id, projects))
                                     }}
                                   >
-                                    {task.description.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ')}
+                                    Read more
                                   </div>
                                   <div 
                                     className={cn(
@@ -765,18 +778,18 @@ const Tasks = () => {
                               )}
                             </div>
                           </TableCell>
-                        <TableCell className="text-xs font-bold Montserrat text-foreground/90">{task.project.name}</TableCell>
+                        <TableCell className="text-xs font-bold Montserrat text-foreground/90">{task.project?.name || 'No Project'}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
                             {task.assignees && task.assignees.length > 0 ? (
                               <div className="flex flex-wrap gap-2 items-center">
                                 {task.assignees.slice(0, 3).map(({ user }) => (
-                                  <div key={user.id} className="flex items-center gap-2 bg-secondary/20 pr-3 rounded-full border border-border/50">
+                                  <div key={user?.id} className="flex items-center gap-2 bg-secondary/20 pr-3 rounded-full border border-border/50">
                                     <Avatar className="h-7 w-7 border border-[#0A0A0A] ring-1 ring-white/10">
-                                      <AvatarImage src={user.avatar} />
-                                      <AvatarFallback className="text-[10px] bg-white/5 text-muted-foreground">{user.name.charAt(0)}</AvatarFallback>
+                                      <AvatarImage src={user?.avatar} />
+                                      <AvatarFallback className="text-[10px] bg-white/5 text-muted-foreground">{user?.name?.charAt(0)}</AvatarFallback>
                                     </Avatar>
-                                    <span className="text-[11px] font-bold text-foreground whitespace-nowrap">{user.name}</span>
+                                    <span className="text-[11px] font-bold text-foreground whitespace-nowrap">{user?.name}</span>
                                   </div>
                                 ))}
                                 {task.assignees.length > 3 && (
@@ -930,7 +943,17 @@ const Tasks = () => {
                                     task.status === 'COMPLETED' ? '#48A111' : '#EF4444'
                             }}
                           />
-                          <p className="font-bold text-sm text-foreground leading-tight pr-2">{task.title}</p>
+                          <div className="flex flex-col gap-1 pr-2 w-full">
+                            <p className="font-bold text-sm text-foreground leading-tight truncate" title={task.title}>
+                              {task.shortId && <span className="text-muted-foreground mr-1.5 font-normal">[{task.shortId}]</span>}
+                              {task.title}
+                            </p>
+                            {task.description && (
+                              <p className="text-[10px] text-muted-foreground line-clamp-1 w-full" title={task.description}>
+                                {task.description}
+                              </p>
+                            )}
+                          </div>
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
                           {(() => {

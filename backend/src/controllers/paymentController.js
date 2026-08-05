@@ -1,14 +1,11 @@
-import Razorpay from 'razorpay';
+import Stripe from 'stripe';
 import crypto from 'crypto';
 import prisma from '../lib/prisma.js';
 
-// ─── Razorpay Instance ─────────────────────────────────────────────────────
-let razorpay = null;
-if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
-  razorpay = new Razorpay({
-    key_id: process.env.RAZORPAY_KEY_ID,
-    key_secret: process.env.RAZORPAY_KEY_SECRET,
-  });
+// ─── Stripe Instance ─────────────────────────────────────────────────────
+let stripe = null;
+if (process.env.STRIPE_SECRET_KEY) {
+  stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' });
 }
 
 // ─── Plan Pricing (fallback, overridden by PlatformSettings) ────────────
@@ -40,7 +37,7 @@ const generateInvoiceNumber = () => {
 
 // ─── POST /api/billing/create-order ─────────────────────────────────────────
 /**
- * Creates a Razorpay order for plan upgrade.
+ * Creates a Stripe Checkout session for plan upgrade.
  * Called by ADMIN when they want to upgrade their org's plan.
  */
 export const createOrder = async (req, res) => {
@@ -67,18 +64,24 @@ export const createOrder = async (req, res) => {
 
     const org = user.organization;
 
-    // Check if already on this plan or higher
+    // Check if already on this plan or higher, UNLESS they are on a trial
     const planOrder = { FREE: 0, STARTER: 1, PRO: 2, ENTERPRISE: 3 };
-    if (planOrder[org.plan] >= planOrder[plan]) {
-      return res.status(400).json({ error: `Organization is already on ${org.plan} plan or higher` });
+    
+    // Allow if they are upgrading to a higher plan, OR if they are paying for their current plan while on TRIAL
+    const isUpgrading = planOrder[plan] > planOrder[org.plan];
+    const isPayingForCurrentTrial = plan === org.plan && org.status === 'TRIAL';
+
+    if (!isUpgrading && !isPayingForCurrentTrial) {
+      return res.status(400).json({ error: `Organization is already on an active ${org.plan} plan or higher` });
     }
 
-    // Calculate amount
+    // Calculate amount (Minimum 25 users billed)
     const userCount = await prisma.user.count({
       where: { organizationId: org.id },
     });
     const perUserPrice = await getPlanPrice(plan);
-    let totalAmount = perUserPrice * Math.max(userCount, 1);
+    const billedUsers = Math.max(userCount, 25);
+    let totalAmount = perUserPrice * billedUsers;
 
     // Apply annual discount
     if (billingCycle === 'annually') {
@@ -89,28 +92,23 @@ export const createOrder = async (req, res) => {
       totalAmount = totalAmount * 12 * (1 - discountPercent / 100);
     }
 
-    // Amount in paise (Razorpay uses smallest currency unit)
+    // Stripe requires a minimum amount of roughly $0.50 USD (₹40 INR)
+    if (totalAmount < 40) {
+      return res.status(400).json({ 
+        error: `Stripe requires a minimum payment of ₹40. Your current total is ₹${totalAmount}. Please increase the number of users, choose annual billing, or adjust plan pricing in settings.` 
+      });
+    }
+
+    // Amount in paise (Stripe uses smallest currency unit)
     const amountInPaise = Math.round(totalAmount * 100);
 
-    if (!razorpay) {
+    if (!stripe) {
       return res.status(500).json({ error: 'Payment gateway is not configured on the server.' });
     }
 
-    // Create Razorpay order
-    const order = await razorpay.orders.create({
-      amount: amountInPaise,
-      currency: 'INR',
-      receipt: `order_${org.id}_${Date.now()}`,
-      notes: {
-        organizationId: org.id,
-        plan,
-        billingCycle,
-        userId,
-        userCount: String(userCount),
-      },
-    });
+    const frontendUrl = process.env.FRONTEND_URL || req.headers.origin || 'http://localhost:5173';
 
-    // Create pending invoice
+    // Create pending invoice first
     const invoice = await prisma.invoice.create({
       data: {
         organizationId: org.id,
@@ -118,25 +116,52 @@ export const createOrder = async (req, res) => {
         currency: 'INR',
         status: 'PENDING',
         plan,
-        description: `${plan} Plan - ${billingCycle} billing (${userCount} users)`,
-        razorpayOrderId: order.id,
+        description: `${plan} Plan - ${billingCycle} billing (${billedUsers} users minimum)`,
         invoiceNumber: generateInvoiceNumber(),
         dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
       },
     });
 
-    res.json({
-      orderId: order.id,
-      amount: amountInPaise,
-      currency: 'INR',
-      invoiceId: invoice.id,
-      key: process.env.RAZORPAY_KEY_ID,
-      organization: {
-        name: org.name,
-        email: org.billingEmail || user.email,
+    // Create Stripe Checkout Session
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'inr',
+            product_data: {
+              name: `SSPL TaskFlow ${plan} Plan`,
+              description: `${billingCycle} billing for ${billedUsers} users`,
+            },
+            unit_amount: amountInPaise,
+          },
+          quantity: 1,
+        },
+      ],
+      mode: 'payment',
+      success_url: `${frontendUrl}/dashboard?success=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${frontendUrl}/dashboard?canceled=true`,
+      client_reference_id: invoice.id,
+      metadata: {
+        organizationId: org.id,
+        plan,
+        billingCycle,
+        userId,
+        userCount: String(billedUsers),
+        invoiceId: invoice.id,
       },
-      plan,
-      billingCycle,
+      customer_email: org.billingEmail || user.email,
+    });
+
+    // Update invoice with Stripe Session ID
+    await prisma.invoice.update({
+      where: { id: invoice.id },
+      data: { stripeSessionId: session.id },
+    });
+
+    res.json({
+      checkoutUrl: session.url,
+      sessionId: session.id,
     });
   } catch (error) {
     console.error('Error creating payment order:', error);
@@ -146,65 +171,58 @@ export const createOrder = async (req, res) => {
 
 // ─── POST /api/billing/verify-payment ───────────────────────────────────────
 /**
- * Verifies Razorpay payment signature and upgrades the org plan.
+ * Verifies Stripe session and upgrades the org plan manually (if needed before webhook).
  */
 export const verifyPayment = async (req, res) => {
   try {
-    const {
-      razorpay_order_id,
-      razorpay_payment_id,
-      razorpay_signature,
-      invoiceId,
-    } = req.body;
+    const { session_id } = req.body;
 
-    // 1. Verify signature
-    const body = razorpay_order_id + '|' + razorpay_payment_id;
-    const expectedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-      .update(body)
-      .digest('hex');
-
-    if (expectedSignature !== razorpay_signature) {
-      return res.status(400).json({ error: 'Payment verification failed. Invalid signature.' });
+    if (!session_id) {
+      return res.status(400).json({ error: 'Session ID is required.' });
     }
 
-    // 2. Find and update invoice
-    const invoice = await prisma.invoice.findFirst({
-      where: { razorpayOrderId: razorpay_order_id },
+    if (!stripe) {
+      return res.status(500).json({ error: 'Payment gateway is not configured.' });
+    }
+
+    const session = await stripe.checkout.sessions.retrieve(session_id);
+    
+    if (session.payment_status !== 'paid') {
+      return res.status(400).json({ error: 'Payment not successful' });
+    }
+
+    const invoiceId = session.metadata.invoiceId;
+
+    const invoice = await prisma.invoice.findUnique({
+      where: { id: invoiceId },
     });
 
     if (!invoice) {
-      return res.status(404).json({ error: 'Invoice not found for this order' });
+      return res.status(404).json({ error: 'Invoice not found' });
     }
 
     if (invoice.status === 'PAID') {
-      return res.json({ message: 'Payment already processed', invoice });
+      return res.json({ message: 'Payment already processed', invoice, plan: invoice.plan });
     }
 
-    // 3. Update invoice as paid
+    // Update invoice as paid
     const updatedInvoice = await prisma.invoice.update({
       where: { id: invoice.id },
       data: {
         status: 'PAID',
         paidAt: new Date(),
-        razorpayPaymentId: razorpay_payment_id,
+        stripePaymentIntentId: session.payment_intent,
       },
     });
 
-    // 4. Upgrade the organization plan
+    // Upgrade the organization plan
     const now = new Date();
     const periodEnd = new Date(now);
     periodEnd.setMonth(periodEnd.getMonth() + 1); // 1 month from now
 
-    // Check notes for billing cycle
-    try {
-      const order = await razorpay.orders.fetch(razorpay_order_id);
-      if (order.notes?.billingCycle === 'annually') {
-        periodEnd.setFullYear(periodEnd.getFullYear() + 1);
-        periodEnd.setMonth(now.getMonth()); // Reset month offset
-      }
-    } catch (e) {
-      // Fallback to monthly if fetch fails
+    if (session.metadata.billingCycle === 'annually') {
+      periodEnd.setFullYear(periodEnd.getFullYear() + 1);
+      periodEnd.setMonth(now.getMonth()); 
     }
 
     // Determine new plan limits
@@ -227,7 +245,7 @@ export const verifyPayment = async (req, res) => {
       },
     });
 
-    // 5. Log activity
+    // Log activity
     try {
       await prisma.activityLog.create({
         data: {
@@ -239,7 +257,7 @@ export const verifyPayment = async (req, res) => {
           details: {
             plan: invoice.plan,
             amount: Number(invoice.amount),
-            paymentId: razorpay_payment_id,
+            paymentId: session.payment_intent,
           },
         },
       });
@@ -260,69 +278,145 @@ export const verifyPayment = async (req, res) => {
 
 // ─── POST /api/billing/webhook ──────────────────────────────────────────────
 /**
- * Razorpay webhook handler. Acts as a backup to verify payments
+ * Stripe webhook handler. Acts as a backup to verify payments
  * even if the frontend callback fails.
  */
 export const handleWebhook = async (req, res) => {
   try {
-    const secret = process.env.RAZORPAY_KEY_SECRET;
-    const signature = req.headers['x-razorpay-signature'];
+    const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    const sig = req.headers['stripe-signature'];
+    
+    let event;
 
-    // Verify webhook signature
-    const expectedSignature = crypto
-      .createHmac('sha256', secret)
-      .update(JSON.stringify(req.body))
-      .digest('hex');
-
-    if (expectedSignature !== signature) {
-      return res.status(400).json({ error: 'Invalid webhook signature' });
+    if (endpointSecret) {
+      try {
+        event = stripe.webhooks.constructEvent(req.rawBody, sig, endpointSecret);
+      } catch (err) {
+        console.error('Webhook signature verification failed:', err.message);
+        return res.status(400).send(`Webhook Error: ${err.message}`);
+      }
+    } else {
+      // If no webhook secret, parse from body (not recommended for production)
+      event = req.body;
     }
 
-    const event = req.body.event;
-    const payload = req.body.payload;
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object;
 
-    if (event === 'payment.captured') {
-      const payment = payload.payment.entity;
-      const orderId = payment.order_id;
+      if (session.payment_status === 'paid') {
+        const invoiceId = session.metadata?.invoiceId;
+        const clientRefId = session.client_reference_id; // e.g. "orgId_STARTER"
 
-      // Find invoice by order ID
-      const invoice = await prisma.invoice.findFirst({
-        where: { razorpayOrderId: orderId },
-      });
+        // Fetch dynamic platform settings for plan limits
+        const allSettings = await prisma.platformSetting.findMany();
+        const s = allSettings.reduce((acc, curr) => { acc[curr.key] = curr.value; return acc; }, {});
 
-      if (invoice && invoice.status !== 'PAID') {
-        // Update invoice
-        await prisma.invoice.update({
-          where: { id: invoice.id },
-          data: {
-            status: 'PAID',
-            paidAt: new Date(),
-            razorpayPaymentId: payment.id,
-          },
-        });
-
-        // Upgrade organization plan
-        const planLimits = {
-          STARTER: { maxUsers: 30, maxProjects: 15 },
-          PRO: { maxUsers: 100, maxProjects: 100 },
+        const getLimitsForPlan = (planName) => {
+          if (planName === 'STARTER') {
+            return {
+              maxUsers: s.starter_max_users ? Number(s.starter_max_users) : 30,
+              maxProjects: s.starter_max_projects ? Number(s.starter_max_projects) : 5,
+            };
+          }
+          if (planName === 'PRO' || planName === 'PROFESSIONAL') {
+            return {
+              maxUsers: s.pro_max_users ? Number(s.pro_max_users) : 100,
+              maxProjects: s.pro_max_projects ? Number(s.pro_max_projects) : 50,
+            };
+          }
+          return { maxUsers: 30, maxProjects: 5 }; // fallback
         };
 
-        const limits = planLimits[invoice.plan] || planLimits.STARTER;
-        const now = new Date();
-        const periodEnd = new Date(now);
-        periodEnd.setMonth(periodEnd.getMonth() + 1);
+        if (invoiceId) {
+          const invoice = await prisma.invoice.findUnique({
+            where: { id: invoiceId },
+          });
 
-        await prisma.organization.update({
-          where: { id: invoice.organizationId },
-          data: {
-            plan: invoice.plan,
-            status: 'ACTIVE',
-            maxUsers: limits.maxUsers,
-            maxProjects: limits.maxProjects,
-            currentPeriodStart: now,
-            currentPeriodEnd: periodEnd,
-          },
-        });
+          if (invoice && invoice.status !== 'PAID') {
+            // Update invoice
+            await prisma.invoice.update({
+              where: { id: invoice.id },
+              data: {
+                status: 'PAID',
+                paidAt: new Date(),
+                stripePaymentIntentId: session.payment_intent,
+              },
+            });
+
+            const limits = getLimitsForPlan(invoice.plan);
+            const now = new Date();
+            const periodEnd = new Date(now);
+            periodEnd.setMonth(periodEnd.getMonth() + 1);
+
+            if (session.metadata?.billingCycle === 'annually') {
+              periodEnd.setFullYear(periodEnd.getFullYear() + 1);
+              periodEnd.setMonth(now.getMonth());
+            }
+
+            await prisma.organization.update({
+              where: { id: invoice.organizationId },
+              data: {
+                plan: invoice.plan,
+                status: 'ACTIVE',
+                maxUsers: limits.maxUsers,
+                maxProjects: limits.maxProjects,
+                currentPeriodStart: now,
+                currentPeriodEnd: periodEnd,
+              },
+            });
+          }
+        } else if (clientRefId) {
+          // ── Handle static Payment Links (Direct Checkout) ──
+          const parts = clientRefId.split('_');
+          if (parts.length >= 2) {
+            const orgId = parts[0];
+            let plan = parts[1]; // STARTER or PROFESSIONAL
+
+            // Map PROFESSIONAL to the correct DB enum value PRO
+            if (plan === 'PROFESSIONAL') {
+              plan = 'PRO';
+            }
+
+            const org = await prisma.organization.findUnique({
+              where: { id: orgId },
+            });
+
+            if (org) {
+              const limits = getLimitsForPlan(plan);
+              const now = new Date();
+              const periodEnd = new Date(now);
+              periodEnd.setMonth(periodEnd.getMonth() + 1);
+
+              // ── NEW: Create the Invoice record so it shows up in Billing History ──
+              await prisma.invoice.create({
+                data: {
+                  organizationId: orgId,
+                  amount: session.amount_total ? session.amount_total / 100 : 0, // Stripe amount is in cents/paise
+                  currency: session.currency ? session.currency.toUpperCase() : 'INR',
+                  status: 'PAID',
+                  description: `Subscription to ${plan} Plan via Payment Link`,
+                  plan: plan,
+                  stripeSessionId: session.id,
+                  stripePaymentIntentId: session.payment_intent,
+                  paidAt: now,
+                  invoiceNumber: `INV-${Date.now().toString().slice(-6)}`,
+                },
+              });
+
+              await prisma.organization.update({
+                where: { id: orgId },
+                data: {
+                  plan: plan,
+                  status: 'ACTIVE',
+                  maxUsers: limits.maxUsers,
+                  maxProjects: limits.maxProjects,
+                  currentPeriodStart: now,
+                  currentPeriodEnd: periodEnd,
+                },
+              });
+            }
+          }
+        }
       }
     }
 
@@ -384,8 +478,6 @@ export const getCurrentPlan = async (req, res) => {
     // Get usage stats
     const [userCount, projectCount] = await Promise.all([
       prisma.user.count({ where: { organizationId: org.id } }),
-      // Projects are in tenant DB — we'll count from main DB users for now
-      // For a more accurate count, the frontend can call the tenant API separately
       0,
     ]);
 
@@ -410,14 +502,20 @@ export const getCurrentPlan = async (req, res) => {
         STARTER: {
           maxUsers: s.starter_max_users ? Number(s.starter_max_users) : 30,
           maxProjects: s.starter_max_projects ? Number(s.starter_max_projects) : 5,
+          description: s.starter_description || 'Essential tools for small teams',
+          points: s.starter_points || 'Up to 30 members\n5 projects\nKanban Board\nTasks Management\nTickets & Support\nTeam Management\nChat & Collaboration\nEmail Support',
         },
         PRO: {
           maxUsers: s.pro_max_users ? Number(s.pro_max_users) : 100,
           maxProjects: s.pro_max_projects ? Number(s.pro_max_projects) : 50,
+          description: s.pro_description || 'Scale your business with ease',
+          points: s.pro_points || 'Up to 100 members\n50 projects\nEverything in Starter\nPerformance Analytics\nTimesheets & Tracking\nGitHub Integration\nActivity Logs & Audit\nPriority Support',
         },
         ENTERPRISE: {
           maxUsers: s.enterprise_max_users ? Number(s.enterprise_max_users) : 1000,
           maxProjects: s.enterprise_max_projects ? Number(s.enterprise_max_projects) : 500,
+          description: s.enterprise_description || 'Maximum power and security',
+          points: s.enterprise_points || 'Unlimited team members\nUnlimited projects\nEverything in Pro\nSSO & SAML\nCustom Integrations\nDedicated Account Manager\n24/7 Priority Support\nSLA Guarantee',
         },
       },
     });

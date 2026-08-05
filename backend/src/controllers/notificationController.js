@@ -16,6 +16,9 @@ export const getNotifications = async (req, res) => {
     res.json(notifications);
   } catch (error) {
     console.error('Error fetching notifications:', error);
+    try {
+      (await import('fs')).appendFileSync('error_log.txt', new Date().toISOString() + ' ' + (error.stack || error.message) + '\n');
+    } catch (e) {}
     res.status(500).json({ error: 'Failed to fetch notifications' });
   }
 };

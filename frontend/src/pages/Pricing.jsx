@@ -59,32 +59,17 @@ const Pricing = () => {
     {
       name: "Free",
       price: "₹0",
-      description: "Perfect for individuals and small teams starting out",
-      features: [
-        `Up to 10 team members`,
-        `3 projects`,
-        "Kanban Board",
-        "Basic Task Management",
-        "Community Support",
-      ],
-      buttonText: "Get Started",
+      description: settings?.free_description || "Perfect for individuals and small teams starting out",
+      features: (settings?.free_points || "Up to 10 team members\n3 projects\nKanban Board\nBasic Task Management\nCommunity Support").split('\n'),
+      buttonText: "Start Free Trial",
       buttonVariant: "outline",
       popular: false,
     },
     {
       name: "Starter",
       price: calculatePrice("Starter"),
-      description: "Essential tools for growing teams",
-      features: [
-        `Up to ${teamSize > 30 ? teamSize : settings?.starter_max_users || '30'} members`,
-        `${settings?.starter_max_projects || '5'} projects`,
-        "Kanban Board",
-        "Tasks Management",
-        "Tickets & Support",
-        "Team Management",
-        "Chat & Collaboration",
-        "Email Support",
-      ],
+      description: settings?.starter_description || "Essential tools for growing teams",
+      features: (settings?.starter_points || `Up to ${teamSize > 30 ? teamSize : settings?.starter_max_users || '30'} members\n${settings?.starter_max_projects || '5'} projects\nKanban Board\nTasks Management\nTickets & Support\nTeam Management\nChat & Collaboration\nEmail Support`).split('\n'),
       buttonText: "Get Started",
       buttonVariant: "outline",
       popular: false,
@@ -92,35 +77,17 @@ const Pricing = () => {
     {
       name: "Professional",
       price: calculatePrice("Professional"),
-      description: "Full power for scaling teams",
-      features: [
-        `Up to ${teamSize > 100 ? teamSize : settings?.pro_max_users || '100'} members`,
-        `${settings?.pro_max_projects || '50'} projects`,
-        "Everything in Starter",
-        "Performance Analytics",
-        "Timesheets & Tracking",
-        "GitHub Integration",
-        "Activity Logs & Audit",
-        "Priority Support",
-      ],
-      buttonText: "Start Free Trial",
+      description: settings?.pro_description || "Full power for scaling teams",
+      features: (settings?.pro_points || `Up to ${teamSize > 100 ? teamSize : settings?.pro_max_users || '100'} members\n${settings?.pro_max_projects || '50'} projects\nEverything in Starter\nPerformance Analytics\nTimesheets & Tracking\nGitHub Integration\nActivity Logs & Audit\nPriority Support`).split('\n'),
+      buttonText: "Get Started",
       buttonVariant: "default",
       popular: true,
     },
     {
       name: "Enterprise",
       price: "Custom",
-      description: "For large organizations with complex needs",
-      features: [
-        `Unlimited team members`,
-        `Unlimited projects`,
-        "Everything in Pro",
-        "SSO & SAML",
-        "Custom Integrations",
-        "Dedicated Account Manager",
-        "24/7 Priority Support",
-        "SLA Guarantee",
-      ],
+      description: settings?.enterprise_description || "For large organizations with complex needs",
+      features: (settings?.enterprise_points || "Unlimited team members\nUnlimited projects\nEverything in Pro\nSSO & SAML\nCustom Integrations\nDedicated Account Manager\n24/7 Priority Support\nSLA Guarantee").split('\n'),
       buttonText: "Contact Sales",
       buttonVariant: "outline",
       popular: false,
@@ -290,7 +257,19 @@ const Pricing = () => {
                             ? (isDarkMode ? "bg-white text-black hover:bg-white/90 shadow-xl shadow-white/5" : "bg-[#48A111] text-white hover:bg-[#48A111]/90 shadow-xl shadow-[#48A111]/10") 
                             : (isDarkMode ? "border-white/10 bg-white/5 hover:bg-white/10 text-white" : "border-slate-200 bg-white hover:bg-slate-50 text-slate-900")
                       )}
-                      onClick={() => navigate('/signup')}
+                      onClick={() => {
+                        if (plan.name === 'Enterprise') {
+                          navigate('/contact');
+                          return;
+                        }
+
+                        if (plan.name === 'Free') {
+                          navigate('/signup');
+                          return;
+                        }
+
+                        navigate(`/signup?plan=${plan.name.toUpperCase()}&quantity=${teamSize}`);
+                      }}
                     >
                       {plan.buttonText}
                     </Button>

@@ -51,3 +51,47 @@ The column `Organization.rolePermissions` does not exist in the current database
     at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
     at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
     at async getOrgPermissions (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/organizationController.js:424:21)
+getTimeEntries ERROR: PrismaClientKnownRequestError: 
+Invalid `prisma.attendance.findMany()` invocation:
+
+
+The table `public.Attendance` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async Promise.all (index 1)
+    at async getTimeEntries (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/timesheetController.js:110:42)
+getTimeEntries ERROR: PrismaClientKnownRequestError: 
+Invalid `prisma.attendance.findMany()` invocation:
+
+
+The table `public.Attendance` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async Promise.all (index 1)
+    at async getTimeEntries (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/timesheetController.js:110:42)
+getTimeEntries ERROR: PrismaClientKnownRequestError: 
+Invalid `prisma.attendance.findMany()` invocation:
+
+
+The table `public.Attendance` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async Promise.all (index 1)
+    at async getTimeEntries (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/timesheetController.js:110:42)
+getTimeEntries ERROR: PrismaClientKnownRequestError: 
+Invalid `prisma.attendance.findMany()` invocation:
+
+
+The table `public.Attendance` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async Promise.all (index 1)
+    at async getTimeEntries (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/timesheetController.js:110:42)

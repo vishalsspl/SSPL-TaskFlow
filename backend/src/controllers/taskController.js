@@ -1,4 +1,4 @@
-import { sendTaskAssignmentEmail, sendTaskStatusUpdateEmail, sendTaskUpdateEmail, sendTaskDeleteEmail } from '../services/emailService.js';
+import { sendTaskAssignmentEmail, sendTaskStatusUpdateEmail, sendTaskUpdateEmail, sendTaskDeleteEmail, sendTaskCommentEmail, sendManagerTaskCreatedEmail } from '../services/emailService.js';
 import { createNotification } from '../utils/notifications.js';
 import prisma from '../lib/prisma.js';
 
@@ -23,7 +23,7 @@ export const getAllTasks = async (req, res) => {
       });
     }
 
-    const { projectId, status, priority, type, assignedTo, search, page, limit: rawLimit, sortBy, sortOrder = 'asc', dueDateFrom, dueDateTo, pointsMin, pointsMax, progressMin, progressMax } = req.query;
+    const { projectId, status, excludeStatus, priority, type, assignedTo, search, page, limit: rawLimit, sortBy, sortOrder = 'asc', dueDateFrom, dueDateTo, pointsMin, pointsMax, progressMin, progressMax } = req.query;
 
   const where = {
     project: {
@@ -32,7 +32,12 @@ export const getAllTasks = async (req, res) => {
   };
 
   if (projectId) where.projectId = { in: projectId.split(',').map(id => id.trim()).filter(Boolean) };
-  if (status) where.status = { in: status.split(',').map(s => s.trim()).filter(Boolean) };
+  if (status) {
+    where.status = { in: status.split(',').map(s => s.trim()).filter(Boolean) };
+  } else if (excludeStatus) {
+    where.status = { notIn: excludeStatus.split(',').map(s => s.trim()).filter(Boolean) };
+  }
+  
   if (priority) where.priority = { in: priority.split(',').map(p => p.trim()).filter(Boolean) };
   if (type) where.type = { in: type.split(',').map(t => t.trim()).filter(Boolean) };
   if (assignedTo) {
@@ -82,7 +87,12 @@ export const getAllTasks = async (req, res) => {
         OR: [
           { project: { managerId: req.user.id } },
           { assignees: { some: { userId: req.user.id } } },
-          { project: { name: { in: ['General', 'General Tasks'] } } }
+          { 
+            AND: [
+              { project: { name: { in: ['General', 'General Tasks'] } } },
+              { tags: { has: `APPROVER:${req.user.id}` } }
+            ]
+          }
         ],
       },
     ];
@@ -98,7 +108,12 @@ export const getAllTasks = async (req, res) => {
           {
             AND: [
               { project: { name: { in: ['General', 'General Tasks'] } } },
-              { assignees: { some: { userId: req.user.id } } }
+              {
+                OR: [
+                  { assignees: { some: { userId: req.user.id } } },
+                  { tags: { has: `CREATOR:${req.user.id}` } }
+                ]
+              }
             ]
           }
         ]
@@ -175,6 +190,9 @@ export const getAllTasks = async (req, res) => {
   res.json(tasks);
   } catch (error) {
     console.error('Error in getAllTasks:', error);
+    try {
+      (await import('fs')).appendFileSync('error_log.txt', new Date().toISOString() + ' ' + (error.stack || error.message) + '\n');
+    } catch (e) {}
     res.status(500).json({ error: 'Failed to fetch tasks', message: error.message });
   }
 };
@@ -198,6 +216,24 @@ export const getTask = async (req, res) => {
   });
 
   if (!task) return res.status(404).json({ error: 'Task not found' });
+
+  // Role-based visibility check for getTask
+  if (req.user.role === 'MEMBER' && (task.project?.name === 'General' || task.project?.name === 'General Tasks')) {
+      const isAssignee = task.assignees.some(a => a.user.id === req.user.id);
+      const isCreator = task.tags?.includes(`CREATOR:${req.user.id}`);
+      if (!isAssignee && !isCreator) {
+          return res.status(403).json({ error: 'You do not have permission to view this task.' });
+      }
+  }
+
+  if (req.user.role === 'MANAGER' && (task.project?.name === 'General' || task.project?.name === 'General Tasks')) {
+      const isApprover = task.tags?.includes(`APPROVER:${req.user.id}`);
+      const isAssignee = task.assignees.some(a => a.user.id === req.user.id);
+      const isProjectManager = task.project?.managerId === req.user.id;
+      if (!isApprover && !isAssignee && !isProjectManager) {
+          return res.status(403).json({ error: 'You do not have permission to view this task.' });
+      }
+  }
 
   res.json(task);
 };
@@ -279,14 +315,22 @@ export const createTask = async (req, res) => {
   if (approverId) {
       finalTags.push(`APPROVER:${approverId}`);
   }
+  // Explicitly tag the creator so they can see their own unassigned general tasks
+  finalTags.push(`CREATOR:${req.user.id}`);
+
+  const trimmedTitle = title.trim();
+  if (trimmedTitle.length > 30) {
+    return res.status(400).json({ error: 'Task title cannot exceed 30 characters' });
+  }
 
   // Check if title starts with a number
-  if (/^\d/.test(title.trim())) {
+  if (/^\d/.test(trimmedTitle)) {
     return res.status(400).json({ error: 'Task title cannot start with a number' });
   }
 
-  if (!/^[a-zA-Z0-9\s]+$/.test(title)) {
-    return res.status(400).json({ error: 'Task title cannot contain special characters. Only alphanumeric characters and spaces are allowed.' });
+  const isAlphanumeric = (char) => /^[a-zA-Z0-9]$/.test(char);
+  if (!isAlphanumeric(trimmedTitle[0]) || !isAlphanumeric(trimmedTitle[trimmedTitle.length - 1])) {
+    return res.status(400).json({ error: 'Task title cannot start or end with a special character' });
   }
 
   // Check for duplicate task title in the same project
@@ -315,6 +359,21 @@ export const createTask = async (req, res) => {
     where: { id: projectId, organizationId: req.user.organizationId },
   });
   if (!project) return res.status(404).json({ error: 'Project not found in your organization' });
+
+  // If project doesn't have a prefix, let's create one based on name
+  let prefix = project.prefix;
+  if (!prefix) {
+    prefix = project.name.substring(0, 4).toUpperCase().replace(/[^A-Z]/g, '') || 'TSK';
+    await req.db.project.update({ where: { id: project.id }, data: { prefix } });
+  }
+
+  // Get next task number
+  const maxTask = await req.db.task.findFirst({
+    where: { projectId: project.id },
+    orderBy: { taskNumber: 'desc' }
+  });
+  const taskNumber = (maxTask?.taskNumber || 0) + 1;
+  const shortId = `${prefix}-${taskNumber}`;
 
   // If MEMBER, check if this project allows member task creation
   if (req.user.role === 'MEMBER' && !project.allowMemberTaskCreation) {
@@ -353,6 +412,8 @@ export const createTask = async (req, res) => {
       projectId,
       phaseId: phaseId || null,
       title,
+      taskNumber,
+      shortId,
       description,
       status: status || 'TODO',
       priority: priority || 'MEDIUM',
@@ -424,6 +485,23 @@ export const createTask = async (req, res) => {
         senderName,
         { priority: task.priority, dueDate: task.dueDate, status: task.status, description: task.description, baseUrl: origin }
       ).catch(err => console.error('Failed to send task assignment email:', err));
+    }
+  }
+
+  if (hasEmailSupport && sendEmail && req.user.role === 'MEMBER') {
+    const creator = await req.db.user.findUnique({
+      where: { id: req.user.id },
+      include: { manager: true }
+    });
+    if (creator?.manager?.email) {
+      sendManagerTaskCreatedEmail(
+        creator.manager.email,
+        creator.manager.name,
+        req.user.name,
+        task.title,
+        task.project.name,
+        origin
+      ).catch(err => console.error('Failed to send manager task created email:', err));
     }
   }
 
@@ -565,12 +643,28 @@ export const bulkCreateTasks = async (req, res) => {
       let normalizedType = (type || 'TASK').toUpperCase().trim();
       if (!validTypes.includes(normalizedType)) normalizedType = 'TASK';
 
+      // 4.5 Generate shortId
+      let prefix = project.prefix;
+      if (!prefix) {
+        prefix = project.name.substring(0, 4).toUpperCase().replace(/[^A-Z]/g, '') || 'TSK';
+        await req.db.project.update({ where: { id: project.id }, data: { prefix } });
+        project.prefix = prefix;
+      }
+      const maxTask = await req.db.task.findFirst({
+        where: { projectId: project.id },
+        orderBy: { taskNumber: 'desc' }
+      });
+      const taskNumber = (maxTask?.taskNumber || 0) + 1;
+      const shortId = `${prefix}-${taskNumber}`;
+
       // 5. Create Task
       const task = await req.db.task.create({
         data: {
           projectId: project.id,
           phaseId,
           title: title.trim(),
+          taskNumber,
+          shortId,
           description: description || null,
           status: normalizedStatus,
           priority: normalizedPriority,
@@ -674,11 +768,19 @@ export const updateTask = async (req, res) => {
   if (!existingTask) return res.status(404).json({ error: 'Task not found' });
 
   if (title !== undefined) {
-    if (!String(title).trim()) {
+    const trimmedTitle = String(title).trim();
+    if (!trimmedTitle) {
       return res.status(400).json({ error: 'Task title cannot be empty or contain only blank spaces.' });
     }
-    if (!/^[a-zA-Z0-9\s]+$/.test(title)) {
-      return res.status(400).json({ error: 'Task name cannot contain special characters. Only alphanumeric characters and spaces are allowed.' });
+    if (trimmedTitle.length > 30) {
+      return res.status(400).json({ error: 'Task title cannot exceed 30 characters' });
+    }
+    if (/^\d/.test(trimmedTitle)) {
+      return res.status(400).json({ error: 'Task title cannot start with a number' });
+    }
+    const isAlphanumeric = (char) => /^[a-zA-Z0-9]$/.test(char);
+    if (!isAlphanumeric(trimmedTitle[0]) || !isAlphanumeric(trimmedTitle[trimmedTitle.length - 1])) {
+      return res.status(400).json({ error: 'Task title cannot start or end with a special character' });
     }
   }
 
@@ -1355,6 +1457,29 @@ export const approveTaskStatus = async (req, res) => {
       }
     });
 
+    // Log activity
+    try {
+      const logData = {
+        userId: req.user.id,
+        organizationId: req.user.organizationId,
+        projectId: task.projectId || task.project?.id || null,
+        action: 'UPDATED',
+        entity: 'task',
+        entityId: task.id,
+        details: {
+          title: task.title,
+          projectName: task.project?.name || null,
+          action: 'Status Updated',
+          status: 'COMPLETED',
+          oldStatus: task.status
+        },
+      };
+      await req.db.activityLog.create({ data: logData });
+      await prisma.activityLog.create({ data: logData });
+    } catch (logErr) {
+      console.error('Failed to log approval activity:', logErr);
+    }
+
     for (const { user } of updatedTask.assignees) {
       createNotification(req, {
         userId: user.id,
@@ -1409,6 +1534,30 @@ export const rejectTaskStatus = async (req, res) => {
       }
     });
 
+    // Log activity
+    try {
+      const logData = {
+        userId: req.user.id,
+        organizationId: req.user.organizationId,
+        projectId: task.projectId || task.project?.id || null,
+        action: 'UPDATED',
+        entity: 'task',
+        entityId: task.id,
+        details: {
+          title: task.title,
+          projectName: task.project?.name || null,
+          action: 'Status Updated',
+          status: 'IN_PROGRESS',
+          oldStatus: task.status,
+          rejectionReason
+        },
+      };
+      await req.db.activityLog.create({ data: logData });
+      await prisma.activityLog.create({ data: logData });
+    } catch (logErr) {
+      console.error('Failed to log rejection activity:', logErr);
+    }
+
     for (const { user } of updatedTask.assignees) {
       let message = `Your task "${task.title}" was rejected by ${req.user.name} and moved back to In Progress.`;
       if (rejectionReason) {
@@ -1428,5 +1577,120 @@ export const rejectTaskStatus = async (req, res) => {
   } catch (error) {
     console.error('Error rejecting task status:', error);
     res.status(500).json({ error: 'Failed to reject task status' });
+  }
+};
+
+// ── Activity Log & Comments ────────────────────────────────────────────────
+
+export const getTaskActivity = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const logs = await req.db.activityLog.findMany({
+      where: { entity: 'task', entityId: id, organizationId: req.user.organizationId },
+      include: {
+        user: { select: { id: true, name: true, avatar: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json(logs);
+  } catch (error) {
+    console.error('Error fetching task activity:', error);
+    res.status(500).json({ error: 'Failed to fetch task activity' });
+  }
+};
+
+export const getTaskComments = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const comments = await req.db.taskComment.findMany({
+      where: { taskId: id },
+      include: {
+        user: { select: { id: true, name: true, avatar: true } }
+      },
+      orderBy: { createdAt: 'asc' }
+    });
+    res.json(comments);
+  } catch (error) {
+    console.error('Error fetching task comments:', error);
+    res.status(500).json({ error: 'Failed to fetch task comments' });
+  }
+};
+
+export const addTaskComment = async (req, res) => {
+  const { id } = req.params;
+  const { content } = req.body;
+  if (!content || !content.trim()) return res.status(400).json({ error: 'Comment cannot be empty' });
+
+  try {
+    const comment = await req.db.taskComment.create({
+      data: {
+        taskId: id,
+        userId: req.user.id,
+        content: content.trim()
+      },
+      include: {
+        user: { select: { id: true, name: true, avatar: true } }
+      }
+    });
+
+    // Notify task assignees
+    const task = await req.db.task.findUnique({
+      where: { id },
+      include: { 
+        assignees: { include: { user: true } }, 
+        project: true 
+      }
+    });
+    
+    // Check if email features are globally enabled for this instance
+    const hasEmailSupport = !!process.env.SMTP_HOST && !!process.env.SMTP_USER;
+    const origin = req.headers.origin || process.env.FRONTEND_URL;
+
+    if (task) {
+      for (const assignee of task.assignees) {
+        if (assignee.userId !== req.user.id) {
+          createNotification(req, {
+            userId: assignee.userId,
+            title: 'New Comment',
+            message: `${req.user.name} commented on task: ${task.title}`,
+            type: 'TASK_COMMENT',
+            link: `/task-board?project=${task.projectId}&highlight=${task.id}`
+          });
+          
+          if (hasEmailSupport && assignee.user?.email) {
+            sendTaskCommentEmail(
+              assignee.user.email,
+              task.title,
+              req.user.name,
+              content.trim(),
+              task.projectId,
+              task.id,
+              origin
+            ).catch(err => console.error('Failed to send task comment email:', err));
+          }
+        }
+      }
+    }
+
+    res.status(201).json(comment);
+  } catch (error) {
+    console.error('Error adding task comment:', error);
+    res.status(500).json({ error: 'Failed to add task comment' });
+  }
+};
+
+export const deleteTaskComment = async (req, res) => {
+  const { commentId } = req.params;
+  try {
+    const comment = await req.db.taskComment.findUnique({ where: { id: commentId } });
+    if (!comment) return res.status(404).json({ error: 'Comment not found' });
+    if (comment.userId !== req.user.id && req.user.role !== 'ADMIN' && req.user.role !== 'MANAGER') {
+      return res.status(403).json({ error: 'Unauthorized to delete this comment' });
+    }
+    await req.db.taskComment.delete({ where: { id: commentId } });
+    res.json({ message: 'Comment deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting task comment:', error);
+    res.status(500).json({ error: 'Failed to delete task comment' });
   }
 };

@@ -11,7 +11,7 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover"
 
-export function DatePicker({ date, setDate, className, placeholder = "Pick a date", ...props }) {
+export function DatePicker({ date, setDate, className, disabled, placeholder = "Pick a date", ...props }) {
     const [open, setOpen] = React.useState(false)
 
     return (
@@ -24,6 +24,7 @@ export function DatePicker({ date, setDate, className, placeholder = "Pick a dat
                         !date && "text-muted-foreground/50",
                         className
                     )}
+                    disabled={disabled}
                 >
                     <CalendarIcon className="mr-2 h-3.5 w-3.5 shrink-0" />
                     <span className="truncate">{date ? format(date, "PPP") : placeholder}</span>

@@ -108,6 +108,14 @@ const KanbanCard = ({ task, isReadOnly, disableDrag, onEdit, onCardClick, onDele
                                     {task.storyPoints} PTS
                                 </span>
                             )}
+                            {task.status === 'IN_REVIEW' && (user?.role === 'ADMIN' || user?.role === 'MANAGER') && onToggleSelect && (
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); onToggleSelect(task.id); }}
+                                    className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors mr-1"
+                                >
+                                    {isSelected ? <CheckSquare className="w-4 h-4 text-primary" /> : <Square className="w-4 h-4" />}
+                                </button>
+                            )}
                             {!isReadOnly && !(user?.role === 'MEMBER' && task.status === 'COMPLETED') && ((onEdit && canEditTask) || onDelete || onStatusChange) && (
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
@@ -178,23 +186,26 @@ const KanbanCard = ({ task, isReadOnly, disableDrag, onEdit, onCardClick, onDele
                         </div>
                     </div>
 
-                    <h4
-                        className="text-[10px] sm:text-[11px] font-bold text-foreground Montserrat leading-tight group-hover:text-primary transition-colors line-clamp-2 cursor-pointer"
-                    >
-                        {task.title}
-                    </h4>
+                    <div className="flex flex-col gap-1 mt-1">
+                        <h4
+                            className="text-[10px] sm:text-[11px] font-bold text-foreground Montserrat leading-tight group-hover:text-primary transition-colors line-clamp-2 cursor-pointer"
+                            title={task.title}
+                        >
+                            {task.shortId && <span className="text-muted-foreground mr-1">[{task.shortId}]</span>}
+                            {task.title}
+                        </h4>
+                        {task.description && (
+                            <p 
+                                className="text-[9px] sm:text-[10px] text-muted-foreground line-clamp-1" 
+                            >
+                                {task.description.replace(/<[^>]*>?/gm, '').replace(/&nbsp;/g, ' ')}
+                            </p>
+                        )}
+                    </div>
 
                     {isPendingApproval && (
                         <div className="flex items-center justify-between mt-2 mb-1">
                             <div className="flex items-center gap-2">
-                                {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && onToggleSelect && (
-                                    <button 
-                                        onClick={(e) => { e.stopPropagation(); onToggleSelect(task.id); }}
-                                        className="text-amber-500 hover:text-amber-600 transition-colors"
-                                    >
-                                        {isSelected ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
-                                    </button>
-                                )}
                                 <Badge variant="outline" className="text-amber-500 border-amber-500/50 bg-amber-500/10 text-[7px] sm:text-[8px] font-bold py-0 uppercase tracking-wider">
                                     Pending Approval
                                 </Badge>

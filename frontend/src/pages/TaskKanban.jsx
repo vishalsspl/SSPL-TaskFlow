@@ -16,6 +16,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { SearchableSelect } from '@/components/ui/searchable-select';
+import { Switch } from '@/components/ui/switch';
 import KanbanBoard from '@/components/kanban/KanbanBoard';
 import {
     Dialog,
@@ -48,11 +49,12 @@ const TaskKanban = () => {
     const [highlightTaskId, setHighlightTaskId] = useState(null);
     const [highlightAction, setHighlightAction] = useState(null);
 
-    const [rejectTaskId, setRejectTaskId] = useState(null);
-    const [rejectionReason, setRejectionReason] = useState('');
     const [showRejectDialog, setShowRejectDialog] = useState(false);
+    const [rejectTaskIds, setRejectTaskIds] = useState([]);
+    const [rejectionReason, setRejectionReason] = useState('');
 
     const [managerFilter, setManagerFilter] = useState('all');
+    const [hideCompleted, setHideCompleted] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
 
     const isReadOnly = user?.role === 'CLIENT';
@@ -210,23 +212,29 @@ const TaskKanban = () => {
     };
 
     const handleRejectStatus = (taskId) => {
-        setRejectTaskId(taskId);
+        setRejectTaskIds([taskId]);
+        setRejectionReason('');
+        setShowRejectDialog(true);
+    };
+
+    const handleBulkRejectStatus = (taskIds) => {
+        setRejectTaskIds(taskIds);
         setRejectionReason('');
         setShowRejectDialog(true);
     };
 
     const submitRejectionStatus = async () => {
-        if (!rejectTaskId) return;
+        if (rejectTaskIds.length === 0) return;
         try {
-            await api.post(`/tasks/${rejectTaskId}/reject-status`, { rejectionReason });
-            toast({ title: 'Status Rejected', description: 'The task has been reverted to its previous status.' });
+            await Promise.all(rejectTaskIds.map(id => api.post(`/tasks/${id}/reject-status`, { rejectionReason })));
+            toast({ title: 'Status Rejected', description: `${rejectTaskIds.length} tasks have been reverted to previous status.` });
             fetchData();
         } catch (error) {
             console.error('Failed to reject status:', error);
             toast({ title: 'Error', description: error.response?.data?.error || 'Failed to reject status.', variant: 'destructive' });
         } finally {
             setShowRejectDialog(false);
-            setRejectTaskId(null);
+            setRejectTaskIds([]);
             setRejectionReason('');
         }
     };
@@ -268,6 +276,8 @@ const TaskKanban = () => {
         const isMember = user?.role === 'MEMBER';
         const isAssignedToMe = task.assignees?.some(a => a.userId === user?.id);
         if (isMember && !isAssignedToMe) return false;
+
+        if (hideCompleted && task.status === 'COMPLETED') return false;
 
         return matchesSearch && matchesProject && matchesPriority;
     }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -393,6 +403,11 @@ const TaskKanban = () => {
                                 searchPlaceholder="Search priority..."
                                 className="flex-1 sm:flex-none sm:w-[150px] h-9 sm:h-11 rounded-lg sm:rounded-xl"
                             />
+
+                            <div className="flex items-center gap-2 px-2 bg-background border border-border/60 rounded-lg sm:rounded-xl h-9 sm:h-11">
+                                <Switch id="hide-completed" checked={hideCompleted} onCheckedChange={setHideCompleted} />
+                                <label htmlFor="hide-completed" className="text-xs sm:text-sm font-semibold text-foreground/80 cursor-pointer whitespace-nowrap">Hide Completed</label>
+                            </div>
                         </div>
                         {(() => {
                             let canCreateTaskGlobal = user?.role === 'ADMIN' || user?.permissions?.['tasks.create'];
@@ -437,6 +452,7 @@ const TaskKanban = () => {
                     onApprove={handleApproveStatus}
                     onBulkApprove={handleBulkApproveStatus}
                     onReject={handleRejectStatus}
+                    onBulkReject={handleBulkRejectStatus}
                     currentUser={user}
                     highlightTaskId={highlightTaskId}
                     highlightAction={highlightAction}
@@ -520,7 +536,7 @@ const TaskKanban = () => {
                         <button
                             onClick={() => {
                                 setShowRejectDialog(false);
-                                setRejectTaskId(null);
+                                setRejectTaskIds([]);
                                 setRejectionReason('');
                             }}
                             className="px-4 py-2 rounded-lg font-bold text-sm bg-muted text-foreground hover:bg-muted/80 transition-colors"

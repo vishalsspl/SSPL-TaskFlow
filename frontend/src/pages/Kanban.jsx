@@ -142,10 +142,28 @@ const Kanban = () => {
   };
 
   const handleCreateTask = async (status) => {
-    if (!formData.title || !formData.projectId) {
+    const trimmedTitle = formData.title.trim();
+    if (!trimmedTitle || !formData.projectId) {
       toast({ title: 'Validation Error', description: 'Title and project are required.', variant: 'destructive' });
       return;
     }
+
+    if (trimmedTitle.length > 30) {
+        toast({ title: "Validation Error", description: "Task title cannot exceed 30 characters.", variant: "destructive" });
+        return;
+    }
+
+    if (/^\d/.test(trimmedTitle)) {
+        toast({ title: "Validation Error", description: "Task title cannot start with a number.", variant: "destructive" });
+        return;
+    }
+
+    const isAlphanumeric = (char) => /^[a-zA-Z0-9]$/.test(char);
+    if (!isAlphanumeric(trimmedTitle[0]) || !isAlphanumeric(trimmedTitle[trimmedTitle.length - 1])) {
+        toast({ title: "Validation Error", description: "Task title cannot start or end with a special character.", variant: "destructive" });
+        return;
+    }
+
     try {
       await api.post('/tasks', {
         ...formData, status,
@@ -368,6 +386,7 @@ const Kanban = () => {
                       placeholder="Task title *"
                       value={formData.title}
                       onChange={e => setFormData({ ...formData, title: e.target.value })}
+                      maxLength={30}
                       className="text-sm h-9 rounded-xl border-gray-100"
                     />
                     <div className="grid grid-cols-1 gap-2">

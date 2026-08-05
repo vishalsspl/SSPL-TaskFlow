@@ -98,7 +98,12 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
 
         const trimmedTitle = formData.title.trim();
         if (!trimmedTitle) {
-            toast({ title: "Validation Error", description: "Task name cannot be empty.", variant: "destructive" });
+            toast({ title: "Validation Error", description: "Task title cannot be empty.", variant: "destructive" });
+            return;
+        }
+
+        if (trimmedTitle.length > 30) {
+            toast({ title: "Validation Error", description: "Task title cannot exceed 30 characters.", variant: "destructive" });
             return;
         }
 
@@ -107,8 +112,9 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
             return;
         }
 
-        if (!/^[a-zA-Z0-9\s]+$/.test(trimmedTitle)) {
-            toast({ title: "Validation Error", description: "Task name cannot contain special characters.", variant: "destructive" });
+        const isAlphanumeric = (char) => /^[a-zA-Z0-9]$/.test(char);
+        if (!isAlphanumeric(trimmedTitle[0]) || !isAlphanumeric(trimmedTitle[trimmedTitle.length - 1])) {
+            toast({ title: "Validation Error", description: "Task title cannot start or end with a special character.", variant: "destructive" });
             return;
         }
 
@@ -233,6 +239,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                             placeholder="e.g. Design Homepage"
                             required
+                            maxLength={30}
                             className="!pl-10 transition-all focus:ring-2 focus:ring-primary/20 mobile-reduce-input"
                         />
                     </div>

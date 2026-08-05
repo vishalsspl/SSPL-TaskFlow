@@ -185,6 +185,7 @@ exports.Prisma.ProjectScalarFieldEnum = {
   githubRepo: 'githubRepo',
   githubInstallationId: 'githubInstallationId',
   allowMemberTaskCreation: 'allowMemberTaskCreation',
+  prefix: 'prefix',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -206,6 +207,8 @@ exports.Prisma.TaskScalarFieldEnum = {
   id: 'id',
   projectId: 'projectId',
   phaseId: 'phaseId',
+  shortId: 'shortId',
+  taskNumber: 'taskNumber',
   title: 'title',
   description: 'description',
   status: 'status',
@@ -226,6 +229,15 @@ exports.Prisma.TaskAssigneeScalarFieldEnum = {
   id: 'id',
   taskId: 'taskId',
   userId: 'userId'
+};
+
+exports.Prisma.TaskCommentScalarFieldEnum = {
+  id: 'id',
+  taskId: 'taskId',
+  userId: 'userId',
+  content: 'content',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.WorkLogScalarFieldEnum = {
@@ -323,6 +335,7 @@ exports.Prisma.NotificationScalarFieldEnum = {
   type: 'type',
   link: 'link',
   isRead: 'isRead',
+  readAt: 'readAt',
   createdAt: 'createdAt'
 };
 
@@ -335,6 +348,16 @@ exports.Prisma.AttendanceScalarFieldEnum = {
   status: 'status',
   durationMinutes: 'durationMinutes',
   createdAt: 'createdAt'
+};
+
+exports.Prisma.DocumentScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  authorId: 'authorId',
+  title: 'title',
+  content: 'content',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -445,6 +468,7 @@ exports.Prisma.ModelName = {
   Phase: 'Phase',
   Task: 'Task',
   TaskAssignee: 'TaskAssignee',
+  TaskComment: 'TaskComment',
   WorkLog: 'WorkLog',
   TimeEntry: 'TimeEntry',
   Workload: 'Workload',
@@ -454,7 +478,8 @@ exports.Prisma.ModelName = {
   ChatRoomLastSeen: 'ChatRoomLastSeen',
   ActivityLog: 'ActivityLog',
   Notification: 'Notification',
-  Attendance: 'Attendance'
+  Attendance: 'Attendance',
+  Document: 'Document'
 };
 
 /**

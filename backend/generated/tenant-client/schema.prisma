@@ -90,6 +90,7 @@ model User {
 
   tickets        Ticket[]        @relation("UserTickets")
   ticketComments TicketComment[]
+  taskComments   TaskComment[]
 
   chatMessages     ChatMessage[]
   chatRoomLastSeen ChatRoomLastSeen[]
@@ -99,6 +100,8 @@ model User {
 
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
+
+  authoredDocuments Document[]
 
   @@unique([email, organizationId])
 }
@@ -137,8 +140,12 @@ model Project {
 
   allowMemberTaskCreation Boolean @default(false)
 
+  prefix String? // Short code for Jira-style IDs (e.g. PROJ)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
+
+  documents Document[]
 }
 
 // ─── Phase ──────────────────────────────────────────────────────────────────
@@ -162,9 +169,11 @@ model Phase {
 
 // ─── Task ───────────────────────────────────────────────────────────────────
 model Task {
-  id        String  @id @default(uuid())
-  projectId String
-  phaseId   String?
+  id         String  @id @default(uuid())
+  projectId  String
+  phaseId    String?
+  shortId    String? // e.g., PROJ-123
+  taskNumber Int?
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   phase   Phase?  @relation(fields: [phaseId], references: [id], onDelete: SetNull)
@@ -187,6 +196,7 @@ model Task {
   assignees   TaskAssignee[]
   workLogs    WorkLog[]
   timeEntries TimeEntry[]
+  comments    TaskComment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
@@ -202,6 +212,20 @@ model TaskAssignee {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([taskId, userId])
+}
+
+// ─── TaskComment ───────────────────────────────────────────────────────────
+model TaskComment {
+  id      String @id @default(uuid())
+  taskId  String
+  userId  String
+  content String
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 // ─── WorkLog ────────────────────────────────────────────────────────────────
@@ -358,7 +382,8 @@ model Notification {
   message String
   type    String
   link    String?
-  isRead  Boolean @default(false)
+  isRead  Boolean   @default(false)
+  readAt  DateTime?
 
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -453,4 +478,20 @@ enum TimeEntryStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+// ─── Document (Native Wiki / Docs) ──────────────────────────────────────────
+model Document {
+  id        String @id @default(uuid())
+  projectId String
+  authorId  String
+
+  title   String
+  content String @db.Text
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  author  User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }

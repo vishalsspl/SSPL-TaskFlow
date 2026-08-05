@@ -1,0 +1,594 @@
+2026-07-28T06:52:13.282Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-07-28T06:56:00.780Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-07-28T06:56:00.811Z PrismaClientKnownRequestError: 
+Invalid `prisma.task.findMany()` invocation:
+
+
+The column `Task.shortId` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async Promise.all (index 0)
+    at async getAllTasks (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/taskController.js:151:28)
+2026-07-28T06:57:11.315Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-07-28T06:57:11.333Z PrismaClientKnownRequestError: 
+Invalid `prisma.task.findMany()` invocation:
+
+
+The column `Task.shortId` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async Promise.all (index 0)
+    at async getAllTasks (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/taskController.js:151:28)
+2026-07-28T06:59:00.809Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-07-28T06:59:00.846Z PrismaClientKnownRequestError: 
+Invalid `prisma.task.findMany()` invocation:
+
+
+The column `Task.shortId` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async Promise.all (index 0)
+    at async getAllTasks (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/taskController.js:151:28)
+2026-08-04T09:55:53.495Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T09:55:59.994Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T09:58:03.675Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T09:58:03.742Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T09:59:19.197Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:01:24.203Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:01:24.244Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:05:13.861Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:05:17.662Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:11:30.341Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:11:33.059Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:14:16.633Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:14:43.307Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:15:33.468Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:15:33.491Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:16:26.009Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:17:42.351Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:17:42.398Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:21:36.225Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:21:36.249Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:21:36.262Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:23:37.494Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:26:15.484Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:29:07.535Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:29:10.976Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:33:56.603Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:34:07.058Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:36:43.408Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:39:08.704Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:42:32.327Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:43:41.806Z PrismaClientKnownRequestError: 
+Invalid `prisma.task.findMany()` invocation:
+
+
+The column `Task.shortId` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async Promise.all (index 0)
+    at async getAllTasks (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/taskController.js:161:28)
+2026-08-04T10:47:32.957Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:52:32.966Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:53:13.644Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T10:53:21.942Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T11:13:54.621Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T11:13:54.653Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T11:18:55.060Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T11:23:54.972Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T11:25:19.204Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T11:30:19.128Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T11:30:57.204Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T11:31:27.326Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T11:45:56.496Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T11:48:23.267Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T11:48:27.262Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T11:50:57.364Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-04T11:51:36.753Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-05T06:45:10.729Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-05T06:45:35.758Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-05T06:45:36.175Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)
+2026-08-05T06:46:06.710Z PrismaClientKnownRequestError: 
+Invalid `prisma.notification.findMany()` invocation:
+
+
+The column `Notification.readAt` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:5:27)

@@ -41,7 +41,7 @@ const getCryptoKey = async () => {
  * Returns "iv:ciphertext" in hex
  */
 export const encrypt = async (text) => {
-    if (!text || !KEY_HEX) return text;
+    if (!text || !KEY_HEX || !window.crypto?.subtle) return text;
 
     try {
         const key = await getCryptoKey();
@@ -66,7 +66,7 @@ export const encrypt = async (text) => {
  * Fallback to plaintext if the format doesn't match
  */
 export const decrypt = async (stored) => {
-    if (!stored || !KEY_HEX) return stored;
+    if (!stored || !KEY_HEX || !window.crypto?.subtle) return stored;
 
     const parts = stored.split(':');
     if (parts.length !== 2) return stored; // Legacy plaintext or wrong format

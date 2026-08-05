@@ -1095,7 +1095,7 @@ const Timesheets = () => {
                                                                     );
                                                                 })()}
                                                             </div>
-                                                            <p className="text-[11px] text-gray-500 mt-0.5 line-clamp-1 italic">{getCleanDescription(entry.description)}</p>
+                                                            <p className="text-[11px] text-gray-500 mt-0.5 italic">{getCleanDescription(entry.description)}</p>
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 shrink-0">
@@ -1193,7 +1193,7 @@ const Timesheets = () => {
                                                         </div>
                                                         <div className="min-w-0">
                                                             <h4 className="font-bold text-sm truncate Montserrat">{entry.project?.name || 'Leave'}</h4>
-                                                            <p className="text-[11px] text-muted-foreground font-medium line-clamp-1 italic">
+                                                            <p className="text-[11px] text-muted-foreground font-medium italic">
                                                                 {entry.task?.title ? `${entry.task.title} — ` : ''}{getCleanDescription(entry.description)}
                                                             </p>
                                                             {(() => {
@@ -1265,23 +1265,10 @@ const Timesheets = () => {
                                                                     )}
                                                                 </div>
                                                             )}
-                                                            {hasApprovePermission && entry.status === 'APPROVED' && (
+                                                            {user?.role === 'ADMIN' && entry.status !== 'PENDING' && (
                                                                 <div className="flex items-center gap-1 transition-all border-l pl-2 border-border ml-2">
                                                                     <Button size="icon" variant="outline" className="h-8 w-8 border-yellow-500/20 text-yellow-500 hover:bg-yellow-500 hover:text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'PENDING')} title="Reset to Pending">
                                                                         <Clock className="h-4 w-4" />
-                                                                    </Button>
-                                                                    <Button size="icon" variant="outline" className="h-8 w-8 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'REJECTED')} title="Reject">
-                                                                        <X className="h-4 w-4" />
-                                                                    </Button>
-                                                                </div>
-                                                            )}
-                                                            {hasApprovePermission && entry.status === 'REJECTED' && (
-                                                                <div className="flex items-center gap-1 transition-all border-l pl-2 border-border ml-2">
-                                                                    <Button size="icon" variant="outline" className="h-8 w-8 border-yellow-500/20 text-yellow-500 hover:bg-yellow-500 hover:text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'PENDING')} title="Reset to Pending">
-                                                                        <Clock className="h-4 w-4" />
-                                                                    </Button>
-                                                                    <Button size="icon" className="h-8 w-8 bg-green-500 hover:bg-green-600 text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'APPROVED')} title="Approve">
-                                                                        <Check className="h-4 w-4" />
                                                                     </Button>
                                                                 </div>
                                                             )}
@@ -1355,7 +1342,7 @@ const Timesheets = () => {
                                                                     );
                                                                 })()}
                                                             </div>
-                                                            <p className="text-[11px] text-gray-500 mt-0.5 line-clamp-1 italic">{getCleanDescription(entry.description)}</p>
+                                                            <p className="text-[11px] text-gray-500 mt-0.5 italic">{getCleanDescription(entry.description)}</p>
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 shrink-0">
@@ -1371,7 +1358,7 @@ const Timesheets = () => {
                                                         </div>
                                                         <div className="flex items-center gap-3">
                                                             {getStatusBadge(entry)}
-                                                            {hasApprovePermission && (
+                                                            {hasApprovePermission && (entry.status === 'PENDING' || user?.role === 'ADMIN') && (
                                                                 <div className="flex items-center gap-1 border-l pl-3 border-border">
                                                                     {entry.status === 'PENDING' && (
                                                                     <>
@@ -1383,25 +1370,10 @@ const Timesheets = () => {
                                                                         </Button>
                                                                     </>
                                                                 )}
-                                                                {entry.status === 'APPROVED' && (
-                                                                    <>
-                                                                        <Button size="icon" variant="outline" className="h-8 w-8 border-yellow-500/20 text-yellow-500 hover:bg-yellow-500 hover:text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'PENDING')} title="Reset to Pending">
-                                                                            <Clock className="h-4 w-4" />
-                                                                        </Button>
-                                                                        <Button size="icon" variant="outline" className="h-8 w-8 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'REJECTED')} title="Reject">
-                                                                            <X className="h-4 w-4" />
-                                                                        </Button>
-                                                                    </>
-                                                                )}
-                                                                {entry.status === 'REJECTED' && (
-                                                                    <>
-                                                                        <Button size="icon" variant="outline" className="h-8 w-8 border-yellow-500/20 text-yellow-500 hover:bg-yellow-500 hover:text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'PENDING')} title="Reset to Pending">
-                                                                            <Clock className="h-4 w-4" />
-                                                                        </Button>
-                                                                        <Button size="icon" className="h-8 w-8 bg-green-500 hover:bg-green-600 text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'APPROVED')} title="Approve">
-                                                                            <Check className="h-4 w-4" />
-                                                                        </Button>
-                                                                    </>
+                                                                {user?.role === 'ADMIN' && entry.status !== 'PENDING' && (
+                                                                    <Button size="icon" variant="outline" className="h-8 w-8 border-yellow-500/20 text-yellow-500 hover:bg-yellow-500 hover:text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'PENDING')} title="Reset to Pending">
+                                                                        <Clock className="h-4 w-4" />
+                                                                    </Button>
                                                                 )}
                                                                 </div>
                                                             )}
@@ -1468,7 +1440,7 @@ const Timesheets = () => {
                                                                 );
                                                             })()}
                                                         </div>
-                                                        <p className="text-[11px] text-gray-500 mt-0.5 line-clamp-1 italic">{getCleanDescription(entry.description)}</p>
+                                                        <p className="text-[11px] text-gray-500 mt-0.5 italic">{getCleanDescription(entry.description)}</p>
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 shrink-0">
@@ -1477,7 +1449,7 @@ const Timesheets = () => {
                                                     </div>
                                                     <div className="flex items-center gap-3">
                                                         {getStatusBadge(entry)}
-                                                        {hasApprovePermission && (
+                                                        {hasApprovePermission && (entry.status === 'PENDING' || user?.role === 'ADMIN') && (
                                                             <div className="flex items-center gap-1 border-l pl-3 border-border">
                                                             {entry.status === 'PENDING' && (
                                                                 <>
@@ -1489,25 +1461,10 @@ const Timesheets = () => {
                                                                     </Button>
                                                                 </>
                                                             )}
-                                                            {entry.status === 'APPROVED' && (
-                                                                <>
-                                                                    <Button size="icon" variant="outline" className="h-8 w-8 border-yellow-500/20 text-yellow-500 hover:bg-yellow-500 hover:text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'PENDING')} title="Reset to Pending">
-                                                                        <Clock className="h-4 w-4" />
-                                                                    </Button>
-                                                                    <Button size="icon" variant="outline" className="h-8 w-8 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'REJECTED')} title="Reject">
-                                                                        <X className="h-4 w-4" />
-                                                                    </Button>
-                                                                </>
-                                                            )}
-                                                            {entry.status === 'REJECTED' && (
-                                                                <>
-                                                                    <Button size="icon" variant="outline" className="h-8 w-8 border-yellow-500/20 text-yellow-500 hover:bg-yellow-500 hover:text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'PENDING')} title="Reset to Pending">
-                                                                        <Clock className="h-4 w-4" />
-                                                                    </Button>
-                                                                    <Button size="icon" className="h-8 w-8 bg-green-500 hover:bg-green-600 text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'APPROVED')} title="Approve">
-                                                                        <Check className="h-4 w-4" />
-                                                                    </Button>
-                                                                </>
+                                                            {user?.role === 'ADMIN' && entry.status !== 'PENDING' && (
+                                                                <Button size="icon" variant="outline" className="h-8 w-8 border-yellow-500/20 text-yellow-500 hover:bg-yellow-500 hover:text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'PENDING')} title="Reset to Pending">
+                                                                    <Clock className="h-4 w-4" />
+                                                                </Button>
                                                             )}
                                                             </div>
                                                         )}
@@ -1771,7 +1728,7 @@ const Timesheets = () => {
                                         value={newEntry.taskId}
                                         onChange={(val) => setNewEntry({ ...newEntry, taskId: val })}
                                         disabled={!newEntry.projectId || !!editingEntryId}
-                                        options={tasks.map(t => ({ label: t.title, value: t.id }))}
+                                        options={tasks.filter(t => t.status !== 'COMPLETED' || t.id === newEntry.taskId).map(t => ({ label: t.title, value: t.id }))}
                                         placeholder="Link to a specific task"
                                         className="bg-muted/30 border-border h-11 rounded-xl font-bold"
                                     />
@@ -1780,8 +1737,12 @@ const Timesheets = () => {
                         )}
 
                         <div className="space-y-2">
-                            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Description</Label>
+                            <div className="flex justify-between items-center">
+                                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Description</Label>
+                                <span className={`text-[10px] font-bold ${newEntry.description?.length >= 200 ? 'text-red-500' : 'text-muted-foreground'}`}>{newEntry.description?.length || 0}/200</span>
+                            </div>
                             <Input
+                                maxLength={200}
                                 placeholder={loggingMode === 'leave' ? 'Reason for leave (optional)...' : 'Briefly describe what you worked on... (Optional)'}
                                 value={newEntry.description}
                                 onChange={(e) => setNewEntry({ ...newEntry, description: e.target.value })}

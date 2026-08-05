@@ -761,3 +761,63 @@ Foreign key constraint violated: `Task_phaseId_fkey (index)`
 Path: /api/tasks/ae8ea00d-cb67-401b-b136-0c58302cbcb3
 User: 454265a3-1777-413b-a49f-8735ef6ffa2a
 ---
+2026-07-28T05:50:09.157Z [GLOBAL_ERROR] 
+Invalid `prisma.task.findMany()` invocation:
+
+
+The column `Task.shortId` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.task.findMany()` invocation:
+
+
+The column `Task.shortId` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getDashboard (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/dashboardController.js:47:17)
+Path: /api/dashboard/cfeeb9f1-04a0-4ea4-b043-af17798d1d6c
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-07-28T06:27:27.813Z [GLOBAL_ERROR] 
+Invalid `prisma.task.findMany()` invocation:
+
+
+The column `Task.shortId` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.task.findMany()` invocation:
+
+
+The column `Task.shortId` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getDashboard (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/dashboardController.js:47:17)
+Path: /api/dashboard/7426697b-e3e6-497d-8ca5-84cffb69d83e
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-07-28T06:46:55.261Z [GLOBAL_ERROR] require is not defined
+Stack: ReferenceError: require is not defined
+    at getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:19:5)
+Path: /api/notifications
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-07-28T06:47:01.372Z [GLOBAL_ERROR] require is not defined
+Stack: ReferenceError: require is not defined
+    at getAllTasks (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/taskController.js:183:5)
+Path: /api/tasks
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-07-28T06:47:13.073Z [GLOBAL_ERROR] require is not defined
+Stack: ReferenceError: require is not defined
+    at getNotifications (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/notificationController.js:19:5)
+Path: /api/notifications
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-07-28T06:47:20.355Z [GLOBAL_ERROR] require is not defined
+Stack: ReferenceError: require is not defined
+    at getAllTasks (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/taskController.js:183:5)
+Path: /api/tasks
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---

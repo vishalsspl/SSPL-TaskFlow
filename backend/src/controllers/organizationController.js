@@ -433,10 +433,23 @@ export const getOrgPermissions = async (req, res) => {
 
     try {
         await ensureOrganizationSchema(req.db);
-        const org = await req.db.organization.findUnique({
-            where: { id: organizationId },
-            select: { rolePermissions: true }
-        });
+        let org = null;
+        try {
+            org = await req.db.organization.findUnique({
+                where: { id: organizationId },
+                select: { rolePermissions: true }
+            });
+        } catch (e) {
+            console.warn('[getOrgPermissions] Tenant DB error or missing table:', e.message);
+        }
+
+        // Fallback to main DB if not found in tenant DB
+        if (!org) {
+            org = await prisma.organization.findUnique({
+                where: { id: organizationId },
+                select: { rolePermissions: true }
+            });
+        }
 
         if (!org) return res.status(404).json({ error: 'Organisation not found' });
 
@@ -453,7 +466,6 @@ export const getOrgPermissions = async (req, res) => {
         res.json(merged);
     } catch (error) {
         console.error('[getOrgPermissions] Error:', error);
-        fs.appendFileSync('debug_trace.log', `[getOrgPermissions] Error: ${error.message}\n${error.stack}\n`);
         res.status(500).json({ error: 'Failed to fetch permissions' });
     }
 };
@@ -479,12 +491,16 @@ export const updateOrgPermissions = async (req, res) => {
             data: updateData
         });
 
-        // 2. Update Tenant DB
-        await ensureOrganizationSchema(req.db);
-        const updated = await req.db.organization.update({
-            where: { id: organizationId },
-            data: updateData
-        });
+        // 2. Update Tenant DB (if record exists)
+        try {
+            await ensureOrganizationSchema(req.db);
+            await req.db.organization.update({
+                where: { id: organizationId },
+                data: updateData
+            });
+        } catch (e) {
+            console.warn('[updateOrgPermissions] Failed to update tenant DB (record may not exist yet):', e.message);
+        }
 
         // 3. Log Activity
         await req.db.activityLog.create({

@@ -22,6 +22,11 @@ export const getGlobalInvoices = async (req, res) => {
                         include: {
                             _count: {
                                 select: { users: true }
+                            },
+                            users: {
+                                where: { role: 'ADMIN' },
+                                select: { email: true },
+                                take: 1
                             }
                         }
                     }
@@ -68,6 +73,37 @@ export const updateInvoiceStatus = async (req, res) => {
             where: { id },
             data
         });
+
+        // If marked as PAID, upgrade the organization
+        if (status === 'PAID' && updated.plan) {
+            const now = new Date();
+            const periodEnd = new Date(now);
+            periodEnd.setMonth(periodEnd.getMonth() + 1); // Default to 1 month
+
+            // For superadmin manual approvals, we don't know the exact billing cycle (annual vs monthly)
+            // But we can check if the amount suggests annual.
+            // Let's just default to monthly for now, or you could add a cycle check if needed.
+
+            const planLimits = {
+                STARTER: { maxUsers: 30, maxProjects: 15 },
+                PRO: { maxUsers: 100, maxProjects: 100 },
+                ENTERPRISE: { maxUsers: 9999, maxProjects: 9999 }
+            };
+
+            const limits = planLimits[updated.plan] || planLimits.STARTER;
+
+            await prisma.organization.update({
+                where: { id: updated.organizationId },
+                data: {
+                    plan: updated.plan,
+                    status: 'ACTIVE',
+                    maxUsers: limits.maxUsers,
+                    maxProjects: limits.maxProjects,
+                    currentPeriodStart: now,
+                    currentPeriodEnd: periodEnd,
+                },
+            });
+        }
 
         res.json(updated);
     } catch (error) {

@@ -47,10 +47,10 @@ const PlansAndLimits = () => {
   const [savingOrg, setSavingOrg] = useState(false);
 
   const [globalTiers, setGlobalTiers] = useState({
-    FREE: { maxUsers: 10, maxProjects: 3, pricePerUser: 0, features: { projects: true, kanban: true, tasks: true, tickets: true, team: true, chat: true, performance: true, timesheets: true, github: true } },
-    STARTER: { maxUsers: 30, maxProjects: 5, pricePerUser: 10, features: { projects: true, kanban: true, tasks: true, tickets: true, team: true, chat: true, performance: true, timesheets: true, github: true } },
-    PRO: { maxUsers: 100, maxProjects: 50, pricePerUser: 10, features: { projects: true, kanban: true, tasks: true, tickets: true, team: true, chat: true, performance: true, timesheets: true, github: true } },
-    ENTERPRISE: { maxUsers: 1000, maxProjects: 500, pricePerUser: 0, features: { projects: true, kanban: true, tasks: true, tickets: true, team: true, chat: true, performance: true, timesheets: true, github: true } }
+    FREE: { maxUsers: 10, maxProjects: 3, pricePerUser: 0, paymentLink: '', description: 'Perfect for individuals and small teams starting out', points: 'Up to 10 team members\n3 projects\nKanban Board\nBasic Task Management\nCommunity Support', features: { projects: true, kanban: true, tasks: true, tickets: true, team: true, chat: true, performance: true, timesheets: true, github: true } },
+    STARTER: { maxUsers: 30, maxProjects: 5, pricePerUser: 10, paymentLink: '', description: 'Essential tools for growing teams', points: 'Up to 30 members\n5 projects\nKanban Board\nTasks Management\nTickets & Support\nTeam Management\nChat & Collaboration\nEmail Support', features: { projects: true, kanban: true, tasks: true, tickets: true, team: true, chat: true, performance: true, timesheets: true, github: true } },
+    PRO: { maxUsers: 100, maxProjects: 50, pricePerUser: 10, paymentLink: '', description: 'Full power for scaling teams', points: 'Up to 100 members\n50 projects\nEverything in Starter\nPerformance Analytics\nTimesheets & Tracking\nGitHub Integration\nActivity Logs & Audit\nPriority Support', features: { projects: true, kanban: true, tasks: true, tickets: true, team: true, chat: true, performance: true, timesheets: true, github: true } },
+    ENTERPRISE: { maxUsers: 1000, maxProjects: 500, pricePerUser: 0, paymentLink: '', description: 'For large organizations with complex needs', points: 'Unlimited team members\nUnlimited projects\nEverything in Pro\nSSO & SAML\nCustom Integrations\nDedicated Account Manager\n24/7 Priority Support\nSLA Guarantee', features: { projects: true, kanban: true, tasks: true, tickets: true, team: true, chat: true, performance: true, timesheets: true, github: true } }
   });
   const [loadingTiers, setLoadingTiers] = useState(false);
   const [savingTiers, setSavingTiers] = useState(false);
@@ -84,6 +84,9 @@ const PlansAndLimits = () => {
         if (s[`${lp}_max_users`]) newTiers[p].maxUsers = Number(s[`${lp}_max_users`]);
         if (s[`${lp}_max_projects`]) newTiers[p].maxProjects = Number(s[`${lp}_max_projects`]);
         if (s[`${lp}_per_user_price`] !== undefined) newTiers[p].pricePerUser = Number(s[`${lp}_per_user_price`]);
+        if (s[`${lp}_payment_link`]) newTiers[p].paymentLink = s[`${lp}_payment_link`];
+        if (s[`${lp}_description`]) newTiers[p].description = s[`${lp}_description`];
+        if (s[`${lp}_points`]) newTiers[p].points = s[`${lp}_points`];
         if (s[`${lp}_features`]) {
           try {
             newTiers[p].features = typeof s[`${lp}_features`] === 'string'
@@ -151,10 +154,13 @@ const PlansAndLimits = () => {
       const payload = {};
       Object.entries(globalTiers).forEach(([p, data]) => {
         const lp = p.toLowerCase();
-        payload[`${lp}_max_users`] = data.maxUsers;
-        payload[`${lp}_max_projects`] = data.maxProjects;
-        payload[`${lp}_per_user_price`] = data.pricePerUser;
-        payload[`${lp}_features`] = JSON.stringify(data.features);
+        payload[`${lp}_max_users`] = String(globalTiers[p].maxUsers);
+        payload[`${lp}_max_projects`] = String(globalTiers[p].maxProjects);
+        payload[`${lp}_per_user_price`] = String(globalTiers[p].pricePerUser);
+        payload[`${lp}_payment_link`] = globalTiers[p].paymentLink;
+        payload[`${lp}_description`] = globalTiers[p].description;
+        payload[`${lp}_points`] = globalTiers[p].points;
+        payload[`${lp}_features`] = JSON.stringify(globalTiers[p].features);
       });
       await api.put('/superadmin/settings', payload);
       toast({ title: 'Global Tiers updated', description: 'New organization defaults have been synchronized.' });
@@ -476,6 +482,27 @@ const PlansAndLimits = () => {
                     </div>
                   </div>
 
+                  <div className="space-y-1">
+                    <Label className="text-[10px] font-medium opacity-60">Plan Description</Label>
+                    <Input
+                      type="text"
+                      value={globalTiers[p.id]?.description || ''}
+                      onChange={e => setGlobalTiers(prev => ({ ...prev, [p.id]: { ...prev[p.id], description: e.target.value } }))}
+                      className="h-8 rounded-lg text-sm font-semibold"
+                      placeholder="e.g. Essential tools for growing teams"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-[10px] font-medium opacity-60">Plan Points (One per line)</Label>
+                    <textarea
+                      value={globalTiers[p.id]?.points || ''}
+                      onChange={e => setGlobalTiers(prev => ({ ...prev, [p.id]: { ...prev[p.id], points: e.target.value } }))}
+                      className="w-full min-h-[100px] rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      placeholder="E.g. Up to 30 members&#10;5 projects&#10;Kanban Board"
+                    />
+                  </div>
+
                   {/* Price Per User */}
                   <div className="space-y-1">
                     <Label className="text-[10px] font-medium opacity-60">Price Per User / Month (₹)</Label>
@@ -505,6 +532,17 @@ const PlansAndLimits = () => {
                         />
                       </div>
                     )}
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-[10px] font-medium opacity-60">Payment Link</Label>
+                    <Input
+                      type="text"
+                      placeholder="https://buy.stripe.com/..."
+                      value={globalTiers[p.id].paymentLink || ''}
+                      onChange={e => setGlobalTiers(prev => ({ ...prev, [p.id]: { ...prev[p.id], paymentLink: e.target.value } }))}
+                      className="h-8 rounded-lg text-sm font-semibold"
+                    />
                   </div>
 
                   <div className="space-y-2">

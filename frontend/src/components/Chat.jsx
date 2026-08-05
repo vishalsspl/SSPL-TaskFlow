@@ -924,7 +924,15 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = 
                 onOpenChange={setShowRemoveDialog}
                 onConfirm={handleConfirmRemoveMember}
                 title="Remove Member?"
-                description="Are you sure you want to remove this member from the chat channel? Please note that removing a member from the chat will also remove them from the project."
+                description={
+                    <>
+                        Are you sure you want to remove this member from the chat channel?
+                        <br /><br />
+                        <span className="font-semibold text-red-500">
+                            Warning: This action will also remove the member from the associated project.
+                        </span>
+                    </>
+                }
                 confirmText="Yes, Remove"
             />
 

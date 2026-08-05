@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTheme } from '@/components/ThemeProvider';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import api from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
 import { useToast } from '@/hooks/use-toast';
@@ -51,6 +51,7 @@ const Field = ({ label, id, error, children, isDarkMode }) => (
 
 const Signup = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { theme } = useTheme();
   const isDarkMode = theme !== 'light';
   const { login: storeLogin } = useAuthStore();
@@ -226,10 +227,40 @@ const Signup = () => {
       });
 
       if (data.token && data.user) {
-        console.log('[Signup] Success! Storing login and navigating to dashboard...');
-        storeLogin(data.token, data.user);
+        console.log('[Signup] Success! Processing redirection...');
         
-        // Delay slightly to ensure storage is committed
+        const requestedPlan = searchParams.get('plan');
+        const quantity = searchParams.get('quantity') || 10;
+
+        if (requestedPlan === 'STARTER' || requestedPlan === 'PROFESSIONAL' || requestedPlan === 'PRO') {
+          // Manually save to local storage so they are logged in when they return,
+          // but DO NOT call storeLogin() here to prevent the Dashboard from flashing before we redirect to Stripe!
+          localStorage.setItem('auth-storage', JSON.stringify({ state: { token: data.token, user: data.user } }));
+
+          try {
+            const planToCharge = (requestedPlan === 'PROFESSIONAL' || requestedPlan === 'PRO') ? 'PRO' : 'STARTER';
+            const billingCycle = searchParams.get('cycle') === 'annually' ? 'annually' : 'monthly';
+
+            // Create dynamic stripe checkout session
+            const orderRes = await api.post('/billing/create-order', {
+              plan: planToCharge,
+              billingCycle: billingCycle,
+            }, {
+              headers: { Authorization: `Bearer ${data.token}` }
+            });
+
+            if (orderRes.data && orderRes.data.checkoutUrl) {
+              window.location.href = orderRes.data.checkoutUrl;
+              return;
+            }
+          } catch (e) {
+            console.error('Failed to create stripe checkout session', e);
+            // If stripe fails, we'll just log them in and let them access the dashboard trial
+          }
+        }
+
+        // If not redirecting to Stripe, log them in normally and go to dashboard
+        storeLogin(data.token, data.user);
         setTimeout(() => {
           navigate('/dashboard');
         }, 100);
@@ -505,7 +536,11 @@ const Signup = () => {
                 </svg>
                 <p className="text-xs font-medium text-[#48A111]/90">
                   {form.role === 'ADMIN'
-                    ? <span>Your organisation starts on a <strong>14-day FREE trial</strong> with up to 10 users and 5 projects.</span>
+                    ? (
+                        (searchParams.get('plan') === 'STARTER' || searchParams.get('plan') === 'PRO' || searchParams.get('plan') === 'PROFESSIONAL')
+                        ? <span>You are signing up for the <strong>{searchParams.get('plan') === 'STARTER' ? 'Starter' : 'Professional'} Plan</strong> (for {searchParams.get('quantity') || 10} users). You will be redirected to payment after registration.</span>
+                        : <span>Your organisation starts on a <strong>14-day FREE trial</strong> with up to 10 users and 5 projects.</span>
+                      )
                     : <span>You will be added to the organisation as a <strong>{form.role}</strong> pending administrator approval.</span>
                   }
                 </p>

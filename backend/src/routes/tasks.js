@@ -11,6 +11,10 @@ import {
   approveTaskStatus,
   rejectTaskStatus,
   bulkCreateTasks,
+  getTaskActivity,
+  getTaskComments,
+  addTaskComment,
+  deleteTaskComment,
 } from '../controllers/taskController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 import attachTenantDb from '../middleware/tenantMiddleware.js';
@@ -36,5 +40,11 @@ router.patch('/:id/status', authorize('ADMIN', 'MANAGER', 'MEMBER'), updateTaskS
 router.post('/:id/approve-status', authorize('ADMIN', 'MANAGER'), approveTaskStatus);
 router.post('/:id/reject-status', authorize('ADMIN', 'MANAGER'), rejectTaskStatus);
 router.delete('/:id', authorize('ADMIN', 'MANAGER', 'MEMBER'), deleteTask);
+
+// Activity & Comments
+router.get('/:id/activity', getTaskActivity);
+router.get('/:id/comments', getTaskComments);
+router.post('/:id/comments', authorize('ADMIN', 'MANAGER', 'MEMBER'), addTaskComment);
+router.delete('/comments/:commentId', authorize('ADMIN', 'MANAGER', 'MEMBER'), deleteTaskComment);
 
 export default router;

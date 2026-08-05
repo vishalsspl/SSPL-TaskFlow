@@ -379,6 +379,7 @@ export const signup = async (req, res) => {
       website: website?.trim() || null,
       country: country || null,
       timezone: timezone || 'Asia/Kolkata',
+      billingEmail: email,
       plan: 'FREE',
       status: 'TRIAL',
       trialEndsAt,
@@ -880,11 +881,20 @@ export const me = async (req, res) => {
   userWithoutSensitive.permissions = resolvedPermissions;
 
   if (userWithoutSensitive.organization || freshOrg) {
-    userWithoutSensitive.organization = {
+    const orgData = {
       ...(userWithoutSensitive.organization || {}),
       ...(freshOrg || {}),
       activeFeatures,
     };
+    
+    // Check if the 14-day free trial is expired
+    if (orgData.plan === 'FREE' && orgData.trialEndsAt) {
+      if (new Date(orgData.trialEndsAt) < new Date()) {
+        orgData.isExpired = true;
+      }
+    }
+
+    userWithoutSensitive.organization = orgData;
   }
 
   res.json(userWithoutSensitive);

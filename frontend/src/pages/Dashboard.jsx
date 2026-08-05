@@ -59,6 +59,28 @@ const Dashboard = () => {
   });
   const [showProjectsPie, setShowProjectsPie] = useState(false);
   const [showTasksHover, setShowTasksHover] = useState(false);
+  const { syncUser } = useAuthStore();
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const sessionId = searchParams.get('session_id');
+    const success = searchParams.get('success');
+
+    if (success && sessionId) {
+      const verifyPayment = async () => {
+        try {
+          await api.post('/billing/verify-payment', { session_id: sessionId });
+          // Resync the user to get the updated organization plan
+          await syncUser(api);
+          // Remove query params from URL so it doesn't run again on refresh
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } catch (err) {
+          console.error('Failed to verify payment', err);
+        }
+      };
+      verifyPayment();
+    }
+  }, [syncUser]);
 
   useEffect(() => {
     const firstName = user?.name?.split(' ')[0];
@@ -110,8 +132,13 @@ const Dashboard = () => {
         setPerformanceProjectId(projectsData[0].id);
       }
 
-      const totalProjects = projectsData.length;
-      const activeProjects = projectsData.filter(p => p.status === 'ACTIVE').length;
+      // Only exclude 'General' projects for MEMBER role
+      const realProjects = user?.role === 'MEMBER' 
+        ? projectsData.filter(p => p.name.toLowerCase() !== 'general' && p.name.toLowerCase() !== 'general tasks')
+        : projectsData;
+
+      const totalProjects = realProjects.length;
+      const activeProjects = realProjects.filter(p => p.status === 'ACTIVE').length;
       let totalTasks = projectsData.reduce((sum, p) => sum + (p._count?.tasks || 0), 0);
       const totalBudget = projectsData.reduce((sum, p) => sum + Number(p.totalBudget || 0), 0);
 
@@ -168,12 +195,19 @@ const Dashboard = () => {
   };
 
   // Compute stats for Projects Pie Chart
+  // Only exclude 'General' projects for MEMBER role
+  const realProjectsForStats = projects ? (
+    user?.role === 'MEMBER' 
+      ? projects.filter(p => p.name.toLowerCase() !== 'general' && p.name.toLowerCase() !== 'general tasks')
+      : projects
+  ) : [];
+  
   const projectStatsData = projects ? [
-      { name: 'Planning', value: projects.filter(p => p.status === 'PLANNING').length },
-      { name: 'Active', value: projects.filter(p => p.status === 'ACTIVE').length },
-      { name: 'On Hold', value: projects.filter(p => p.status === 'ON_HOLD').length },
-      { name: 'Completed', value: projects.filter(p => p.status === 'COMPLETED').length },
-      { name: 'Cancelled', value: projects.filter(p => p.status === 'CANCELLED').length },
+      { name: 'Planning', value: realProjectsForStats.filter(p => p.status === 'PLANNING').length },
+      { name: 'Active', value: realProjectsForStats.filter(p => p.status === 'ACTIVE').length },
+      { name: 'On Hold', value: realProjectsForStats.filter(p => p.status === 'ON_HOLD').length },
+      { name: 'Completed', value: realProjectsForStats.filter(p => p.status === 'COMPLETED').length },
+      { name: 'Cancelled', value: realProjectsForStats.filter(p => p.status === 'CANCELLED').length },
   ] : [];
   const totalProjectsForPie = projectStatsData.reduce((sum, d) => sum + d.value, 0);
   const PROJECT_STATUS_COLORS = {

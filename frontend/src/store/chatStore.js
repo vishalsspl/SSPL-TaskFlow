@@ -3,6 +3,7 @@ import { io } from 'socket.io-client';
 import api from '@/lib/api';
 import { useNotificationStore } from './notificationStore';
 import { useAuthStore } from './authStore';
+import { toast } from '@/hooks/use-toast';
 
 export const useChatStore = create((set, get) => ({
     socket: null,
@@ -130,6 +131,10 @@ export const useChatStore = create((set, get) => ({
             if (String(notification.userId) === String(currentUserId)) {
                 console.log('[Socket Debug] User matched! Adding notification to store.');
                 useNotificationStore.getState().addNotification(notification);
+                toast({
+                    title: notification.title,
+                    description: notification.message,
+                });
             }
         });
 

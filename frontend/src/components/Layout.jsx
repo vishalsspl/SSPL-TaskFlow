@@ -125,6 +125,11 @@ const Layout = () => {
     return <Navigate to="/superadmin" replace />;
   }
 
+  // ── NEW: enforce 14-day free trial limit ────────────────────────────────
+  if (user?.organization?.isExpired && location.pathname !== '/billing') {
+    return <Navigate to="/billing" replace />;
+  }
+
   const handleLogout = async () => {
     if (isRunning) {
       setShowLogoutConfirm(true);
@@ -453,8 +458,11 @@ const Layout = () => {
                   <CalendarComponent
                     mode="single"
                     selected={currentTime}
-                    onSelect={(date) => date && setCurrentTime(date)}
-                    initialFocus
+                    fromDate={new Date(new Date().getFullYear(), 0, 1)}
+                    toDate={new Date(new Date().getFullYear(), 11, 31)}
+                    disableNavigation={false}
+                    modifiers={{ weekend: (date) => date.getDay() === 0 || date.getDay() === 6 }}
+                    modifiersClassNames={{ weekend: "!text-red-500 font-black" }}
                   />
                 </PopoverContent>
               </Popover>

@@ -35,6 +35,7 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
         managerId: user?.role === 'MANAGER' ? user.id : '',
         startDate: null,
         endDate: null,
+        isOngoing: false,
         totalBudget: '',
         status: 'PLANNING',
         category: 'INTERNAL',
@@ -83,16 +84,17 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!formData.name || formData.name.trim().length < 3 || formData.name.trim().length > 100) {
+        const trimmedName = formData.name.trim();
+        if (!trimmedName || trimmedName.length < 3 || trimmedName.length > 30) {
             toast({
                 variant: "destructive",
                 title: "Validation Error",
-                description: "Project Name must be between 3 and 100 characters",
+                description: "Project Name must be between 3 and 30 characters",
             });
             return;
         }
 
-        if (/^\d/.test(formData.name.trim())) {
+        if (/^\d/.test(trimmedName)) {
             toast({
                 variant: "destructive",
                 title: "Validation Error",
@@ -101,11 +103,12 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
             return;
         }
 
-        if (!/^[a-zA-Z0-9\s]+$/.test(formData.name)) {
+        const isAlphanumeric = (char) => /^[a-zA-Z0-9]$/.test(char);
+        if (!isAlphanumeric(trimmedName[0]) || !isAlphanumeric(trimmedName[trimmedName.length - 1])) {
             toast({
                 variant: "destructive",
                 title: "Validation Error",
-                description: "Project Name cannot contain special characters. Only alphanumeric characters and spaces are allowed.",
+                description: "Project Name cannot start or end with a special character",
             });
             return;
         }
@@ -205,7 +208,7 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
                             placeholder="Enter project name"
                             required
                             minLength={3}
-                            maxLength={100}
+                            maxLength={30}
                             className="!pl-10 transition-all focus:ring-2 focus:ring-primary/20"
                         />
                     </div>
@@ -277,14 +280,26 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
                     </div>
                 </div>
 
+                {/* End Date */}
                 <div className="space-y-2">
-                    <Label htmlFor="endDate" className="text-foreground/90 font-semibold">End Date</Label>
+                    <div className="flex items-center justify-between">
+                        <Label htmlFor="endDate" className="text-foreground/90 font-semibold">End Date</Label>
+                        <div className="flex items-center gap-1.5">
+                            <Label htmlFor="isOngoing" className="text-[10px] font-bold text-muted-foreground uppercase cursor-pointer">Ongoing</Label>
+                            <Switch
+                                id="isOngoing"
+                                className="scale-75"
+                                checked={formData.isOngoing}
+                                onCheckedChange={(val) => setFormData({ ...formData, isOngoing: val, endDate: val ? null : formData.endDate })}
+                            />
+                        </div>
+                    </div>
                     <div className="relative">
                         <DatePicker
                             date={formData.endDate}
                             setDate={(date) => setFormData({ ...formData, endDate: date })}
+                            disabled={formData.isOngoing}
                             placeholder="Select end date"
-                            className=""
                         />
                     </div>
                 </div>

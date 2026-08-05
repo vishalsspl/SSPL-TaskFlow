@@ -225,6 +225,7 @@ const ProjectsList = () => {
       managerId: project.managerId || '',
       startDate: project.startDate ? new Date(project.startDate) : null,
       endDate: project.endDate ? new Date(project.endDate) : null,
+      isOngoing: !project.endDate,
       totalBudget: project.totalBudget || '',
       status: project.status,
       category: project.category,
@@ -617,11 +618,23 @@ const ProjectsList = () => {
 
                 {/* End Date */}
                 <div className="space-y-2">
-                  <Label htmlFor="endDate" className="text-foreground/90 font-semibold mobile-reduce-label">End Date</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="endDate" className="text-foreground/90 font-semibold mobile-reduce-label">End Date</Label>
+                    <div className="flex items-center gap-1.5">
+                      <Label htmlFor="isOngoing" className="text-[10px] font-bold text-muted-foreground uppercase cursor-pointer">Ongoing</Label>
+                      <Switch
+                        id="isOngoing"
+                        className="scale-75"
+                        checked={formData.isOngoing}
+                        onCheckedChange={(val) => setFormData({ ...formData, isOngoing: val, endDate: val ? null : formData.endDate })}
+                      />
+                    </div>
+                  </div>
                   <div className="relative">
                     <DatePicker
                       date={formData.endDate}
                       setDate={(date) => setFormData({ ...formData, endDate: date })}
+                      disabled={formData.isOngoing}
                       placeholder="Select end date"
                       className="mobile-reduce-input"
                     />
