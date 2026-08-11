@@ -456,3 +456,4 @@ process.once('SIGUSR2', () => {
 
 
 export default app;
+// Force iisnode restart

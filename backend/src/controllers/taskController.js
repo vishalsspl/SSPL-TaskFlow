@@ -369,7 +369,10 @@ export const createTask = async (req, res) => {
 
   // Get next task number
   const maxTask = await req.db.task.findFirst({
-    where: { projectId: project.id },
+    where: { 
+      projectId: project.id,
+      taskNumber: { not: null }
+    },
     orderBy: { taskNumber: 'desc' }
   });
   const taskNumber = (maxTask?.taskNumber || 0) + 1;
@@ -493,6 +496,8 @@ export const createTask = async (req, res) => {
       where: { id: req.user.id },
       include: { manager: true }
     });
+    
+    // Notify member's direct manager
     if (creator?.manager?.email) {
       sendManagerTaskCreatedEmail(
         creator.manager.email,
@@ -502,6 +507,23 @@ export const createTask = async (req, res) => {
         task.project.name,
         origin
       ).catch(err => console.error('Failed to send manager task created email:', err));
+    }
+
+    // Notify project manager if they exist and are different from the direct manager
+    const fullProject = await req.db.project.findUnique({
+      where: { id: projectId },
+      include: { manager: true }
+    });
+
+    if (fullProject?.manager?.email && fullProject.manager.email !== creator?.manager?.email) {
+      sendManagerTaskCreatedEmail(
+        fullProject.manager.email,
+        fullProject.manager.name,
+        req.user.name,
+        task.title,
+        task.project.name,
+        origin
+      ).catch(err => console.error('Failed to send project manager task created email:', err));
     }
   }
 
@@ -651,7 +673,10 @@ export const bulkCreateTasks = async (req, res) => {
         project.prefix = prefix;
       }
       const maxTask = await req.db.task.findFirst({
-        where: { projectId: project.id },
+        where: { 
+          projectId: project.id,
+          taskNumber: { not: null }
+        },
         orderBy: { taskNumber: 'desc' }
       });
       const taskNumber = (maxTask?.taskNumber || 0) + 1;
@@ -983,6 +1008,46 @@ export const updateTask = async (req, res) => {
             { priority: task.priority, dueDate: task.dueDate, status: task.status, description: task.description, baseUrl: origin }
           ).catch(err => console.error('Failed to send task update email:', err));
         }
+      }
+    }
+  }
+
+  // Notify Manager(s) if a MEMBER changes the task status
+  if (status && status !== existingTask.status && req.user.role === 'MEMBER') {
+    const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
+    const updatedBy = req.user.name;
+
+    const [member, fullProject] = await Promise.all([
+      req.db.user.findUnique({ where: { id: req.user.id }, include: { manager: true } }),
+      req.db.project.findUnique({ where: { id: task.projectId }, include: { manager: true } })
+    ]);
+
+    const managersToNotify = [];
+    if (member?.manager) managersToNotify.push(member.manager);
+    if (fullProject?.manager && fullProject.manager.id !== member?.manager?.id) {
+      managersToNotify.push(fullProject.manager);
+    }
+
+    for (const manager of managersToNotify) {
+      // In-app notification
+      createNotification(req, {
+        userId: manager.id,
+        title: 'Task Status Updated',
+        message: `Task "${task.title}" status has been updated to ${task.status} by ${updatedBy}`,
+        type: 'TASK_STATUS_UPDATED',
+        link: `/task-board?project=${task.projectId}&highlight=${task.id}`
+      });
+
+      // Email notification
+      if (hasEmailSupport && sendEmail && manager.email) {
+        sendTaskStatusUpdateEmail(
+          manager.email,
+          task.title,
+          task.project.name,
+          task.status,
+          updatedBy,
+          origin
+        ).catch(err => console.error('Failed to send task status update email to manager:', err));
       }
     }
   }
@@ -1379,6 +1444,8 @@ export const updateTaskStatus = async (req, res) => {
       const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
       const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
 
+      const member = await req.db.user.findUnique({ where: { id: req.user.id }, include: { manager: true } });
+
       if (managerId) {
         createNotification(req, {
           userId: managerId,
@@ -1414,6 +1481,60 @@ export const updateTaskStatus = async (req, res) => {
           }
         }
       }
+
+      // Also notify direct manager if they are different from the primary approver
+      if (member?.manager && member.manager.id !== managerId) {
+        createNotification(req, {
+          userId: member.manager.id,
+          title: 'Task Status Updated',
+          message: `Task "${task.title}" status has been updated to ${task.status} by ${req.user.name}`,
+          type: 'TASK_STATUS_UPDATED',
+          link: `/task-board?project=${existingTask.projectId}&highlight=${task.id}`
+        });
+
+        if (hasEmailSupport && sendEmail && member.manager.email) {
+          sendTaskStatusUpdateEmail(member.manager.email, task.title, task.project.name, status, req.user.name, origin)
+            .catch(err => console.error('Failed to send task status update email to direct manager:', err));
+        }
+      }
+    } else if (req.user.role === 'MEMBER' && status !== existingTask.status) {
+      const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
+      const updatedBy = req.user.name;
+      const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
+
+      const [member, fullProject] = await Promise.all([
+        req.db.user.findUnique({ where: { id: req.user.id }, include: { manager: true } }),
+        req.db.project.findUnique({ where: { id: task.projectId }, include: { manager: true } })
+      ]);
+
+      const managersToNotify = [];
+      if (member?.manager) managersToNotify.push(member.manager);
+      if (fullProject?.manager && fullProject.manager.id !== member?.manager?.id) {
+        managersToNotify.push(fullProject.manager);
+      }
+
+      for (const manager of managersToNotify) {
+        // In-app notification
+        createNotification(req, {
+          userId: manager.id,
+          title: 'Task Status Updated',
+          message: `Task "${task.title}" status has been updated to ${task.status} by ${updatedBy}`,
+          type: 'TASK_STATUS_UPDATED',
+          link: `/task-board?project=${existingTask.projectId}&highlight=${task.id}`
+        });
+
+        // Email notification
+        if (hasEmailSupport && sendEmail && manager.email) {
+          sendTaskStatusUpdateEmail(
+            manager.email,
+            task.title,
+            task.project.name,
+            task.status,
+            updatedBy,
+            origin
+          ).catch(err => console.error('Failed to send task status update email to manager:', err));
+        }
+      }
     }
 
     res.json(task);
@@ -1425,6 +1546,7 @@ export const updateTaskStatus = async (req, res) => {
 
 export const approveTaskStatus = async (req, res) => {
   const { id } = req.params;
+  const { sendEmail = true } = req.body;
   try {
     if (req.user.role !== 'ADMIN' && req.user.role !== 'MANAGER') {
       return res.status(403).json({ error: 'Only managers can approve status changes.' });
@@ -1480,6 +1602,9 @@ export const approveTaskStatus = async (req, res) => {
       console.error('Failed to log approval activity:', logErr);
     }
 
+    const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
+    const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
+
     for (const { user } of updatedTask.assignees) {
       createNotification(req, {
         userId: user.id,
@@ -1488,6 +1613,17 @@ export const approveTaskStatus = async (req, res) => {
         type: 'TASK_APPROVED',
         link: `/task-board?project=${task.projectId}&highlight=${task.id}&action=approved`
       });
+
+      if (hasEmailSupport && sendEmail && user.email) {
+        sendTaskStatusUpdateEmail(
+          user.email,
+          task.title,
+          updatedTask.project.name,
+          'COMPLETED (Approved)',
+          req.user.name,
+          origin
+        ).catch(err => console.error('Failed to send task approval email:', err));
+      }
     }
 
     res.json(updatedTask);
@@ -1499,7 +1635,7 @@ export const approveTaskStatus = async (req, res) => {
 
 export const rejectTaskStatus = async (req, res) => {
   const { id } = req.params;
-  const { rejectionReason } = req.body;
+  const { rejectionReason, sendEmail = true } = req.body;
 
   try {
     if (req.user.role !== 'ADMIN' && req.user.role !== 'MANAGER') {
@@ -1558,6 +1694,9 @@ export const rejectTaskStatus = async (req, res) => {
       console.error('Failed to log rejection activity:', logErr);
     }
 
+    const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
+    const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
+
     for (const { user } of updatedTask.assignees) {
       let message = `Your task "${task.title}" was rejected by ${req.user.name} and moved back to In Progress.`;
       if (rejectionReason) {
@@ -1571,6 +1710,17 @@ export const rejectTaskStatus = async (req, res) => {
         type: 'TASK_REJECTED',
         link: `/task-board?project=${task.projectId}&highlight=${task.id}&action=rejected`
       });
+
+      if (hasEmailSupport && sendEmail && user.email) {
+        sendTaskStatusUpdateEmail(
+          user.email,
+          task.title,
+          updatedTask.project.name,
+          'IN_PROGRESS (Rejected)',
+          req.user.name,
+          origin
+        ).catch(err => console.error('Failed to send task rejection email:', err));
+      }
     }
 
     res.json(updatedTask);

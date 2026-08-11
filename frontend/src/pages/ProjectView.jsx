@@ -58,7 +58,9 @@ import {
 import CreateTaskForm from '@/components/forms/CreateTaskForm';
 import TaskDetailsModal from '@/components/task/TaskDetailsModal';
 import Chat from '@/components/Chat';
-
+import DocumentList from '@/components/documents/DocumentList';
+import DocumentEditor from '@/components/documents/DocumentEditor';
+import DocumentViewer from '@/components/documents/DocumentViewer';
 
 
 const ProjectView = () => {
@@ -76,6 +78,9 @@ const ProjectView = () => {
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [users, setUsers] = useState([]);
   const [activeTab, setActiveTab] = useState('overview');
+  
+  const [docView, setDocView] = useState('list'); // 'list', 'edit', 'view'
+  const [selectedDocId, setSelectedDocId] = useState(null);
 
   const dashboardRef = useRef(null);
   const { user } = useAuthStore();
@@ -594,7 +599,7 @@ const ProjectView = () => {
                   New Task
                 </Button>
               )}
-              {(user?.role === 'ADMIN' || user?.permissions?.['reports.export']) && (
+              {activeTab === 'overview' && (user?.role === 'ADMIN' || user?.permissions?.['reports.export']) && (
                 <Button variant="outline" size="sm" onClick={exportProfessionalReport} className="bg-secondary border-border text-foreground Montserrat font-bold rounded-lg sm:rounded-xl px-2 sm:px-4 text-[10px] sm:text-sm h-7 sm:h-9">
                   <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                   Report
@@ -621,6 +626,7 @@ const ProjectView = () => {
             <TabsTrigger value="overview" className="rounded-xl px-3 sm:px-6 py-1.5 sm:py-2 text-[11px] sm:text-sm Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Overview</TabsTrigger>
             <TabsTrigger value="tasks" className="rounded-xl px-3 sm:px-6 py-1.5 sm:py-2 text-[11px] sm:text-sm Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Tasks</TabsTrigger>
             <TabsTrigger value="team" className="rounded-xl px-3 sm:px-6 py-1.5 sm:py-2 text-[11px] sm:text-sm Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Team</TabsTrigger>
+            <TabsTrigger value="docs" className="rounded-xl px-3 sm:px-6 py-1.5 sm:py-2 text-[11px] sm:text-sm Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Docs</TabsTrigger>
             {user?.role !== 'CLIENT' && (
               <TabsTrigger value="chat" className="rounded-xl px-3 sm:px-6 py-1.5 sm:py-2 text-[11px] sm:text-sm Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Chat</TabsTrigger>
             )}
@@ -777,6 +783,42 @@ const ProjectView = () => {
             </TabsContent>
           )}
 
+          <TabsContent value="docs" className="mt-0 h-[calc(100%-1rem)]">
+            <div className="h-full min-h-[500px]">
+              {docView === 'list' && (
+                <DocumentList
+                  projectId={id}
+                  onNewDocument={() => {
+                    setSelectedDocId(null);
+                    setDocView('edit');
+                  }}
+                  onEditDocument={(docId) => {
+                    setSelectedDocId(docId);
+                    setDocView('edit');
+                  }}
+                  onViewDocument={(docId) => {
+                    setSelectedDocId(docId);
+                    setDocView('view');
+                  }}
+                />
+              )}
+              {docView === 'edit' && (
+                <DocumentEditor
+                  projectId={id}
+                  documentId={selectedDocId}
+                  onBack={() => setDocView(selectedDocId ? 'view' : 'list')}
+                  onSave={() => setDocView('list')}
+                />
+              )}
+              {docView === 'view' && (
+                <DocumentViewer
+                  documentId={selectedDocId}
+                  onBack={() => setDocView('list')}
+                  onEdit={() => setDocView('edit')}
+                />
+              )}
+            </div>
+          </TabsContent>
 
         </div>
       </Tabs>

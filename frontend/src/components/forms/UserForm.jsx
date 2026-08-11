@@ -43,7 +43,7 @@ const UserForm = ({ formData, setFormData, editingUser, onSubmit, onCancel, onSe
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               placeholder="john@example.com"
               required
-              disabled={!!editingUser}
+              disabled={!!editingUser && currentUser?.role !== 'ADMIN'}
               className="!pl-10 transition-all focus:ring-2 focus:ring-primary/20 mobile-reduce-input"
             />
           </div>

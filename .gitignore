@@ -41,3 +41,10 @@ yarn-error.log*
 # Misc
 .zencoder/
 .zenflow/
+
+# Backend and Temp
+backend/uploads/
+*.tmp*
+*.tmp
+backend/generated/tenant-client/*.tmp*
+seed-docs.js

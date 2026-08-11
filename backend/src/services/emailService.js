@@ -130,10 +130,13 @@ export const sendManagerTaskCreatedEmail = async (to, managerName, memberName, t
       from: DEFAULT_FROM, to,
       subject: `[TaskFlow] New Task Created by ${memberName}`,
       html: buildEmailTemplate({
-        greeting: `Hi ${managerName},`,
-        intro: `<strong>${memberName}</strong> has created a new task in <strong>${projectName}</strong>.`,
-        refLabel: 'Task Title',
+        actionSummary: `<strong>${memberName}</strong> has created a new task.`,
+        refLabel: `TaskFlow / ${projectName}`,
         refTitle: taskTitle,
+        bodyLines: [
+          `Hi ${managerName},`,
+          `<strong>${memberName}</strong> has created a new task in <strong>${projectName}</strong>.`
+        ],
         ctaUrl: `${getBaseUrl(baseUrl)}/task-board`,
         ctaLabel: 'View Task Board'
       }),

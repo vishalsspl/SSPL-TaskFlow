@@ -18,12 +18,12 @@ const RichTextEditor = ({ value, onChange, placeholder, onAttach }) => {
         if (!file) return;
 
         const isRestricted = user?.role === 'MEMBER';
-        const limit = isRestricted ? 500 * 1024 : 50 * 1024 * 1024;
+        const limit = isRestricted ? 500 * 1024 : 25 * 1024 * 1024;
 
         if (file.size > limit) {
             toast({ 
                 title: "File too large", 
-                description: isRestricted ? "Members can only upload files up to 500KB." : "Max limit is 50MB.", 
+                description: isRestricted ? "Members can only upload files up to 500KB." : "Max limit is 25MB.", 
                 variant: "destructive" 
             });
             return;

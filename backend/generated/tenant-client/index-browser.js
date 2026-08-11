@@ -356,6 +356,7 @@ exports.Prisma.DocumentScalarFieldEnum = {
   authorId: 'authorId',
   title: 'title',
   content: 'content',
+  attachments: 'attachments',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

@@ -329,6 +329,20 @@ export const updateUser = async (req, res) => {
     if (name !== undefined) updateData.name = name;
     if (role !== undefined) updateData.role = role;
 
+    if (email !== undefined && req.user.role === 'ADMIN') {
+      if (!/^\S+@\S+\.\S+$/.test(email)) {
+        return res.status(400).json({ error: 'Invalid email address format' });
+      }
+
+      // Check if email already in use in MAIN DB
+      const existingMainUser = await prisma.user.findUnique({ where: { email } });
+      if (existingMainUser && existingMainUser.id !== id) {
+        return res.status(400).json({ error: 'This email is already registered on the platform. Emails must be globally unique across all organizations.' });
+      }
+
+      updateData.email = email;
+    }
+
     if (managerId !== undefined) {
       if (managerId) {
         newManager = await db.user.findFirst({
@@ -369,6 +383,7 @@ export const updateUser = async (req, res) => {
       if (name !== undefined) mainUpdate.name = name;
       if (role !== undefined) mainUpdate.role = role;
       if (updateData.passwordHash) mainUpdate.passwordHash = updateData.passwordHash;
+      if (updateData.email) mainUpdate.email = updateData.email;
 
       if (Object.keys(mainUpdate).length > 0) {
         // We use upsert to ensure that if the user is missing from Main DB, they are recreated

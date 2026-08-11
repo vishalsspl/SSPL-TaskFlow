@@ -21381,6 +21381,7 @@ export namespace Prisma {
     authorId: number
     title: number
     content: number
+    attachments: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -21413,6 +21414,7 @@ export namespace Prisma {
     authorId?: true
     title?: true
     content?: true
+    attachments?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -21496,6 +21498,7 @@ export namespace Prisma {
     authorId: string
     title: string
     content: string
+    attachments: JsonValue
     createdAt: Date
     updatedAt: Date
     _count: DocumentCountAggregateOutputType | null
@@ -21523,6 +21526,7 @@ export namespace Prisma {
     authorId?: boolean
     title?: boolean
     content?: boolean
+    attachments?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     project?: boolean | ProjectDefaultArgs<ExtArgs>
@@ -21535,6 +21539,7 @@ export namespace Prisma {
     authorId?: boolean
     title?: boolean
     content?: boolean
+    attachments?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     project?: boolean | ProjectDefaultArgs<ExtArgs>
@@ -21547,6 +21552,7 @@ export namespace Prisma {
     authorId?: boolean
     title?: boolean
     content?: boolean
+    attachments?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -21572,6 +21578,7 @@ export namespace Prisma {
       authorId: string
       title: string
       content: string
+      attachments: Prisma.JsonValue
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["document"]>
@@ -21974,6 +21981,7 @@ export namespace Prisma {
     readonly authorId: FieldRef<"Document", 'String'>
     readonly title: FieldRef<"Document", 'String'>
     readonly content: FieldRef<"Document", 'String'>
+    readonly attachments: FieldRef<"Document", 'Json'>
     readonly createdAt: FieldRef<"Document", 'DateTime'>
     readonly updatedAt: FieldRef<"Document", 'DateTime'>
   }
@@ -22607,6 +22615,7 @@ export namespace Prisma {
     authorId: 'authorId',
     title: 'title',
     content: 'content',
+    attachments: 'attachments',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -24483,6 +24492,7 @@ export namespace Prisma {
     authorId?: StringFilter<"Document"> | string
     title?: StringFilter<"Document"> | string
     content?: StringFilter<"Document"> | string
+    attachments?: JsonFilter<"Document">
     createdAt?: DateTimeFilter<"Document"> | Date | string
     updatedAt?: DateTimeFilter<"Document"> | Date | string
     project?: XOR<ProjectRelationFilter, ProjectWhereInput>
@@ -24495,6 +24505,7 @@ export namespace Prisma {
     authorId?: SortOrder
     title?: SortOrder
     content?: SortOrder
+    attachments?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     project?: ProjectOrderByWithRelationInput
@@ -24510,6 +24521,7 @@ export namespace Prisma {
     authorId?: StringFilter<"Document"> | string
     title?: StringFilter<"Document"> | string
     content?: StringFilter<"Document"> | string
+    attachments?: JsonFilter<"Document">
     createdAt?: DateTimeFilter<"Document"> | Date | string
     updatedAt?: DateTimeFilter<"Document"> | Date | string
     project?: XOR<ProjectRelationFilter, ProjectWhereInput>
@@ -24522,6 +24534,7 @@ export namespace Prisma {
     authorId?: SortOrder
     title?: SortOrder
     content?: SortOrder
+    attachments?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: DocumentCountOrderByAggregateInput
@@ -24538,6 +24551,7 @@ export namespace Prisma {
     authorId?: StringWithAggregatesFilter<"Document"> | string
     title?: StringWithAggregatesFilter<"Document"> | string
     content?: StringWithAggregatesFilter<"Document"> | string
+    attachments?: JsonWithAggregatesFilter<"Document">
     createdAt?: DateTimeWithAggregatesFilter<"Document"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Document"> | Date | string
   }
@@ -26255,6 +26269,7 @@ export namespace Prisma {
     id?: string
     title: string
     content: string
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     project: ProjectCreateNestedOneWithoutDocumentsInput
@@ -26267,6 +26282,7 @@ export namespace Prisma {
     authorId: string
     title: string
     content: string
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -26275,6 +26291,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     project?: ProjectUpdateOneRequiredWithoutDocumentsNestedInput
@@ -26287,6 +26304,7 @@ export namespace Prisma {
     authorId?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -26297,6 +26315,7 @@ export namespace Prisma {
     authorId: string
     title: string
     content: string
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -26305,6 +26324,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -26315,6 +26335,7 @@ export namespace Prisma {
     authorId?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -27850,6 +27871,7 @@ export namespace Prisma {
     authorId?: SortOrder
     title?: SortOrder
     content?: SortOrder
+    attachments?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -31847,6 +31869,7 @@ export namespace Prisma {
     id?: string
     title: string
     content: string
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     project: ProjectCreateNestedOneWithoutDocumentsInput
@@ -31857,6 +31880,7 @@ export namespace Prisma {
     projectId: string
     title: string
     content: string
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -32370,6 +32394,7 @@ export namespace Prisma {
     authorId?: StringFilter<"Document"> | string
     title?: StringFilter<"Document"> | string
     content?: StringFilter<"Document"> | string
+    attachments?: JsonFilter<"Document">
     createdAt?: DateTimeFilter<"Document"> | Date | string
     updatedAt?: DateTimeFilter<"Document"> | Date | string
   }
@@ -32779,6 +32804,7 @@ export namespace Prisma {
     id?: string
     title: string
     content: string
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
     author: UserCreateNestedOneWithoutAuthoredDocumentsInput
@@ -32789,6 +32815,7 @@ export namespace Prisma {
     authorId: string
     title: string
     content: string
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -38379,6 +38406,7 @@ export namespace Prisma {
     projectId: string
     title: string
     content: string
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -38954,6 +38982,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     project?: ProjectUpdateOneRequiredWithoutDocumentsNestedInput
@@ -38964,6 +38993,7 @@ export namespace Prisma {
     projectId?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -38973,6 +39003,7 @@ export namespace Prisma {
     projectId?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -39044,6 +39075,7 @@ export namespace Prisma {
     authorId: string
     title: string
     content: string
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -39248,6 +39280,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     author?: UserUpdateOneRequiredWithoutAuthoredDocumentsNestedInput
@@ -39258,6 +39291,7 @@ export namespace Prisma {
     authorId?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -39267,6 +39301,7 @@ export namespace Prisma {
     authorId?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
+    attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

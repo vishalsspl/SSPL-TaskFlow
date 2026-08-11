@@ -486,8 +486,9 @@ model Document {
   projectId String
   authorId  String
 
-  title   String
-  content String @db.Text
+  title       String
+  content     String @db.Text
+  attachments Json   @default("[]")
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
   author  User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
