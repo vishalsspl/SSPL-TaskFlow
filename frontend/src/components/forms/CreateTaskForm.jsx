@@ -39,6 +39,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
     const [formData, setFormData] = useState({
         projectId: task ? (task.projectId || defaultGeneralId) : (initialProjectId || defaultGeneralId),
         phaseId: task?.phaseId || '',
+        parentId: task?.parentId || '',
         title: task?.title || '',
         description: task?.description || '',
         assigneeId: task?.assignees?.[0]?.userId || (user?.role === 'MEMBER' ? user.id : ''),
@@ -55,14 +56,30 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
     });
 
     const [phases, setPhases] = useState([]);
+    const [projectTasks, setProjectTasks] = useState([]);
     const [projectMemberIds, setProjectMemberIds] = useState([]);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (formData.projectId) {
             fetchPhases(formData.projectId);
+            fetchProjectTasks(formData.projectId);
+        } else {
+            setProjectTasks([]);
         }
     }, [formData.projectId]);
+
+    const fetchProjectTasks = async (projectId) => {
+        try {
+            const response = await api.get(`/tasks?projectId=${projectId}`);
+            const tasksData = response.data.data || response.data;
+            if (Array.isArray(tasksData)) {
+                setProjectTasks(tasksData.filter(t => t.id !== task?.id));
+            }
+        } catch (error) {
+            console.error('Failed to fetch project tasks:', error);
+        }
+    };
 
     const fetchPhases = async (projectId) => {
         if (!projectId) {
@@ -90,7 +107,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
     };
 
     const handleProjectChange = (projectId) => {
-        setFormData({ ...formData, projectId, phaseId: '' });
+        setFormData({ ...formData, projectId, phaseId: '', parentId: '' });
     };
 
     const handleSubmit = async (e) => {
@@ -102,8 +119,8 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
             return;
         }
 
-        if (trimmedTitle.length > 30) {
-            toast({ title: "Validation Error", description: "Task title cannot exceed 30 characters.", variant: "destructive" });
+        if (trimmedTitle.length > 50) {
+            toast({ title: "Validation Error", description: "Task title cannot exceed 50 characters.", variant: "destructive" });
             return;
         }
 
@@ -171,6 +188,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
             const payload = {
                 ...formData,
                 title: trimmedTitle,
+                parentId: formData.parentId || null,
                 tags: formData.tags ? (typeof formData.tags === 'string' ? formData.tags.split(',').map(t => t.trim()) : formData.tags) : [],
                 completionPercentage: Number(formData.completionPercentage),
                 assigneeIds: formData.assigneeId ? [formData.assigneeId] : [],
@@ -191,6 +209,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                 setFormData({
                     projectId: initialProjectId || defaultGeneralId,
                     phaseId: '',
+                    parentId: '',
                     title: '',
                     description: '',
                     assigneeId: user?.role === 'MEMBER' ? user.id : '',
@@ -298,7 +317,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                         <Zap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70 z-10" />
                         <SearchableSelect
                             value={formData.type}
-                            onChange={(value) => setFormData({ ...formData, type: value })}
+                            onChange={(value) => setFormData({ ...formData, type: value, parentId: '' })}
                             options={[
                                 { label: 'Task', value: 'TASK', icon: <CheckSquare className="w-4 h-4 text-blue-500" /> },
                                 { label: 'Bug', value: 'BUG', icon: <Bug className="w-4 h-4 text-red-500" /> },
@@ -307,6 +326,37 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                                 { label: 'Subtask', value: 'SUBTASK', icon: <GitBranch className="w-4 h-4 text-cyan-500" /> }
                             ]}
                             placeholder="Select Type"
+                            className="!pl-10 relative mobile-reduce-input"
+                        />
+                    </div>
+                </div>
+
+                {/* Parent Task */}
+                <div className="space-y-2">
+                    <Label htmlFor="parentTask" className="text-foreground/90 font-semibold mobile-reduce-label">Parent Task</Label>
+                    <div className="relative">
+                        <GitBranch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70 z-10" />
+                        <SearchableSelect
+                            value={formData.parentId}
+                            onChange={(value) => setFormData({ ...formData, parentId: value })}
+                            options={[
+                                { label: 'None', value: '' },
+                                ...projectTasks
+                                    .filter(t => {
+                                        if (formData.type === 'EPIC') return false; // Epics don't usually have parents
+                                        if (formData.type === 'STORY') return t.type === 'EPIC';
+                                        if (formData.type === 'TASK' || formData.type === 'BUG') return t.type === 'EPIC' || t.type === 'STORY';
+                                        if (formData.type === 'SUBTASK') return t.type !== 'SUBTASK'; // Subtasks can belong to anything except other subtasks
+                                        return true;
+                                    })
+                                    .map(t => ({ 
+                                        label: `${t.shortId ? t.shortId + ': ' : ''}${t.title}`, 
+                                        value: t.id,
+                                        sublabel: t.type
+                                    }))
+                            ]}
+                            placeholder={formData.type === 'EPIC' ? 'Epics are top-level (No parent)' : 'Select Parent Task (Optional)'}
+                            disabled={formData.type === 'EPIC'}
                             className="!pl-10 relative mobile-reduce-input"
                         />
                     </div>

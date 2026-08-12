@@ -149,6 +149,32 @@ export const sendManagerTaskCreatedEmail = async (to, managerName, memberName, t
   }
 };
 
+export const sendDocumentUploadedEmail = async (to, userName, documentTitle, projectName, uploaderName, baseUrl) => {
+  try {
+    if (!to) return null;
+    const info = await transporter.sendMail({
+      from: DEFAULT_FROM, to,
+      subject: `[TaskFlow] New Document: ${documentTitle}`,
+      html: buildEmailTemplate({
+        actionSummary: `<strong>${uploaderName}</strong> has uploaded a new document.`,
+        refLabel: `TaskFlow / ${projectName}`,
+        refTitle: documentTitle,
+        bodyLines: [
+          `Hi ${userName},`,
+          `A new document has been added to <strong>${projectName}</strong> by <strong>${uploaderName}</strong>.`
+        ],
+        ctaUrl: `${getBaseUrl(baseUrl)}/projects`, // You can also link specifically to the project tab if available
+        ctaLabel: 'View Documents'
+      }),
+    });
+    console.log(`[EmailService] Document Uploaded Email sent to ${to}: ${info.messageId}`);
+    return info;
+  } catch (error) {
+    console.error(`[EmailService] Error sending document uploaded email to ${to}:`, error);
+    return null;
+  }
+};
+
 export const sendTaskAssignmentEmail = async (to, taskTitle, projectName, assignedByName, { priority, dueDate, status, description, baseUrl } = {}) => {
   try {
     if (!to) return null;

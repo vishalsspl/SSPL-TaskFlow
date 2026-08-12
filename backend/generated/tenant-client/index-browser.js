@@ -215,6 +215,7 @@ exports.Prisma.TaskScalarFieldEnum = {
   rejectionReason: 'rejectionReason',
   priority: 'priority',
   type: 'type',
+  parentId: 'parentId',
   completionPercentage: 'completionPercentage',
   storyPoints: 'storyPoints',
   completedAt: 'completedAt',

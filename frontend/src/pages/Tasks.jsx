@@ -753,7 +753,7 @@ const Tasks = () => {
                               </p>
   
                               {/* Styled Custom Tooltip */}
-                              {task.description && (
+                              {task.description && user?.role !== 'CLIENT' && (
                                 <div className={cn(
                                   "absolute left-6 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 translate-y-1 pointer-events-none transition-all duration-300 z-[100] invisible group-hover:visible",
                                   index === 0 ? "top-full mt-2" : "bottom-full mb-2"

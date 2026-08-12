@@ -175,6 +175,7 @@ const Timesheets = () => {
     const [attendanceSummary, setAttendanceSummary] = useState([]);
     const [projects, setProjects] = useState([]);
     const [tasks, setTasks] = useState([]);
+    const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isLogDialogOpen, setIsLogDialogOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -187,13 +188,6 @@ const Timesheets = () => {
     const [selectedProjectFilter, setSelectedProjectFilter] = useState('all');
 
     const isOrgAdmin = user?.role === 'ADMIN' || user?.role === 'SUPERADMIN';
-    const uniqueUsers = useMemo(() => {
-        const usersMap = new Map();
-        entries.forEach(e => {
-            if (e.user && e.user.id) usersMap.set(e.user.id, e.user);
-        });
-        return Array.from(usersMap.values());
-    }, [entries]);
 
     const [orgShiftSettings, setOrgShiftSettings] = useState({
         startTime: '10:00 AM',
@@ -314,13 +308,24 @@ const Timesheets = () => {
         }
     }, [user?.id, user?.role]);
 
+    const fetchUsers = useCallback(async () => {
+        if (!isOrgAdmin && user?.role !== 'MANAGER') return;
+        try {
+            const response = await api.get('/users', { params: { teamOnly: 'true' } });
+            setUsers(response.data.filter(u => u.role !== 'CLIENT'));
+        } catch (error) {
+            console.error('Failed to fetch users:', error);
+        }
+    }, [isOrgAdmin, user?.role]);
+
     useEffect(() => {
         setHeader("Timesheets", "Log and track your project hours");
         fetchEntries();
         fetchPendingLeaves();
         fetchProjects();
         fetchOrgShift();
-    }, [setHeader, fetchEntries, fetchPendingLeaves, fetchProjects, fetchOrgShift]);
+        fetchUsers();
+    }, [setHeader, fetchEntries, fetchPendingLeaves, fetchProjects, fetchOrgShift, fetchUsers]);
 
     useEffect(() => {
         if (prevIsTimerRunning.current && !isTimerRunning) {
@@ -338,12 +343,13 @@ const Timesheets = () => {
         setDateRange({ from: addDays(dateRange.from, shift), to: dateRange.to ? addDays(dateRange.to, shift) : undefined });
     };
     const handleToday = () => {
-        setDateRange({ from: addDays(new Date(), -6), to: new Date() });
-        setSelectedDateFilter(new Date());
-    };
-    const handleReset = () => {
-        setDateRange({ from: addDays(new Date(), -6), to: new Date() });
-        setSelectedDateFilter(new Date());
+        const now = new Date();
+        if (!dateRange?.to || !isSameDay(dateRange.to, now)) {
+            setDateRange({ from: addDays(now, -6), to: now });
+        }
+        if (!selectedDateFilter || !isSameDay(selectedDateFilter, now)) {
+            setSelectedDateFilter(now);
+        }
     };
 
     const handleLogHours = async () => {
@@ -777,7 +783,7 @@ const Timesheets = () => {
                                 </SelectTrigger>
                                 <SelectContent className="rounded-xl border-border bg-card">
                                     <SelectItem value="all" className="font-bold cursor-pointer rounded-lg">All Members</SelectItem>
-                                    {uniqueUsers.map(u => (
+                                    {users.map(u => (
                                         <SelectItem key={u.id} value={u.id} className="font-bold cursor-pointer rounded-lg">
                                             {u.name}
                                         </SelectItem>
@@ -797,9 +803,6 @@ const Timesheets = () => {
                         </Button>
                         <Button variant="outline" size="icon" onClick={handleNextRange} className="rounded-lg h-9 w-9 shrink-0">
                             <ChevronRight className="h-4 w-4" />
-                        </Button>
-                        <Button variant="outline" size="icon" onClick={handleReset} title="Reset to Current Week" className="rounded-lg h-9 w-9 shrink-0 text-muted-foreground hover:text-primary hover:bg-primary/10">
-                            <RotateCcw className="h-4 w-4" />
                         </Button>
                     </div>
                     <Popover>
@@ -1031,7 +1034,7 @@ const Timesheets = () => {
                                 <CardTitle className="text-lg font-black Montserrat">
                                     {selectedMemberFilter === 'all' 
                                         ? 'All Team Logs' 
-                                        : `Logs for ${uniqueUsers.find(u => u.id === selectedMemberFilter)?.name || 'Member'}`}
+                                        : `Logs for ${users.find(u => u.id === selectedMemberFilter)?.name || 'Member'}`}
                                     {selectedDateFilter && ` - ${format(selectedDateFilter, 'MMM d, yyyy')}`}
                                 </CardTitle>
                                 <CardDescription className="text-xs font-medium">Review, approve, or reject time logs from your team</CardDescription>

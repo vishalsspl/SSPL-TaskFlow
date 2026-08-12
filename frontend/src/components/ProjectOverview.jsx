@@ -247,33 +247,35 @@ const ProjectOverview = ({ projectId }) => {
                 </Card>
 
                 {/* Upcoming Deadlines */}
-                <Card className="w-full overflow-hidden">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-lg">Upcoming Deadlines</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="space-y-2">
-                            {upcomingDeadlines.slice(0, 3).map((task) => (
-                                <div key={task.id} className="flex items-center justify-between p-2 bg-muted rounded text-sm">
-                                    <div className="truncate mr-2">
-                                        <p className="font-medium truncate">{task.title}</p>
-                                        <p className="text-xs text-muted-foreground">{task.assignees?.map(a => a.user?.name).join(', ') || 'Unassigned'}</p>
+                {(user?.activeFeatures?.tasks ?? user?.organization?.activeFeatures?.tasks) !== false && (
+                    <Card className="w-full overflow-hidden">
+                        <CardHeader className="pb-2">
+                            <CardTitle className="text-lg">Upcoming Deadlines</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-2">
+                                {upcomingDeadlines.slice(0, 3).map((task) => (
+                                    <div key={task.id} className="flex items-center justify-between p-2 bg-muted rounded text-sm">
+                                        <div className="truncate mr-2">
+                                            <p className="font-medium truncate">{task.title}</p>
+                                            <p className="text-xs text-muted-foreground">{task.assignees?.map(a => a.user?.name).join(', ') || 'Unassigned'}</p>
+                                        </div>
+                                        <div className="whitespace-nowrap">
+                                            <span className="text-blue-600 font-medium">{task.daysUntilDue} days</span>
+                                        </div>
                                     </div>
-                                    <div className="whitespace-nowrap">
-                                        <span className="text-blue-600 font-medium">{task.daysUntilDue} days</span>
-                                    </div>
-                                </div>
-                            ))}
-                            {upcomingDeadlines.length === 0 && (
-                                <p className="text-center text-muted-foreground py-4 text-sm">No upcoming deadlines</p>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
+                                ))}
+                                {upcomingDeadlines.length === 0 && (
+                                    <p className="text-center text-muted-foreground py-4 text-sm">No upcoming deadlines</p>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
             </div>
 
             {/* Overdue Tasks Table */}
-            {overdueTasks.length > 0 && (
+            {(user?.activeFeatures?.tasks ?? user?.organization?.activeFeatures?.tasks) !== false && overdueTasks.length > 0 && (
                 <Card className="mt-2 sm:mt-6 w-full overflow-hidden block">
                     <CardHeader className="pb-1 sm:pb-2 pt-3 sm:pt-6">
                         <CardTitle className="text-sm sm:text-lg text-red-600">Overdue Tasks</CardTitle>

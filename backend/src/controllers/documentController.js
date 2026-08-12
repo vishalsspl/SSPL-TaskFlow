@@ -1,4 +1,5 @@
-
+import { createNotification } from '../utils/notifications.js';
+import { sendDocumentUploadedEmail } from '../services/emailService.js';
 
 export const getDocuments = async (req, res) => {
   const { projectId } = req.params;
@@ -64,6 +65,63 @@ export const createDocument = async (req, res) => {
         authorId
       }
     });
+
+    try {
+      await prisma.activityLog.create({
+        data: {
+          userId: authorId,
+          organizationId: req.user.organizationId,
+          projectId,
+          action: 'DOCUMENT_UPLOADED',
+          entity: 'document',
+          entityId: document.id,
+          details: { documentTitle: title },
+        },
+      });
+    } catch (logErr) {
+      console.error('Failed to log document upload activity:', logErr);
+    }
+
+    try {
+      const project = await prisma.project.findUnique({
+        where: { id: projectId },
+        include: { workloads: { include: { user: true } } }
+      });
+      
+      const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
+      const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
+      const uploaderName = req.user.name;
+
+      if (project && project.workloads) {
+        for (const workload of project.workloads) {
+          if (workload.userId !== authorId) {
+            // Send in-app notification
+            createNotification(req, {
+              userId: workload.userId,
+              title: 'New Document Uploaded',
+              message: `A new document "${title}" has been uploaded to project: ${project.name}`,
+              type: 'DOCUMENT_UPLOADED',
+              link: `/projects/${projectId}?tab=docs`
+            });
+
+            // Send email notification if supported
+            if (hasEmailSupport && workload.user?.email) {
+              sendDocumentUploadedEmail(
+                workload.user.email,
+                workload.user.name,
+                title,
+                project.name,
+                uploaderName,
+                origin
+              ).catch(err => console.error('Failed to send document uploaded email:', err));
+            }
+          }
+        }
+      }
+    } catch (notifErr) {
+      console.error('Failed to send document upload notifications:', notifErr);
+    }
+
     res.status(201).json(document);
   } catch (error) {
     console.error('Error creating document:', error);
@@ -76,6 +134,20 @@ export const updateDocument = async (req, res) => {
   const { title, content, attachments } = req.body;
   const prisma = req.db;
   try {
+    const doc = await prisma.document.findUnique({
+      where: { id },
+      include: { project: true }
+    });
+    if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+    const isAuthor = doc.authorId === req.user.id;
+    const isProjectManager = doc.project?.managerId === req.user.id;
+    const isAdmin = req.user.role === 'ADMIN' || req.user.role === 'SUPERADMIN';
+
+    if (!isAuthor && !isProjectManager && !isAdmin) {
+      return res.status(403).json({ error: 'You do not have permission to edit this document' });
+    }
+
     const document = await prisma.document.update({
       where: { id },
       data: { title, content, attachments: attachments || [] }
@@ -91,6 +163,20 @@ export const deleteDocument = async (req, res) => {
   const { id } = req.params;
   const prisma = req.db;
   try {
+    const doc = await prisma.document.findUnique({
+      where: { id },
+      include: { project: true }
+    });
+    if (!doc) return res.status(404).json({ error: 'Document not found' });
+
+    const isAuthor = doc.authorId === req.user.id;
+    const isProjectManager = doc.project?.managerId === req.user.id;
+    const isAdmin = req.user.role === 'ADMIN' || req.user.role === 'SUPERADMIN';
+
+    if (!isAuthor && !isProjectManager && !isAdmin) {
+      return res.status(403).json({ error: 'You do not have permission to delete this document' });
+    }
+
     await prisma.document.delete({ where: { id } });
     res.json({ message: 'Document deleted successfully' });
   } catch (error) {

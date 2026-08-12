@@ -95,3 +95,7 @@ The table `public.Attendance` does not exist in the current database.
     at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
     at async Promise.all (index 1)
     at async getTimeEntries (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/timesheetController.js:110:42)
+authController invite - req.db exists? true
+authController invite - req.db === prisma? false
+Entering req.db.user.create
+Successfully created user in tenant DB

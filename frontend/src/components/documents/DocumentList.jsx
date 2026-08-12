@@ -8,9 +8,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { formatDistanceToNow } from 'date-fns';
 import api from '@/lib/api';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import useAuthStore from '@/store/useAuthStore';
 
-export default function DocumentList({ projectId, onNewDocument, onEditDocument, onViewDocument }) {
+export default function DocumentList({ projectId, onNewDocument, onEditDocument, onViewDocument, projectManagerId }) {
   const { toast } = useToast();
+  const { user } = useAuthStore();
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -96,23 +98,25 @@ export default function DocumentList({ projectId, onNewDocument, onEditDocument,
                     </CardDescription>
                   </div>
                 </div>
-                <div onClick={(e) => e.stopPropagation()}>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-40 rounded-xl">
-                      <DropdownMenuItem onClick={() => onEditDocument(doc.id)} className="cursor-pointer">
-                        <Edit2 className="mr-2 h-4 w-4" /> Edit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setDeleteId(doc.id)} className="cursor-pointer text-destructive focus:text-destructive">
-                        <Trash2 className="mr-2 h-4 w-4" /> Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+                {(user?.role === 'ADMIN' || user?.role === 'SUPERADMIN' || user?.id === projectManagerId || user?.id === doc.author?.id) && (
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-40 rounded-xl">
+                        <DropdownMenuItem onClick={() => onEditDocument(doc.id)} className="cursor-pointer">
+                          <Edit2 className="mr-2 h-4 w-4" /> Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setDeleteId(doc.id)} className="cursor-pointer text-destructive focus:text-destructive">
+                          <Trash2 className="mr-2 h-4 w-4" /> Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                )}
               </CardHeader>
               <CardContent>
                 <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-4 border-t border-border/50">

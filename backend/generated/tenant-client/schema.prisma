@@ -185,6 +185,11 @@ model Task {
   priority        Priority   @default(MEDIUM)
   type            TaskType   @default(TASK)
 
+  // Hierarchy relations
+  parentId String?
+  parent   Task?   @relation("TaskHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children Task[]  @relation("TaskHierarchy")
+
   completionPercentage Int       @default(0)
   storyPoints          Int?
   completedAt          DateTime?

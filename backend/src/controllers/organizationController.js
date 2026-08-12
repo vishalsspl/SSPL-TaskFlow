@@ -486,7 +486,7 @@ export const updateOrgPermissions = async (req, res) => {
 
         // 1. Update Main DB (so it's centrally tracked if needed)
         await ensureOrganizationSchema(prisma);
-        await prisma.organization.update({
+        const updated = await prisma.organization.update({
             where: { id: organizationId },
             data: updateData
         });

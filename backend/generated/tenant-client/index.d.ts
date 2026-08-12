@@ -2819,6 +2819,7 @@ export namespace Prisma {
    */
 
   export type TaskCountOutputType = {
+    children: number
     assignees: number
     workLogs: number
     timeEntries: number
@@ -2826,6 +2827,7 @@ export namespace Prisma {
   }
 
   export type TaskCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    children?: boolean | TaskCountOutputTypeCountChildrenArgs
     assignees?: boolean | TaskCountOutputTypeCountAssigneesArgs
     workLogs?: boolean | TaskCountOutputTypeCountWorkLogsArgs
     timeEntries?: boolean | TaskCountOutputTypeCountTimeEntriesArgs
@@ -2841,6 +2843,13 @@ export namespace Prisma {
      * Select specific fields to fetch from the TaskCountOutputType
      */
     select?: TaskCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * TaskCountOutputType without action
+   */
+  export type TaskCountOutputTypeCountChildrenArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TaskWhereInput
   }
 
   /**
@@ -8223,6 +8232,7 @@ export namespace Prisma {
     rejectionReason: string | null
     priority: $Enums.Priority | null
     type: $Enums.TaskType | null
+    parentId: string | null
     completionPercentage: number | null
     storyPoints: number | null
     completedAt: Date | null
@@ -8243,6 +8253,7 @@ export namespace Prisma {
     rejectionReason: string | null
     priority: $Enums.Priority | null
     type: $Enums.TaskType | null
+    parentId: string | null
     completionPercentage: number | null
     storyPoints: number | null
     completedAt: Date | null
@@ -8263,6 +8274,7 @@ export namespace Prisma {
     rejectionReason: number
     priority: number
     type: number
+    parentId: number
     completionPercentage: number
     storyPoints: number
     completedAt: number
@@ -8299,6 +8311,7 @@ export namespace Prisma {
     rejectionReason?: true
     priority?: true
     type?: true
+    parentId?: true
     completionPercentage?: true
     storyPoints?: true
     completedAt?: true
@@ -8319,6 +8332,7 @@ export namespace Prisma {
     rejectionReason?: true
     priority?: true
     type?: true
+    parentId?: true
     completionPercentage?: true
     storyPoints?: true
     completedAt?: true
@@ -8339,6 +8353,7 @@ export namespace Prisma {
     rejectionReason?: true
     priority?: true
     type?: true
+    parentId?: true
     completionPercentage?: true
     storyPoints?: true
     completedAt?: true
@@ -8448,6 +8463,7 @@ export namespace Prisma {
     rejectionReason: string | null
     priority: $Enums.Priority
     type: $Enums.TaskType
+    parentId: string | null
     completionPercentage: number
     storyPoints: number | null
     completedAt: Date | null
@@ -8489,6 +8505,7 @@ export namespace Prisma {
     rejectionReason?: boolean
     priority?: boolean
     type?: boolean
+    parentId?: boolean
     completionPercentage?: boolean
     storyPoints?: boolean
     completedAt?: boolean
@@ -8499,6 +8516,8 @@ export namespace Prisma {
     updatedAt?: boolean
     project?: boolean | ProjectDefaultArgs<ExtArgs>
     phase?: boolean | Task$phaseArgs<ExtArgs>
+    parent?: boolean | Task$parentArgs<ExtArgs>
+    children?: boolean | Task$childrenArgs<ExtArgs>
     assignees?: boolean | Task$assigneesArgs<ExtArgs>
     workLogs?: boolean | Task$workLogsArgs<ExtArgs>
     timeEntries?: boolean | Task$timeEntriesArgs<ExtArgs>
@@ -8518,6 +8537,7 @@ export namespace Prisma {
     rejectionReason?: boolean
     priority?: boolean
     type?: boolean
+    parentId?: boolean
     completionPercentage?: boolean
     storyPoints?: boolean
     completedAt?: boolean
@@ -8528,6 +8548,7 @@ export namespace Prisma {
     updatedAt?: boolean
     project?: boolean | ProjectDefaultArgs<ExtArgs>
     phase?: boolean | Task$phaseArgs<ExtArgs>
+    parent?: boolean | Task$parentArgs<ExtArgs>
   }, ExtArgs["result"]["task"]>
 
   export type TaskSelectScalar = {
@@ -8542,6 +8563,7 @@ export namespace Prisma {
     rejectionReason?: boolean
     priority?: boolean
     type?: boolean
+    parentId?: boolean
     completionPercentage?: boolean
     storyPoints?: boolean
     completedAt?: boolean
@@ -8555,6 +8577,8 @@ export namespace Prisma {
   export type TaskInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     project?: boolean | ProjectDefaultArgs<ExtArgs>
     phase?: boolean | Task$phaseArgs<ExtArgs>
+    parent?: boolean | Task$parentArgs<ExtArgs>
+    children?: boolean | Task$childrenArgs<ExtArgs>
     assignees?: boolean | Task$assigneesArgs<ExtArgs>
     workLogs?: boolean | Task$workLogsArgs<ExtArgs>
     timeEntries?: boolean | Task$timeEntriesArgs<ExtArgs>
@@ -8564,6 +8588,7 @@ export namespace Prisma {
   export type TaskIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     project?: boolean | ProjectDefaultArgs<ExtArgs>
     phase?: boolean | Task$phaseArgs<ExtArgs>
+    parent?: boolean | Task$parentArgs<ExtArgs>
   }
 
   export type $TaskPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -8571,6 +8596,8 @@ export namespace Prisma {
     objects: {
       project: Prisma.$ProjectPayload<ExtArgs>
       phase: Prisma.$PhasePayload<ExtArgs> | null
+      parent: Prisma.$TaskPayload<ExtArgs> | null
+      children: Prisma.$TaskPayload<ExtArgs>[]
       assignees: Prisma.$TaskAssigneePayload<ExtArgs>[]
       workLogs: Prisma.$WorkLogPayload<ExtArgs>[]
       timeEntries: Prisma.$TimeEntryPayload<ExtArgs>[]
@@ -8588,6 +8615,7 @@ export namespace Prisma {
       rejectionReason: string | null
       priority: $Enums.Priority
       type: $Enums.TaskType
+      parentId: string | null
       completionPercentage: number
       storyPoints: number | null
       completedAt: Date | null
@@ -8962,6 +8990,8 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     project<T extends ProjectDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProjectDefaultArgs<ExtArgs>>): Prisma__ProjectClient<$Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     phase<T extends Task$phaseArgs<ExtArgs> = {}>(args?: Subset<T, Task$phaseArgs<ExtArgs>>): Prisma__PhaseClient<$Result.GetResult<Prisma.$PhasePayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    parent<T extends Task$parentArgs<ExtArgs> = {}>(args?: Subset<T, Task$parentArgs<ExtArgs>>): Prisma__TaskClient<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    children<T extends Task$childrenArgs<ExtArgs> = {}>(args?: Subset<T, Task$childrenArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findMany"> | Null>
     assignees<T extends Task$assigneesArgs<ExtArgs> = {}>(args?: Subset<T, Task$assigneesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskAssigneePayload<ExtArgs>, T, "findMany"> | Null>
     workLogs<T extends Task$workLogsArgs<ExtArgs> = {}>(args?: Subset<T, Task$workLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkLogPayload<ExtArgs>, T, "findMany"> | Null>
     timeEntries<T extends Task$timeEntriesArgs<ExtArgs> = {}>(args?: Subset<T, Task$timeEntriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TimeEntryPayload<ExtArgs>, T, "findMany"> | Null>
@@ -9006,6 +9036,7 @@ export namespace Prisma {
     readonly rejectionReason: FieldRef<"Task", 'String'>
     readonly priority: FieldRef<"Task", 'Priority'>
     readonly type: FieldRef<"Task", 'TaskType'>
+    readonly parentId: FieldRef<"Task", 'String'>
     readonly completionPercentage: FieldRef<"Task", 'Int'>
     readonly storyPoints: FieldRef<"Task", 'Int'>
     readonly completedAt: FieldRef<"Task", 'DateTime'>
@@ -9344,6 +9375,41 @@ export namespace Prisma {
      */
     include?: PhaseInclude<ExtArgs> | null
     where?: PhaseWhereInput
+  }
+
+  /**
+   * Task.parent
+   */
+  export type Task$parentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Task
+     */
+    select?: TaskSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskInclude<ExtArgs> | null
+    where?: TaskWhereInput
+  }
+
+  /**
+   * Task.children
+   */
+  export type Task$childrenArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Task
+     */
+    select?: TaskSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskInclude<ExtArgs> | null
+    where?: TaskWhereInput
+    orderBy?: TaskOrderByWithRelationInput | TaskOrderByWithRelationInput[]
+    cursor?: TaskWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TaskScalarFieldEnum | TaskScalarFieldEnum[]
   }
 
   /**
@@ -22435,6 +22501,7 @@ export namespace Prisma {
     rejectionReason: 'rejectionReason',
     priority: 'priority',
     type: 'type',
+    parentId: 'parentId',
     completionPercentage: 'completionPercentage',
     storyPoints: 'storyPoints',
     completedAt: 'completedAt',
@@ -23489,6 +23556,7 @@ export namespace Prisma {
     rejectionReason?: StringNullableFilter<"Task"> | string | null
     priority?: EnumPriorityFilter<"Task"> | $Enums.Priority
     type?: EnumTaskTypeFilter<"Task"> | $Enums.TaskType
+    parentId?: StringNullableFilter<"Task"> | string | null
     completionPercentage?: IntFilter<"Task"> | number
     storyPoints?: IntNullableFilter<"Task"> | number | null
     completedAt?: DateTimeNullableFilter<"Task"> | Date | string | null
@@ -23499,6 +23567,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Task"> | Date | string
     project?: XOR<ProjectRelationFilter, ProjectWhereInput>
     phase?: XOR<PhaseNullableRelationFilter, PhaseWhereInput> | null
+    parent?: XOR<TaskNullableRelationFilter, TaskWhereInput> | null
+    children?: TaskListRelationFilter
     assignees?: TaskAssigneeListRelationFilter
     workLogs?: WorkLogListRelationFilter
     timeEntries?: TimeEntryListRelationFilter
@@ -23517,6 +23587,7 @@ export namespace Prisma {
     rejectionReason?: SortOrderInput | SortOrder
     priority?: SortOrder
     type?: SortOrder
+    parentId?: SortOrderInput | SortOrder
     completionPercentage?: SortOrder
     storyPoints?: SortOrderInput | SortOrder
     completedAt?: SortOrderInput | SortOrder
@@ -23527,6 +23598,8 @@ export namespace Prisma {
     updatedAt?: SortOrder
     project?: ProjectOrderByWithRelationInput
     phase?: PhaseOrderByWithRelationInput
+    parent?: TaskOrderByWithRelationInput
+    children?: TaskOrderByRelationAggregateInput
     assignees?: TaskAssigneeOrderByRelationAggregateInput
     workLogs?: WorkLogOrderByRelationAggregateInput
     timeEntries?: TimeEntryOrderByRelationAggregateInput
@@ -23548,6 +23621,7 @@ export namespace Prisma {
     rejectionReason?: StringNullableFilter<"Task"> | string | null
     priority?: EnumPriorityFilter<"Task"> | $Enums.Priority
     type?: EnumTaskTypeFilter<"Task"> | $Enums.TaskType
+    parentId?: StringNullableFilter<"Task"> | string | null
     completionPercentage?: IntFilter<"Task"> | number
     storyPoints?: IntNullableFilter<"Task"> | number | null
     completedAt?: DateTimeNullableFilter<"Task"> | Date | string | null
@@ -23558,6 +23632,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Task"> | Date | string
     project?: XOR<ProjectRelationFilter, ProjectWhereInput>
     phase?: XOR<PhaseNullableRelationFilter, PhaseWhereInput> | null
+    parent?: XOR<TaskNullableRelationFilter, TaskWhereInput> | null
+    children?: TaskListRelationFilter
     assignees?: TaskAssigneeListRelationFilter
     workLogs?: WorkLogListRelationFilter
     timeEntries?: TimeEntryListRelationFilter
@@ -23576,6 +23652,7 @@ export namespace Prisma {
     rejectionReason?: SortOrderInput | SortOrder
     priority?: SortOrder
     type?: SortOrder
+    parentId?: SortOrderInput | SortOrder
     completionPercentage?: SortOrder
     storyPoints?: SortOrderInput | SortOrder
     completedAt?: SortOrderInput | SortOrder
@@ -23606,6 +23683,7 @@ export namespace Prisma {
     rejectionReason?: StringNullableWithAggregatesFilter<"Task"> | string | null
     priority?: EnumPriorityWithAggregatesFilter<"Task"> | $Enums.Priority
     type?: EnumTaskTypeWithAggregatesFilter<"Task"> | $Enums.TaskType
+    parentId?: StringNullableWithAggregatesFilter<"Task"> | string | null
     completionPercentage?: IntWithAggregatesFilter<"Task"> | number
     storyPoints?: IntNullableWithAggregatesFilter<"Task"> | number | null
     completedAt?: DateTimeNullableWithAggregatesFilter<"Task"> | Date | string | null
@@ -25261,6 +25339,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     project: ProjectCreateNestedOneWithoutTasksInput
     phase?: PhaseCreateNestedOneWithoutTasksInput
+    parent?: TaskCreateNestedOneWithoutChildrenInput
+    children?: TaskCreateNestedManyWithoutParentInput
     assignees?: TaskAssigneeCreateNestedManyWithoutTaskInput
     workLogs?: WorkLogCreateNestedManyWithoutTaskInput
     timeEntries?: TimeEntryCreateNestedManyWithoutTaskInput
@@ -25279,6 +25359,7 @@ export namespace Prisma {
     rejectionReason?: string | null
     priority?: $Enums.Priority
     type?: $Enums.TaskType
+    parentId?: string | null
     completionPercentage?: number
     storyPoints?: number | null
     completedAt?: Date | string | null
@@ -25287,6 +25368,7 @@ export namespace Prisma {
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    children?: TaskUncheckedCreateNestedManyWithoutParentInput
     assignees?: TaskAssigneeUncheckedCreateNestedManyWithoutTaskInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutTaskInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutTaskInput
@@ -25313,6 +25395,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     project?: ProjectUpdateOneRequiredWithoutTasksNestedInput
     phase?: PhaseUpdateOneWithoutTasksNestedInput
+    parent?: TaskUpdateOneWithoutChildrenNestedInput
+    children?: TaskUpdateManyWithoutParentNestedInput
     assignees?: TaskAssigneeUpdateManyWithoutTaskNestedInput
     workLogs?: WorkLogUpdateManyWithoutTaskNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutTaskNestedInput
@@ -25331,6 +25415,7 @@ export namespace Prisma {
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -25339,6 +25424,7 @@ export namespace Prisma {
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    children?: TaskUncheckedUpdateManyWithoutParentNestedInput
     assignees?: TaskAssigneeUncheckedUpdateManyWithoutTaskNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutTaskNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutTaskNestedInput
@@ -25357,6 +25443,7 @@ export namespace Prisma {
     rejectionReason?: string | null
     priority?: $Enums.Priority
     type?: $Enums.TaskType
+    parentId?: string | null
     completionPercentage?: number
     storyPoints?: number | null
     completedAt?: Date | string | null
@@ -25399,6 +25486,7 @@ export namespace Prisma {
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -27236,6 +27324,11 @@ export namespace Prisma {
     isNot?: PhaseWhereInput | null
   }
 
+  export type TaskNullableRelationFilter = {
+    is?: TaskWhereInput | null
+    isNot?: TaskWhereInput | null
+  }
+
   export type TaskCountOrderByAggregateInput = {
     id?: SortOrder
     projectId?: SortOrder
@@ -27248,6 +27341,7 @@ export namespace Prisma {
     rejectionReason?: SortOrder
     priority?: SortOrder
     type?: SortOrder
+    parentId?: SortOrder
     completionPercentage?: SortOrder
     storyPoints?: SortOrder
     completedAt?: SortOrder
@@ -27276,6 +27370,7 @@ export namespace Prisma {
     rejectionReason?: SortOrder
     priority?: SortOrder
     type?: SortOrder
+    parentId?: SortOrder
     completionPercentage?: SortOrder
     storyPoints?: SortOrder
     completedAt?: SortOrder
@@ -27296,6 +27391,7 @@ export namespace Prisma {
     rejectionReason?: SortOrder
     priority?: SortOrder
     type?: SortOrder
+    parentId?: SortOrder
     completionPercentage?: SortOrder
     storyPoints?: SortOrder
     completedAt?: SortOrder
@@ -29378,6 +29474,19 @@ export namespace Prisma {
     connect?: PhaseWhereUniqueInput
   }
 
+  export type TaskCreateNestedOneWithoutChildrenInput = {
+    create?: XOR<TaskCreateWithoutChildrenInput, TaskUncheckedCreateWithoutChildrenInput>
+    connectOrCreate?: TaskCreateOrConnectWithoutChildrenInput
+    connect?: TaskWhereUniqueInput
+  }
+
+  export type TaskCreateNestedManyWithoutParentInput = {
+    create?: XOR<TaskCreateWithoutParentInput, TaskUncheckedCreateWithoutParentInput> | TaskCreateWithoutParentInput[] | TaskUncheckedCreateWithoutParentInput[]
+    connectOrCreate?: TaskCreateOrConnectWithoutParentInput | TaskCreateOrConnectWithoutParentInput[]
+    createMany?: TaskCreateManyParentInputEnvelope
+    connect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+  }
+
   export type TaskAssigneeCreateNestedManyWithoutTaskInput = {
     create?: XOR<TaskAssigneeCreateWithoutTaskInput, TaskAssigneeUncheckedCreateWithoutTaskInput> | TaskAssigneeCreateWithoutTaskInput[] | TaskAssigneeUncheckedCreateWithoutTaskInput[]
     connectOrCreate?: TaskAssigneeCreateOrConnectWithoutTaskInput | TaskAssigneeCreateOrConnectWithoutTaskInput[]
@@ -29404,6 +29513,13 @@ export namespace Prisma {
     connectOrCreate?: TaskCommentCreateOrConnectWithoutTaskInput | TaskCommentCreateOrConnectWithoutTaskInput[]
     createMany?: TaskCommentCreateManyTaskInputEnvelope
     connect?: TaskCommentWhereUniqueInput | TaskCommentWhereUniqueInput[]
+  }
+
+  export type TaskUncheckedCreateNestedManyWithoutParentInput = {
+    create?: XOR<TaskCreateWithoutParentInput, TaskUncheckedCreateWithoutParentInput> | TaskCreateWithoutParentInput[] | TaskUncheckedCreateWithoutParentInput[]
+    connectOrCreate?: TaskCreateOrConnectWithoutParentInput | TaskCreateOrConnectWithoutParentInput[]
+    createMany?: TaskCreateManyParentInputEnvelope
+    connect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
   }
 
   export type TaskAssigneeUncheckedCreateNestedManyWithoutTaskInput = {
@@ -29469,6 +29585,30 @@ export namespace Prisma {
     update?: XOR<XOR<PhaseUpdateToOneWithWhereWithoutTasksInput, PhaseUpdateWithoutTasksInput>, PhaseUncheckedUpdateWithoutTasksInput>
   }
 
+  export type TaskUpdateOneWithoutChildrenNestedInput = {
+    create?: XOR<TaskCreateWithoutChildrenInput, TaskUncheckedCreateWithoutChildrenInput>
+    connectOrCreate?: TaskCreateOrConnectWithoutChildrenInput
+    upsert?: TaskUpsertWithoutChildrenInput
+    disconnect?: TaskWhereInput | boolean
+    delete?: TaskWhereInput | boolean
+    connect?: TaskWhereUniqueInput
+    update?: XOR<XOR<TaskUpdateToOneWithWhereWithoutChildrenInput, TaskUpdateWithoutChildrenInput>, TaskUncheckedUpdateWithoutChildrenInput>
+  }
+
+  export type TaskUpdateManyWithoutParentNestedInput = {
+    create?: XOR<TaskCreateWithoutParentInput, TaskUncheckedCreateWithoutParentInput> | TaskCreateWithoutParentInput[] | TaskUncheckedCreateWithoutParentInput[]
+    connectOrCreate?: TaskCreateOrConnectWithoutParentInput | TaskCreateOrConnectWithoutParentInput[]
+    upsert?: TaskUpsertWithWhereUniqueWithoutParentInput | TaskUpsertWithWhereUniqueWithoutParentInput[]
+    createMany?: TaskCreateManyParentInputEnvelope
+    set?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    disconnect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    delete?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    connect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    update?: TaskUpdateWithWhereUniqueWithoutParentInput | TaskUpdateWithWhereUniqueWithoutParentInput[]
+    updateMany?: TaskUpdateManyWithWhereWithoutParentInput | TaskUpdateManyWithWhereWithoutParentInput[]
+    deleteMany?: TaskScalarWhereInput | TaskScalarWhereInput[]
+  }
+
   export type TaskAssigneeUpdateManyWithoutTaskNestedInput = {
     create?: XOR<TaskAssigneeCreateWithoutTaskInput, TaskAssigneeUncheckedCreateWithoutTaskInput> | TaskAssigneeCreateWithoutTaskInput[] | TaskAssigneeUncheckedCreateWithoutTaskInput[]
     connectOrCreate?: TaskAssigneeCreateOrConnectWithoutTaskInput | TaskAssigneeCreateOrConnectWithoutTaskInput[]
@@ -29523,6 +29663,20 @@ export namespace Prisma {
     update?: TaskCommentUpdateWithWhereUniqueWithoutTaskInput | TaskCommentUpdateWithWhereUniqueWithoutTaskInput[]
     updateMany?: TaskCommentUpdateManyWithWhereWithoutTaskInput | TaskCommentUpdateManyWithWhereWithoutTaskInput[]
     deleteMany?: TaskCommentScalarWhereInput | TaskCommentScalarWhereInput[]
+  }
+
+  export type TaskUncheckedUpdateManyWithoutParentNestedInput = {
+    create?: XOR<TaskCreateWithoutParentInput, TaskUncheckedCreateWithoutParentInput> | TaskCreateWithoutParentInput[] | TaskUncheckedCreateWithoutParentInput[]
+    connectOrCreate?: TaskCreateOrConnectWithoutParentInput | TaskCreateOrConnectWithoutParentInput[]
+    upsert?: TaskUpsertWithWhereUniqueWithoutParentInput | TaskUpsertWithWhereUniqueWithoutParentInput[]
+    createMany?: TaskCreateManyParentInputEnvelope
+    set?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    disconnect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    delete?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    connect?: TaskWhereUniqueInput | TaskWhereUniqueInput[]
+    update?: TaskUpdateWithWhereUniqueWithoutParentInput | TaskUpdateWithWhereUniqueWithoutParentInput[]
+    updateMany?: TaskUpdateManyWithWhereWithoutParentInput | TaskUpdateManyWithWhereWithoutParentInput[]
+    deleteMany?: TaskScalarWhereInput | TaskScalarWhereInput[]
   }
 
   export type TaskAssigneeUncheckedUpdateManyWithoutTaskNestedInput = {
@@ -32671,6 +32825,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     phase?: PhaseCreateNestedOneWithoutTasksInput
+    parent?: TaskCreateNestedOneWithoutChildrenInput
+    children?: TaskCreateNestedManyWithoutParentInput
     assignees?: TaskAssigneeCreateNestedManyWithoutTaskInput
     workLogs?: WorkLogCreateNestedManyWithoutTaskInput
     timeEntries?: TimeEntryCreateNestedManyWithoutTaskInput
@@ -32688,6 +32844,7 @@ export namespace Prisma {
     rejectionReason?: string | null
     priority?: $Enums.Priority
     type?: $Enums.TaskType
+    parentId?: string | null
     completionPercentage?: number
     storyPoints?: number | null
     completedAt?: Date | string | null
@@ -32696,6 +32853,7 @@ export namespace Prisma {
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    children?: TaskUncheckedCreateNestedManyWithoutParentInput
     assignees?: TaskAssigneeUncheckedCreateNestedManyWithoutTaskInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutTaskInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutTaskInput
@@ -33128,6 +33286,7 @@ export namespace Prisma {
     rejectionReason?: StringNullableFilter<"Task"> | string | null
     priority?: EnumPriorityFilter<"Task"> | $Enums.Priority
     type?: EnumTaskTypeFilter<"Task"> | $Enums.TaskType
+    parentId?: StringNullableFilter<"Task"> | string | null
     completionPercentage?: IntFilter<"Task"> | number
     storyPoints?: IntNullableFilter<"Task"> | number | null
     completedAt?: DateTimeNullableFilter<"Task"> | Date | string | null
@@ -33278,6 +33437,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     project: ProjectCreateNestedOneWithoutTasksInput
+    parent?: TaskCreateNestedOneWithoutChildrenInput
+    children?: TaskCreateNestedManyWithoutParentInput
     assignees?: TaskAssigneeCreateNestedManyWithoutTaskInput
     workLogs?: WorkLogCreateNestedManyWithoutTaskInput
     timeEntries?: TimeEntryCreateNestedManyWithoutTaskInput
@@ -33295,6 +33456,7 @@ export namespace Prisma {
     rejectionReason?: string | null
     priority?: $Enums.Priority
     type?: $Enums.TaskType
+    parentId?: string | null
     completionPercentage?: number
     storyPoints?: number | null
     completedAt?: Date | string | null
@@ -33303,6 +33465,7 @@ export namespace Prisma {
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    children?: TaskUncheckedCreateNestedManyWithoutParentInput
     assignees?: TaskAssigneeUncheckedCreateNestedManyWithoutTaskInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutTaskInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutTaskInput
@@ -33484,6 +33647,129 @@ export namespace Prisma {
   export type PhaseCreateOrConnectWithoutTasksInput = {
     where: PhaseWhereUniqueInput
     create: XOR<PhaseCreateWithoutTasksInput, PhaseUncheckedCreateWithoutTasksInput>
+  }
+
+  export type TaskCreateWithoutChildrenInput = {
+    id?: string
+    shortId?: string | null
+    taskNumber?: number | null
+    title: string
+    description?: string | null
+    status?: $Enums.TaskStatus
+    rejectionReason?: string | null
+    priority?: $Enums.Priority
+    type?: $Enums.TaskType
+    completionPercentage?: number
+    storyPoints?: number | null
+    completedAt?: Date | string | null
+    dueDate?: Date | string | null
+    tags?: TaskCreatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    project: ProjectCreateNestedOneWithoutTasksInput
+    phase?: PhaseCreateNestedOneWithoutTasksInput
+    parent?: TaskCreateNestedOneWithoutChildrenInput
+    assignees?: TaskAssigneeCreateNestedManyWithoutTaskInput
+    workLogs?: WorkLogCreateNestedManyWithoutTaskInput
+    timeEntries?: TimeEntryCreateNestedManyWithoutTaskInput
+    comments?: TaskCommentCreateNestedManyWithoutTaskInput
+  }
+
+  export type TaskUncheckedCreateWithoutChildrenInput = {
+    id?: string
+    projectId: string
+    phaseId?: string | null
+    shortId?: string | null
+    taskNumber?: number | null
+    title: string
+    description?: string | null
+    status?: $Enums.TaskStatus
+    rejectionReason?: string | null
+    priority?: $Enums.Priority
+    type?: $Enums.TaskType
+    parentId?: string | null
+    completionPercentage?: number
+    storyPoints?: number | null
+    completedAt?: Date | string | null
+    dueDate?: Date | string | null
+    tags?: TaskCreatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    assignees?: TaskAssigneeUncheckedCreateNestedManyWithoutTaskInput
+    workLogs?: WorkLogUncheckedCreateNestedManyWithoutTaskInput
+    timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutTaskInput
+    comments?: TaskCommentUncheckedCreateNestedManyWithoutTaskInput
+  }
+
+  export type TaskCreateOrConnectWithoutChildrenInput = {
+    where: TaskWhereUniqueInput
+    create: XOR<TaskCreateWithoutChildrenInput, TaskUncheckedCreateWithoutChildrenInput>
+  }
+
+  export type TaskCreateWithoutParentInput = {
+    id?: string
+    shortId?: string | null
+    taskNumber?: number | null
+    title: string
+    description?: string | null
+    status?: $Enums.TaskStatus
+    rejectionReason?: string | null
+    priority?: $Enums.Priority
+    type?: $Enums.TaskType
+    completionPercentage?: number
+    storyPoints?: number | null
+    completedAt?: Date | string | null
+    dueDate?: Date | string | null
+    tags?: TaskCreatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    project: ProjectCreateNestedOneWithoutTasksInput
+    phase?: PhaseCreateNestedOneWithoutTasksInput
+    children?: TaskCreateNestedManyWithoutParentInput
+    assignees?: TaskAssigneeCreateNestedManyWithoutTaskInput
+    workLogs?: WorkLogCreateNestedManyWithoutTaskInput
+    timeEntries?: TimeEntryCreateNestedManyWithoutTaskInput
+    comments?: TaskCommentCreateNestedManyWithoutTaskInput
+  }
+
+  export type TaskUncheckedCreateWithoutParentInput = {
+    id?: string
+    projectId: string
+    phaseId?: string | null
+    shortId?: string | null
+    taskNumber?: number | null
+    title: string
+    description?: string | null
+    status?: $Enums.TaskStatus
+    rejectionReason?: string | null
+    priority?: $Enums.Priority
+    type?: $Enums.TaskType
+    completionPercentage?: number
+    storyPoints?: number | null
+    completedAt?: Date | string | null
+    dueDate?: Date | string | null
+    tags?: TaskCreatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    children?: TaskUncheckedCreateNestedManyWithoutParentInput
+    assignees?: TaskAssigneeUncheckedCreateNestedManyWithoutTaskInput
+    workLogs?: WorkLogUncheckedCreateNestedManyWithoutTaskInput
+    timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutTaskInput
+    comments?: TaskCommentUncheckedCreateNestedManyWithoutTaskInput
+  }
+
+  export type TaskCreateOrConnectWithoutParentInput = {
+    where: TaskWhereUniqueInput
+    create: XOR<TaskCreateWithoutParentInput, TaskUncheckedCreateWithoutParentInput>
+  }
+
+  export type TaskCreateManyParentInputEnvelope = {
+    data: TaskCreateManyParentInput | TaskCreateManyParentInput[]
+    skipDuplicates?: boolean
   }
 
   export type TaskAssigneeCreateWithoutTaskInput = {
@@ -33698,6 +33984,87 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type TaskUpsertWithoutChildrenInput = {
+    update: XOR<TaskUpdateWithoutChildrenInput, TaskUncheckedUpdateWithoutChildrenInput>
+    create: XOR<TaskCreateWithoutChildrenInput, TaskUncheckedCreateWithoutChildrenInput>
+    where?: TaskWhereInput
+  }
+
+  export type TaskUpdateToOneWithWhereWithoutChildrenInput = {
+    where?: TaskWhereInput
+    data: XOR<TaskUpdateWithoutChildrenInput, TaskUncheckedUpdateWithoutChildrenInput>
+  }
+
+  export type TaskUpdateWithoutChildrenInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    shortId?: NullableStringFieldUpdateOperationsInput | string | null
+    taskNumber?: NullableIntFieldUpdateOperationsInput | number | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
+    type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
+    completionPercentage?: IntFieldUpdateOperationsInput | number
+    storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tags?: TaskUpdatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    project?: ProjectUpdateOneRequiredWithoutTasksNestedInput
+    phase?: PhaseUpdateOneWithoutTasksNestedInput
+    parent?: TaskUpdateOneWithoutChildrenNestedInput
+    assignees?: TaskAssigneeUpdateManyWithoutTaskNestedInput
+    workLogs?: WorkLogUpdateManyWithoutTaskNestedInput
+    timeEntries?: TimeEntryUpdateManyWithoutTaskNestedInput
+    comments?: TaskCommentUpdateManyWithoutTaskNestedInput
+  }
+
+  export type TaskUncheckedUpdateWithoutChildrenInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    projectId?: StringFieldUpdateOperationsInput | string
+    phaseId?: NullableStringFieldUpdateOperationsInput | string | null
+    shortId?: NullableStringFieldUpdateOperationsInput | string | null
+    taskNumber?: NullableIntFieldUpdateOperationsInput | number | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
+    type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
+    completionPercentage?: IntFieldUpdateOperationsInput | number
+    storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tags?: TaskUpdatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    assignees?: TaskAssigneeUncheckedUpdateManyWithoutTaskNestedInput
+    workLogs?: WorkLogUncheckedUpdateManyWithoutTaskNestedInput
+    timeEntries?: TimeEntryUncheckedUpdateManyWithoutTaskNestedInput
+    comments?: TaskCommentUncheckedUpdateManyWithoutTaskNestedInput
+  }
+
+  export type TaskUpsertWithWhereUniqueWithoutParentInput = {
+    where: TaskWhereUniqueInput
+    update: XOR<TaskUpdateWithoutParentInput, TaskUncheckedUpdateWithoutParentInput>
+    create: XOR<TaskCreateWithoutParentInput, TaskUncheckedCreateWithoutParentInput>
+  }
+
+  export type TaskUpdateWithWhereUniqueWithoutParentInput = {
+    where: TaskWhereUniqueInput
+    data: XOR<TaskUpdateWithoutParentInput, TaskUncheckedUpdateWithoutParentInput>
+  }
+
+  export type TaskUpdateManyWithWhereWithoutParentInput = {
+    where: TaskScalarWhereInput
+    data: XOR<TaskUpdateManyMutationInput, TaskUncheckedUpdateManyWithoutParentInput>
+  }
+
   export type TaskAssigneeUpsertWithWhereUniqueWithoutTaskInput = {
     where: TaskAssigneeWhereUniqueInput
     update: XOR<TaskAssigneeUpdateWithoutTaskInput, TaskAssigneeUncheckedUpdateWithoutTaskInput>
@@ -33782,6 +34149,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     project: ProjectCreateNestedOneWithoutTasksInput
     phase?: PhaseCreateNestedOneWithoutTasksInput
+    parent?: TaskCreateNestedOneWithoutChildrenInput
+    children?: TaskCreateNestedManyWithoutParentInput
     workLogs?: WorkLogCreateNestedManyWithoutTaskInput
     timeEntries?: TimeEntryCreateNestedManyWithoutTaskInput
     comments?: TaskCommentCreateNestedManyWithoutTaskInput
@@ -33799,6 +34168,7 @@ export namespace Prisma {
     rejectionReason?: string | null
     priority?: $Enums.Priority
     type?: $Enums.TaskType
+    parentId?: string | null
     completionPercentage?: number
     storyPoints?: number | null
     completedAt?: Date | string | null
@@ -33807,6 +34177,7 @@ export namespace Prisma {
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    children?: TaskUncheckedCreateNestedManyWithoutParentInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutTaskInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutTaskInput
     comments?: TaskCommentUncheckedCreateNestedManyWithoutTaskInput
@@ -33917,6 +34288,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     project?: ProjectUpdateOneRequiredWithoutTasksNestedInput
     phase?: PhaseUpdateOneWithoutTasksNestedInput
+    parent?: TaskUpdateOneWithoutChildrenNestedInput
+    children?: TaskUpdateManyWithoutParentNestedInput
     workLogs?: WorkLogUpdateManyWithoutTaskNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutTaskNestedInput
     comments?: TaskCommentUpdateManyWithoutTaskNestedInput
@@ -33934,6 +34307,7 @@ export namespace Prisma {
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -33942,6 +34316,7 @@ export namespace Prisma {
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    children?: TaskUncheckedUpdateManyWithoutParentNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutTaskNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutTaskNestedInput
     comments?: TaskCommentUncheckedUpdateManyWithoutTaskNestedInput
@@ -34042,6 +34417,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     project: ProjectCreateNestedOneWithoutTasksInput
     phase?: PhaseCreateNestedOneWithoutTasksInput
+    parent?: TaskCreateNestedOneWithoutChildrenInput
+    children?: TaskCreateNestedManyWithoutParentInput
     assignees?: TaskAssigneeCreateNestedManyWithoutTaskInput
     workLogs?: WorkLogCreateNestedManyWithoutTaskInput
     timeEntries?: TimeEntryCreateNestedManyWithoutTaskInput
@@ -34059,6 +34436,7 @@ export namespace Prisma {
     rejectionReason?: string | null
     priority?: $Enums.Priority
     type?: $Enums.TaskType
+    parentId?: string | null
     completionPercentage?: number
     storyPoints?: number | null
     completedAt?: Date | string | null
@@ -34067,6 +34445,7 @@ export namespace Prisma {
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    children?: TaskUncheckedCreateNestedManyWithoutParentInput
     assignees?: TaskAssigneeUncheckedCreateNestedManyWithoutTaskInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutTaskInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutTaskInput
@@ -34177,6 +34556,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     project?: ProjectUpdateOneRequiredWithoutTasksNestedInput
     phase?: PhaseUpdateOneWithoutTasksNestedInput
+    parent?: TaskUpdateOneWithoutChildrenNestedInput
+    children?: TaskUpdateManyWithoutParentNestedInput
     assignees?: TaskAssigneeUpdateManyWithoutTaskNestedInput
     workLogs?: WorkLogUpdateManyWithoutTaskNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutTaskNestedInput
@@ -34194,6 +34575,7 @@ export namespace Prisma {
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -34202,6 +34584,7 @@ export namespace Prisma {
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    children?: TaskUncheckedUpdateManyWithoutParentNestedInput
     assignees?: TaskAssigneeUncheckedUpdateManyWithoutTaskNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutTaskNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutTaskNestedInput
@@ -34428,6 +34811,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     project: ProjectCreateNestedOneWithoutTasksInput
     phase?: PhaseCreateNestedOneWithoutTasksInput
+    parent?: TaskCreateNestedOneWithoutChildrenInput
+    children?: TaskCreateNestedManyWithoutParentInput
     assignees?: TaskAssigneeCreateNestedManyWithoutTaskInput
     timeEntries?: TimeEntryCreateNestedManyWithoutTaskInput
     comments?: TaskCommentCreateNestedManyWithoutTaskInput
@@ -34445,6 +34830,7 @@ export namespace Prisma {
     rejectionReason?: string | null
     priority?: $Enums.Priority
     type?: $Enums.TaskType
+    parentId?: string | null
     completionPercentage?: number
     storyPoints?: number | null
     completedAt?: Date | string | null
@@ -34453,6 +34839,7 @@ export namespace Prisma {
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    children?: TaskUncheckedCreateNestedManyWithoutParentInput
     assignees?: TaskAssigneeUncheckedCreateNestedManyWithoutTaskInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutTaskInput
     comments?: TaskCommentUncheckedCreateNestedManyWithoutTaskInput
@@ -34632,6 +35019,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     project?: ProjectUpdateOneRequiredWithoutTasksNestedInput
     phase?: PhaseUpdateOneWithoutTasksNestedInput
+    parent?: TaskUpdateOneWithoutChildrenNestedInput
+    children?: TaskUpdateManyWithoutParentNestedInput
     assignees?: TaskAssigneeUpdateManyWithoutTaskNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutTaskNestedInput
     comments?: TaskCommentUpdateManyWithoutTaskNestedInput
@@ -34649,6 +35038,7 @@ export namespace Prisma {
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -34657,6 +35047,7 @@ export namespace Prisma {
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    children?: TaskUncheckedUpdateManyWithoutParentNestedInput
     assignees?: TaskAssigneeUncheckedUpdateManyWithoutTaskNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutTaskNestedInput
     comments?: TaskCommentUncheckedUpdateManyWithoutTaskNestedInput
@@ -34808,6 +35199,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     project: ProjectCreateNestedOneWithoutTasksInput
     phase?: PhaseCreateNestedOneWithoutTasksInput
+    parent?: TaskCreateNestedOneWithoutChildrenInput
+    children?: TaskCreateNestedManyWithoutParentInput
     assignees?: TaskAssigneeCreateNestedManyWithoutTaskInput
     workLogs?: WorkLogCreateNestedManyWithoutTaskInput
     comments?: TaskCommentCreateNestedManyWithoutTaskInput
@@ -34825,6 +35218,7 @@ export namespace Prisma {
     rejectionReason?: string | null
     priority?: $Enums.Priority
     type?: $Enums.TaskType
+    parentId?: string | null
     completionPercentage?: number
     storyPoints?: number | null
     completedAt?: Date | string | null
@@ -34833,6 +35227,7 @@ export namespace Prisma {
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+    children?: TaskUncheckedCreateNestedManyWithoutParentInput
     assignees?: TaskAssigneeUncheckedCreateNestedManyWithoutTaskInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutTaskInput
     comments?: TaskCommentUncheckedCreateNestedManyWithoutTaskInput
@@ -35012,6 +35407,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     project?: ProjectUpdateOneRequiredWithoutTasksNestedInput
     phase?: PhaseUpdateOneWithoutTasksNestedInput
+    parent?: TaskUpdateOneWithoutChildrenNestedInput
+    children?: TaskUpdateManyWithoutParentNestedInput
     assignees?: TaskAssigneeUpdateManyWithoutTaskNestedInput
     workLogs?: WorkLogUpdateManyWithoutTaskNestedInput
     comments?: TaskCommentUpdateManyWithoutTaskNestedInput
@@ -35029,6 +35426,7 @@ export namespace Prisma {
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -35037,6 +35435,7 @@ export namespace Prisma {
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    children?: TaskUncheckedUpdateManyWithoutParentNestedInput
     assignees?: TaskAssigneeUncheckedUpdateManyWithoutTaskNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutTaskNestedInput
     comments?: TaskCommentUncheckedUpdateManyWithoutTaskNestedInput
@@ -39031,6 +39430,7 @@ export namespace Prisma {
     rejectionReason?: string | null
     priority?: $Enums.Priority
     type?: $Enums.TaskType
+    parentId?: string | null
     completionPercentage?: number
     storyPoints?: number | null
     completedAt?: Date | string | null
@@ -39137,6 +39537,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     phase?: PhaseUpdateOneWithoutTasksNestedInput
+    parent?: TaskUpdateOneWithoutChildrenNestedInput
+    children?: TaskUpdateManyWithoutParentNestedInput
     assignees?: TaskAssigneeUpdateManyWithoutTaskNestedInput
     workLogs?: WorkLogUpdateManyWithoutTaskNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutTaskNestedInput
@@ -39154,6 +39556,7 @@ export namespace Prisma {
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -39162,6 +39565,7 @@ export namespace Prisma {
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    children?: TaskUncheckedUpdateManyWithoutParentNestedInput
     assignees?: TaskAssigneeUncheckedUpdateManyWithoutTaskNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutTaskNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutTaskNestedInput
@@ -39179,6 +39583,7 @@ export namespace Prisma {
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -39317,6 +39722,7 @@ export namespace Prisma {
     rejectionReason?: string | null
     priority?: $Enums.Priority
     type?: $Enums.TaskType
+    parentId?: string | null
     completionPercentage?: number
     storyPoints?: number | null
     completedAt?: Date | string | null
@@ -39346,6 +39752,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     project?: ProjectUpdateOneRequiredWithoutTasksNestedInput
+    parent?: TaskUpdateOneWithoutChildrenNestedInput
+    children?: TaskUpdateManyWithoutParentNestedInput
     assignees?: TaskAssigneeUpdateManyWithoutTaskNestedInput
     workLogs?: WorkLogUpdateManyWithoutTaskNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutTaskNestedInput
@@ -39363,6 +39771,7 @@ export namespace Prisma {
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -39371,6 +39780,7 @@ export namespace Prisma {
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    children?: TaskUncheckedUpdateManyWithoutParentNestedInput
     assignees?: TaskAssigneeUncheckedUpdateManyWithoutTaskNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutTaskNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutTaskNestedInput
@@ -39388,6 +39798,7 @@ export namespace Prisma {
     rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
     priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
     type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
+    parentId?: NullableStringFieldUpdateOperationsInput | string | null
     completionPercentage?: IntFieldUpdateOperationsInput | number
     storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -39396,6 +39807,28 @@ export namespace Prisma {
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TaskCreateManyParentInput = {
+    id?: string
+    projectId: string
+    phaseId?: string | null
+    shortId?: string | null
+    taskNumber?: number | null
+    title: string
+    description?: string | null
+    status?: $Enums.TaskStatus
+    rejectionReason?: string | null
+    priority?: $Enums.Priority
+    type?: $Enums.TaskType
+    completionPercentage?: number
+    storyPoints?: number | null
+    completedAt?: Date | string | null
+    dueDate?: Date | string | null
+    tags?: TaskCreatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type TaskAssigneeCreateManyTaskInput = {
@@ -39432,6 +39865,82 @@ export namespace Prisma {
     content: string
     createdAt?: Date | string
     updatedAt?: Date | string
+  }
+
+  export type TaskUpdateWithoutParentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    shortId?: NullableStringFieldUpdateOperationsInput | string | null
+    taskNumber?: NullableIntFieldUpdateOperationsInput | number | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
+    type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
+    completionPercentage?: IntFieldUpdateOperationsInput | number
+    storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tags?: TaskUpdatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    project?: ProjectUpdateOneRequiredWithoutTasksNestedInput
+    phase?: PhaseUpdateOneWithoutTasksNestedInput
+    children?: TaskUpdateManyWithoutParentNestedInput
+    assignees?: TaskAssigneeUpdateManyWithoutTaskNestedInput
+    workLogs?: WorkLogUpdateManyWithoutTaskNestedInput
+    timeEntries?: TimeEntryUpdateManyWithoutTaskNestedInput
+    comments?: TaskCommentUpdateManyWithoutTaskNestedInput
+  }
+
+  export type TaskUncheckedUpdateWithoutParentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    projectId?: StringFieldUpdateOperationsInput | string
+    phaseId?: NullableStringFieldUpdateOperationsInput | string | null
+    shortId?: NullableStringFieldUpdateOperationsInput | string | null
+    taskNumber?: NullableIntFieldUpdateOperationsInput | number | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
+    type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
+    completionPercentage?: IntFieldUpdateOperationsInput | number
+    storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tags?: TaskUpdatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    children?: TaskUncheckedUpdateManyWithoutParentNestedInput
+    assignees?: TaskAssigneeUncheckedUpdateManyWithoutTaskNestedInput
+    workLogs?: WorkLogUncheckedUpdateManyWithoutTaskNestedInput
+    timeEntries?: TimeEntryUncheckedUpdateManyWithoutTaskNestedInput
+    comments?: TaskCommentUncheckedUpdateManyWithoutTaskNestedInput
+  }
+
+  export type TaskUncheckedUpdateManyWithoutParentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    projectId?: StringFieldUpdateOperationsInput | string
+    phaseId?: NullableStringFieldUpdateOperationsInput | string | null
+    shortId?: NullableStringFieldUpdateOperationsInput | string | null
+    taskNumber?: NullableIntFieldUpdateOperationsInput | number | null
+    title?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumTaskStatusFieldUpdateOperationsInput | $Enums.TaskStatus
+    rejectionReason?: NullableStringFieldUpdateOperationsInput | string | null
+    priority?: EnumPriorityFieldUpdateOperationsInput | $Enums.Priority
+    type?: EnumTaskTypeFieldUpdateOperationsInput | $Enums.TaskType
+    completionPercentage?: IntFieldUpdateOperationsInput | number
+    storyPoints?: NullableIntFieldUpdateOperationsInput | number | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    tags?: TaskUpdatetagsInput | string[]
+    attachments?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type TaskAssigneeUpdateWithoutTaskInput = {

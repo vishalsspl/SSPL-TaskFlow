@@ -88,6 +88,11 @@ const ProjectView = () => {
   const [memberToRemove, setMemberToRemove] = useState(null);
   const [removingMember, setRemovingMember] = useState(false);
 
+  useEffect(() => {
+    if (dashboardRef.current) {
+      dashboardRef.current.scrollTop = 0;
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     fetchDashboard();
@@ -605,7 +610,14 @@ const ProjectView = () => {
                   Report
                 </Button>
               )}
-              <Button onClick={() => setPresentationMode(true)} size="sm" className="bg-[#48A111] hover:bg-[#48A111]/90 text-white Montserrat font-bold rounded-lg sm:rounded-xl px-2 sm:px-4 text-[10px] sm:text-sm h-7 sm:h-9">
+              <Button 
+                onClick={() => {
+                  setPresentationMode(true);
+                  if (activeTab === 'chat') setActiveTab('overview');
+                }} 
+                size="sm" 
+                className="bg-[#48A111] hover:bg-[#48A111]/90 text-white Montserrat font-bold rounded-lg sm:rounded-xl px-2 sm:px-4 text-[10px] sm:text-sm h-7 sm:h-9"
+              >
                 <Maximize className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 Present
               </Button>
@@ -624,10 +636,12 @@ const ProjectView = () => {
         <div className="px-4 sm:px-6 md:px-8">
           <TabsList className="shrink-0 bg-secondary border-border p-1 rounded-2xl flex-wrap h-auto justify-start sm:justify-center">
             <TabsTrigger value="overview" className="rounded-xl px-3 sm:px-6 py-1.5 sm:py-2 text-[11px] sm:text-sm Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Overview</TabsTrigger>
-            <TabsTrigger value="tasks" className="rounded-xl px-3 sm:px-6 py-1.5 sm:py-2 text-[11px] sm:text-sm Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Tasks</TabsTrigger>
+            {(user?.activeFeatures?.tasks ?? user?.organization?.activeFeatures?.tasks) !== false && (
+              <TabsTrigger value="tasks" className="rounded-xl px-3 sm:px-6 py-1.5 sm:py-2 text-[11px] sm:text-sm Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Tasks</TabsTrigger>
+            )}
             <TabsTrigger value="team" className="rounded-xl px-3 sm:px-6 py-1.5 sm:py-2 text-[11px] sm:text-sm Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Team</TabsTrigger>
             <TabsTrigger value="docs" className="rounded-xl px-3 sm:px-6 py-1.5 sm:py-2 text-[11px] sm:text-sm Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Docs</TabsTrigger>
-            {user?.role !== 'CLIENT' && (
+            {user?.role !== 'CLIENT' && !presentationMode && (
               <TabsTrigger value="chat" className="rounded-xl px-3 sm:px-6 py-1.5 sm:py-2 text-[11px] sm:text-sm Montserrat font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Chat</TabsTrigger>
             )}
           </TabsList>
@@ -637,7 +651,8 @@ const ProjectView = () => {
         <div ref={dashboardRef} className="flex-1 overflow-y-auto overflow-x-hidden mt-4 px-4 sm:px-6 md:px-8 pb-8">
           {overviewContent}
 
-          <TabsContent value="tasks" className="space-y-4 mt-0">
+          {(user?.activeFeatures?.tasks ?? user?.organization?.activeFeatures?.tasks) !== false && (
+            <TabsContent value="tasks" className="space-y-4 mt-0">
             <div className="grid gap-4 md:grid-cols-2">
               <Card>
                 <CardHeader><CardTitle>Upcoming Deadlines</CardTitle></CardHeader>
@@ -694,6 +709,7 @@ const ProjectView = () => {
               </Card>
             </div>
           </TabsContent>
+          )}
 
           <TabsContent value="team" className="space-y-6 mt-0">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -788,6 +804,7 @@ const ProjectView = () => {
               {docView === 'list' && (
                 <DocumentList
                   projectId={id}
+                  projectManagerId={dashboard?.project?.managerId}
                   onNewDocument={() => {
                     setSelectedDocId(null);
                     setDocView('edit');
@@ -806,6 +823,7 @@ const ProjectView = () => {
                 <DocumentEditor
                   projectId={id}
                   documentId={selectedDocId}
+                  projectManagerId={dashboard?.project?.managerId}
                   onBack={() => setDocView(selectedDocId ? 'view' : 'list')}
                   onSave={() => setDocView('list')}
                 />
@@ -813,6 +831,7 @@ const ProjectView = () => {
               {docView === 'view' && (
                 <DocumentViewer
                   documentId={selectedDocId}
+                  projectManagerId={dashboard?.project?.managerId}
                   onBack={() => setDocView('list')}
                   onEdit={() => setDocView('edit')}
                 />

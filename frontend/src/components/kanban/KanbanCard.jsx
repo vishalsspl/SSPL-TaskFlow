@@ -236,6 +236,12 @@ const KanbanCard = ({ task, isReadOnly, disableDrag, onEdit, onCardClick, onDele
                             {task.project.name}
                         </p>
                     )}
+                    {task.parent && (
+                        <div className="flex items-center gap-1 text-[8px] sm:text-[9px] text-muted-foreground bg-muted/30 p-1 rounded-sm border border-border/50">
+                            <GitBranch className="w-2.5 h-2.5 shrink-0" />
+                            <span className="truncate">Parent: {task.parent.shortId ? `${task.parent.shortId}: ` : ''}{task.parent.title}</span>
+                        </div>
+                    )}
 
                     <div className="pt-1 sm:pt-2 flex items-center justify-between border-t border-border">
                         <div className="flex items-center gap-1 sm:gap-2 overflow-hidden max-w-[70%]">

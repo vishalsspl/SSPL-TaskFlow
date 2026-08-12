@@ -136,6 +136,7 @@ export const getAllTasks = async (req, res) => {
     },
     project: { select: { id: true, name: true, allowMemberTaskCreation: true } },
     phase: { select: { id: true, name: true } },
+    parent: { select: { id: true, title: true, type: true, shortId: true } },
   };
 
   let prismaOrderBy = { title: 'asc' };
@@ -212,6 +213,8 @@ export const getTask = async (req, res) => {
       },
       project: { select: { id: true, name: true } },
       phase: true,
+      parent: { select: { id: true, title: true, type: true, shortId: true } },
+      children: { select: { id: true, title: true, type: true, status: true, shortId: true } },
     },
   });
 
@@ -243,6 +246,7 @@ export const createTask = async (req, res) => {
   let {
     projectId,
     phaseId,
+    parentId,
     title,
     description,
     assigneeIds,   // array of user IDs
@@ -414,6 +418,7 @@ export const createTask = async (req, res) => {
     data: {
       projectId,
       phaseId: phaseId || null,
+      parentId: parentId || null,
       title,
       taskNumber,
       shortId,
@@ -438,6 +443,7 @@ export const createTask = async (req, res) => {
       },
       project: { select: { id: true, name: true } },
       phase: { select: { id: true, name: true } },
+      parent: { select: { id: true, title: true, type: true, shortId: true } },
     },
   });
 
@@ -780,6 +786,7 @@ export const updateTask = async (req, res) => {
     dueDate,
     tags,
     phaseId,
+    parentId,
     storyPoints,
     type,
     sendEmail = true,
@@ -874,6 +881,7 @@ export const updateTask = async (req, res) => {
       dueDate: dueDate !== undefined ? (dueDate ? new Date(dueDate) : null) : undefined,
       tags,
       phaseId: phaseId === '' ? null : phaseId,
+      parentId: parentId === '' ? null : (parentId !== undefined ? parentId : undefined),
       storyPoints: storyPoints !== undefined ? (storyPoints ? parseInt(storyPoints) : 0) : undefined,
       type: type !== undefined ? type : undefined,
       attachments: attachments !== undefined ? attachments : undefined,
@@ -892,6 +900,7 @@ export const updateTask = async (req, res) => {
       },
       project: { select: { id: true, name: true } },
       phase: { select: { id: true, name: true } },
+      parent: { select: { id: true, title: true, type: true, shortId: true } },
     },
   });
 

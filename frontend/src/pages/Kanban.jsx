@@ -148,8 +148,8 @@ const Kanban = () => {
       return;
     }
 
-    if (trimmedTitle.length > 30) {
-        toast({ title: "Validation Error", description: "Task title cannot exceed 30 characters.", variant: "destructive" });
+    if (trimmedTitle.length > 50) {
+        toast({ title: "Validation Error", description: "Task title cannot exceed 50 characters.", variant: "destructive" });
         return;
     }
 

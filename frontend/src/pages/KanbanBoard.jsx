@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import api from '@/lib/api';
+import { useAuthStore } from '@/store/authStore';
 import { useHeaderStore } from '@/store/headerStore';
 import {
     CheckCircle2,
@@ -12,6 +13,7 @@ import {
 
 const KanbanBoard = () => {
     const location = useLocation();
+    const { user } = useAuthStore();
     const { setHeader } = useHeaderStore();
     const [loading, setLoading] = useState(true);
     const [projects, setProjects] = useState([]);
@@ -450,7 +452,8 @@ const KanbanBoard = () => {
                     </Card>
 
                     {/* Overdue Tasks */}
-                    <Card className="bg-card/50 border-border ring-1 ring-border rounded-3xl glass">
+                    {(user?.activeFeatures?.tasks ?? user?.organization?.activeFeatures?.tasks) !== false && (
+                        <Card className="bg-card/50 border-border ring-1 ring-border rounded-3xl glass">
                         <CardHeader className="p-8 pb-4">
                             <CardTitle className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.3em] Montserrat">Overdue Intelligence</CardTitle>
                         </CardHeader>
@@ -486,6 +489,7 @@ const KanbanBoard = () => {
                             )}
                         </CardContent>
                     </Card>
+                    )}
                 </div>
 
                 {/* Workload and Upcoming Row */}
