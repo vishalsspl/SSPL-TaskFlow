@@ -272,10 +272,13 @@ const TaskKanban = () => {
 
         const matchesPriority = !priorityFilter || task.priority === priorityFilter;
 
-        // Filter for Members: only show assigned tasks
+        // Filter for Members: only show assigned tasks OR tasks created/assigned by them
         const isMember = user?.role === 'MEMBER';
         const isAssignedToMe = task.assignees?.some(a => a.userId === user?.id);
-        if (isMember && !isAssignedToMe) return false;
+        const isCreatedByMe = task.tags?.includes(`CREATOR:${user?.id}`);
+        const isAssignedByMe = task.assignees?.some(a => a.assignedById === user?.id);
+        
+        if (isMember && !isAssignedToMe && !isCreatedByMe && !isAssignedByMe) return false;
 
         if (hideCompleted && task.status === 'COMPLETED') return false;
 

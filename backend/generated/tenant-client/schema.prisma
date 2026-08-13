@@ -55,6 +55,23 @@ model Organization {
   activityLogs     ActivityLog[]
   notifications    Notification[]
   attendances      Attendance[]
+  customRoles      CustomRole[]
+}
+
+// ─── Custom Role ────────────────────────────────────────────────────────────
+model CustomRole {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?
+  permissions Json?
+
+  users User[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 // ─── User ───────────────────────────────────────────────────────────────────
@@ -62,6 +79,9 @@ model User {
   id             String        @id @default(uuid())
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  customRoleId String?
+  customRole   CustomRole? @relation(fields: [customRoleId], references: [id], onDelete: SetNull)
 
   name         String
   email        String
@@ -84,7 +104,8 @@ model User {
   clientProjects  Project[]  @relation("ProjectClient")
   workloads       Workload[]
 
-  taskAssignments TaskAssignee[]
+  taskAssignments TaskAssignee[] @relation("TaskAssigneeRelation")
+  assignedTasks   TaskAssignee[] @relation("TaskAssignerRelation")
   workLogs        WorkLog[]
   timeEntries     TimeEntry[]
 
@@ -214,7 +235,10 @@ model TaskAssignee {
   userId String
 
   task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation("TaskAssigneeRelation", fields: [userId], references: [id], onDelete: Cascade)
+
+  assignedById String?
+  assignedBy   User?   @relation("TaskAssignerRelation", fields: [assignedById], references: [id], onDelete: SetNull)
 
   @@unique([taskId, userId])
 }

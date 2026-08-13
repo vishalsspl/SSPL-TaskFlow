@@ -203,6 +203,12 @@ const Layout = () => {
       allowedRoles: ['ADMIN'],
     },
     {
+      name: 'Custom Roles',
+      href: '/organization/roles',
+      icon: UserIcon,
+      allowedRoles: ['ADMIN'],
+    },
+    {
       name: 'Integrations',
       href: '/integrations',
       icon: Zap,

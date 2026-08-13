@@ -205,7 +205,7 @@ export const sendTaskAssignmentEmail = async (to, taskTitle, projectName, assign
   }
 };
 
-export const sendTaskStatusUpdateEmail = async (to, taskTitle, projectName, newStatus, updatedBy, baseUrl) => {
+export const sendTaskStatusUpdateEmail = async (to, taskTitle, projectName, newStatus, updatedBy, assignedByName, baseUrl) => {
   try {
     if (!to) return null;
     const statusStr = newStatus.replace(/_/g, ' ');
@@ -216,7 +216,10 @@ export const sendTaskStatusUpdateEmail = async (to, taskTitle, projectName, newS
         actionSummary: `<strong>${updatedBy}</strong> updated the status of a task.`,
         refLabel: `TaskFlow / ${projectName}`,
         refTitle: taskTitle,
-        fields: [{ label: 'Status', value: statusStr }],
+        fields: [
+          { label: 'Status', value: statusStr },
+          ...(assignedByName ? [{ label: 'Assigned By', value: assignedByName }] : [])
+        ],
         ctaUrl: `${getBaseUrl(baseUrl)}/tasks`,
         ctaLabel: 'View this task in TaskFlow'
       }),

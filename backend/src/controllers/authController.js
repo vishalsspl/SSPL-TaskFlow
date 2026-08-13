@@ -529,7 +529,7 @@ export const signup = async (req, res) => {
 
 // ── invite ─────────────────────────────────────────────────────────────────
 export const invite = async (req, res) => {
-  const { email, name, role, password, sendEmail = true } = req.body;
+  const { email, name, role, customRoleId, password, sendEmail = true } = req.body;
   const organizationId = req.user.organizationId;
 
   if (!email || !name || !role) return res.status(400).json({ error: 'Email, name, and role required' });
@@ -579,6 +579,7 @@ export const invite = async (req, res) => {
           email,
           passwordHash,
           role,
+          customRoleId,
           isApproved: true,
           mustChangePassword: role !== 'ADMIN'
         }
@@ -676,7 +677,7 @@ export const bulkInvite = async (req, res) => {
   for (let i = 0; i < usersList.length; i++) {
     const row = usersList[i];
     const rowNum = i + 1;
-    const { name, email, role, password, sendEmail = true } = row;
+    const { name, email, role, customRoleId, password, sendEmail = true } = row;
 
     // ── Validate ──
     if (!name || !email || !role) {
@@ -740,6 +741,7 @@ export const bulkInvite = async (req, res) => {
               email: email.toLowerCase().trim(),
               passwordHash,
               role: normalizedRole,
+              customRoleId,
               isApproved: true,
               mustChangePassword: true,
             }

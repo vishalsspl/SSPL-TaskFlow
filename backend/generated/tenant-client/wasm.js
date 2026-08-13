@@ -152,9 +152,20 @@ exports.Prisma.OrganizationScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.CustomRoleScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  name: 'name',
+  description: 'description',
+  permissions: 'permissions',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
   organizationId: 'organizationId',
+  customRoleId: 'customRoleId',
   name: 'name',
   email: 'email',
   passwordHash: 'passwordHash',
@@ -229,7 +240,8 @@ exports.Prisma.TaskScalarFieldEnum = {
 exports.Prisma.TaskAssigneeScalarFieldEnum = {
   id: 'id',
   taskId: 'taskId',
-  userId: 'userId'
+  userId: 'userId',
+  assignedById: 'assignedById'
 };
 
 exports.Prisma.TaskCommentScalarFieldEnum = {
@@ -465,6 +477,7 @@ exports.TicketStatus = exports.$Enums.TicketStatus = {
 
 exports.Prisma.ModelName = {
   Organization: 'Organization',
+  CustomRole: 'CustomRole',
   User: 'User',
   Project: 'Project',
   Phase: 'Phase',

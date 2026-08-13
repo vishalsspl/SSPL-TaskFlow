@@ -26,6 +26,7 @@ import paymentRoutes from './routes/payment.js';
 import integrationRoutes from './routes/integrations.js';
 import uploadRoutes from './routes/upload.js';
 import documentRoutes from './routes/documentRoutes.js';
+import roleRoutes from './routes/roleRoutes.js';
 import { getPublicSettings } from './controllers/settingsController.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import path from 'path';
@@ -80,6 +81,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/integrations', integrationRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/documents', documentRoutes);
+app.use('/api/roles', roleRoutes);
 
 // Static file serving for uploads
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));

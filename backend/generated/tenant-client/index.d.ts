@@ -19,6 +19,11 @@ export type PrismaPromise<T> = $Public.PrismaPromise<T>
  */
 export type Organization = $Result.DefaultSelection<Prisma.$OrganizationPayload>
 /**
+ * Model CustomRole
+ * 
+ */
+export type CustomRole = $Result.DefaultSelection<Prisma.$CustomRolePayload>
+/**
  * Model User
  * 
  */
@@ -383,6 +388,16 @@ export class PrismaClient<
     * ```
     */
   get organization(): Prisma.OrganizationDelegate<ExtArgs>;
+
+  /**
+   * `prisma.customRole`: Exposes CRUD operations for the **CustomRole** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more CustomRoles
+    * const customRoles = await prisma.customRole.findMany()
+    * ```
+    */
+  get customRole(): Prisma.CustomRoleDelegate<ExtArgs>;
 
   /**
    * `prisma.user`: Exposes CRUD operations for the **User** model.
@@ -995,6 +1010,7 @@ export namespace Prisma {
 
   export const ModelName: {
     Organization: 'Organization',
+    CustomRole: 'CustomRole',
     User: 'User',
     Project: 'Project',
     Phase: 'Phase',
@@ -1027,7 +1043,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "organization" | "user" | "project" | "phase" | "task" | "taskAssignee" | "taskComment" | "workLog" | "timeEntry" | "workload" | "ticket" | "ticketComment" | "chatMessage" | "chatRoomLastSeen" | "activityLog" | "notification" | "attendance" | "document"
+      modelProps: "organization" | "customRole" | "user" | "project" | "phase" | "task" | "taskAssignee" | "taskComment" | "workLog" | "timeEntry" | "workload" | "ticket" | "ticketComment" | "chatMessage" | "chatRoomLastSeen" | "activityLog" | "notification" | "attendance" | "document"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1098,6 +1114,76 @@ export namespace Prisma {
           count: {
             args: Prisma.OrganizationCountArgs<ExtArgs>
             result: $Utils.Optional<OrganizationCountAggregateOutputType> | number
+          }
+        }
+      }
+      CustomRole: {
+        payload: Prisma.$CustomRolePayload<ExtArgs>
+        fields: Prisma.CustomRoleFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.CustomRoleFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CustomRolePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.CustomRoleFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CustomRolePayload>
+          }
+          findFirst: {
+            args: Prisma.CustomRoleFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CustomRolePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.CustomRoleFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CustomRolePayload>
+          }
+          findMany: {
+            args: Prisma.CustomRoleFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CustomRolePayload>[]
+          }
+          create: {
+            args: Prisma.CustomRoleCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CustomRolePayload>
+          }
+          createMany: {
+            args: Prisma.CustomRoleCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.CustomRoleCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CustomRolePayload>[]
+          }
+          delete: {
+            args: Prisma.CustomRoleDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CustomRolePayload>
+          }
+          update: {
+            args: Prisma.CustomRoleUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CustomRolePayload>
+          }
+          deleteMany: {
+            args: Prisma.CustomRoleDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.CustomRoleUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.CustomRoleUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CustomRolePayload>
+          }
+          aggregate: {
+            args: Prisma.CustomRoleAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateCustomRole>
+          }
+          groupBy: {
+            args: Prisma.CustomRoleGroupByArgs<ExtArgs>
+            result: $Utils.Optional<CustomRoleGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.CustomRoleCountArgs<ExtArgs>
+            result: $Utils.Optional<CustomRoleCountAggregateOutputType> | number
           }
         }
       }
@@ -2460,6 +2546,7 @@ export namespace Prisma {
     activityLogs: number
     notifications: number
     attendances: number
+    customRoles: number
   }
 
   export type OrganizationCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2471,6 +2558,7 @@ export namespace Prisma {
     activityLogs?: boolean | OrganizationCountOutputTypeCountActivityLogsArgs
     notifications?: boolean | OrganizationCountOutputTypeCountNotificationsArgs
     attendances?: boolean | OrganizationCountOutputTypeCountAttendancesArgs
+    customRoles?: boolean | OrganizationCountOutputTypeCountCustomRolesArgs
   }
 
   // Custom InputTypes
@@ -2540,6 +2628,44 @@ export namespace Prisma {
     where?: AttendanceWhereInput
   }
 
+  /**
+   * OrganizationCountOutputType without action
+   */
+  export type OrganizationCountOutputTypeCountCustomRolesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CustomRoleWhereInput
+  }
+
+
+  /**
+   * Count Type CustomRoleCountOutputType
+   */
+
+  export type CustomRoleCountOutputType = {
+    users: number
+  }
+
+  export type CustomRoleCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    users?: boolean | CustomRoleCountOutputTypeCountUsersArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * CustomRoleCountOutputType without action
+   */
+  export type CustomRoleCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CustomRoleCountOutputType
+     */
+    select?: CustomRoleCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * CustomRoleCountOutputType without action
+   */
+  export type CustomRoleCountOutputTypeCountUsersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserWhereInput
+  }
+
 
   /**
    * Count Type UserCountOutputType
@@ -2551,6 +2677,7 @@ export namespace Prisma {
     clientProjects: number
     workloads: number
     taskAssignments: number
+    assignedTasks: number
     workLogs: number
     timeEntries: number
     tickets: number
@@ -2570,6 +2697,7 @@ export namespace Prisma {
     clientProjects?: boolean | UserCountOutputTypeCountClientProjectsArgs
     workloads?: boolean | UserCountOutputTypeCountWorkloadsArgs
     taskAssignments?: boolean | UserCountOutputTypeCountTaskAssignmentsArgs
+    assignedTasks?: boolean | UserCountOutputTypeCountAssignedTasksArgs
     workLogs?: boolean | UserCountOutputTypeCountWorkLogsArgs
     timeEntries?: boolean | UserCountOutputTypeCountTimeEntriesArgs
     tickets?: boolean | UserCountOutputTypeCountTicketsArgs
@@ -2626,6 +2754,13 @@ export namespace Prisma {
    * UserCountOutputType without action
    */
   export type UserCountOutputTypeCountTaskAssignmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TaskAssigneeWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountAssignedTasksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: TaskAssigneeWhereInput
   }
 
@@ -3329,6 +3464,7 @@ export namespace Prisma {
     activityLogs?: boolean | Organization$activityLogsArgs<ExtArgs>
     notifications?: boolean | Organization$notificationsArgs<ExtArgs>
     attendances?: boolean | Organization$attendancesArgs<ExtArgs>
+    customRoles?: boolean | Organization$customRolesArgs<ExtArgs>
     _count?: boolean | OrganizationCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["organization"]>
 
@@ -3401,6 +3537,7 @@ export namespace Prisma {
     activityLogs?: boolean | Organization$activityLogsArgs<ExtArgs>
     notifications?: boolean | Organization$notificationsArgs<ExtArgs>
     attendances?: boolean | Organization$attendancesArgs<ExtArgs>
+    customRoles?: boolean | Organization$customRolesArgs<ExtArgs>
     _count?: boolean | OrganizationCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type OrganizationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -3416,6 +3553,7 @@ export namespace Prisma {
       activityLogs: Prisma.$ActivityLogPayload<ExtArgs>[]
       notifications: Prisma.$NotificationPayload<ExtArgs>[]
       attendances: Prisma.$AttendancePayload<ExtArgs>[]
+      customRoles: Prisma.$CustomRolePayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -3817,6 +3955,7 @@ export namespace Prisma {
     activityLogs<T extends Organization$activityLogsArgs<ExtArgs> = {}>(args?: Subset<T, Organization$activityLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ActivityLogPayload<ExtArgs>, T, "findMany"> | Null>
     notifications<T extends Organization$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, Organization$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany"> | Null>
     attendances<T extends Organization$attendancesArgs<ExtArgs> = {}>(args?: Subset<T, Organization$attendancesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AttendancePayload<ExtArgs>, T, "findMany"> | Null>
+    customRoles<T extends Organization$customRolesArgs<ExtArgs> = {}>(args?: Subset<T, Organization$customRolesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CustomRolePayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4347,6 +4486,26 @@ export namespace Prisma {
   }
 
   /**
+   * Organization.customRoles
+   */
+  export type Organization$customRolesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CustomRole
+     */
+    select?: CustomRoleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CustomRoleInclude<ExtArgs> | null
+    where?: CustomRoleWhereInput
+    orderBy?: CustomRoleOrderByWithRelationInput | CustomRoleOrderByWithRelationInput[]
+    cursor?: CustomRoleWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CustomRoleScalarFieldEnum | CustomRoleScalarFieldEnum[]
+  }
+
+  /**
    * Organization without action
    */
   export type OrganizationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4358,6 +4517,985 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: OrganizationInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model CustomRole
+   */
+
+  export type AggregateCustomRole = {
+    _count: CustomRoleCountAggregateOutputType | null
+    _min: CustomRoleMinAggregateOutputType | null
+    _max: CustomRoleMaxAggregateOutputType | null
+  }
+
+  export type CustomRoleMinAggregateOutputType = {
+    id: string | null
+    organizationId: string | null
+    name: string | null
+    description: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type CustomRoleMaxAggregateOutputType = {
+    id: string | null
+    organizationId: string | null
+    name: string | null
+    description: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type CustomRoleCountAggregateOutputType = {
+    id: number
+    organizationId: number
+    name: number
+    description: number
+    permissions: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type CustomRoleMinAggregateInputType = {
+    id?: true
+    organizationId?: true
+    name?: true
+    description?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type CustomRoleMaxAggregateInputType = {
+    id?: true
+    organizationId?: true
+    name?: true
+    description?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type CustomRoleCountAggregateInputType = {
+    id?: true
+    organizationId?: true
+    name?: true
+    description?: true
+    permissions?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type CustomRoleAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CustomRole to aggregate.
+     */
+    where?: CustomRoleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CustomRoles to fetch.
+     */
+    orderBy?: CustomRoleOrderByWithRelationInput | CustomRoleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: CustomRoleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CustomRoles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CustomRoles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned CustomRoles
+    **/
+    _count?: true | CustomRoleCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: CustomRoleMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: CustomRoleMaxAggregateInputType
+  }
+
+  export type GetCustomRoleAggregateType<T extends CustomRoleAggregateArgs> = {
+        [P in keyof T & keyof AggregateCustomRole]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateCustomRole[P]>
+      : GetScalarType<T[P], AggregateCustomRole[P]>
+  }
+
+
+
+
+  export type CustomRoleGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CustomRoleWhereInput
+    orderBy?: CustomRoleOrderByWithAggregationInput | CustomRoleOrderByWithAggregationInput[]
+    by: CustomRoleScalarFieldEnum[] | CustomRoleScalarFieldEnum
+    having?: CustomRoleScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: CustomRoleCountAggregateInputType | true
+    _min?: CustomRoleMinAggregateInputType
+    _max?: CustomRoleMaxAggregateInputType
+  }
+
+  export type CustomRoleGroupByOutputType = {
+    id: string
+    organizationId: string
+    name: string
+    description: string | null
+    permissions: JsonValue | null
+    createdAt: Date
+    updatedAt: Date
+    _count: CustomRoleCountAggregateOutputType | null
+    _min: CustomRoleMinAggregateOutputType | null
+    _max: CustomRoleMaxAggregateOutputType | null
+  }
+
+  type GetCustomRoleGroupByPayload<T extends CustomRoleGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<CustomRoleGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof CustomRoleGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], CustomRoleGroupByOutputType[P]>
+            : GetScalarType<T[P], CustomRoleGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type CustomRoleSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    organizationId?: boolean
+    name?: boolean
+    description?: boolean
+    permissions?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
+    users?: boolean | CustomRole$usersArgs<ExtArgs>
+    _count?: boolean | CustomRoleCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["customRole"]>
+
+  export type CustomRoleSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    organizationId?: boolean
+    name?: boolean
+    description?: boolean
+    permissions?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["customRole"]>
+
+  export type CustomRoleSelectScalar = {
+    id?: boolean
+    organizationId?: boolean
+    name?: boolean
+    description?: boolean
+    permissions?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type CustomRoleInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
+    users?: boolean | CustomRole$usersArgs<ExtArgs>
+    _count?: boolean | CustomRoleCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type CustomRoleIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    organization?: boolean | OrganizationDefaultArgs<ExtArgs>
+  }
+
+  export type $CustomRolePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "CustomRole"
+    objects: {
+      organization: Prisma.$OrganizationPayload<ExtArgs>
+      users: Prisma.$UserPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      organizationId: string
+      name: string
+      description: string | null
+      permissions: Prisma.JsonValue | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["customRole"]>
+    composites: {}
+  }
+
+  type CustomRoleGetPayload<S extends boolean | null | undefined | CustomRoleDefaultArgs> = $Result.GetResult<Prisma.$CustomRolePayload, S>
+
+  type CustomRoleCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<CustomRoleFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: CustomRoleCountAggregateInputType | true
+    }
+
+  export interface CustomRoleDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['CustomRole'], meta: { name: 'CustomRole' } }
+    /**
+     * Find zero or one CustomRole that matches the filter.
+     * @param {CustomRoleFindUniqueArgs} args - Arguments to find a CustomRole
+     * @example
+     * // Get one CustomRole
+     * const customRole = await prisma.customRole.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends CustomRoleFindUniqueArgs>(args: SelectSubset<T, CustomRoleFindUniqueArgs<ExtArgs>>): Prisma__CustomRoleClient<$Result.GetResult<Prisma.$CustomRolePayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one CustomRole that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {CustomRoleFindUniqueOrThrowArgs} args - Arguments to find a CustomRole
+     * @example
+     * // Get one CustomRole
+     * const customRole = await prisma.customRole.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends CustomRoleFindUniqueOrThrowArgs>(args: SelectSubset<T, CustomRoleFindUniqueOrThrowArgs<ExtArgs>>): Prisma__CustomRoleClient<$Result.GetResult<Prisma.$CustomRolePayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first CustomRole that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CustomRoleFindFirstArgs} args - Arguments to find a CustomRole
+     * @example
+     * // Get one CustomRole
+     * const customRole = await prisma.customRole.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends CustomRoleFindFirstArgs>(args?: SelectSubset<T, CustomRoleFindFirstArgs<ExtArgs>>): Prisma__CustomRoleClient<$Result.GetResult<Prisma.$CustomRolePayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first CustomRole that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CustomRoleFindFirstOrThrowArgs} args - Arguments to find a CustomRole
+     * @example
+     * // Get one CustomRole
+     * const customRole = await prisma.customRole.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends CustomRoleFindFirstOrThrowArgs>(args?: SelectSubset<T, CustomRoleFindFirstOrThrowArgs<ExtArgs>>): Prisma__CustomRoleClient<$Result.GetResult<Prisma.$CustomRolePayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more CustomRoles that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CustomRoleFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all CustomRoles
+     * const customRoles = await prisma.customRole.findMany()
+     * 
+     * // Get first 10 CustomRoles
+     * const customRoles = await prisma.customRole.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const customRoleWithIdOnly = await prisma.customRole.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends CustomRoleFindManyArgs>(args?: SelectSubset<T, CustomRoleFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CustomRolePayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a CustomRole.
+     * @param {CustomRoleCreateArgs} args - Arguments to create a CustomRole.
+     * @example
+     * // Create one CustomRole
+     * const CustomRole = await prisma.customRole.create({
+     *   data: {
+     *     // ... data to create a CustomRole
+     *   }
+     * })
+     * 
+     */
+    create<T extends CustomRoleCreateArgs>(args: SelectSubset<T, CustomRoleCreateArgs<ExtArgs>>): Prisma__CustomRoleClient<$Result.GetResult<Prisma.$CustomRolePayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many CustomRoles.
+     * @param {CustomRoleCreateManyArgs} args - Arguments to create many CustomRoles.
+     * @example
+     * // Create many CustomRoles
+     * const customRole = await prisma.customRole.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends CustomRoleCreateManyArgs>(args?: SelectSubset<T, CustomRoleCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many CustomRoles and returns the data saved in the database.
+     * @param {CustomRoleCreateManyAndReturnArgs} args - Arguments to create many CustomRoles.
+     * @example
+     * // Create many CustomRoles
+     * const customRole = await prisma.customRole.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many CustomRoles and only return the `id`
+     * const customRoleWithIdOnly = await prisma.customRole.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends CustomRoleCreateManyAndReturnArgs>(args?: SelectSubset<T, CustomRoleCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CustomRolePayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a CustomRole.
+     * @param {CustomRoleDeleteArgs} args - Arguments to delete one CustomRole.
+     * @example
+     * // Delete one CustomRole
+     * const CustomRole = await prisma.customRole.delete({
+     *   where: {
+     *     // ... filter to delete one CustomRole
+     *   }
+     * })
+     * 
+     */
+    delete<T extends CustomRoleDeleteArgs>(args: SelectSubset<T, CustomRoleDeleteArgs<ExtArgs>>): Prisma__CustomRoleClient<$Result.GetResult<Prisma.$CustomRolePayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one CustomRole.
+     * @param {CustomRoleUpdateArgs} args - Arguments to update one CustomRole.
+     * @example
+     * // Update one CustomRole
+     * const customRole = await prisma.customRole.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends CustomRoleUpdateArgs>(args: SelectSubset<T, CustomRoleUpdateArgs<ExtArgs>>): Prisma__CustomRoleClient<$Result.GetResult<Prisma.$CustomRolePayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more CustomRoles.
+     * @param {CustomRoleDeleteManyArgs} args - Arguments to filter CustomRoles to delete.
+     * @example
+     * // Delete a few CustomRoles
+     * const { count } = await prisma.customRole.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends CustomRoleDeleteManyArgs>(args?: SelectSubset<T, CustomRoleDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more CustomRoles.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CustomRoleUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many CustomRoles
+     * const customRole = await prisma.customRole.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends CustomRoleUpdateManyArgs>(args: SelectSubset<T, CustomRoleUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one CustomRole.
+     * @param {CustomRoleUpsertArgs} args - Arguments to update or create a CustomRole.
+     * @example
+     * // Update or create a CustomRole
+     * const customRole = await prisma.customRole.upsert({
+     *   create: {
+     *     // ... data to create a CustomRole
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the CustomRole we want to update
+     *   }
+     * })
+     */
+    upsert<T extends CustomRoleUpsertArgs>(args: SelectSubset<T, CustomRoleUpsertArgs<ExtArgs>>): Prisma__CustomRoleClient<$Result.GetResult<Prisma.$CustomRolePayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of CustomRoles.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CustomRoleCountArgs} args - Arguments to filter CustomRoles to count.
+     * @example
+     * // Count the number of CustomRoles
+     * const count = await prisma.customRole.count({
+     *   where: {
+     *     // ... the filter for the CustomRoles we want to count
+     *   }
+     * })
+    **/
+    count<T extends CustomRoleCountArgs>(
+      args?: Subset<T, CustomRoleCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], CustomRoleCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a CustomRole.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CustomRoleAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends CustomRoleAggregateArgs>(args: Subset<T, CustomRoleAggregateArgs>): Prisma.PrismaPromise<GetCustomRoleAggregateType<T>>
+
+    /**
+     * Group by CustomRole.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CustomRoleGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends CustomRoleGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: CustomRoleGroupByArgs['orderBy'] }
+        : { orderBy?: CustomRoleGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, CustomRoleGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetCustomRoleGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the CustomRole model
+   */
+  readonly fields: CustomRoleFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for CustomRole.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__CustomRoleClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    organization<T extends OrganizationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OrganizationDefaultArgs<ExtArgs>>): Prisma__OrganizationClient<$Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    users<T extends CustomRole$usersArgs<ExtArgs> = {}>(args?: Subset<T, CustomRole$usersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany"> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the CustomRole model
+   */ 
+  interface CustomRoleFieldRefs {
+    readonly id: FieldRef<"CustomRole", 'String'>
+    readonly organizationId: FieldRef<"CustomRole", 'String'>
+    readonly name: FieldRef<"CustomRole", 'String'>
+    readonly description: FieldRef<"CustomRole", 'String'>
+    readonly permissions: FieldRef<"CustomRole", 'Json'>
+    readonly createdAt: FieldRef<"CustomRole", 'DateTime'>
+    readonly updatedAt: FieldRef<"CustomRole", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * CustomRole findUnique
+   */
+  export type CustomRoleFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CustomRole
+     */
+    select?: CustomRoleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CustomRoleInclude<ExtArgs> | null
+    /**
+     * Filter, which CustomRole to fetch.
+     */
+    where: CustomRoleWhereUniqueInput
+  }
+
+  /**
+   * CustomRole findUniqueOrThrow
+   */
+  export type CustomRoleFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CustomRole
+     */
+    select?: CustomRoleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CustomRoleInclude<ExtArgs> | null
+    /**
+     * Filter, which CustomRole to fetch.
+     */
+    where: CustomRoleWhereUniqueInput
+  }
+
+  /**
+   * CustomRole findFirst
+   */
+  export type CustomRoleFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CustomRole
+     */
+    select?: CustomRoleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CustomRoleInclude<ExtArgs> | null
+    /**
+     * Filter, which CustomRole to fetch.
+     */
+    where?: CustomRoleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CustomRoles to fetch.
+     */
+    orderBy?: CustomRoleOrderByWithRelationInput | CustomRoleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CustomRoles.
+     */
+    cursor?: CustomRoleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CustomRoles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CustomRoles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CustomRoles.
+     */
+    distinct?: CustomRoleScalarFieldEnum | CustomRoleScalarFieldEnum[]
+  }
+
+  /**
+   * CustomRole findFirstOrThrow
+   */
+  export type CustomRoleFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CustomRole
+     */
+    select?: CustomRoleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CustomRoleInclude<ExtArgs> | null
+    /**
+     * Filter, which CustomRole to fetch.
+     */
+    where?: CustomRoleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CustomRoles to fetch.
+     */
+    orderBy?: CustomRoleOrderByWithRelationInput | CustomRoleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CustomRoles.
+     */
+    cursor?: CustomRoleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CustomRoles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CustomRoles.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CustomRoles.
+     */
+    distinct?: CustomRoleScalarFieldEnum | CustomRoleScalarFieldEnum[]
+  }
+
+  /**
+   * CustomRole findMany
+   */
+  export type CustomRoleFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CustomRole
+     */
+    select?: CustomRoleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CustomRoleInclude<ExtArgs> | null
+    /**
+     * Filter, which CustomRoles to fetch.
+     */
+    where?: CustomRoleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CustomRoles to fetch.
+     */
+    orderBy?: CustomRoleOrderByWithRelationInput | CustomRoleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing CustomRoles.
+     */
+    cursor?: CustomRoleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CustomRoles from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CustomRoles.
+     */
+    skip?: number
+    distinct?: CustomRoleScalarFieldEnum | CustomRoleScalarFieldEnum[]
+  }
+
+  /**
+   * CustomRole create
+   */
+  export type CustomRoleCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CustomRole
+     */
+    select?: CustomRoleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CustomRoleInclude<ExtArgs> | null
+    /**
+     * The data needed to create a CustomRole.
+     */
+    data: XOR<CustomRoleCreateInput, CustomRoleUncheckedCreateInput>
+  }
+
+  /**
+   * CustomRole createMany
+   */
+  export type CustomRoleCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many CustomRoles.
+     */
+    data: CustomRoleCreateManyInput | CustomRoleCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * CustomRole createManyAndReturn
+   */
+  export type CustomRoleCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CustomRole
+     */
+    select?: CustomRoleSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many CustomRoles.
+     */
+    data: CustomRoleCreateManyInput | CustomRoleCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CustomRoleIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * CustomRole update
+   */
+  export type CustomRoleUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CustomRole
+     */
+    select?: CustomRoleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CustomRoleInclude<ExtArgs> | null
+    /**
+     * The data needed to update a CustomRole.
+     */
+    data: XOR<CustomRoleUpdateInput, CustomRoleUncheckedUpdateInput>
+    /**
+     * Choose, which CustomRole to update.
+     */
+    where: CustomRoleWhereUniqueInput
+  }
+
+  /**
+   * CustomRole updateMany
+   */
+  export type CustomRoleUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update CustomRoles.
+     */
+    data: XOR<CustomRoleUpdateManyMutationInput, CustomRoleUncheckedUpdateManyInput>
+    /**
+     * Filter which CustomRoles to update
+     */
+    where?: CustomRoleWhereInput
+  }
+
+  /**
+   * CustomRole upsert
+   */
+  export type CustomRoleUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CustomRole
+     */
+    select?: CustomRoleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CustomRoleInclude<ExtArgs> | null
+    /**
+     * The filter to search for the CustomRole to update in case it exists.
+     */
+    where: CustomRoleWhereUniqueInput
+    /**
+     * In case the CustomRole found by the `where` argument doesn't exist, create a new CustomRole with this data.
+     */
+    create: XOR<CustomRoleCreateInput, CustomRoleUncheckedCreateInput>
+    /**
+     * In case the CustomRole was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<CustomRoleUpdateInput, CustomRoleUncheckedUpdateInput>
+  }
+
+  /**
+   * CustomRole delete
+   */
+  export type CustomRoleDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CustomRole
+     */
+    select?: CustomRoleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CustomRoleInclude<ExtArgs> | null
+    /**
+     * Filter which CustomRole to delete.
+     */
+    where: CustomRoleWhereUniqueInput
+  }
+
+  /**
+   * CustomRole deleteMany
+   */
+  export type CustomRoleDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CustomRoles to delete
+     */
+    where?: CustomRoleWhereInput
+  }
+
+  /**
+   * CustomRole.users
+   */
+  export type CustomRole$usersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+    orderBy?: UserOrderByWithRelationInput | UserOrderByWithRelationInput[]
+    cursor?: UserWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UserScalarFieldEnum | UserScalarFieldEnum[]
+  }
+
+  /**
+   * CustomRole without action
+   */
+  export type CustomRoleDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CustomRole
+     */
+    select?: CustomRoleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CustomRoleInclude<ExtArgs> | null
   }
 
 
@@ -4374,6 +5512,7 @@ export namespace Prisma {
   export type UserMinAggregateOutputType = {
     id: string | null
     organizationId: string | null
+    customRoleId: string | null
     name: string | null
     email: string | null
     passwordHash: string | null
@@ -4391,6 +5530,7 @@ export namespace Prisma {
   export type UserMaxAggregateOutputType = {
     id: string | null
     organizationId: string | null
+    customRoleId: string | null
     name: string | null
     email: string | null
     passwordHash: string | null
@@ -4408,6 +5548,7 @@ export namespace Prisma {
   export type UserCountAggregateOutputType = {
     id: number
     organizationId: number
+    customRoleId: number
     name: number
     email: number
     passwordHash: number
@@ -4427,6 +5568,7 @@ export namespace Prisma {
   export type UserMinAggregateInputType = {
     id?: true
     organizationId?: true
+    customRoleId?: true
     name?: true
     email?: true
     passwordHash?: true
@@ -4444,6 +5586,7 @@ export namespace Prisma {
   export type UserMaxAggregateInputType = {
     id?: true
     organizationId?: true
+    customRoleId?: true
     name?: true
     email?: true
     passwordHash?: true
@@ -4461,6 +5604,7 @@ export namespace Prisma {
   export type UserCountAggregateInputType = {
     id?: true
     organizationId?: true
+    customRoleId?: true
     name?: true
     email?: true
     passwordHash?: true
@@ -4551,6 +5695,7 @@ export namespace Prisma {
   export type UserGroupByOutputType = {
     id: string
     organizationId: string | null
+    customRoleId: string | null
     name: string
     email: string
     passwordHash: string
@@ -4585,6 +5730,7 @@ export namespace Prisma {
   export type UserSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     organizationId?: boolean
+    customRoleId?: boolean
     name?: boolean
     email?: boolean
     passwordHash?: boolean
@@ -4598,12 +5744,14 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     organization?: boolean | User$organizationArgs<ExtArgs>
+    customRole?: boolean | User$customRoleArgs<ExtArgs>
     manager?: boolean | User$managerArgs<ExtArgs>
     members?: boolean | User$membersArgs<ExtArgs>
     managedProjects?: boolean | User$managedProjectsArgs<ExtArgs>
     clientProjects?: boolean | User$clientProjectsArgs<ExtArgs>
     workloads?: boolean | User$workloadsArgs<ExtArgs>
     taskAssignments?: boolean | User$taskAssignmentsArgs<ExtArgs>
+    assignedTasks?: boolean | User$assignedTasksArgs<ExtArgs>
     workLogs?: boolean | User$workLogsArgs<ExtArgs>
     timeEntries?: boolean | User$timeEntriesArgs<ExtArgs>
     tickets?: boolean | User$ticketsArgs<ExtArgs>
@@ -4621,6 +5769,7 @@ export namespace Prisma {
   export type UserSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     organizationId?: boolean
+    customRoleId?: boolean
     name?: boolean
     email?: boolean
     passwordHash?: boolean
@@ -4634,12 +5783,14 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     organization?: boolean | User$organizationArgs<ExtArgs>
+    customRole?: boolean | User$customRoleArgs<ExtArgs>
     manager?: boolean | User$managerArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectScalar = {
     id?: boolean
     organizationId?: boolean
+    customRoleId?: boolean
     name?: boolean
     email?: boolean
     passwordHash?: boolean
@@ -4656,12 +5807,14 @@ export namespace Prisma {
 
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     organization?: boolean | User$organizationArgs<ExtArgs>
+    customRole?: boolean | User$customRoleArgs<ExtArgs>
     manager?: boolean | User$managerArgs<ExtArgs>
     members?: boolean | User$membersArgs<ExtArgs>
     managedProjects?: boolean | User$managedProjectsArgs<ExtArgs>
     clientProjects?: boolean | User$clientProjectsArgs<ExtArgs>
     workloads?: boolean | User$workloadsArgs<ExtArgs>
     taskAssignments?: boolean | User$taskAssignmentsArgs<ExtArgs>
+    assignedTasks?: boolean | User$assignedTasksArgs<ExtArgs>
     workLogs?: boolean | User$workLogsArgs<ExtArgs>
     timeEntries?: boolean | User$timeEntriesArgs<ExtArgs>
     tickets?: boolean | User$ticketsArgs<ExtArgs>
@@ -4677,6 +5830,7 @@ export namespace Prisma {
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     organization?: boolean | User$organizationArgs<ExtArgs>
+    customRole?: boolean | User$customRoleArgs<ExtArgs>
     manager?: boolean | User$managerArgs<ExtArgs>
   }
 
@@ -4684,12 +5838,14 @@ export namespace Prisma {
     name: "User"
     objects: {
       organization: Prisma.$OrganizationPayload<ExtArgs> | null
+      customRole: Prisma.$CustomRolePayload<ExtArgs> | null
       manager: Prisma.$UserPayload<ExtArgs> | null
       members: Prisma.$UserPayload<ExtArgs>[]
       managedProjects: Prisma.$ProjectPayload<ExtArgs>[]
       clientProjects: Prisma.$ProjectPayload<ExtArgs>[]
       workloads: Prisma.$WorkloadPayload<ExtArgs>[]
       taskAssignments: Prisma.$TaskAssigneePayload<ExtArgs>[]
+      assignedTasks: Prisma.$TaskAssigneePayload<ExtArgs>[]
       workLogs: Prisma.$WorkLogPayload<ExtArgs>[]
       timeEntries: Prisma.$TimeEntryPayload<ExtArgs>[]
       tickets: Prisma.$TicketPayload<ExtArgs>[]
@@ -4705,6 +5861,7 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       organizationId: string | null
+      customRoleId: string | null
       name: string
       email: string
       passwordHash: string
@@ -5082,12 +6239,14 @@ export namespace Prisma {
   export interface Prisma__UserClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     organization<T extends User$organizationArgs<ExtArgs> = {}>(args?: Subset<T, User$organizationArgs<ExtArgs>>): Prisma__OrganizationClient<$Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    customRole<T extends User$customRoleArgs<ExtArgs> = {}>(args?: Subset<T, User$customRoleArgs<ExtArgs>>): Prisma__CustomRoleClient<$Result.GetResult<Prisma.$CustomRolePayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     manager<T extends User$managerArgs<ExtArgs> = {}>(args?: Subset<T, User$managerArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     members<T extends User$membersArgs<ExtArgs> = {}>(args?: Subset<T, User$membersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany"> | Null>
     managedProjects<T extends User$managedProjectsArgs<ExtArgs> = {}>(args?: Subset<T, User$managedProjectsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findMany"> | Null>
     clientProjects<T extends User$clientProjectsArgs<ExtArgs> = {}>(args?: Subset<T, User$clientProjectsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findMany"> | Null>
     workloads<T extends User$workloadsArgs<ExtArgs> = {}>(args?: Subset<T, User$workloadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkloadPayload<ExtArgs>, T, "findMany"> | Null>
     taskAssignments<T extends User$taskAssignmentsArgs<ExtArgs> = {}>(args?: Subset<T, User$taskAssignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskAssigneePayload<ExtArgs>, T, "findMany"> | Null>
+    assignedTasks<T extends User$assignedTasksArgs<ExtArgs> = {}>(args?: Subset<T, User$assignedTasksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskAssigneePayload<ExtArgs>, T, "findMany"> | Null>
     workLogs<T extends User$workLogsArgs<ExtArgs> = {}>(args?: Subset<T, User$workLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkLogPayload<ExtArgs>, T, "findMany"> | Null>
     timeEntries<T extends User$timeEntriesArgs<ExtArgs> = {}>(args?: Subset<T, User$timeEntriesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TimeEntryPayload<ExtArgs>, T, "findMany"> | Null>
     tickets<T extends User$ticketsArgs<ExtArgs> = {}>(args?: Subset<T, User$ticketsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TicketPayload<ExtArgs>, T, "findMany"> | Null>
@@ -5130,6 +6289,7 @@ export namespace Prisma {
   interface UserFieldRefs {
     readonly id: FieldRef<"User", 'String'>
     readonly organizationId: FieldRef<"User", 'String'>
+    readonly customRoleId: FieldRef<"User", 'String'>
     readonly name: FieldRef<"User", 'String'>
     readonly email: FieldRef<"User", 'String'>
     readonly passwordHash: FieldRef<"User", 'String'>
@@ -5475,6 +6635,21 @@ export namespace Prisma {
   }
 
   /**
+   * User.customRole
+   */
+  export type User$customRoleArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CustomRole
+     */
+    select?: CustomRoleSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CustomRoleInclude<ExtArgs> | null
+    where?: CustomRoleWhereInput
+  }
+
+  /**
    * User.manager
    */
   export type User$managerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5573,6 +6748,26 @@ export namespace Prisma {
    * User.taskAssignments
    */
   export type User$taskAssignmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TaskAssignee
+     */
+    select?: TaskAssigneeSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TaskAssigneeInclude<ExtArgs> | null
+    where?: TaskAssigneeWhereInput
+    orderBy?: TaskAssigneeOrderByWithRelationInput | TaskAssigneeOrderByWithRelationInput[]
+    cursor?: TaskAssigneeWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: TaskAssigneeScalarFieldEnum | TaskAssigneeScalarFieldEnum[]
+  }
+
+  /**
+   * User.assignedTasks
+   */
+  export type User$assignedTasksArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the TaskAssignee
      */
@@ -9521,18 +10716,21 @@ export namespace Prisma {
     id: string | null
     taskId: string | null
     userId: string | null
+    assignedById: string | null
   }
 
   export type TaskAssigneeMaxAggregateOutputType = {
     id: string | null
     taskId: string | null
     userId: string | null
+    assignedById: string | null
   }
 
   export type TaskAssigneeCountAggregateOutputType = {
     id: number
     taskId: number
     userId: number
+    assignedById: number
     _all: number
   }
 
@@ -9541,18 +10739,21 @@ export namespace Prisma {
     id?: true
     taskId?: true
     userId?: true
+    assignedById?: true
   }
 
   export type TaskAssigneeMaxAggregateInputType = {
     id?: true
     taskId?: true
     userId?: true
+    assignedById?: true
   }
 
   export type TaskAssigneeCountAggregateInputType = {
     id?: true
     taskId?: true
     userId?: true
+    assignedById?: true
     _all?: true
   }
 
@@ -9632,6 +10833,7 @@ export namespace Prisma {
     id: string
     taskId: string
     userId: string
+    assignedById: string | null
     _count: TaskAssigneeCountAggregateOutputType | null
     _min: TaskAssigneeMinAggregateOutputType | null
     _max: TaskAssigneeMaxAggregateOutputType | null
@@ -9655,31 +10857,38 @@ export namespace Prisma {
     id?: boolean
     taskId?: boolean
     userId?: boolean
+    assignedById?: boolean
     task?: boolean | TaskDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    assignedBy?: boolean | TaskAssignee$assignedByArgs<ExtArgs>
   }, ExtArgs["result"]["taskAssignee"]>
 
   export type TaskAssigneeSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     taskId?: boolean
     userId?: boolean
+    assignedById?: boolean
     task?: boolean | TaskDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    assignedBy?: boolean | TaskAssignee$assignedByArgs<ExtArgs>
   }, ExtArgs["result"]["taskAssignee"]>
 
   export type TaskAssigneeSelectScalar = {
     id?: boolean
     taskId?: boolean
     userId?: boolean
+    assignedById?: boolean
   }
 
   export type TaskAssigneeInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     task?: boolean | TaskDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    assignedBy?: boolean | TaskAssignee$assignedByArgs<ExtArgs>
   }
   export type TaskAssigneeIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     task?: boolean | TaskDefaultArgs<ExtArgs>
     user?: boolean | UserDefaultArgs<ExtArgs>
+    assignedBy?: boolean | TaskAssignee$assignedByArgs<ExtArgs>
   }
 
   export type $TaskAssigneePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9687,11 +10896,13 @@ export namespace Prisma {
     objects: {
       task: Prisma.$TaskPayload<ExtArgs>
       user: Prisma.$UserPayload<ExtArgs>
+      assignedBy: Prisma.$UserPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       taskId: string
       userId: string
+      assignedById: string | null
     }, ExtArgs["result"]["taskAssignee"]>
     composites: {}
   }
@@ -10058,6 +11269,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     task<T extends TaskDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TaskDefaultArgs<ExtArgs>>): Prisma__TaskClient<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    assignedBy<T extends TaskAssignee$assignedByArgs<ExtArgs> = {}>(args?: Subset<T, TaskAssignee$assignedByArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -10090,6 +11302,7 @@ export namespace Prisma {
     readonly id: FieldRef<"TaskAssignee", 'String'>
     readonly taskId: FieldRef<"TaskAssignee", 'String'>
     readonly userId: FieldRef<"TaskAssignee", 'String'>
+    readonly assignedById: FieldRef<"TaskAssignee", 'String'>
   }
     
 
@@ -10405,6 +11618,21 @@ export namespace Prisma {
      * Filter which TaskAssignees to delete
      */
     where?: TaskAssigneeWhereInput
+  }
+
+  /**
+   * TaskAssignee.assignedBy
+   */
+  export type TaskAssignee$assignedByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
   }
 
   /**
@@ -22429,9 +23657,23 @@ export namespace Prisma {
   export type OrganizationScalarFieldEnum = (typeof OrganizationScalarFieldEnum)[keyof typeof OrganizationScalarFieldEnum]
 
 
+  export const CustomRoleScalarFieldEnum: {
+    id: 'id',
+    organizationId: 'organizationId',
+    name: 'name',
+    description: 'description',
+    permissions: 'permissions',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type CustomRoleScalarFieldEnum = (typeof CustomRoleScalarFieldEnum)[keyof typeof CustomRoleScalarFieldEnum]
+
+
   export const UserScalarFieldEnum: {
     id: 'id',
     organizationId: 'organizationId',
+    customRoleId: 'customRoleId',
     name: 'name',
     email: 'email',
     passwordHash: 'passwordHash',
@@ -22518,7 +23760,8 @@ export namespace Prisma {
   export const TaskAssigneeScalarFieldEnum: {
     id: 'id',
     taskId: 'taskId',
-    userId: 'userId'
+    userId: 'userId',
+    assignedById: 'assignedById'
   };
 
   export type TaskAssigneeScalarFieldEnum = (typeof TaskAssigneeScalarFieldEnum)[keyof typeof TaskAssigneeScalarFieldEnum]
@@ -23009,6 +24252,7 @@ export namespace Prisma {
     activityLogs?: ActivityLogListRelationFilter
     notifications?: NotificationListRelationFilter
     attendances?: AttendanceListRelationFilter
+    customRoles?: CustomRoleListRelationFilter
   }
 
   export type OrganizationOrderByWithRelationInput = {
@@ -23047,6 +24291,7 @@ export namespace Prisma {
     activityLogs?: ActivityLogOrderByRelationAggregateInput
     notifications?: NotificationOrderByRelationAggregateInput
     attendances?: AttendanceOrderByRelationAggregateInput
+    customRoles?: CustomRoleOrderByRelationAggregateInput
   }
 
   export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
@@ -23088,6 +24333,7 @@ export namespace Prisma {
     activityLogs?: ActivityLogListRelationFilter
     notifications?: NotificationListRelationFilter
     attendances?: AttendanceListRelationFilter
+    customRoles?: CustomRoleListRelationFilter
   }, "id">
 
   export type OrganizationOrderByWithAggregationInput = {
@@ -23158,12 +24404,81 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"Organization"> | Date | string
   }
 
+  export type CustomRoleWhereInput = {
+    AND?: CustomRoleWhereInput | CustomRoleWhereInput[]
+    OR?: CustomRoleWhereInput[]
+    NOT?: CustomRoleWhereInput | CustomRoleWhereInput[]
+    id?: StringFilter<"CustomRole"> | string
+    organizationId?: StringFilter<"CustomRole"> | string
+    name?: StringFilter<"CustomRole"> | string
+    description?: StringNullableFilter<"CustomRole"> | string | null
+    permissions?: JsonNullableFilter<"CustomRole">
+    createdAt?: DateTimeFilter<"CustomRole"> | Date | string
+    updatedAt?: DateTimeFilter<"CustomRole"> | Date | string
+    organization?: XOR<OrganizationRelationFilter, OrganizationWhereInput>
+    users?: UserListRelationFilter
+  }
+
+  export type CustomRoleOrderByWithRelationInput = {
+    id?: SortOrder
+    organizationId?: SortOrder
+    name?: SortOrder
+    description?: SortOrderInput | SortOrder
+    permissions?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    organization?: OrganizationOrderByWithRelationInput
+    users?: UserOrderByRelationAggregateInput
+  }
+
+  export type CustomRoleWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: CustomRoleWhereInput | CustomRoleWhereInput[]
+    OR?: CustomRoleWhereInput[]
+    NOT?: CustomRoleWhereInput | CustomRoleWhereInput[]
+    organizationId?: StringFilter<"CustomRole"> | string
+    name?: StringFilter<"CustomRole"> | string
+    description?: StringNullableFilter<"CustomRole"> | string | null
+    permissions?: JsonNullableFilter<"CustomRole">
+    createdAt?: DateTimeFilter<"CustomRole"> | Date | string
+    updatedAt?: DateTimeFilter<"CustomRole"> | Date | string
+    organization?: XOR<OrganizationRelationFilter, OrganizationWhereInput>
+    users?: UserListRelationFilter
+  }, "id">
+
+  export type CustomRoleOrderByWithAggregationInput = {
+    id?: SortOrder
+    organizationId?: SortOrder
+    name?: SortOrder
+    description?: SortOrderInput | SortOrder
+    permissions?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: CustomRoleCountOrderByAggregateInput
+    _max?: CustomRoleMaxOrderByAggregateInput
+    _min?: CustomRoleMinOrderByAggregateInput
+  }
+
+  export type CustomRoleScalarWhereWithAggregatesInput = {
+    AND?: CustomRoleScalarWhereWithAggregatesInput | CustomRoleScalarWhereWithAggregatesInput[]
+    OR?: CustomRoleScalarWhereWithAggregatesInput[]
+    NOT?: CustomRoleScalarWhereWithAggregatesInput | CustomRoleScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"CustomRole"> | string
+    organizationId?: StringWithAggregatesFilter<"CustomRole"> | string
+    name?: StringWithAggregatesFilter<"CustomRole"> | string
+    description?: StringNullableWithAggregatesFilter<"CustomRole"> | string | null
+    permissions?: JsonNullableWithAggregatesFilter<"CustomRole">
+    createdAt?: DateTimeWithAggregatesFilter<"CustomRole"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"CustomRole"> | Date | string
+  }
+
   export type UserWhereInput = {
     AND?: UserWhereInput | UserWhereInput[]
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
     id?: StringFilter<"User"> | string
     organizationId?: StringNullableFilter<"User"> | string | null
+    customRoleId?: StringNullableFilter<"User"> | string | null
     name?: StringFilter<"User"> | string
     email?: StringFilter<"User"> | string
     passwordHash?: StringFilter<"User"> | string
@@ -23177,12 +24492,14 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeNullableFilter<"User"> | Date | string | null
     organization?: XOR<OrganizationNullableRelationFilter, OrganizationWhereInput> | null
+    customRole?: XOR<CustomRoleNullableRelationFilter, CustomRoleWhereInput> | null
     manager?: XOR<UserNullableRelationFilter, UserWhereInput> | null
     members?: UserListRelationFilter
     managedProjects?: ProjectListRelationFilter
     clientProjects?: ProjectListRelationFilter
     workloads?: WorkloadListRelationFilter
     taskAssignments?: TaskAssigneeListRelationFilter
+    assignedTasks?: TaskAssigneeListRelationFilter
     workLogs?: WorkLogListRelationFilter
     timeEntries?: TimeEntryListRelationFilter
     tickets?: TicketListRelationFilter
@@ -23199,6 +24516,7 @@ export namespace Prisma {
   export type UserOrderByWithRelationInput = {
     id?: SortOrder
     organizationId?: SortOrderInput | SortOrder
+    customRoleId?: SortOrderInput | SortOrder
     name?: SortOrder
     email?: SortOrder
     passwordHash?: SortOrder
@@ -23212,12 +24530,14 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrderInput | SortOrder
     organization?: OrganizationOrderByWithRelationInput
+    customRole?: CustomRoleOrderByWithRelationInput
     manager?: UserOrderByWithRelationInput
     members?: UserOrderByRelationAggregateInput
     managedProjects?: ProjectOrderByRelationAggregateInput
     clientProjects?: ProjectOrderByRelationAggregateInput
     workloads?: WorkloadOrderByRelationAggregateInput
     taskAssignments?: TaskAssigneeOrderByRelationAggregateInput
+    assignedTasks?: TaskAssigneeOrderByRelationAggregateInput
     workLogs?: WorkLogOrderByRelationAggregateInput
     timeEntries?: TimeEntryOrderByRelationAggregateInput
     tickets?: TicketOrderByRelationAggregateInput
@@ -23238,6 +24558,7 @@ export namespace Prisma {
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
     organizationId?: StringNullableFilter<"User"> | string | null
+    customRoleId?: StringNullableFilter<"User"> | string | null
     name?: StringFilter<"User"> | string
     email?: StringFilter<"User"> | string
     passwordHash?: StringFilter<"User"> | string
@@ -23251,12 +24572,14 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeNullableFilter<"User"> | Date | string | null
     organization?: XOR<OrganizationNullableRelationFilter, OrganizationWhereInput> | null
+    customRole?: XOR<CustomRoleNullableRelationFilter, CustomRoleWhereInput> | null
     manager?: XOR<UserNullableRelationFilter, UserWhereInput> | null
     members?: UserListRelationFilter
     managedProjects?: ProjectListRelationFilter
     clientProjects?: ProjectListRelationFilter
     workloads?: WorkloadListRelationFilter
     taskAssignments?: TaskAssigneeListRelationFilter
+    assignedTasks?: TaskAssigneeListRelationFilter
     workLogs?: WorkLogListRelationFilter
     timeEntries?: TimeEntryListRelationFilter
     tickets?: TicketListRelationFilter
@@ -23273,6 +24596,7 @@ export namespace Prisma {
   export type UserOrderByWithAggregationInput = {
     id?: SortOrder
     organizationId?: SortOrderInput | SortOrder
+    customRoleId?: SortOrderInput | SortOrder
     name?: SortOrder
     email?: SortOrder
     passwordHash?: SortOrder
@@ -23296,6 +24620,7 @@ export namespace Prisma {
     NOT?: UserScalarWhereWithAggregatesInput | UserScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"User"> | string
     organizationId?: StringNullableWithAggregatesFilter<"User"> | string | null
+    customRoleId?: StringNullableWithAggregatesFilter<"User"> | string | null
     name?: StringWithAggregatesFilter<"User"> | string
     email?: StringWithAggregatesFilter<"User"> | string
     passwordHash?: StringWithAggregatesFilter<"User"> | string
@@ -23701,16 +25026,20 @@ export namespace Prisma {
     id?: StringFilter<"TaskAssignee"> | string
     taskId?: StringFilter<"TaskAssignee"> | string
     userId?: StringFilter<"TaskAssignee"> | string
+    assignedById?: StringNullableFilter<"TaskAssignee"> | string | null
     task?: XOR<TaskRelationFilter, TaskWhereInput>
     user?: XOR<UserRelationFilter, UserWhereInput>
+    assignedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
   }
 
   export type TaskAssigneeOrderByWithRelationInput = {
     id?: SortOrder
     taskId?: SortOrder
     userId?: SortOrder
+    assignedById?: SortOrderInput | SortOrder
     task?: TaskOrderByWithRelationInput
     user?: UserOrderByWithRelationInput
+    assignedBy?: UserOrderByWithRelationInput
   }
 
   export type TaskAssigneeWhereUniqueInput = Prisma.AtLeast<{
@@ -23721,14 +25050,17 @@ export namespace Prisma {
     NOT?: TaskAssigneeWhereInput | TaskAssigneeWhereInput[]
     taskId?: StringFilter<"TaskAssignee"> | string
     userId?: StringFilter<"TaskAssignee"> | string
+    assignedById?: StringNullableFilter<"TaskAssignee"> | string | null
     task?: XOR<TaskRelationFilter, TaskWhereInput>
     user?: XOR<UserRelationFilter, UserWhereInput>
+    assignedBy?: XOR<UserNullableRelationFilter, UserWhereInput> | null
   }, "id" | "taskId_userId">
 
   export type TaskAssigneeOrderByWithAggregationInput = {
     id?: SortOrder
     taskId?: SortOrder
     userId?: SortOrder
+    assignedById?: SortOrderInput | SortOrder
     _count?: TaskAssigneeCountOrderByAggregateInput
     _max?: TaskAssigneeMaxOrderByAggregateInput
     _min?: TaskAssigneeMinOrderByAggregateInput
@@ -23741,6 +25073,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter<"TaskAssignee"> | string
     taskId?: StringWithAggregatesFilter<"TaskAssignee"> | string
     userId?: StringWithAggregatesFilter<"TaskAssignee"> | string
+    assignedById?: StringNullableWithAggregatesFilter<"TaskAssignee"> | string | null
   }
 
   export type TaskCommentWhereInput = {
@@ -24670,6 +26003,7 @@ export namespace Prisma {
     activityLogs?: ActivityLogCreateNestedManyWithoutOrganizationInput
     notifications?: NotificationCreateNestedManyWithoutOrganizationInput
     attendances?: AttendanceCreateNestedManyWithoutOrganizationInput
+    customRoles?: CustomRoleCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateInput = {
@@ -24708,6 +26042,7 @@ export namespace Prisma {
     activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutOrganizationInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutOrganizationInput
     attendances?: AttendanceUncheckedCreateNestedManyWithoutOrganizationInput
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUpdateInput = {
@@ -24746,6 +26081,7 @@ export namespace Prisma {
     activityLogs?: ActivityLogUpdateManyWithoutOrganizationNestedInput
     notifications?: NotificationUpdateManyWithoutOrganizationNestedInput
     attendances?: AttendanceUpdateManyWithoutOrganizationNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateInput = {
@@ -24784,6 +26120,7 @@ export namespace Prisma {
     activityLogs?: ActivityLogUncheckedUpdateManyWithoutOrganizationNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutOrganizationNestedInput
     attendances?: AttendanceUncheckedUpdateManyWithoutOrganizationNestedInput
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationCreateManyInput = {
@@ -24876,6 +26213,79 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type CustomRoleCreateInput = {
+    id?: string
+    name: string
+    description?: string | null
+    permissions?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    organization: OrganizationCreateNestedOneWithoutCustomRolesInput
+    users?: UserCreateNestedManyWithoutCustomRoleInput
+  }
+
+  export type CustomRoleUncheckedCreateInput = {
+    id?: string
+    organizationId: string
+    name: string
+    description?: string | null
+    permissions?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutCustomRoleInput
+  }
+
+  export type CustomRoleUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    permissions?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    organization?: OrganizationUpdateOneRequiredWithoutCustomRolesNestedInput
+    users?: UserUpdateManyWithoutCustomRoleNestedInput
+  }
+
+  export type CustomRoleUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organizationId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    permissions?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutCustomRoleNestedInput
+  }
+
+  export type CustomRoleCreateManyInput = {
+    id?: string
+    organizationId: string
+    name: string
+    description?: string | null
+    permissions?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type CustomRoleUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    permissions?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CustomRoleUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organizationId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    permissions?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     name: string
@@ -24890,12 +26300,14 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
+    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryCreateNestedManyWithoutUserInput
     tickets?: TicketCreateNestedManyWithoutClientInput
@@ -24912,6 +26324,7 @@ export namespace Prisma {
   export type UserUncheckedCreateInput = {
     id?: string
     organizationId?: string | null
+    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -24929,6 +26342,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeUncheckedCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutUserInput
     tickets?: TicketUncheckedCreateNestedManyWithoutClientInput
@@ -24956,12 +26370,14 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
+    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutUserNestedInput
     tickets?: TicketUpdateManyWithoutClientNestedInput
@@ -24978,6 +26394,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -24995,6 +26412,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUncheckedUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutUserNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutClientNestedInput
@@ -25011,6 +26429,7 @@ export namespace Prisma {
   export type UserCreateManyInput = {
     id?: string
     organizationId?: string | null
+    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -25043,6 +26462,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -25501,30 +26921,35 @@ export namespace Prisma {
     id?: string
     task: TaskCreateNestedOneWithoutAssigneesInput
     user: UserCreateNestedOneWithoutTaskAssignmentsInput
+    assignedBy?: UserCreateNestedOneWithoutAssignedTasksInput
   }
 
   export type TaskAssigneeUncheckedCreateInput = {
     id?: string
     taskId: string
     userId: string
+    assignedById?: string | null
   }
 
   export type TaskAssigneeUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     task?: TaskUpdateOneRequiredWithoutAssigneesNestedInput
     user?: UserUpdateOneRequiredWithoutTaskAssignmentsNestedInput
+    assignedBy?: UserUpdateOneWithoutAssignedTasksNestedInput
   }
 
   export type TaskAssigneeUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     taskId?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    assignedById?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type TaskAssigneeCreateManyInput = {
     id?: string
     taskId: string
     userId: string
+    assignedById?: string | null
   }
 
   export type TaskAssigneeUpdateManyMutationInput = {
@@ -25535,6 +26960,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     taskId?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    assignedById?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type TaskCommentCreateInput = {
@@ -26591,6 +28017,12 @@ export namespace Prisma {
     none?: AttendanceWhereInput
   }
 
+  export type CustomRoleListRelationFilter = {
+    every?: CustomRoleWhereInput
+    some?: CustomRoleWhereInput
+    none?: CustomRoleWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -26625,6 +28057,10 @@ export namespace Prisma {
   }
 
   export type AttendanceOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type CustomRoleOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -26875,6 +28311,39 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type OrganizationRelationFilter = {
+    is?: OrganizationWhereInput
+    isNot?: OrganizationWhereInput
+  }
+
+  export type CustomRoleCountOrderByAggregateInput = {
+    id?: SortOrder
+    organizationId?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    permissions?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type CustomRoleMaxOrderByAggregateInput = {
+    id?: SortOrder
+    organizationId?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type CustomRoleMinOrderByAggregateInput = {
+    id?: SortOrder
+    organizationId?: SortOrder
+    name?: SortOrder
+    description?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
   export type EnumRoleFilter<$PrismaModel = never> = {
     equals?: $Enums.Role | EnumRoleFieldRefInput<$PrismaModel>
     in?: $Enums.Role[] | ListEnumRoleFieldRefInput<$PrismaModel>
@@ -26885,6 +28354,11 @@ export namespace Prisma {
   export type OrganizationNullableRelationFilter = {
     is?: OrganizationWhereInput | null
     isNot?: OrganizationWhereInput | null
+  }
+
+  export type CustomRoleNullableRelationFilter = {
+    is?: CustomRoleWhereInput | null
+    isNot?: CustomRoleWhereInput | null
   }
 
   export type UserNullableRelationFilter = {
@@ -26970,6 +28444,7 @@ export namespace Prisma {
   export type UserCountOrderByAggregateInput = {
     id?: SortOrder
     organizationId?: SortOrder
+    customRoleId?: SortOrder
     name?: SortOrder
     email?: SortOrder
     passwordHash?: SortOrder
@@ -26987,6 +28462,7 @@ export namespace Prisma {
   export type UserMaxOrderByAggregateInput = {
     id?: SortOrder
     organizationId?: SortOrder
+    customRoleId?: SortOrder
     name?: SortOrder
     email?: SortOrder
     passwordHash?: SortOrder
@@ -27004,6 +28480,7 @@ export namespace Prisma {
   export type UserMinOrderByAggregateInput = {
     id?: SortOrder
     organizationId?: SortOrder
+    customRoleId?: SortOrder
     name?: SortOrder
     email?: SortOrder
     passwordHash?: SortOrder
@@ -27055,11 +28532,6 @@ export namespace Prisma {
     gt?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
     gte?: Decimal | DecimalJsLike | number | string | DecimalFieldRefInput<$PrismaModel>
     not?: NestedDecimalFilter<$PrismaModel> | Decimal | DecimalJsLike | number | string
-  }
-
-  export type OrganizationRelationFilter = {
-    is?: OrganizationWhereInput
-    isNot?: OrganizationWhereInput
   }
 
   export type PhaseListRelationFilter = {
@@ -27480,18 +28952,21 @@ export namespace Prisma {
     id?: SortOrder
     taskId?: SortOrder
     userId?: SortOrder
+    assignedById?: SortOrder
   }
 
   export type TaskAssigneeMaxOrderByAggregateInput = {
     id?: SortOrder
     taskId?: SortOrder
     userId?: SortOrder
+    assignedById?: SortOrder
   }
 
   export type TaskAssigneeMinOrderByAggregateInput = {
     id?: SortOrder
     taskId?: SortOrder
     userId?: SortOrder
+    assignedById?: SortOrder
   }
 
   export type TaskCommentCountOrderByAggregateInput = {
@@ -28048,6 +29523,13 @@ export namespace Prisma {
     connect?: AttendanceWhereUniqueInput | AttendanceWhereUniqueInput[]
   }
 
+  export type CustomRoleCreateNestedManyWithoutOrganizationInput = {
+    create?: XOR<CustomRoleCreateWithoutOrganizationInput, CustomRoleUncheckedCreateWithoutOrganizationInput> | CustomRoleCreateWithoutOrganizationInput[] | CustomRoleUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: CustomRoleCreateOrConnectWithoutOrganizationInput | CustomRoleCreateOrConnectWithoutOrganizationInput[]
+    createMany?: CustomRoleCreateManyOrganizationInputEnvelope
+    connect?: CustomRoleWhereUniqueInput | CustomRoleWhereUniqueInput[]
+  }
+
   export type UserUncheckedCreateNestedManyWithoutOrganizationInput = {
     create?: XOR<UserCreateWithoutOrganizationInput, UserUncheckedCreateWithoutOrganizationInput> | UserCreateWithoutOrganizationInput[] | UserUncheckedCreateWithoutOrganizationInput[]
     connectOrCreate?: UserCreateOrConnectWithoutOrganizationInput | UserCreateOrConnectWithoutOrganizationInput[]
@@ -28102,6 +29584,13 @@ export namespace Prisma {
     connectOrCreate?: AttendanceCreateOrConnectWithoutOrganizationInput | AttendanceCreateOrConnectWithoutOrganizationInput[]
     createMany?: AttendanceCreateManyOrganizationInputEnvelope
     connect?: AttendanceWhereUniqueInput | AttendanceWhereUniqueInput[]
+  }
+
+  export type CustomRoleUncheckedCreateNestedManyWithoutOrganizationInput = {
+    create?: XOR<CustomRoleCreateWithoutOrganizationInput, CustomRoleUncheckedCreateWithoutOrganizationInput> | CustomRoleCreateWithoutOrganizationInput[] | CustomRoleUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: CustomRoleCreateOrConnectWithoutOrganizationInput | CustomRoleCreateOrConnectWithoutOrganizationInput[]
+    createMany?: CustomRoleCreateManyOrganizationInputEnvelope
+    connect?: CustomRoleWhereUniqueInput | CustomRoleWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -28260,6 +29749,20 @@ export namespace Prisma {
     deleteMany?: AttendanceScalarWhereInput | AttendanceScalarWhereInput[]
   }
 
+  export type CustomRoleUpdateManyWithoutOrganizationNestedInput = {
+    create?: XOR<CustomRoleCreateWithoutOrganizationInput, CustomRoleUncheckedCreateWithoutOrganizationInput> | CustomRoleCreateWithoutOrganizationInput[] | CustomRoleUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: CustomRoleCreateOrConnectWithoutOrganizationInput | CustomRoleCreateOrConnectWithoutOrganizationInput[]
+    upsert?: CustomRoleUpsertWithWhereUniqueWithoutOrganizationInput | CustomRoleUpsertWithWhereUniqueWithoutOrganizationInput[]
+    createMany?: CustomRoleCreateManyOrganizationInputEnvelope
+    set?: CustomRoleWhereUniqueInput | CustomRoleWhereUniqueInput[]
+    disconnect?: CustomRoleWhereUniqueInput | CustomRoleWhereUniqueInput[]
+    delete?: CustomRoleWhereUniqueInput | CustomRoleWhereUniqueInput[]
+    connect?: CustomRoleWhereUniqueInput | CustomRoleWhereUniqueInput[]
+    update?: CustomRoleUpdateWithWhereUniqueWithoutOrganizationInput | CustomRoleUpdateWithWhereUniqueWithoutOrganizationInput[]
+    updateMany?: CustomRoleUpdateManyWithWhereWithoutOrganizationInput | CustomRoleUpdateManyWithWhereWithoutOrganizationInput[]
+    deleteMany?: CustomRoleScalarWhereInput | CustomRoleScalarWhereInput[]
+  }
+
   export type UserUncheckedUpdateManyWithoutOrganizationNestedInput = {
     create?: XOR<UserCreateWithoutOrganizationInput, UserUncheckedCreateWithoutOrganizationInput> | UserCreateWithoutOrganizationInput[] | UserUncheckedCreateWithoutOrganizationInput[]
     connectOrCreate?: UserCreateOrConnectWithoutOrganizationInput | UserCreateOrConnectWithoutOrganizationInput[]
@@ -28372,10 +29875,86 @@ export namespace Prisma {
     deleteMany?: AttendanceScalarWhereInput | AttendanceScalarWhereInput[]
   }
 
+  export type CustomRoleUncheckedUpdateManyWithoutOrganizationNestedInput = {
+    create?: XOR<CustomRoleCreateWithoutOrganizationInput, CustomRoleUncheckedCreateWithoutOrganizationInput> | CustomRoleCreateWithoutOrganizationInput[] | CustomRoleUncheckedCreateWithoutOrganizationInput[]
+    connectOrCreate?: CustomRoleCreateOrConnectWithoutOrganizationInput | CustomRoleCreateOrConnectWithoutOrganizationInput[]
+    upsert?: CustomRoleUpsertWithWhereUniqueWithoutOrganizationInput | CustomRoleUpsertWithWhereUniqueWithoutOrganizationInput[]
+    createMany?: CustomRoleCreateManyOrganizationInputEnvelope
+    set?: CustomRoleWhereUniqueInput | CustomRoleWhereUniqueInput[]
+    disconnect?: CustomRoleWhereUniqueInput | CustomRoleWhereUniqueInput[]
+    delete?: CustomRoleWhereUniqueInput | CustomRoleWhereUniqueInput[]
+    connect?: CustomRoleWhereUniqueInput | CustomRoleWhereUniqueInput[]
+    update?: CustomRoleUpdateWithWhereUniqueWithoutOrganizationInput | CustomRoleUpdateWithWhereUniqueWithoutOrganizationInput[]
+    updateMany?: CustomRoleUpdateManyWithWhereWithoutOrganizationInput | CustomRoleUpdateManyWithWhereWithoutOrganizationInput[]
+    deleteMany?: CustomRoleScalarWhereInput | CustomRoleScalarWhereInput[]
+  }
+
+  export type OrganizationCreateNestedOneWithoutCustomRolesInput = {
+    create?: XOR<OrganizationCreateWithoutCustomRolesInput, OrganizationUncheckedCreateWithoutCustomRolesInput>
+    connectOrCreate?: OrganizationCreateOrConnectWithoutCustomRolesInput
+    connect?: OrganizationWhereUniqueInput
+  }
+
+  export type UserCreateNestedManyWithoutCustomRoleInput = {
+    create?: XOR<UserCreateWithoutCustomRoleInput, UserUncheckedCreateWithoutCustomRoleInput> | UserCreateWithoutCustomRoleInput[] | UserUncheckedCreateWithoutCustomRoleInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutCustomRoleInput | UserCreateOrConnectWithoutCustomRoleInput[]
+    createMany?: UserCreateManyCustomRoleInputEnvelope
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+  }
+
+  export type UserUncheckedCreateNestedManyWithoutCustomRoleInput = {
+    create?: XOR<UserCreateWithoutCustomRoleInput, UserUncheckedCreateWithoutCustomRoleInput> | UserCreateWithoutCustomRoleInput[] | UserUncheckedCreateWithoutCustomRoleInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutCustomRoleInput | UserCreateOrConnectWithoutCustomRoleInput[]
+    createMany?: UserCreateManyCustomRoleInputEnvelope
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+  }
+
+  export type OrganizationUpdateOneRequiredWithoutCustomRolesNestedInput = {
+    create?: XOR<OrganizationCreateWithoutCustomRolesInput, OrganizationUncheckedCreateWithoutCustomRolesInput>
+    connectOrCreate?: OrganizationCreateOrConnectWithoutCustomRolesInput
+    upsert?: OrganizationUpsertWithoutCustomRolesInput
+    connect?: OrganizationWhereUniqueInput
+    update?: XOR<XOR<OrganizationUpdateToOneWithWhereWithoutCustomRolesInput, OrganizationUpdateWithoutCustomRolesInput>, OrganizationUncheckedUpdateWithoutCustomRolesInput>
+  }
+
+  export type UserUpdateManyWithoutCustomRoleNestedInput = {
+    create?: XOR<UserCreateWithoutCustomRoleInput, UserUncheckedCreateWithoutCustomRoleInput> | UserCreateWithoutCustomRoleInput[] | UserUncheckedCreateWithoutCustomRoleInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutCustomRoleInput | UserCreateOrConnectWithoutCustomRoleInput[]
+    upsert?: UserUpsertWithWhereUniqueWithoutCustomRoleInput | UserUpsertWithWhereUniqueWithoutCustomRoleInput[]
+    createMany?: UserCreateManyCustomRoleInputEnvelope
+    set?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    disconnect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    delete?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    update?: UserUpdateWithWhereUniqueWithoutCustomRoleInput | UserUpdateWithWhereUniqueWithoutCustomRoleInput[]
+    updateMany?: UserUpdateManyWithWhereWithoutCustomRoleInput | UserUpdateManyWithWhereWithoutCustomRoleInput[]
+    deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
+  }
+
+  export type UserUncheckedUpdateManyWithoutCustomRoleNestedInput = {
+    create?: XOR<UserCreateWithoutCustomRoleInput, UserUncheckedCreateWithoutCustomRoleInput> | UserCreateWithoutCustomRoleInput[] | UserUncheckedCreateWithoutCustomRoleInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutCustomRoleInput | UserCreateOrConnectWithoutCustomRoleInput[]
+    upsert?: UserUpsertWithWhereUniqueWithoutCustomRoleInput | UserUpsertWithWhereUniqueWithoutCustomRoleInput[]
+    createMany?: UserCreateManyCustomRoleInputEnvelope
+    set?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    disconnect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    delete?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    update?: UserUpdateWithWhereUniqueWithoutCustomRoleInput | UserUpdateWithWhereUniqueWithoutCustomRoleInput[]
+    updateMany?: UserUpdateManyWithWhereWithoutCustomRoleInput | UserUpdateManyWithWhereWithoutCustomRoleInput[]
+    deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
+  }
+
   export type OrganizationCreateNestedOneWithoutUsersInput = {
     create?: XOR<OrganizationCreateWithoutUsersInput, OrganizationUncheckedCreateWithoutUsersInput>
     connectOrCreate?: OrganizationCreateOrConnectWithoutUsersInput
     connect?: OrganizationWhereUniqueInput
+  }
+
+  export type CustomRoleCreateNestedOneWithoutUsersInput = {
+    create?: XOR<CustomRoleCreateWithoutUsersInput, CustomRoleUncheckedCreateWithoutUsersInput>
+    connectOrCreate?: CustomRoleCreateOrConnectWithoutUsersInput
+    connect?: CustomRoleWhereUniqueInput
   }
 
   export type UserCreateNestedOneWithoutMembersInput = {
@@ -28416,6 +29995,13 @@ export namespace Prisma {
     create?: XOR<TaskAssigneeCreateWithoutUserInput, TaskAssigneeUncheckedCreateWithoutUserInput> | TaskAssigneeCreateWithoutUserInput[] | TaskAssigneeUncheckedCreateWithoutUserInput[]
     connectOrCreate?: TaskAssigneeCreateOrConnectWithoutUserInput | TaskAssigneeCreateOrConnectWithoutUserInput[]
     createMany?: TaskAssigneeCreateManyUserInputEnvelope
+    connect?: TaskAssigneeWhereUniqueInput | TaskAssigneeWhereUniqueInput[]
+  }
+
+  export type TaskAssigneeCreateNestedManyWithoutAssignedByInput = {
+    create?: XOR<TaskAssigneeCreateWithoutAssignedByInput, TaskAssigneeUncheckedCreateWithoutAssignedByInput> | TaskAssigneeCreateWithoutAssignedByInput[] | TaskAssigneeUncheckedCreateWithoutAssignedByInput[]
+    connectOrCreate?: TaskAssigneeCreateOrConnectWithoutAssignedByInput | TaskAssigneeCreateOrConnectWithoutAssignedByInput[]
+    createMany?: TaskAssigneeCreateManyAssignedByInputEnvelope
     connect?: TaskAssigneeWhereUniqueInput | TaskAssigneeWhereUniqueInput[]
   }
 
@@ -28531,6 +30117,13 @@ export namespace Prisma {
     connect?: TaskAssigneeWhereUniqueInput | TaskAssigneeWhereUniqueInput[]
   }
 
+  export type TaskAssigneeUncheckedCreateNestedManyWithoutAssignedByInput = {
+    create?: XOR<TaskAssigneeCreateWithoutAssignedByInput, TaskAssigneeUncheckedCreateWithoutAssignedByInput> | TaskAssigneeCreateWithoutAssignedByInput[] | TaskAssigneeUncheckedCreateWithoutAssignedByInput[]
+    connectOrCreate?: TaskAssigneeCreateOrConnectWithoutAssignedByInput | TaskAssigneeCreateOrConnectWithoutAssignedByInput[]
+    createMany?: TaskAssigneeCreateManyAssignedByInputEnvelope
+    connect?: TaskAssigneeWhereUniqueInput | TaskAssigneeWhereUniqueInput[]
+  }
+
   export type WorkLogUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<WorkLogCreateWithoutUserInput, WorkLogUncheckedCreateWithoutUserInput> | WorkLogCreateWithoutUserInput[] | WorkLogUncheckedCreateWithoutUserInput[]
     connectOrCreate?: WorkLogCreateOrConnectWithoutUserInput | WorkLogCreateOrConnectWithoutUserInput[]
@@ -28622,6 +30215,16 @@ export namespace Prisma {
     update?: XOR<XOR<OrganizationUpdateToOneWithWhereWithoutUsersInput, OrganizationUpdateWithoutUsersInput>, OrganizationUncheckedUpdateWithoutUsersInput>
   }
 
+  export type CustomRoleUpdateOneWithoutUsersNestedInput = {
+    create?: XOR<CustomRoleCreateWithoutUsersInput, CustomRoleUncheckedCreateWithoutUsersInput>
+    connectOrCreate?: CustomRoleCreateOrConnectWithoutUsersInput
+    upsert?: CustomRoleUpsertWithoutUsersInput
+    disconnect?: CustomRoleWhereInput | boolean
+    delete?: CustomRoleWhereInput | boolean
+    connect?: CustomRoleWhereUniqueInput
+    update?: XOR<XOR<CustomRoleUpdateToOneWithWhereWithoutUsersInput, CustomRoleUpdateWithoutUsersInput>, CustomRoleUncheckedUpdateWithoutUsersInput>
+  }
+
   export type UserUpdateOneWithoutMembersNestedInput = {
     create?: XOR<UserCreateWithoutMembersInput, UserUncheckedCreateWithoutMembersInput>
     connectOrCreate?: UserCreateOrConnectWithoutMembersInput
@@ -28699,6 +30302,20 @@ export namespace Prisma {
     connect?: TaskAssigneeWhereUniqueInput | TaskAssigneeWhereUniqueInput[]
     update?: TaskAssigneeUpdateWithWhereUniqueWithoutUserInput | TaskAssigneeUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: TaskAssigneeUpdateManyWithWhereWithoutUserInput | TaskAssigneeUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: TaskAssigneeScalarWhereInput | TaskAssigneeScalarWhereInput[]
+  }
+
+  export type TaskAssigneeUpdateManyWithoutAssignedByNestedInput = {
+    create?: XOR<TaskAssigneeCreateWithoutAssignedByInput, TaskAssigneeUncheckedCreateWithoutAssignedByInput> | TaskAssigneeCreateWithoutAssignedByInput[] | TaskAssigneeUncheckedCreateWithoutAssignedByInput[]
+    connectOrCreate?: TaskAssigneeCreateOrConnectWithoutAssignedByInput | TaskAssigneeCreateOrConnectWithoutAssignedByInput[]
+    upsert?: TaskAssigneeUpsertWithWhereUniqueWithoutAssignedByInput | TaskAssigneeUpsertWithWhereUniqueWithoutAssignedByInput[]
+    createMany?: TaskAssigneeCreateManyAssignedByInputEnvelope
+    set?: TaskAssigneeWhereUniqueInput | TaskAssigneeWhereUniqueInput[]
+    disconnect?: TaskAssigneeWhereUniqueInput | TaskAssigneeWhereUniqueInput[]
+    delete?: TaskAssigneeWhereUniqueInput | TaskAssigneeWhereUniqueInput[]
+    connect?: TaskAssigneeWhereUniqueInput | TaskAssigneeWhereUniqueInput[]
+    update?: TaskAssigneeUpdateWithWhereUniqueWithoutAssignedByInput | TaskAssigneeUpdateWithWhereUniqueWithoutAssignedByInput[]
+    updateMany?: TaskAssigneeUpdateManyWithWhereWithoutAssignedByInput | TaskAssigneeUpdateManyWithWhereWithoutAssignedByInput[]
     deleteMany?: TaskAssigneeScalarWhereInput | TaskAssigneeScalarWhereInput[]
   }
 
@@ -28923,6 +30540,20 @@ export namespace Prisma {
     connect?: TaskAssigneeWhereUniqueInput | TaskAssigneeWhereUniqueInput[]
     update?: TaskAssigneeUpdateWithWhereUniqueWithoutUserInput | TaskAssigneeUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: TaskAssigneeUpdateManyWithWhereWithoutUserInput | TaskAssigneeUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: TaskAssigneeScalarWhereInput | TaskAssigneeScalarWhereInput[]
+  }
+
+  export type TaskAssigneeUncheckedUpdateManyWithoutAssignedByNestedInput = {
+    create?: XOR<TaskAssigneeCreateWithoutAssignedByInput, TaskAssigneeUncheckedCreateWithoutAssignedByInput> | TaskAssigneeCreateWithoutAssignedByInput[] | TaskAssigneeUncheckedCreateWithoutAssignedByInput[]
+    connectOrCreate?: TaskAssigneeCreateOrConnectWithoutAssignedByInput | TaskAssigneeCreateOrConnectWithoutAssignedByInput[]
+    upsert?: TaskAssigneeUpsertWithWhereUniqueWithoutAssignedByInput | TaskAssigneeUpsertWithWhereUniqueWithoutAssignedByInput[]
+    createMany?: TaskAssigneeCreateManyAssignedByInputEnvelope
+    set?: TaskAssigneeWhereUniqueInput | TaskAssigneeWhereUniqueInput[]
+    disconnect?: TaskAssigneeWhereUniqueInput | TaskAssigneeWhereUniqueInput[]
+    delete?: TaskAssigneeWhereUniqueInput | TaskAssigneeWhereUniqueInput[]
+    connect?: TaskAssigneeWhereUniqueInput | TaskAssigneeWhereUniqueInput[]
+    update?: TaskAssigneeUpdateWithWhereUniqueWithoutAssignedByInput | TaskAssigneeUpdateWithWhereUniqueWithoutAssignedByInput[]
+    updateMany?: TaskAssigneeUpdateManyWithWhereWithoutAssignedByInput | TaskAssigneeUpdateManyWithWhereWithoutAssignedByInput[]
     deleteMany?: TaskAssigneeScalarWhereInput | TaskAssigneeScalarWhereInput[]
   }
 
@@ -29747,6 +31378,12 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type UserCreateNestedOneWithoutAssignedTasksInput = {
+    create?: XOR<UserCreateWithoutAssignedTasksInput, UserUncheckedCreateWithoutAssignedTasksInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAssignedTasksInput
+    connect?: UserWhereUniqueInput
+  }
+
   export type TaskUpdateOneRequiredWithoutAssigneesNestedInput = {
     create?: XOR<TaskCreateWithoutAssigneesInput, TaskUncheckedCreateWithoutAssigneesInput>
     connectOrCreate?: TaskCreateOrConnectWithoutAssigneesInput
@@ -29761,6 +31398,16 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutTaskAssignmentsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutTaskAssignmentsInput, UserUpdateWithoutTaskAssignmentsInput>, UserUncheckedUpdateWithoutTaskAssignmentsInput>
+  }
+
+  export type UserUpdateOneWithoutAssignedTasksNestedInput = {
+    create?: XOR<UserCreateWithoutAssignedTasksInput, UserUncheckedCreateWithoutAssignedTasksInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAssignedTasksInput
+    upsert?: UserUpsertWithoutAssignedTasksInput
+    disconnect?: UserWhereInput | boolean
+    delete?: UserWhereInput | boolean
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAssignedTasksInput, UserUpdateWithoutAssignedTasksInput>, UserUncheckedUpdateWithoutAssignedTasksInput>
   }
 
   export type TaskCreateNestedOneWithoutCommentsInput = {
@@ -30751,12 +32398,14 @@ export namespace Prisma {
     resetTokenExpiry?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string | null
+    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryCreateNestedManyWithoutUserInput
     tickets?: TicketCreateNestedManyWithoutClientInput
@@ -30772,6 +32421,7 @@ export namespace Prisma {
 
   export type UserUncheckedCreateWithoutOrganizationInput = {
     id?: string
+    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -30789,6 +32439,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeUncheckedCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutUserInput
     tickets?: TicketUncheckedCreateNestedManyWithoutClientInput
@@ -31064,6 +32715,36 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type CustomRoleCreateWithoutOrganizationInput = {
+    id?: string
+    name: string
+    description?: string | null
+    permissions?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserCreateNestedManyWithoutCustomRoleInput
+  }
+
+  export type CustomRoleUncheckedCreateWithoutOrganizationInput = {
+    id?: string
+    name: string
+    description?: string | null
+    permissions?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutCustomRoleInput
+  }
+
+  export type CustomRoleCreateOrConnectWithoutOrganizationInput = {
+    where: CustomRoleWhereUniqueInput
+    create: XOR<CustomRoleCreateWithoutOrganizationInput, CustomRoleUncheckedCreateWithoutOrganizationInput>
+  }
+
+  export type CustomRoleCreateManyOrganizationInputEnvelope = {
+    data: CustomRoleCreateManyOrganizationInput | CustomRoleCreateManyOrganizationInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithWhereUniqueWithoutOrganizationInput = {
     where: UserWhereUniqueInput
     update: XOR<UserUpdateWithoutOrganizationInput, UserUncheckedUpdateWithoutOrganizationInput>
@@ -31086,6 +32767,7 @@ export namespace Prisma {
     NOT?: UserScalarWhereInput | UserScalarWhereInput[]
     id?: StringFilter<"User"> | string
     organizationId?: StringNullableFilter<"User"> | string | null
+    customRoleId?: StringNullableFilter<"User"> | string | null
     name?: StringFilter<"User"> | string
     email?: StringFilter<"User"> | string
     passwordHash?: StringFilter<"User"> | string
@@ -31323,6 +33005,297 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Attendance"> | Date | string
   }
 
+  export type CustomRoleUpsertWithWhereUniqueWithoutOrganizationInput = {
+    where: CustomRoleWhereUniqueInput
+    update: XOR<CustomRoleUpdateWithoutOrganizationInput, CustomRoleUncheckedUpdateWithoutOrganizationInput>
+    create: XOR<CustomRoleCreateWithoutOrganizationInput, CustomRoleUncheckedCreateWithoutOrganizationInput>
+  }
+
+  export type CustomRoleUpdateWithWhereUniqueWithoutOrganizationInput = {
+    where: CustomRoleWhereUniqueInput
+    data: XOR<CustomRoleUpdateWithoutOrganizationInput, CustomRoleUncheckedUpdateWithoutOrganizationInput>
+  }
+
+  export type CustomRoleUpdateManyWithWhereWithoutOrganizationInput = {
+    where: CustomRoleScalarWhereInput
+    data: XOR<CustomRoleUpdateManyMutationInput, CustomRoleUncheckedUpdateManyWithoutOrganizationInput>
+  }
+
+  export type CustomRoleScalarWhereInput = {
+    AND?: CustomRoleScalarWhereInput | CustomRoleScalarWhereInput[]
+    OR?: CustomRoleScalarWhereInput[]
+    NOT?: CustomRoleScalarWhereInput | CustomRoleScalarWhereInput[]
+    id?: StringFilter<"CustomRole"> | string
+    organizationId?: StringFilter<"CustomRole"> | string
+    name?: StringFilter<"CustomRole"> | string
+    description?: StringNullableFilter<"CustomRole"> | string | null
+    permissions?: JsonNullableFilter<"CustomRole">
+    createdAt?: DateTimeFilter<"CustomRole"> | Date | string
+    updatedAt?: DateTimeFilter<"CustomRole"> | Date | string
+  }
+
+  export type OrganizationCreateWithoutCustomRolesInput = {
+    id?: string
+    name: string
+    plan?: $Enums.OrgPlan
+    status?: $Enums.OrgStatus
+    maxUsers?: number
+    maxProjects?: number
+    logoUrl?: string | null
+    themeColor?: string | null
+    industry?: string | null
+    size?: string | null
+    website?: string | null
+    country?: string | null
+    timezone?: string | null
+    billingEmail?: string | null
+    primaryContactName?: string | null
+    primaryContactPhone?: string | null
+    address?: string | null
+    trialEndsAt?: Date | string | null
+    suspendedAt?: Date | string | null
+    suspendedReason?: string | null
+    requireApproval?: boolean
+    allowClientSignup?: boolean
+    sessionTimeoutMinutes?: number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    customFeatures?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserCreateNestedManyWithoutOrganizationInput
+    projects?: ProjectCreateNestedManyWithoutOrganizationInput
+    tickets?: TicketCreateNestedManyWithoutOrganizationInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutOrganizationInput
+    chatRoomLastSeen?: ChatRoomLastSeenCreateNestedManyWithoutOrganizationInput
+    activityLogs?: ActivityLogCreateNestedManyWithoutOrganizationInput
+    notifications?: NotificationCreateNestedManyWithoutOrganizationInput
+    attendances?: AttendanceCreateNestedManyWithoutOrganizationInput
+  }
+
+  export type OrganizationUncheckedCreateWithoutCustomRolesInput = {
+    id?: string
+    name: string
+    plan?: $Enums.OrgPlan
+    status?: $Enums.OrgStatus
+    maxUsers?: number
+    maxProjects?: number
+    logoUrl?: string | null
+    themeColor?: string | null
+    industry?: string | null
+    size?: string | null
+    website?: string | null
+    country?: string | null
+    timezone?: string | null
+    billingEmail?: string | null
+    primaryContactName?: string | null
+    primaryContactPhone?: string | null
+    address?: string | null
+    trialEndsAt?: Date | string | null
+    suspendedAt?: Date | string | null
+    suspendedReason?: string | null
+    requireApproval?: boolean
+    allowClientSignup?: boolean
+    sessionTimeoutMinutes?: number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    customFeatures?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    users?: UserUncheckedCreateNestedManyWithoutOrganizationInput
+    projects?: ProjectUncheckedCreateNestedManyWithoutOrganizationInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutOrganizationInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutOrganizationInput
+    chatRoomLastSeen?: ChatRoomLastSeenUncheckedCreateNestedManyWithoutOrganizationInput
+    activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutOrganizationInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutOrganizationInput
+    attendances?: AttendanceUncheckedCreateNestedManyWithoutOrganizationInput
+  }
+
+  export type OrganizationCreateOrConnectWithoutCustomRolesInput = {
+    where: OrganizationWhereUniqueInput
+    create: XOR<OrganizationCreateWithoutCustomRolesInput, OrganizationUncheckedCreateWithoutCustomRolesInput>
+  }
+
+  export type UserCreateWithoutCustomRoleInput = {
+    id?: string
+    name: string
+    email: string
+    passwordHash: string
+    role?: $Enums.Role
+    avatar?: string | null
+    isApproved?: boolean
+    mustChangePassword?: boolean
+    resetToken?: string | null
+    resetTokenExpiry?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string | null
+    organization?: OrganizationCreateNestedOneWithoutUsersInput
+    manager?: UserCreateNestedOneWithoutMembersInput
+    members?: UserCreateNestedManyWithoutManagerInput
+    managedProjects?: ProjectCreateNestedManyWithoutManagerInput
+    clientProjects?: ProjectCreateNestedManyWithoutClientInput
+    workloads?: WorkloadCreateNestedManyWithoutUserInput
+    taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeCreateNestedManyWithoutAssignedByInput
+    workLogs?: WorkLogCreateNestedManyWithoutUserInput
+    timeEntries?: TimeEntryCreateNestedManyWithoutUserInput
+    tickets?: TicketCreateNestedManyWithoutClientInput
+    ticketComments?: TicketCommentCreateNestedManyWithoutUserInput
+    taskComments?: TaskCommentCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutUserInput
+    chatRoomLastSeen?: ChatRoomLastSeenCreateNestedManyWithoutUserInput
+    activityLogs?: ActivityLogCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    attendances?: AttendanceCreateNestedManyWithoutUserInput
+    authoredDocuments?: DocumentCreateNestedManyWithoutAuthorInput
+  }
+
+  export type UserUncheckedCreateWithoutCustomRoleInput = {
+    id?: string
+    organizationId?: string | null
+    name: string
+    email: string
+    passwordHash: string
+    role?: $Enums.Role
+    avatar?: string | null
+    isApproved?: boolean
+    mustChangePassword?: boolean
+    resetToken?: string | null
+    resetTokenExpiry?: Date | string | null
+    managerId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string | null
+    members?: UserUncheckedCreateNestedManyWithoutManagerInput
+    managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
+    clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
+    workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
+    taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeUncheckedCreateNestedManyWithoutAssignedByInput
+    workLogs?: WorkLogUncheckedCreateNestedManyWithoutUserInput
+    timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutUserInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutClientInput
+    ticketComments?: TicketCommentUncheckedCreateNestedManyWithoutUserInput
+    taskComments?: TaskCommentUncheckedCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutUserInput
+    chatRoomLastSeen?: ChatRoomLastSeenUncheckedCreateNestedManyWithoutUserInput
+    activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    attendances?: AttendanceUncheckedCreateNestedManyWithoutUserInput
+    authoredDocuments?: DocumentUncheckedCreateNestedManyWithoutAuthorInput
+  }
+
+  export type UserCreateOrConnectWithoutCustomRoleInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutCustomRoleInput, UserUncheckedCreateWithoutCustomRoleInput>
+  }
+
+  export type UserCreateManyCustomRoleInputEnvelope = {
+    data: UserCreateManyCustomRoleInput | UserCreateManyCustomRoleInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type OrganizationUpsertWithoutCustomRolesInput = {
+    update: XOR<OrganizationUpdateWithoutCustomRolesInput, OrganizationUncheckedUpdateWithoutCustomRolesInput>
+    create: XOR<OrganizationCreateWithoutCustomRolesInput, OrganizationUncheckedCreateWithoutCustomRolesInput>
+    where?: OrganizationWhereInput
+  }
+
+  export type OrganizationUpdateToOneWithWhereWithoutCustomRolesInput = {
+    where?: OrganizationWhereInput
+    data: XOR<OrganizationUpdateWithoutCustomRolesInput, OrganizationUncheckedUpdateWithoutCustomRolesInput>
+  }
+
+  export type OrganizationUpdateWithoutCustomRolesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    plan?: EnumOrgPlanFieldUpdateOperationsInput | $Enums.OrgPlan
+    status?: EnumOrgStatusFieldUpdateOperationsInput | $Enums.OrgStatus
+    maxUsers?: IntFieldUpdateOperationsInput | number
+    maxProjects?: IntFieldUpdateOperationsInput | number
+    logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    themeColor?: NullableStringFieldUpdateOperationsInput | string | null
+    industry?: NullableStringFieldUpdateOperationsInput | string | null
+    size?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    timezone?: NullableStringFieldUpdateOperationsInput | string | null
+    billingEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    primaryContactName?: NullableStringFieldUpdateOperationsInput | string | null
+    primaryContactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    suspendedReason?: NullableStringFieldUpdateOperationsInput | string | null
+    requireApproval?: BoolFieldUpdateOperationsInput | boolean
+    allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
+    sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    customFeatures?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUpdateManyWithoutOrganizationNestedInput
+    projects?: ProjectUpdateManyWithoutOrganizationNestedInput
+    tickets?: TicketUpdateManyWithoutOrganizationNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutOrganizationNestedInput
+    chatRoomLastSeen?: ChatRoomLastSeenUpdateManyWithoutOrganizationNestedInput
+    activityLogs?: ActivityLogUpdateManyWithoutOrganizationNestedInput
+    notifications?: NotificationUpdateManyWithoutOrganizationNestedInput
+    attendances?: AttendanceUpdateManyWithoutOrganizationNestedInput
+  }
+
+  export type OrganizationUncheckedUpdateWithoutCustomRolesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    plan?: EnumOrgPlanFieldUpdateOperationsInput | $Enums.OrgPlan
+    status?: EnumOrgStatusFieldUpdateOperationsInput | $Enums.OrgStatus
+    maxUsers?: IntFieldUpdateOperationsInput | number
+    maxProjects?: IntFieldUpdateOperationsInput | number
+    logoUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    themeColor?: NullableStringFieldUpdateOperationsInput | string | null
+    industry?: NullableStringFieldUpdateOperationsInput | string | null
+    size?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    country?: NullableStringFieldUpdateOperationsInput | string | null
+    timezone?: NullableStringFieldUpdateOperationsInput | string | null
+    billingEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    primaryContactName?: NullableStringFieldUpdateOperationsInput | string | null
+    primaryContactPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    trialEndsAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    suspendedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    suspendedReason?: NullableStringFieldUpdateOperationsInput | string | null
+    requireApproval?: BoolFieldUpdateOperationsInput | boolean
+    allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
+    sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
+    rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    customFeatures?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutOrganizationNestedInput
+    projects?: ProjectUncheckedUpdateManyWithoutOrganizationNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutOrganizationNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutOrganizationNestedInput
+    chatRoomLastSeen?: ChatRoomLastSeenUncheckedUpdateManyWithoutOrganizationNestedInput
+    activityLogs?: ActivityLogUncheckedUpdateManyWithoutOrganizationNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutOrganizationNestedInput
+    attendances?: AttendanceUncheckedUpdateManyWithoutOrganizationNestedInput
+  }
+
+  export type UserUpsertWithWhereUniqueWithoutCustomRoleInput = {
+    where: UserWhereUniqueInput
+    update: XOR<UserUpdateWithoutCustomRoleInput, UserUncheckedUpdateWithoutCustomRoleInput>
+    create: XOR<UserCreateWithoutCustomRoleInput, UserUncheckedCreateWithoutCustomRoleInput>
+  }
+
+  export type UserUpdateWithWhereUniqueWithoutCustomRoleInput = {
+    where: UserWhereUniqueInput
+    data: XOR<UserUpdateWithoutCustomRoleInput, UserUncheckedUpdateWithoutCustomRoleInput>
+  }
+
+  export type UserUpdateManyWithWhereWithoutCustomRoleInput = {
+    where: UserScalarWhereInput
+    data: XOR<UserUpdateManyMutationInput, UserUncheckedUpdateManyWithoutCustomRoleInput>
+  }
+
   export type OrganizationCreateWithoutUsersInput = {
     id?: string
     name: string
@@ -31358,6 +33331,7 @@ export namespace Prisma {
     activityLogs?: ActivityLogCreateNestedManyWithoutOrganizationInput
     notifications?: NotificationCreateNestedManyWithoutOrganizationInput
     attendances?: AttendanceCreateNestedManyWithoutOrganizationInput
+    customRoles?: CustomRoleCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutUsersInput = {
@@ -31395,11 +33369,37 @@ export namespace Prisma {
     activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutOrganizationInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutOrganizationInput
     attendances?: AttendanceUncheckedCreateNestedManyWithoutOrganizationInput
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutUsersInput = {
     where: OrganizationWhereUniqueInput
     create: XOR<OrganizationCreateWithoutUsersInput, OrganizationUncheckedCreateWithoutUsersInput>
+  }
+
+  export type CustomRoleCreateWithoutUsersInput = {
+    id?: string
+    name: string
+    description?: string | null
+    permissions?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    organization: OrganizationCreateNestedOneWithoutCustomRolesInput
+  }
+
+  export type CustomRoleUncheckedCreateWithoutUsersInput = {
+    id?: string
+    organizationId: string
+    name: string
+    description?: string | null
+    permissions?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type CustomRoleCreateOrConnectWithoutUsersInput = {
+    where: CustomRoleWhereUniqueInput
+    create: XOR<CustomRoleCreateWithoutUsersInput, CustomRoleUncheckedCreateWithoutUsersInput>
   }
 
   export type UserCreateWithoutMembersInput = {
@@ -31416,11 +33416,13 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
+    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryCreateNestedManyWithoutUserInput
     tickets?: TicketCreateNestedManyWithoutClientInput
@@ -31437,6 +33439,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutMembersInput = {
     id?: string
     organizationId?: string | null
+    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -31453,6 +33456,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeUncheckedCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutUserInput
     tickets?: TicketUncheckedCreateNestedManyWithoutClientInput
@@ -31485,11 +33489,13 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
+    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryCreateNestedManyWithoutUserInput
     tickets?: TicketCreateNestedManyWithoutClientInput
@@ -31506,6 +33512,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutManagerInput = {
     id?: string
     organizationId?: string | null
+    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -31522,6 +33529,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeUncheckedCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutUserInput
     tickets?: TicketUncheckedCreateNestedManyWithoutClientInput
@@ -31694,11 +33702,13 @@ export namespace Prisma {
   export type TaskAssigneeCreateWithoutUserInput = {
     id?: string
     task: TaskCreateNestedOneWithoutAssigneesInput
+    assignedBy?: UserCreateNestedOneWithoutAssignedTasksInput
   }
 
   export type TaskAssigneeUncheckedCreateWithoutUserInput = {
     id?: string
     taskId: string
+    assignedById?: string | null
   }
 
   export type TaskAssigneeCreateOrConnectWithoutUserInput = {
@@ -31708,6 +33718,28 @@ export namespace Prisma {
 
   export type TaskAssigneeCreateManyUserInputEnvelope = {
     data: TaskAssigneeCreateManyUserInput | TaskAssigneeCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type TaskAssigneeCreateWithoutAssignedByInput = {
+    id?: string
+    task: TaskCreateNestedOneWithoutAssigneesInput
+    user: UserCreateNestedOneWithoutTaskAssignmentsInput
+  }
+
+  export type TaskAssigneeUncheckedCreateWithoutAssignedByInput = {
+    id?: string
+    taskId: string
+    userId: string
+  }
+
+  export type TaskAssigneeCreateOrConnectWithoutAssignedByInput = {
+    where: TaskAssigneeWhereUniqueInput
+    create: XOR<TaskAssigneeCreateWithoutAssignedByInput, TaskAssigneeUncheckedCreateWithoutAssignedByInput>
+  }
+
+  export type TaskAssigneeCreateManyAssignedByInputEnvelope = {
+    data: TaskAssigneeCreateManyAssignedByInput | TaskAssigneeCreateManyAssignedByInput[]
     skipDuplicates?: boolean
   }
 
@@ -32095,6 +34127,7 @@ export namespace Prisma {
     activityLogs?: ActivityLogUpdateManyWithoutOrganizationNestedInput
     notifications?: NotificationUpdateManyWithoutOrganizationNestedInput
     attendances?: AttendanceUpdateManyWithoutOrganizationNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutUsersInput = {
@@ -32132,6 +34165,38 @@ export namespace Prisma {
     activityLogs?: ActivityLogUncheckedUpdateManyWithoutOrganizationNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutOrganizationNestedInput
     attendances?: AttendanceUncheckedUpdateManyWithoutOrganizationNestedInput
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutOrganizationNestedInput
+  }
+
+  export type CustomRoleUpsertWithoutUsersInput = {
+    update: XOR<CustomRoleUpdateWithoutUsersInput, CustomRoleUncheckedUpdateWithoutUsersInput>
+    create: XOR<CustomRoleCreateWithoutUsersInput, CustomRoleUncheckedCreateWithoutUsersInput>
+    where?: CustomRoleWhereInput
+  }
+
+  export type CustomRoleUpdateToOneWithWhereWithoutUsersInput = {
+    where?: CustomRoleWhereInput
+    data: XOR<CustomRoleUpdateWithoutUsersInput, CustomRoleUncheckedUpdateWithoutUsersInput>
+  }
+
+  export type CustomRoleUpdateWithoutUsersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    permissions?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    organization?: OrganizationUpdateOneRequiredWithoutCustomRolesNestedInput
+  }
+
+  export type CustomRoleUncheckedUpdateWithoutUsersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organizationId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    permissions?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UserUpsertWithoutMembersInput = {
@@ -32159,11 +34224,13 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
+    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutUserNestedInput
     tickets?: TicketUpdateManyWithoutClientNestedInput
@@ -32180,6 +34247,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutMembersInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -32196,6 +34264,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUncheckedUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutUserNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutClientNestedInput
@@ -32306,6 +34375,23 @@ export namespace Prisma {
     id?: StringFilter<"TaskAssignee"> | string
     taskId?: StringFilter<"TaskAssignee"> | string
     userId?: StringFilter<"TaskAssignee"> | string
+    assignedById?: StringNullableFilter<"TaskAssignee"> | string | null
+  }
+
+  export type TaskAssigneeUpsertWithWhereUniqueWithoutAssignedByInput = {
+    where: TaskAssigneeWhereUniqueInput
+    update: XOR<TaskAssigneeUpdateWithoutAssignedByInput, TaskAssigneeUncheckedUpdateWithoutAssignedByInput>
+    create: XOR<TaskAssigneeCreateWithoutAssignedByInput, TaskAssigneeUncheckedCreateWithoutAssignedByInput>
+  }
+
+  export type TaskAssigneeUpdateWithWhereUniqueWithoutAssignedByInput = {
+    where: TaskAssigneeWhereUniqueInput
+    data: XOR<TaskAssigneeUpdateWithoutAssignedByInput, TaskAssigneeUncheckedUpdateWithoutAssignedByInput>
+  }
+
+  export type TaskAssigneeUpdateManyWithWhereWithoutAssignedByInput = {
+    where: TaskAssigneeScalarWhereInput
+    data: XOR<TaskAssigneeUpdateManyMutationInput, TaskAssigneeUncheckedUpdateManyWithoutAssignedByInput>
   }
 
   export type WorkLogUpsertWithWhereUniqueWithoutUserInput = {
@@ -32588,6 +34674,7 @@ export namespace Prisma {
     activityLogs?: ActivityLogCreateNestedManyWithoutOrganizationInput
     notifications?: NotificationCreateNestedManyWithoutOrganizationInput
     attendances?: AttendanceCreateNestedManyWithoutOrganizationInput
+    customRoles?: CustomRoleCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutProjectsInput = {
@@ -32625,6 +34712,7 @@ export namespace Prisma {
     activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutOrganizationInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutOrganizationInput
     attendances?: AttendanceUncheckedCreateNestedManyWithoutOrganizationInput
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutProjectsInput = {
@@ -32646,11 +34734,13 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
+    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryCreateNestedManyWithoutUserInput
     tickets?: TicketCreateNestedManyWithoutClientInput
@@ -32667,6 +34757,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutManagedProjectsInput = {
     id?: string
     organizationId?: string | null
+    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -32683,6 +34774,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeUncheckedCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutUserInput
     tickets?: TicketUncheckedCreateNestedManyWithoutClientInput
@@ -32715,11 +34807,13 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
+    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryCreateNestedManyWithoutUserInput
     tickets?: TicketCreateNestedManyWithoutClientInput
@@ -32736,6 +34830,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutClientProjectsInput = {
     id?: string
     organizationId?: string | null
+    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -32752,6 +34847,7 @@ export namespace Prisma {
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeUncheckedCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutUserInput
     tickets?: TicketUncheckedCreateNestedManyWithoutClientInput
@@ -33034,6 +35130,7 @@ export namespace Prisma {
     activityLogs?: ActivityLogUpdateManyWithoutOrganizationNestedInput
     notifications?: NotificationUpdateManyWithoutOrganizationNestedInput
     attendances?: AttendanceUpdateManyWithoutOrganizationNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutProjectsInput = {
@@ -33071,6 +35168,7 @@ export namespace Prisma {
     activityLogs?: ActivityLogUncheckedUpdateManyWithoutOrganizationNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutOrganizationNestedInput
     attendances?: AttendanceUncheckedUpdateManyWithoutOrganizationNestedInput
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type UserUpsertWithoutManagedProjectsInput = {
@@ -33098,11 +35196,13 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
+    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutUserNestedInput
     tickets?: TicketUpdateManyWithoutClientNestedInput
@@ -33119,6 +35219,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutManagedProjectsInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -33135,6 +35236,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUncheckedUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutUserNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutClientNestedInput
@@ -33173,11 +35275,13 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
+    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutUserNestedInput
     tickets?: TicketUpdateManyWithoutClientNestedInput
@@ -33194,6 +35298,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutClientProjectsInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -33210,6 +35315,7 @@ export namespace Prisma {
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUncheckedUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutUserNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutClientNestedInput
@@ -33775,11 +35881,13 @@ export namespace Prisma {
   export type TaskAssigneeCreateWithoutTaskInput = {
     id?: string
     user: UserCreateNestedOneWithoutTaskAssignmentsInput
+    assignedBy?: UserCreateNestedOneWithoutAssignedTasksInput
   }
 
   export type TaskAssigneeUncheckedCreateWithoutTaskInput = {
     id?: string
     userId: string
+    assignedById?: string | null
   }
 
   export type TaskAssigneeCreateOrConnectWithoutTaskInput = {
@@ -34202,11 +36310,13 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
+    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryCreateNestedManyWithoutUserInput
     tickets?: TicketCreateNestedManyWithoutClientInput
@@ -34223,6 +36333,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutTaskAssignmentsInput = {
     id?: string
     organizationId?: string | null
+    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -34239,6 +36350,7 @@ export namespace Prisma {
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeUncheckedCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutUserInput
     tickets?: TicketUncheckedCreateNestedManyWithoutClientInput
@@ -34255,6 +36367,79 @@ export namespace Prisma {
   export type UserCreateOrConnectWithoutTaskAssignmentsInput = {
     where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutTaskAssignmentsInput, UserUncheckedCreateWithoutTaskAssignmentsInput>
+  }
+
+  export type UserCreateWithoutAssignedTasksInput = {
+    id?: string
+    name: string
+    email: string
+    passwordHash: string
+    role?: $Enums.Role
+    avatar?: string | null
+    isApproved?: boolean
+    mustChangePassword?: boolean
+    resetToken?: string | null
+    resetTokenExpiry?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string | null
+    organization?: OrganizationCreateNestedOneWithoutUsersInput
+    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
+    manager?: UserCreateNestedOneWithoutMembersInput
+    members?: UserCreateNestedManyWithoutManagerInput
+    managedProjects?: ProjectCreateNestedManyWithoutManagerInput
+    clientProjects?: ProjectCreateNestedManyWithoutClientInput
+    workloads?: WorkloadCreateNestedManyWithoutUserInput
+    taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
+    workLogs?: WorkLogCreateNestedManyWithoutUserInput
+    timeEntries?: TimeEntryCreateNestedManyWithoutUserInput
+    tickets?: TicketCreateNestedManyWithoutClientInput
+    ticketComments?: TicketCommentCreateNestedManyWithoutUserInput
+    taskComments?: TaskCommentCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutUserInput
+    chatRoomLastSeen?: ChatRoomLastSeenCreateNestedManyWithoutUserInput
+    activityLogs?: ActivityLogCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    attendances?: AttendanceCreateNestedManyWithoutUserInput
+    authoredDocuments?: DocumentCreateNestedManyWithoutAuthorInput
+  }
+
+  export type UserUncheckedCreateWithoutAssignedTasksInput = {
+    id?: string
+    organizationId?: string | null
+    customRoleId?: string | null
+    name: string
+    email: string
+    passwordHash: string
+    role?: $Enums.Role
+    avatar?: string | null
+    isApproved?: boolean
+    mustChangePassword?: boolean
+    resetToken?: string | null
+    resetTokenExpiry?: Date | string | null
+    managerId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string | null
+    members?: UserUncheckedCreateNestedManyWithoutManagerInput
+    managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
+    clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
+    workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
+    taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
+    workLogs?: WorkLogUncheckedCreateNestedManyWithoutUserInput
+    timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutUserInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutClientInput
+    ticketComments?: TicketCommentUncheckedCreateNestedManyWithoutUserInput
+    taskComments?: TaskCommentUncheckedCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutUserInput
+    chatRoomLastSeen?: ChatRoomLastSeenUncheckedCreateNestedManyWithoutUserInput
+    activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    attendances?: AttendanceUncheckedCreateNestedManyWithoutUserInput
+    authoredDocuments?: DocumentUncheckedCreateNestedManyWithoutAuthorInput
+  }
+
+  export type UserCreateOrConnectWithoutAssignedTasksInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutAssignedTasksInput, UserUncheckedCreateWithoutAssignedTasksInput>
   }
 
   export type TaskUpsertWithoutAssigneesInput = {
@@ -34347,11 +36532,13 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
+    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutUserNestedInput
     tickets?: TicketUpdateManyWithoutClientNestedInput
@@ -34368,6 +36555,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutTaskAssignmentsInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -34384,6 +36572,86 @@ export namespace Prisma {
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUncheckedUpdateManyWithoutAssignedByNestedInput
+    workLogs?: WorkLogUncheckedUpdateManyWithoutUserNestedInput
+    timeEntries?: TimeEntryUncheckedUpdateManyWithoutUserNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutClientNestedInput
+    ticketComments?: TicketCommentUncheckedUpdateManyWithoutUserNestedInput
+    taskComments?: TaskCommentUncheckedUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutUserNestedInput
+    chatRoomLastSeen?: ChatRoomLastSeenUncheckedUpdateManyWithoutUserNestedInput
+    activityLogs?: ActivityLogUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    attendances?: AttendanceUncheckedUpdateManyWithoutUserNestedInput
+    authoredDocuments?: DocumentUncheckedUpdateManyWithoutAuthorNestedInput
+  }
+
+  export type UserUpsertWithoutAssignedTasksInput = {
+    update: XOR<UserUpdateWithoutAssignedTasksInput, UserUncheckedUpdateWithoutAssignedTasksInput>
+    create: XOR<UserCreateWithoutAssignedTasksInput, UserUncheckedCreateWithoutAssignedTasksInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutAssignedTasksInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutAssignedTasksInput, UserUncheckedUpdateWithoutAssignedTasksInput>
+  }
+
+  export type UserUpdateWithoutAssignedTasksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isApproved?: BoolFieldUpdateOperationsInput | boolean
+    mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
+    resetToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    organization?: OrganizationUpdateOneWithoutUsersNestedInput
+    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
+    manager?: UserUpdateOneWithoutMembersNestedInput
+    members?: UserUpdateManyWithoutManagerNestedInput
+    managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
+    clientProjects?: ProjectUpdateManyWithoutClientNestedInput
+    workloads?: WorkloadUpdateManyWithoutUserNestedInput
+    taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
+    workLogs?: WorkLogUpdateManyWithoutUserNestedInput
+    timeEntries?: TimeEntryUpdateManyWithoutUserNestedInput
+    tickets?: TicketUpdateManyWithoutClientNestedInput
+    ticketComments?: TicketCommentUpdateManyWithoutUserNestedInput
+    taskComments?: TaskCommentUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutUserNestedInput
+    chatRoomLastSeen?: ChatRoomLastSeenUpdateManyWithoutUserNestedInput
+    activityLogs?: ActivityLogUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    attendances?: AttendanceUpdateManyWithoutUserNestedInput
+    authoredDocuments?: DocumentUpdateManyWithoutAuthorNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutAssignedTasksInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isApproved?: BoolFieldUpdateOperationsInput | boolean
+    mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
+    resetToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    members?: UserUncheckedUpdateManyWithoutManagerNestedInput
+    managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
+    clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
+    workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
+    taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutUserNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutClientNestedInput
@@ -34470,12 +36738,14 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
+    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryCreateNestedManyWithoutUserInput
     tickets?: TicketCreateNestedManyWithoutClientInput
@@ -34491,6 +36761,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutTaskCommentsInput = {
     id?: string
     organizationId?: string | null
+    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -34508,6 +36779,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeUncheckedCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutUserInput
     tickets?: TicketUncheckedCreateNestedManyWithoutClientInput
@@ -34615,12 +36887,14 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
+    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutUserNestedInput
     tickets?: TicketUpdateManyWithoutClientNestedInput
@@ -34636,6 +36910,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutTaskCommentsInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -34653,6 +36928,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUncheckedUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutUserNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutClientNestedInput
@@ -34679,12 +36955,14 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
+    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeCreateNestedManyWithoutAssignedByInput
     timeEntries?: TimeEntryCreateNestedManyWithoutUserInput
     tickets?: TicketCreateNestedManyWithoutClientInput
     ticketComments?: TicketCommentCreateNestedManyWithoutUserInput
@@ -34700,6 +36978,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutWorkLogsInput = {
     id?: string
     organizationId?: string | null
+    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -34717,6 +36996,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeUncheckedCreateNestedManyWithoutAssignedByInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutUserInput
     tickets?: TicketUncheckedCreateNestedManyWithoutClientInput
     ticketComments?: TicketCommentUncheckedCreateNestedManyWithoutUserInput
@@ -34875,12 +37155,14 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
+    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUpdateManyWithoutAssignedByNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutUserNestedInput
     tickets?: TicketUpdateManyWithoutClientNestedInput
     ticketComments?: TicketCommentUpdateManyWithoutUserNestedInput
@@ -34896,6 +37178,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutWorkLogsInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -34913,6 +37196,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUncheckedUpdateManyWithoutAssignedByNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutUserNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutClientNestedInput
     ticketComments?: TicketCommentUncheckedUpdateManyWithoutUserNestedInput
@@ -35067,12 +37351,14 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
+    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogCreateNestedManyWithoutUserInput
     tickets?: TicketCreateNestedManyWithoutClientInput
     ticketComments?: TicketCommentCreateNestedManyWithoutUserInput
@@ -35088,6 +37374,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutTimeEntriesInput = {
     id?: string
     organizationId?: string | null
+    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -35105,6 +37392,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeUncheckedCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutUserInput
     tickets?: TicketUncheckedCreateNestedManyWithoutClientInput
     ticketComments?: TicketCommentUncheckedCreateNestedManyWithoutUserInput
@@ -35263,12 +37551,14 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
+    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUpdateManyWithoutUserNestedInput
     tickets?: TicketUpdateManyWithoutClientNestedInput
     ticketComments?: TicketCommentUpdateManyWithoutUserNestedInput
@@ -35284,6 +37574,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutTimeEntriesInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -35301,6 +37592,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUncheckedUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutUserNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutClientNestedInput
     ticketComments?: TicketCommentUncheckedUpdateManyWithoutUserNestedInput
@@ -35455,11 +37747,13 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
+    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryCreateNestedManyWithoutUserInput
     tickets?: TicketCreateNestedManyWithoutClientInput
@@ -35476,6 +37770,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutWorkloadsInput = {
     id?: string
     organizationId?: string | null
+    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -35492,6 +37787,7 @@ export namespace Prisma {
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeUncheckedCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutUserInput
     tickets?: TicketUncheckedCreateNestedManyWithoutClientInput
@@ -35592,11 +37888,13 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
+    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutUserNestedInput
     tickets?: TicketUpdateManyWithoutClientNestedInput
@@ -35613,6 +37911,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutWorkloadsInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -35629,6 +37928,7 @@ export namespace Prisma {
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUncheckedUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutUserNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutClientNestedInput
@@ -35740,6 +38040,7 @@ export namespace Prisma {
     activityLogs?: ActivityLogCreateNestedManyWithoutOrganizationInput
     notifications?: NotificationCreateNestedManyWithoutOrganizationInput
     attendances?: AttendanceCreateNestedManyWithoutOrganizationInput
+    customRoles?: CustomRoleCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutTicketsInput = {
@@ -35777,6 +38078,7 @@ export namespace Prisma {
     activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutOrganizationInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutOrganizationInput
     attendances?: AttendanceUncheckedCreateNestedManyWithoutOrganizationInput
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutTicketsInput = {
@@ -35798,12 +38100,14 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
+    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentCreateNestedManyWithoutUserInput
@@ -35819,6 +38123,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutTicketsInput = {
     id?: string
     organizationId?: string | null
+    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -35836,6 +38141,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeUncheckedCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutUserInput
     ticketComments?: TicketCommentUncheckedCreateNestedManyWithoutUserInput
@@ -35925,6 +38231,7 @@ export namespace Prisma {
     activityLogs?: ActivityLogUpdateManyWithoutOrganizationNestedInput
     notifications?: NotificationUpdateManyWithoutOrganizationNestedInput
     attendances?: AttendanceUpdateManyWithoutOrganizationNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutTicketsInput = {
@@ -35962,6 +38269,7 @@ export namespace Prisma {
     activityLogs?: ActivityLogUncheckedUpdateManyWithoutOrganizationNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutOrganizationNestedInput
     attendances?: AttendanceUncheckedUpdateManyWithoutOrganizationNestedInput
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type UserUpsertWithoutTicketsInput = {
@@ -35989,12 +38297,14 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
+    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUpdateManyWithoutUserNestedInput
@@ -36010,6 +38320,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutTicketsInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -36027,6 +38338,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUncheckedUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutUserNestedInput
     ticketComments?: TicketCommentUncheckedUpdateManyWithoutUserNestedInput
@@ -36098,12 +38410,14 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
+    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryCreateNestedManyWithoutUserInput
     tickets?: TicketCreateNestedManyWithoutClientInput
@@ -36119,6 +38433,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutTicketCommentsInput = {
     id?: string
     organizationId?: string | null
+    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -36136,6 +38451,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeUncheckedCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutUserInput
     tickets?: TicketUncheckedCreateNestedManyWithoutClientInput
@@ -36213,12 +38529,14 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
+    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutUserNestedInput
     tickets?: TicketUpdateManyWithoutClientNestedInput
@@ -36234,6 +38552,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutTicketCommentsInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -36251,6 +38570,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUncheckedUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutUserNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutClientNestedInput
@@ -36277,12 +38597,14 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
+    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryCreateNestedManyWithoutUserInput
     tickets?: TicketCreateNestedManyWithoutClientInput
@@ -36298,6 +38620,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutChatMessagesInput = {
     id?: string
     organizationId?: string | null
+    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -36315,6 +38638,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeUncheckedCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutUserInput
     tickets?: TicketUncheckedCreateNestedManyWithoutClientInput
@@ -36367,6 +38691,7 @@ export namespace Prisma {
     activityLogs?: ActivityLogCreateNestedManyWithoutOrganizationInput
     notifications?: NotificationCreateNestedManyWithoutOrganizationInput
     attendances?: AttendanceCreateNestedManyWithoutOrganizationInput
+    customRoles?: CustomRoleCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutChatMessagesInput = {
@@ -36404,6 +38729,7 @@ export namespace Prisma {
     activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutOrganizationInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutOrganizationInput
     attendances?: AttendanceUncheckedCreateNestedManyWithoutOrganizationInput
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutChatMessagesInput = {
@@ -36503,12 +38829,14 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
+    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutUserNestedInput
     tickets?: TicketUpdateManyWithoutClientNestedInput
@@ -36524,6 +38852,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutChatMessagesInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -36541,6 +38870,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUncheckedUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutUserNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutClientNestedInput
@@ -36599,6 +38929,7 @@ export namespace Prisma {
     activityLogs?: ActivityLogUpdateManyWithoutOrganizationNestedInput
     notifications?: NotificationUpdateManyWithoutOrganizationNestedInput
     attendances?: AttendanceUpdateManyWithoutOrganizationNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutChatMessagesInput = {
@@ -36636,6 +38967,7 @@ export namespace Prisma {
     activityLogs?: ActivityLogUncheckedUpdateManyWithoutOrganizationNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutOrganizationNestedInput
     attendances?: AttendanceUncheckedUpdateManyWithoutOrganizationNestedInput
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type ChatMessageUpsertWithoutRepliesInput = {
@@ -36705,12 +39037,14 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
+    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryCreateNestedManyWithoutUserInput
     tickets?: TicketCreateNestedManyWithoutClientInput
@@ -36726,6 +39060,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutChatRoomLastSeenInput = {
     id?: string
     organizationId?: string | null
+    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -36743,6 +39078,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeUncheckedCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutUserInput
     tickets?: TicketUncheckedCreateNestedManyWithoutClientInput
@@ -36795,6 +39131,7 @@ export namespace Prisma {
     activityLogs?: ActivityLogCreateNestedManyWithoutOrganizationInput
     notifications?: NotificationCreateNestedManyWithoutOrganizationInput
     attendances?: AttendanceCreateNestedManyWithoutOrganizationInput
+    customRoles?: CustomRoleCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutChatRoomLastSeenInput = {
@@ -36832,6 +39169,7 @@ export namespace Prisma {
     activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutOrganizationInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutOrganizationInput
     attendances?: AttendanceUncheckedCreateNestedManyWithoutOrganizationInput
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutChatRoomLastSeenInput = {
@@ -36864,12 +39202,14 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
+    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutUserNestedInput
     tickets?: TicketUpdateManyWithoutClientNestedInput
@@ -36885,6 +39225,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutChatRoomLastSeenInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -36902,6 +39243,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUncheckedUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutUserNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutClientNestedInput
@@ -36960,6 +39302,7 @@ export namespace Prisma {
     activityLogs?: ActivityLogUpdateManyWithoutOrganizationNestedInput
     notifications?: NotificationUpdateManyWithoutOrganizationNestedInput
     attendances?: AttendanceUpdateManyWithoutOrganizationNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutChatRoomLastSeenInput = {
@@ -36997,6 +39340,7 @@ export namespace Prisma {
     activityLogs?: ActivityLogUncheckedUpdateManyWithoutOrganizationNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutOrganizationNestedInput
     attendances?: AttendanceUncheckedUpdateManyWithoutOrganizationNestedInput
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type UserCreateWithoutActivityLogsInput = {
@@ -37013,12 +39357,14 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
+    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryCreateNestedManyWithoutUserInput
     tickets?: TicketCreateNestedManyWithoutClientInput
@@ -37034,6 +39380,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutActivityLogsInput = {
     id?: string
     organizationId?: string | null
+    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -37051,6 +39398,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeUncheckedCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutUserInput
     tickets?: TicketUncheckedCreateNestedManyWithoutClientInput
@@ -37103,6 +39451,7 @@ export namespace Prisma {
     chatRoomLastSeen?: ChatRoomLastSeenCreateNestedManyWithoutOrganizationInput
     notifications?: NotificationCreateNestedManyWithoutOrganizationInput
     attendances?: AttendanceCreateNestedManyWithoutOrganizationInput
+    customRoles?: CustomRoleCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutActivityLogsInput = {
@@ -37140,6 +39489,7 @@ export namespace Prisma {
     chatRoomLastSeen?: ChatRoomLastSeenUncheckedCreateNestedManyWithoutOrganizationInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutOrganizationInput
     attendances?: AttendanceUncheckedCreateNestedManyWithoutOrganizationInput
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutActivityLogsInput = {
@@ -37172,12 +39522,14 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
+    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutUserNestedInput
     tickets?: TicketUpdateManyWithoutClientNestedInput
@@ -37193,6 +39545,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutActivityLogsInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -37210,6 +39563,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUncheckedUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutUserNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutClientNestedInput
@@ -37268,6 +39622,7 @@ export namespace Prisma {
     chatRoomLastSeen?: ChatRoomLastSeenUpdateManyWithoutOrganizationNestedInput
     notifications?: NotificationUpdateManyWithoutOrganizationNestedInput
     attendances?: AttendanceUpdateManyWithoutOrganizationNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutActivityLogsInput = {
@@ -37305,6 +39660,7 @@ export namespace Prisma {
     chatRoomLastSeen?: ChatRoomLastSeenUncheckedUpdateManyWithoutOrganizationNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutOrganizationNestedInput
     attendances?: AttendanceUncheckedUpdateManyWithoutOrganizationNestedInput
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type UserCreateWithoutNotificationsInput = {
@@ -37321,12 +39677,14 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
+    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryCreateNestedManyWithoutUserInput
     tickets?: TicketCreateNestedManyWithoutClientInput
@@ -37342,6 +39700,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutNotificationsInput = {
     id?: string
     organizationId?: string | null
+    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -37359,6 +39718,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeUncheckedCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutUserInput
     tickets?: TicketUncheckedCreateNestedManyWithoutClientInput
@@ -37411,6 +39771,7 @@ export namespace Prisma {
     chatRoomLastSeen?: ChatRoomLastSeenCreateNestedManyWithoutOrganizationInput
     activityLogs?: ActivityLogCreateNestedManyWithoutOrganizationInput
     attendances?: AttendanceCreateNestedManyWithoutOrganizationInput
+    customRoles?: CustomRoleCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutNotificationsInput = {
@@ -37448,6 +39809,7 @@ export namespace Prisma {
     chatRoomLastSeen?: ChatRoomLastSeenUncheckedCreateNestedManyWithoutOrganizationInput
     activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutOrganizationInput
     attendances?: AttendanceUncheckedCreateNestedManyWithoutOrganizationInput
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutNotificationsInput = {
@@ -37480,12 +39842,14 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
+    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutUserNestedInput
     tickets?: TicketUpdateManyWithoutClientNestedInput
@@ -37501,6 +39865,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutNotificationsInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -37518,6 +39883,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUncheckedUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutUserNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutClientNestedInput
@@ -37576,6 +39942,7 @@ export namespace Prisma {
     chatRoomLastSeen?: ChatRoomLastSeenUpdateManyWithoutOrganizationNestedInput
     activityLogs?: ActivityLogUpdateManyWithoutOrganizationNestedInput
     attendances?: AttendanceUpdateManyWithoutOrganizationNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutNotificationsInput = {
@@ -37613,6 +39980,7 @@ export namespace Prisma {
     chatRoomLastSeen?: ChatRoomLastSeenUncheckedUpdateManyWithoutOrganizationNestedInput
     activityLogs?: ActivityLogUncheckedUpdateManyWithoutOrganizationNestedInput
     attendances?: AttendanceUncheckedUpdateManyWithoutOrganizationNestedInput
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type UserCreateWithoutAttendancesInput = {
@@ -37629,12 +39997,14 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
+    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryCreateNestedManyWithoutUserInput
     tickets?: TicketCreateNestedManyWithoutClientInput
@@ -37650,6 +40020,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutAttendancesInput = {
     id?: string
     organizationId?: string | null
+    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -37667,6 +40038,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeUncheckedCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutUserInput
     tickets?: TicketUncheckedCreateNestedManyWithoutClientInput
@@ -37719,6 +40091,7 @@ export namespace Prisma {
     chatRoomLastSeen?: ChatRoomLastSeenCreateNestedManyWithoutOrganizationInput
     activityLogs?: ActivityLogCreateNestedManyWithoutOrganizationInput
     notifications?: NotificationCreateNestedManyWithoutOrganizationInput
+    customRoles?: CustomRoleCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationUncheckedCreateWithoutAttendancesInput = {
@@ -37756,6 +40129,7 @@ export namespace Prisma {
     chatRoomLastSeen?: ChatRoomLastSeenUncheckedCreateNestedManyWithoutOrganizationInput
     activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutOrganizationInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutOrganizationInput
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutOrganizationInput
   }
 
   export type OrganizationCreateOrConnectWithoutAttendancesInput = {
@@ -37788,12 +40162,14 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
+    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutUserNestedInput
     tickets?: TicketUpdateManyWithoutClientNestedInput
@@ -37809,6 +40185,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutAttendancesInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -37826,6 +40203,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUncheckedUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutUserNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutClientNestedInput
@@ -37884,6 +40262,7 @@ export namespace Prisma {
     chatRoomLastSeen?: ChatRoomLastSeenUpdateManyWithoutOrganizationNestedInput
     activityLogs?: ActivityLogUpdateManyWithoutOrganizationNestedInput
     notifications?: NotificationUpdateManyWithoutOrganizationNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutOrganizationNestedInput
   }
 
   export type OrganizationUncheckedUpdateWithoutAttendancesInput = {
@@ -37921,6 +40300,7 @@ export namespace Prisma {
     chatRoomLastSeen?: ChatRoomLastSeenUncheckedUpdateManyWithoutOrganizationNestedInput
     activityLogs?: ActivityLogUncheckedUpdateManyWithoutOrganizationNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutOrganizationNestedInput
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
   export type ProjectCreateWithoutDocumentsInput = {
@@ -37994,12 +40374,14 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
+    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryCreateNestedManyWithoutUserInput
     tickets?: TicketCreateNestedManyWithoutClientInput
@@ -38015,6 +40397,7 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutAuthoredDocumentsInput = {
     id?: string
     organizationId?: string | null
+    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -38032,6 +40415,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeUncheckedCreateNestedManyWithoutAssignedByInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutUserInput
     timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutUserInput
     tickets?: TicketUncheckedCreateNestedManyWithoutClientInput
@@ -38137,12 +40521,14 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
+    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutUserNestedInput
     tickets?: TicketUpdateManyWithoutClientNestedInput
@@ -38158,6 +40544,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutAuthoredDocumentsInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -38175,6 +40562,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUncheckedUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutUserNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutClientNestedInput
@@ -38189,6 +40577,7 @@ export namespace Prisma {
 
   export type UserCreateManyOrganizationInput = {
     id?: string
+    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -38286,6 +40675,15 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
+  export type CustomRoleCreateManyOrganizationInput = {
+    id?: string
+    name: string
+    description?: string | null
+    permissions?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type UserUpdateWithoutOrganizationInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -38299,12 +40697,14 @@ export namespace Prisma {
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutUserNestedInput
     tickets?: TicketUpdateManyWithoutClientNestedInput
@@ -38320,6 +40720,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateWithoutOrganizationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -38337,6 +40738,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUncheckedUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutUserNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutClientNestedInput
@@ -38352,6 +40754,7 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateManyWithoutOrganizationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -38631,9 +41034,141 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type CustomRoleUpdateWithoutOrganizationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    permissions?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUpdateManyWithoutCustomRoleNestedInput
+  }
+
+  export type CustomRoleUncheckedUpdateWithoutOrganizationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    permissions?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    users?: UserUncheckedUpdateManyWithoutCustomRoleNestedInput
+  }
+
+  export type CustomRoleUncheckedUpdateManyWithoutOrganizationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    permissions?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserCreateManyCustomRoleInput = {
+    id?: string
+    organizationId?: string | null
+    name: string
+    email: string
+    passwordHash: string
+    role?: $Enums.Role
+    avatar?: string | null
+    isApproved?: boolean
+    mustChangePassword?: boolean
+    resetToken?: string | null
+    resetTokenExpiry?: Date | string | null
+    managerId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string | null
+  }
+
+  export type UserUpdateWithoutCustomRoleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isApproved?: BoolFieldUpdateOperationsInput | boolean
+    mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
+    resetToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    organization?: OrganizationUpdateOneWithoutUsersNestedInput
+    manager?: UserUpdateOneWithoutMembersNestedInput
+    members?: UserUpdateManyWithoutManagerNestedInput
+    managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
+    clientProjects?: ProjectUpdateManyWithoutClientNestedInput
+    workloads?: WorkloadUpdateManyWithoutUserNestedInput
+    taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUpdateManyWithoutAssignedByNestedInput
+    workLogs?: WorkLogUpdateManyWithoutUserNestedInput
+    timeEntries?: TimeEntryUpdateManyWithoutUserNestedInput
+    tickets?: TicketUpdateManyWithoutClientNestedInput
+    ticketComments?: TicketCommentUpdateManyWithoutUserNestedInput
+    taskComments?: TaskCommentUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutUserNestedInput
+    chatRoomLastSeen?: ChatRoomLastSeenUpdateManyWithoutUserNestedInput
+    activityLogs?: ActivityLogUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    attendances?: AttendanceUpdateManyWithoutUserNestedInput
+    authoredDocuments?: DocumentUpdateManyWithoutAuthorNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutCustomRoleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isApproved?: BoolFieldUpdateOperationsInput | boolean
+    mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
+    resetToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    members?: UserUncheckedUpdateManyWithoutManagerNestedInput
+    managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
+    clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
+    workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
+    taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUncheckedUpdateManyWithoutAssignedByNestedInput
+    workLogs?: WorkLogUncheckedUpdateManyWithoutUserNestedInput
+    timeEntries?: TimeEntryUncheckedUpdateManyWithoutUserNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutClientNestedInput
+    ticketComments?: TicketCommentUncheckedUpdateManyWithoutUserNestedInput
+    taskComments?: TaskCommentUncheckedUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutUserNestedInput
+    chatRoomLastSeen?: ChatRoomLastSeenUncheckedUpdateManyWithoutUserNestedInput
+    activityLogs?: ActivityLogUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    attendances?: AttendanceUncheckedUpdateManyWithoutUserNestedInput
+    authoredDocuments?: DocumentUncheckedUpdateManyWithoutAuthorNestedInput
+  }
+
+  export type UserUncheckedUpdateManyWithoutCustomRoleInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isApproved?: BoolFieldUpdateOperationsInput | boolean
+    mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
+    resetToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
   export type UserCreateManyManagerInput = {
     id?: string
     organizationId?: string | null
+    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -38696,6 +41231,13 @@ export namespace Prisma {
   export type TaskAssigneeCreateManyUserInput = {
     id?: string
     taskId: string
+    assignedById?: string | null
+  }
+
+  export type TaskAssigneeCreateManyAssignedByInput = {
+    id?: string
+    taskId: string
+    userId: string
   }
 
   export type WorkLogCreateManyUserInput = {
@@ -38824,11 +41366,13 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
+    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUpdateManyWithoutUserNestedInput
     tickets?: TicketUpdateManyWithoutClientNestedInput
@@ -38845,6 +41389,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutManagerInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -38861,6 +41406,7 @@ export namespace Prisma {
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUncheckedUpdateManyWithoutAssignedByNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutUserNestedInput
     timeEntries?: TimeEntryUncheckedUpdateManyWithoutUserNestedInput
     tickets?: TicketUncheckedUpdateManyWithoutClientNestedInput
@@ -38877,6 +41423,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateManyWithoutManagerInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -39055,16 +41602,37 @@ export namespace Prisma {
   export type TaskAssigneeUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     task?: TaskUpdateOneRequiredWithoutAssigneesNestedInput
+    assignedBy?: UserUpdateOneWithoutAssignedTasksNestedInput
   }
 
   export type TaskAssigneeUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     taskId?: StringFieldUpdateOperationsInput | string
+    assignedById?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type TaskAssigneeUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     taskId?: StringFieldUpdateOperationsInput | string
+    assignedById?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type TaskAssigneeUpdateWithoutAssignedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    task?: TaskUpdateOneRequiredWithoutAssigneesNestedInput
+    user?: UserUpdateOneRequiredWithoutTaskAssignmentsNestedInput
+  }
+
+  export type TaskAssigneeUncheckedUpdateWithoutAssignedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    taskId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type TaskAssigneeUncheckedUpdateManyWithoutAssignedByInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    taskId?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
   }
 
   export type WorkLogUpdateWithoutUserInput = {
@@ -39834,6 +42402,7 @@ export namespace Prisma {
   export type TaskAssigneeCreateManyTaskInput = {
     id?: string
     userId: string
+    assignedById?: string | null
   }
 
   export type WorkLogCreateManyTaskInput = {
@@ -39946,16 +42515,19 @@ export namespace Prisma {
   export type TaskAssigneeUpdateWithoutTaskInput = {
     id?: StringFieldUpdateOperationsInput | string
     user?: UserUpdateOneRequiredWithoutTaskAssignmentsNestedInput
+    assignedBy?: UserUpdateOneWithoutAssignedTasksNestedInput
   }
 
   export type TaskAssigneeUncheckedUpdateWithoutTaskInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    assignedById?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type TaskAssigneeUncheckedUpdateManyWithoutTaskInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    assignedById?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type WorkLogUpdateWithoutTaskInput = {
@@ -40143,6 +42715,10 @@ export namespace Prisma {
      */
     export type OrganizationCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = OrganizationCountOutputTypeDefaultArgs<ExtArgs>
     /**
+     * @deprecated Use CustomRoleCountOutputTypeDefaultArgs instead
+     */
+    export type CustomRoleCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = CustomRoleCountOutputTypeDefaultArgs<ExtArgs>
+    /**
      * @deprecated Use UserCountOutputTypeDefaultArgs instead
      */
     export type UserCountOutputTypeArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -40170,6 +42746,10 @@ export namespace Prisma {
      * @deprecated Use OrganizationDefaultArgs instead
      */
     export type OrganizationArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = OrganizationDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use CustomRoleDefaultArgs instead
+     */
+    export type CustomRoleArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = CustomRoleDefaultArgs<ExtArgs>
     /**
      * @deprecated Use UserDefaultArgs instead
      */

@@ -68,6 +68,7 @@ const Team = () => {
   const [users, setUsers] = useState([]);
   const [allMembers, setAllMembers] = useState([]); // Kept for manager card team counts
   const [pendingUsers, setPendingUsers] = useState([]);
+  const [customRoles, setCustomRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [approving, setApproving] = useState(null);
   const [showDialog, setShowDialog] = useState(false);
@@ -126,10 +127,20 @@ const Team = () => {
     }
     fetchUsers();
     fetchAllMembers();
+    fetchCustomRoles();
     if (currentUser?.role === 'ADMIN') {
       fetchPendingUsers();
     }
   }, [currentUser, setHeader]);
+
+  const fetchCustomRoles = async () => {
+    try {
+      const response = await api.get('/roles');
+      setCustomRoles(response.data);
+    } catch (error) {
+      console.error('Failed to fetch custom roles:', error);
+    }
+  };
 
   useEffect(() => {
     if (selectedManagerId !== 'ALL' && selectedManagerId !== 'PENDING' && selectedManagerId !== 'MANAGERS_LIST' && selectedManagerId !== 'CLIENTS_LIST' && selectedManagerId !== 'MEMBERS_LIST') {
@@ -416,6 +427,7 @@ const Team = () => {
       name: user.name,
       email: user.email,
       role: user.role,
+      customRoleId: user.customRoleId || '',
       password: '',
       isApproved: user.isApproved,
       sendEmail: true,
@@ -466,6 +478,7 @@ const Team = () => {
       name: '',
       email: '',
       role: 'MEMBER',
+      customRoleId: '',
       password: generatePassword(),
       sendEmail: true,
     });
@@ -587,6 +600,7 @@ const Team = () => {
                 onSubmit={handleSubmit}
                 onCancel={handleCancel}
                 onSendResetLink={handleSendResetLink}
+                customRoles={customRoles}
               />
             </div>
           </DialogContent>
@@ -1147,6 +1161,11 @@ const Team = () => {
                                   >
                                     {user.role}
                                   </Badge>
+                                  {user.customRole && (
+                                    <Badge variant="outline" className="ml-2 text-[9px] font-bold">
+                                      {user.customRole.name}
+                                    </Badge>
+                                  )}
                                 </TableCell>
                                 {selectedManagerId !== 'CLIENTS_LIST' && (
                                   <TableCell>
@@ -1240,6 +1259,11 @@ const Team = () => {
                               >
                                 {user.role}
                               </Badge>
+                              {user.customRole && (
+                                <Badge variant="outline" className="text-[9px] font-bold shrink-0">
+                                  {user.customRole.name}
+                                </Badge>
+                              )}
                             </div>
                             {currentUser?.role !== 'CLIENT' && currentUser?.role !== 'MEMBER' && (
                               <div className="flex gap-2 mt-3">

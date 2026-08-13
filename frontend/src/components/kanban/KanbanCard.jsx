@@ -247,8 +247,8 @@ const KanbanCard = ({ task, isReadOnly, disableDrag, onEdit, onCardClick, onDele
                         <div className="flex items-center gap-1 sm:gap-2 overflow-hidden max-w-[70%]">
                             {task.assignees && task.assignees.length > 0 ? (
                                 <div className="flex items-center gap-1 sm:gap-1.5 overflow-hidden">
-                                    {task.assignees.slice(0, 2).map(({ user }) => (
-                                        <div key={user.id} className="flex items-center gap-1.5 bg-muted/50 rounded-full pr-2 sm:pr-2.5 border border-border/50 shrink-0">
+                                    {task.assignees.slice(0, 2).map(({ user, assignedBy }) => (
+                                        <div key={user.id} className="flex items-center gap-1.5 bg-muted/50 rounded-full pr-2 sm:pr-2.5 border border-border/50 shrink-0" title={assignedBy ? `${assignedBy.name} assigned to ${user.name}` : user.name}>
                                             <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full overflow-hidden bg-background flex-shrink-0">
                                                 {user.avatar ? (
                                                     <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
@@ -258,8 +258,8 @@ const KanbanCard = ({ task, isReadOnly, disableDrag, onEdit, onCardClick, onDele
                                                     </div>
                                                 )}
                                             </div>
-                                            <span className="text-[8px] sm:text-[9px] font-bold Montserrat text-foreground truncate max-w-[45px] sm:max-w-[60px]">
-                                                {user.name.split(' ')[0]}
+                                            <span className="text-[8px] sm:text-[9px] font-bold Montserrat text-foreground truncate max-w-[80px] sm:max-w-[120px]">
+                                                {assignedBy ? `${assignedBy.name.split(' ')[0]} To ${user.name.split(' ')[0]}` : user.name.split(' ')[0]}
                                             </span>
                                         </div>
                                     ))}

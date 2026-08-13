@@ -167,14 +167,19 @@ const TaskDetailsModal = ({ open, onOpenChange, task, canEdit, onEditClick }) =>
                                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest Montserrat">Assignees</span>
                                 <div className="flex items-center">
                                     {task.assignees && task.assignees.length > 0 ? (
-                                        <div className="flex -space-x-2">
-                                            {task.assignees.map(({ user }) => (
-                                                <Avatar key={user.id} className="h-7 w-7 border-2 border-background ring-1 ring-border/20 shadow-sm" title={user.name}>
-                                                    <AvatarImage src={user.avatar} />
-                                                    <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-bold">
-                                                        {user.name.charAt(0)}
-                                                    </AvatarFallback>
-                                                </Avatar>
+                                        <div className="flex flex-col gap-2 mt-1">
+                                            {task.assignees.map(({ user, assignedBy }) => (
+                                                <div key={user.id} className="flex items-center gap-2" title={assignedBy ? `${assignedBy.name} assigned to ${user.name}` : user.name}>
+                                                    <Avatar className="h-6 w-6 border-2 border-background ring-1 ring-border/20 shadow-sm">
+                                                        <AvatarImage src={user.avatar} />
+                                                        <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-bold">
+                                                            {user.name.charAt(0)}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                    <span className="text-xs font-semibold text-foreground">
+                                                        {assignedBy ? `${assignedBy.name.split(' ')[0]} To ${user.name.split(' ')[0]}` : user.name}
+                                                    </span>
+                                                </div>
                                             ))}
                                         </div>
                                     ) : (

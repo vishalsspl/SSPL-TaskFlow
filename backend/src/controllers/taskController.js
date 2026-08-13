@@ -111,7 +111,8 @@ export const getAllTasks = async (req, res) => {
               {
                 OR: [
                   { assignees: { some: { userId: req.user.id } } },
-                  { tags: { has: `CREATOR:${req.user.id}` } }
+                  { tags: { has: `CREATOR:${req.user.id}` } },
+                  { assignees: { some: { assignedById: req.user.id } } }
                 ]
               }
             ]
@@ -127,13 +128,7 @@ export const getAllTasks = async (req, res) => {
   }
 
   const include = {
-    assignees: {
-      include: {
-        user: {
-          select: { id: true, name: true, email: true, avatar: true },
-        },
-      },
-    },
+    assignees: { include: { user: { select: { id: true, name: true, email: true, avatar: true } }, assignedBy: { select: { id: true, name: true } } } },
     project: { select: { id: true, name: true, allowMemberTaskCreation: true } },
     phase: { select: { id: true, name: true } },
     parent: { select: { id: true, title: true, type: true, shortId: true } },
@@ -204,13 +199,7 @@ export const getTask = async (req, res) => {
   const task = await req.db.task.findFirst({
     where: { id, project: { organizationId: req.user.organizationId } },
     include: {
-      assignees: {
-        include: {
-          user: {
-            select: { id: true, name: true, email: true, avatar: true },
-          },
-        },
-      },
+      assignees: { include: { user: { select: { id: true, name: true, email: true, avatar: true } }, assignedBy: { select: { id: true, name: true } } } },
       project: { select: { id: true, name: true } },
       phase: true,
       parent: { select: { id: true, title: true, type: true, shortId: true } },
@@ -432,7 +421,7 @@ export const createTask = async (req, res) => {
       type: type || 'TASK',
       attachments,
       assignees: {
-        create: (assigneeIds || []).map((userId) => ({ userId })),
+        create: (assigneeIds || []).map((userId) => ({ userId, assignedById: req.user.id })),
       },
     },
     include: {
@@ -449,6 +438,7 @@ export const createTask = async (req, res) => {
 
   // Log activity
   try {
+    const assigneeNames = task.assignees?.map(a => a.user?.name).filter(Boolean).join(', ') || 'Unassigned';
     const logData = {
       userId: req.user.id,
       organizationId: req.user.organizationId,
@@ -456,7 +446,11 @@ export const createTask = async (req, res) => {
       action: 'CREATED',
       entity: 'task',
       entityId: task.id,
-      details: { title: task.title },
+      details: { 
+        title: task.title,
+        assignedTo: assigneeNames,
+        message: `${req.user.name} created task "${task.title}" and assigned it to ${assigneeNames}`
+      },
     };
 
     // 1. Log to tenant DB
@@ -708,7 +702,7 @@ export const bulkCreateTasks = async (req, res) => {
           }
         },
         include: {
-          assignees: { include: { user: { select: { id: true, name: true, email: true } } } },
+          assignees: { include: { user: { select: { id: true, name: true, email: true } }, assignedBy: { select: { id: true, name: true } } } },
           project: { select: { id: true, name: true } },
         }
       });
@@ -888,7 +882,7 @@ export const updateTask = async (req, res) => {
       ...(assigneeIds !== undefined && {
         assignees: {
           deleteMany: {},
-          create: newAssigneeIds.map((userId) => ({ userId })),
+          create: newAssigneeIds.map((userId) => ({ userId, assignedById: req.user.id })),
         },
       }),
     },
@@ -906,6 +900,11 @@ export const updateTask = async (req, res) => {
 
   // Log activity
   try {
+    const assigneeNames = task.assignees?.map(a => a.user?.name).filter(Boolean).join(', ') || 'Unassigned';
+    
+    // Check if assignees actually changed to log a specific message
+    const assigneesChanged = addedIds.length > 0 || existingAssigneeIds.filter(id => !newAssigneeIds.includes(id)).length > 0;
+    
     const logData = {
       userId: req.user.id,
       organizationId: req.user.organizationId,
@@ -913,7 +912,13 @@ export const updateTask = async (req, res) => {
       action: 'UPDATED',
       entity: 'task',
       entityId: task.id,
-      details: { title: task.title, projectName: task.project?.name || null, changes: req.body },
+      details: { 
+        title: task.title, 
+        projectName: task.project?.name || null, 
+        changes: req.body,
+        assignedTo: assigneeNames,
+        ...(assigneesChanged ? { message: `${req.user.name} updated assignees. Task is now assigned to ${assigneeNames}` } : {})
+      },
     };
 
     // 1. Log to tenant DB
@@ -1304,16 +1309,23 @@ export const updateTaskStatus = async (req, res) => {
     // Verify task belongs to user's organization
     const existingTask = await req.db.task.findFirst({
       where: { id, project: { organizationId: req.user.organizationId } },
-      include: { project: true }
+      include: { project: true, assignees: true }
     });
     if (!existingTask) return res.status(404).json({ error: 'Task not found' });
 
     let updatedTags = existingTask.tags || [];
     let updatedRejectionReason = existingTask.rejectionReason;
 
-    if (req.user.role === 'MEMBER') {
+    // Check if the current user is an assignee who was assigned by someone else
+    const userAssignee = existingTask.assignees?.find(a => a.userId === req.user.id);
+    const wasAssignedBySomeoneElse = userAssignee && userAssignee.assignedById && userAssignee.assignedById !== req.user.id;
+
+    // Members are ALWAYS subject to strict rules. Custom roles who were assigned by someone else are also subject to strict rules.
+    const isStrictReviewer = req.user.role === 'MEMBER' || (wasAssignedBySomeoneElse && !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(req.user.role));
+
+    if (isStrictReviewer) {
       if (status === 'COMPLETED') {
-        return res.status(403).json({ error: 'Members cannot move tasks directly to Completed. Please use In Review.' });
+        return res.status(403).json({ error: 'You cannot move this task directly to Completed. Please move it to In Review so the assigner can review it.' });
       }
 
       const existingPendingTag = updatedTags.find(t => t.startsWith('PENDING_APPROVAL:'));
@@ -1330,8 +1342,8 @@ export const updateTaskStatus = async (req, res) => {
           updatedTags = updatedTags.filter(t => !t.startsWith('PENDING_APPROVAL:'));
         }
       }
-    } else if (req.user.role === 'MANAGER' || req.user.role === 'ADMIN') {
-      // If Manager changes status, clear the pending tag
+    } else {
+      // For managers/admins/assigners changing status, clear the pending tag
       updatedTags = updatedTags.filter(t => !t.startsWith('PENDING_APPROVAL:'));
       
       if (status === 'COMPLETED') {
@@ -1373,6 +1385,15 @@ export const updateTaskStatus = async (req, res) => {
       await recalculatePhaseProgress(req.db, task.phaseId);
     }
 
+    // Determine the assigner (if any) for the current user
+    const userAssigneeRecord = task.assignees.find(a => a.user.id === req.user.id);
+    let assignedByName = null;
+    let assignerToNotify = null;
+    if (userAssigneeRecord?.assignedById) {
+      assignerToNotify = await req.db.user.findUnique({ where: { id: userAssigneeRecord.assignedById } });
+      if (assignerToNotify) assignedByName = assignerToNotify.name;
+    }
+
     // Log activity
     try {
       const logData = {
@@ -1387,7 +1408,8 @@ export const updateTaskStatus = async (req, res) => {
           projectName: task.project?.name || null,
           action: 'Status Updated',
           status,
-          oldStatus: existingTask.status
+          oldStatus: existingTask.status,
+          ...(assignedByName ? { assignedBy: assignedByName } : {})
         },
       };
 
@@ -1400,50 +1422,77 @@ export const updateTaskStatus = async (req, res) => {
       console.error('[UpdateTaskStatus] Failed to log activity:', logErr.message);
     }
 
-    // Always send internal notifications for status changes by Manager/Admin
-    if (req.user.role === 'ADMIN' || req.user.role === 'MANAGER') {
-      const updatedBy = req.user.name;
-      const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
-      
-      for (const { user } of task.assignees) {
-        if (hasEmailSupport && sendEmail && user?.email) {
-          sendTaskStatusUpdateEmail(
-            user.email,
-            task.title,
-            task.project.name,
-            task.status,
-            updatedBy
-          ).catch(err => console.error('Failed to send task status update email:', err));
+    // ==========================================
+    // 1. Notify Assignees and Assigners
+    // ==========================================
+    const updatedBy = req.user.name;
+    const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
+    const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
+
+    // Fetch assigners
+    const assignerIds = [...new Set(task.assignees.map(a => a.assignedById).filter(id => id && id !== req.user.id))];
+    const assigners = assignerIds.length > 0 ? await req.db.user.findMany({ where: { id: { in: assignerIds } } }) : [];
+
+    // Determine base message and title
+    let notificationType = 'TASK_STATUS_UPDATED';
+    let notificationTitle = 'Task Status Updated';
+    let notificationMessage = `Task "${task.title}" status has been updated to ${task.status} by ${updatedBy}${assignedByName ? ` (Assigned by: ${assignedByName})` : ''}`;
+
+    if (existingTask.status === 'IN_REVIEW') {
+      if (status === 'COMPLETED') {
+        notificationType = 'TASK_APPROVED';
+        notificationTitle = 'Task Approved 🎉';
+        notificationMessage = `Task "${task.title}" has been approved by ${updatedBy}. Great job!`;
+      } else if (status === 'TODO' || status === 'IN_PROGRESS') {
+        notificationType = 'TASK_REJECTED';
+        notificationTitle = 'Task Needs Changes ⚠️';
+        notificationMessage = `Task "${task.title}" was moved back to ${status} by ${updatedBy}.`;
+        if (rejectionReason) {
+          notificationMessage += ` Reason: "${rejectionReason}"`;
         }
-
-        let notificationType = 'TASK_STATUS_UPDATED';
-        let notificationTitle = 'Task Status Updated';
-        let notificationMessage = `Task "${task.title}" status has been updated to ${task.status} by ${updatedBy}`;
-
-        // Specific logic for Approval/Rejection
-        if (existingTask.status === 'IN_REVIEW') {
-          if (status === 'COMPLETED') {
-            notificationType = 'TASK_APPROVED';
-            notificationTitle = 'Task Approved 🎉';
-            notificationMessage = `Your task "${task.title}" has been approved by ${updatedBy}. Great job!`;
-          } else if (status === 'TODO' || status === 'IN_PROGRESS') {
-            notificationType = 'TASK_REJECTED';
-            notificationTitle = 'Task Needs Changes ⚠️';
-            notificationMessage = `Your task "${task.title}" was moved back to ${status} by ${updatedBy}.`;
-            if (rejectionReason) {
-              notificationMessage += ` Reason: "${rejectionReason}"`;
-            }
-          }
-        }
-
-        createNotification(req, {
-          userId: user.id,
-          title: notificationTitle,
-          message: notificationMessage,
-          type: notificationType,
-          link: `/task-board?project=${existingTask.projectId}`
-        });
       }
+    }
+
+    // Determine who to notify
+    const notifyUsers = new Map();
+
+    // Assignees should always be notified of status changes unless they made the change themselves
+    for (const { user } of task.assignees) {
+      if (user.id !== req.user.id) {
+        notifyUsers.set(user.id, user);
+      }
+    }
+
+    // If approved, notify assigners as well
+    if (status === 'COMPLETED') {
+      for (const assigner of assigners) {
+        if (assigner.id !== req.user.id) {
+           notifyUsers.set(assigner.id, assigner);
+        }
+      }
+    }
+
+    // Send notifications
+    for (const user of notifyUsers.values()) {
+      if (hasEmailSupport && sendEmail && user.email) {
+        sendTaskStatusUpdateEmail(
+          user.email,
+          task.title,
+          task.project.name,
+          task.status,
+          updatedBy,
+          assignedByName,
+          origin
+        ).catch(err => console.error('Failed to send task status update email:', err));
+      }
+
+      createNotification(req, {
+        userId: user.id,
+        title: notificationTitle,
+        message: notificationMessage,
+        type: notificationType,
+        link: `/task-board?project=${existingTask.projectId}`
+      });
     }
 
     // Notify Manager for Approval if requested by Member AND it requires approval
@@ -1522,12 +1571,16 @@ export const updateTaskStatus = async (req, res) => {
         managersToNotify.push(fullProject.manager);
       }
 
+      if (assignerToNotify && !managersToNotify.some(m => m.id === assignerToNotify.id) && assignerToNotify.id !== req.user.id) {
+        managersToNotify.push(assignerToNotify);
+      }
+
       for (const manager of managersToNotify) {
         // In-app notification
         createNotification(req, {
           userId: manager.id,
           title: 'Task Status Updated',
-          message: `Task "${task.title}" status has been updated to ${task.status} by ${updatedBy}`,
+          message: `Task "${task.title}" status has been updated to ${task.status} by ${updatedBy}${assignedByName ? ` (Assigned by: ${assignedByName})` : ''}`,
           type: 'TASK_STATUS_UPDATED',
           link: `/task-board?project=${existingTask.projectId}&highlight=${task.id}`
         });
@@ -1540,8 +1593,9 @@ export const updateTaskStatus = async (req, res) => {
             task.project.name,
             task.status,
             updatedBy,
+            assignedByName,
             origin
-          ).catch(err => console.error('Failed to send task status update email to manager:', err));
+          ).catch(err => console.error('Failed to send task status update email to manager/assigner:', err));
         }
       }
     }
@@ -1583,7 +1637,7 @@ export const approveTaskStatus = async (req, res) => {
         rejectionReason: null
       },
       include: {
-        assignees: { include: { user: { select: { id: true, name: true, email: true } } } },
+        assignees: { include: { user: { select: { id: true, name: true, email: true } }, assignedBy: { select: { id: true, name: true } } } },
         project: { select: { name: true } }
       }
     });
@@ -1674,7 +1728,7 @@ export const rejectTaskStatus = async (req, res) => {
         rejectionReason: rejectionReason || null
       },
       include: {
-        assignees: { include: { user: { select: { id: true, name: true, email: true } } } },
+        assignees: { include: { user: { select: { id: true, name: true, email: true } }, assignedBy: { select: { id: true, name: true } } } },
         project: { select: { name: true } }
       }
     });

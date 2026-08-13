@@ -40,6 +40,7 @@ const Performance = lazy(() => import('./pages/Performance'));
 const OrganizationSettings = lazy(() => import('./pages/organization/OrganizationSettings'));
 const ActivityLog = lazy(() => import('./pages/organization/ActivityLog'));
 const ManageAccess = lazy(() => import('./pages/organization/ManageAccess'));
+const RolesSettings = lazy(() => import('./pages/organization/RolesSettings'));
 const Integrations = lazy(() => import('./pages/Integrations'));
 const BillingPage = lazy(() => import('./pages/BillingPage'));
 const RestrictedAccess = lazy(() => import('./pages/RestrictedAccess'));
@@ -330,6 +331,14 @@ function App() {
                 element={
                   user?.role === 'ADMIN'
                     ? <ManageAccess />
+                    : <Navigate to="/dashboard" replace />
+                }
+              />
+              <Route
+                path="organization/roles"
+                element={
+                  user?.role === 'ADMIN'
+                    ? <RolesSettings />
                     : <Navigate to="/dashboard" replace />
                 }
               />

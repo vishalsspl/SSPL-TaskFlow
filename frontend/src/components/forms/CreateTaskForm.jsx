@@ -33,6 +33,22 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
     const { user } = useAuthStore();
     const isEdit = !!task;
     
+    // Attempt to get the fully populated user object from the users array 
+    // to access custom role permissions which might not be in the auth store.
+    const fullUser = users?.find(u => u.id === user?.id) || user;
+    
+    let canAssignOthers = fullUser?.role !== 'MEMBER';
+    if (fullUser?.role === 'MEMBER' && fullUser?.customRole?.permissions) {
+        try {
+            const perms = typeof fullUser.customRole.permissions === 'string' 
+                ? JSON.parse(fullUser.customRole.permissions) 
+                : fullUser.customRole.permissions;
+            canAssignOthers = !!perms?.canAssignTasks;
+        } catch (e) {
+            console.error('Failed to parse custom role permissions', e);
+        }
+    }
+
     const generalProject = projects.find(p => p.name === 'General' || p.name === 'General Tasks');
     const defaultGeneralId = generalProject?.id || '';
 
@@ -42,7 +58,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
         parentId: task?.parentId || '',
         title: task?.title || '',
         description: task?.description || '',
-        assigneeId: task?.assignees?.[0]?.userId || (user?.role === 'MEMBER' ? user.id : ''),
+        assigneeId: task?.assignees?.[0]?.userId || (!canAssignOthers ? user.id : ''),
         status: task?.status || 'TODO',
         priority: task?.priority || 'MEDIUM',
         completionPercentage: task?.completionPercentage || 0,
@@ -212,7 +228,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                     parentId: '',
                     title: '',
                     description: '',
-                    assigneeId: user?.role === 'MEMBER' ? user.id : '',
+                    assigneeId: !canAssignOthers ? user.id : '',
                     status: 'TODO',
                     priority: 'MEDIUM',
                     completionPercentage: 0,
@@ -371,10 +387,10 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                             options={Array.from(new Map(
                                 users
                                     .filter(u => {
-                                        // Members can only assign to themselves (or are disabled anyway)
-                                        if (user?.role === 'MEMBER') return u.id === user.id;
+                                        // If member cannot assign to others, restrict to themselves
+                                        if (!canAssignOthers) return u.id === user.id;
                                         
-                                        // Admins/Managers can only assign to project members (if a specific project is selected)
+                                        // Admins/Managers (or Members with assign permissions) can assign to project members
                                         const selectedProjectObj = projects.find(p => p.id === formData.projectId);
                                         const isGeneralProject = !formData.projectId || 
                                             formData.projectId === defaultGeneralId ||
@@ -385,21 +401,22 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
 
                                         if (isGeneralProject) return true;
 
-                                        if (formData.projectId && projectMemberIds.length > 0) {
+                                        // Always restrict to project members for specific projects
+                                        if (formData.projectId) {
                                             return projectMemberIds.includes(u.id) || u.id === user.id;
                                         }
-                                        return true; // Fallback if no project selected yet
+                                        return true; // Fallback only if no project selected at all
                                     })
                                     .map(u => [u.id, { 
                                         value: u.id, 
                                         label: u.name,
-                                        sublabel: `${u.email} (${u.role})`,
+                                        sublabel: `${u.email} (${u.role}${u.customRole ? ` • ${u.customRole.name}` : ''})`,
                                         initial: u.name.charAt(0)
                                     }])
                             ).values())}
                             value={formData.assigneeId}
                             onChange={(id) => setFormData({ ...formData, assigneeId: id })}
-                            disabled={user?.role === 'MEMBER'}
+                            disabled={!canAssignOthers}
                             placeholder="Select assignee..."
                             searchPlaceholder="Search team members..."
                             className="!pl-10 mobile-reduce-input"

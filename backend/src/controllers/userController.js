@@ -153,18 +153,34 @@ export const getUsers = async (req, res) => {
         ]
       },
       select: {
+        id: true,
         managerId: true,
         clientId: true
       }
     });
 
+    const projectIds = memberProjects.map(p => p.id);
     const managerIds = memberProjects.map(p => p.managerId).filter(id => id !== null);
     const clientIds = memberProjects.map(p => p.clientId).filter(id => id !== null);
 
     where.OR = [
       { id: req.user.id },
       { id: { in: managerIds } },
-      { id: { in: clientIds } }
+      { id: { in: clientIds } },
+      {
+        taskAssignments: {
+          some: {
+            task: { projectId: { in: projectIds } }
+          }
+        }
+      },
+      {
+        workloads: {
+          some: {
+            projectId: { in: projectIds }
+          }
+        }
+      }
     ];
   }
 
@@ -197,6 +213,8 @@ export const getUsers = async (req, res) => {
     createdAt: true,
     managerId: true,
     manager: { select: { id: true, name: true } },
+    customRoleId: true,
+    customRole: { select: { id: true, name: true, permissions: true } },
     taskAssignments: {
       select: {
         task: {
@@ -301,7 +319,7 @@ export const getUsers = async (req, res) => {
 export const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, email, role, password, managerId } = req.body;
+    const { name, email, role, password, managerId, customRoleId } = req.body;
     const db = req.db;
 
     if (name !== undefined && !/^[a-zA-Z0-9\s]+$/.test(name)) {
@@ -328,6 +346,7 @@ export const updateUser = async (req, res) => {
 
     if (name !== undefined) updateData.name = name;
     if (role !== undefined) updateData.role = role;
+    if (customRoleId !== undefined) updateData.customRoleId = customRoleId;
 
     if (email !== undefined && req.user.role === 'ADMIN') {
       if (!/^\S+@\S+\.\S+$/.test(email)) {
@@ -371,6 +390,8 @@ export const updateUser = async (req, res) => {
         name: true,
         email: true,
         role: true,
+        customRoleId: true,
+        customRole: { select: { id: true, name: true, permissions: true } },
         avatar: true,
         createdAt: true,
       },

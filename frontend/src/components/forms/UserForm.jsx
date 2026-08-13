@@ -7,7 +7,7 @@ import { User, Mail, Shield, Lock, Eye, EyeOff } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { useAuthStore } from '@/store/authStore';
 
-const UserForm = ({ formData, setFormData, editingUser, onSubmit, onCancel, onSendResetLink }) => {
+const UserForm = ({ formData, setFormData, editingUser, onSubmit, onCancel, onSendResetLink, customRoles = [] }) => {
   const { user: currentUser } = useAuthStore();
   const [showPassword, setShowPassword] = useState(!editingUser);
 
@@ -63,6 +63,24 @@ const UserForm = ({ formData, setFormData, editingUser, onSubmit, onCancel, onSe
                 { label: 'Client', value: 'CLIENT' }
               ]}
               placeholder="Select Role"
+              className="!pl-10 relative mobile-reduce-input"
+            />
+          </div>
+        </div>
+
+        {/* Custom Role */}
+        <div className="space-y-2">
+          <Label htmlFor="customRole" className="text-foreground/90 font-semibold mobile-reduce-label">Custom Role (Optional)</Label>
+          <div className="relative">
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70 z-10" />
+            <SearchableSelect
+              value={formData.customRoleId}
+              onChange={(value) => setFormData({ ...formData, customRoleId: value })}
+              options={[
+                { label: 'None', value: '' },
+                ...customRoles.map(cr => ({ label: cr.name, value: cr.id }))
+              ]}
+              placeholder="Select Custom Role"
               className="!pl-10 relative mobile-reduce-input"
             />
           </div>

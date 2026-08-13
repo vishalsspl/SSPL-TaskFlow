@@ -783,13 +783,15 @@ const Tasks = () => {
                           <div className="flex items-center gap-2">
                             {task.assignees && task.assignees.length > 0 ? (
                               <div className="flex flex-wrap gap-2 items-center">
-                                {task.assignees.slice(0, 3).map(({ user }) => (
-                                  <div key={user?.id} className="flex items-center gap-2 bg-secondary/20 pr-3 rounded-full border border-border/50">
+                                {task.assignees.slice(0, 3).map(({ user, assignedBy }) => (
+                                  <div key={user?.id} className="flex items-center gap-2 bg-secondary/20 pr-3 rounded-full border border-border/50" title={assignedBy ? `${assignedBy.name} assigned to ${user?.name}` : user?.name}>
                                     <Avatar className="h-7 w-7 border border-[#0A0A0A] ring-1 ring-white/10">
                                       <AvatarImage src={user?.avatar} />
                                       <AvatarFallback className="text-[10px] bg-white/5 text-muted-foreground">{user?.name?.charAt(0)}</AvatarFallback>
                                     </Avatar>
-                                    <span className="text-[11px] font-bold text-foreground whitespace-nowrap">{user?.name}</span>
+                                    <span className="text-[11px] font-bold text-foreground whitespace-nowrap">
+                                      {assignedBy ? `${assignedBy.name.split(' ')[0]} To ${user?.name.split(' ')[0]}` : user?.name}
+                                    </span>
                                   </div>
                                 ))}
                                 {task.assignees.length > 3 && (

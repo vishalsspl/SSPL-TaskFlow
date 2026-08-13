@@ -956,3 +956,3271 @@ Stack: Error: Tenant DB URL missing
 Path: /api/documents/project/a4c7fc58-dd89-4e45-8a68-ed8d14f37aad
 User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
 ---
+2026-08-13T06:03:32.177Z [GLOBAL_ERROR] 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The column `User.customRoleId` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The column `User.customRoleId` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getUsers (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/userController.js:292:17)
+Path: /api/users
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-08-13T06:59:42.043Z [GLOBAL_ERROR] 
+Invalid `prisma.user.findMany()` invocation:
+
+{
+  where: {
+    organizationId: "17674cf9-9aab-470b-98d9-b65820a3436e",
+    isApproved: true,
+    OR: [
+      {
+        id: "03572cd6-f958-497c-b84e-cf3b32976a32"
+      },
+      {
+        id: {
+          in: [
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a"
+          ]
+        }
+      },
+      {
+        id: {
+          in: [
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9",
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9"
+          ]
+        }
+      },
+      {
+        taskAssignments: {
+          some: {
+            task: {
+              projectId: {
+                in: [
+                  undefined,
+                  ~~~~~~~~~
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        workloads: {
+          some: {
+            projectId: {
+              in: [
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  select: {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    isApproved: true,
+    avatar: true,
+    createdAt: true,
+    managerId: true,
+    manager: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    customRoleId: true,
+    customRole: {
+      select: {
+        id: true,
+        name: true,
+        permissions: true
+      }
+    },
+    taskAssignments: {
+      select: {
+        task: {
+          select: {
+            project: {
+              select: {
+                manager: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    workloads: {
+      select: {
+        project: {
+          select: {
+            manager: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  orderBy: {
+    name: "asc"
+  }
+}
+
+Invalid value for argument `in[0]`: Can not use `undefined` value within array. Use `null` or filter out `undefined` values.
+Stack: PrismaClientValidationError: 
+Invalid `prisma.user.findMany()` invocation:
+
+{
+  where: {
+    organizationId: "17674cf9-9aab-470b-98d9-b65820a3436e",
+    isApproved: true,
+    OR: [
+      {
+        id: "03572cd6-f958-497c-b84e-cf3b32976a32"
+      },
+      {
+        id: {
+          in: [
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a"
+          ]
+        }
+      },
+      {
+        id: {
+          in: [
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9",
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9"
+          ]
+        }
+      },
+      {
+        taskAssignments: {
+          some: {
+            task: {
+              projectId: {
+                in: [
+                  undefined,
+                  ~~~~~~~~~
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        workloads: {
+          some: {
+            projectId: {
+              in: [
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  select: {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    isApproved: true,
+    avatar: true,
+    createdAt: true,
+    managerId: true,
+    manager: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    customRoleId: true,
+    customRole: {
+      select: {
+        id: true,
+        name: true,
+        permissions: true
+      }
+    },
+    taskAssignments: {
+      select: {
+        task: {
+          select: {
+            project: {
+              select: {
+                manager: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    workloads: {
+      select: {
+        project: {
+          select: {
+            manager: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  orderBy: {
+    name: "asc"
+  }
+}
+
+Invalid value for argument `in[0]`: Can not use `undefined` value within array. Use `null` or filter out `undefined` values.
+    at wn (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:1363)
+    at e.throwValidationError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:10206)
+    at od (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:9323)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8075)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+Path: /api/users
+User: 03572cd6-f958-497c-b84e-cf3b32976a32
+---
+2026-08-13T07:07:02.086Z [GLOBAL_ERROR] 
+Invalid `prisma.user.findMany()` invocation:
+
+{
+  where: {
+    organizationId: "17674cf9-9aab-470b-98d9-b65820a3436e",
+    isApproved: true,
+    OR: [
+      {
+        id: "03572cd6-f958-497c-b84e-cf3b32976a32"
+      },
+      {
+        id: {
+          in: [
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a"
+          ]
+        }
+      },
+      {
+        id: {
+          in: [
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9",
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9"
+          ]
+        }
+      },
+      {
+        taskAssignments: {
+          some: {
+            task: {
+              projectId: {
+                in: [
+                  undefined,
+                  ~~~~~~~~~
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        workloads: {
+          some: {
+            projectId: {
+              in: [
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  select: {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    isApproved: true,
+    avatar: true,
+    createdAt: true,
+    managerId: true,
+    manager: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    customRoleId: true,
+    customRole: {
+      select: {
+        id: true,
+        name: true,
+        permissions: true
+      }
+    },
+    taskAssignments: {
+      select: {
+        task: {
+          select: {
+            project: {
+              select: {
+                manager: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    workloads: {
+      select: {
+        project: {
+          select: {
+            manager: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  orderBy: {
+    name: "asc"
+  }
+}
+
+Invalid value for argument `in[0]`: Can not use `undefined` value within array. Use `null` or filter out `undefined` values.
+Stack: PrismaClientValidationError: 
+Invalid `prisma.user.findMany()` invocation:
+
+{
+  where: {
+    organizationId: "17674cf9-9aab-470b-98d9-b65820a3436e",
+    isApproved: true,
+    OR: [
+      {
+        id: "03572cd6-f958-497c-b84e-cf3b32976a32"
+      },
+      {
+        id: {
+          in: [
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a"
+          ]
+        }
+      },
+      {
+        id: {
+          in: [
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9",
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9"
+          ]
+        }
+      },
+      {
+        taskAssignments: {
+          some: {
+            task: {
+              projectId: {
+                in: [
+                  undefined,
+                  ~~~~~~~~~
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        workloads: {
+          some: {
+            projectId: {
+              in: [
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  select: {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    isApproved: true,
+    avatar: true,
+    createdAt: true,
+    managerId: true,
+    manager: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    customRoleId: true,
+    customRole: {
+      select: {
+        id: true,
+        name: true,
+        permissions: true
+      }
+    },
+    taskAssignments: {
+      select: {
+        task: {
+          select: {
+            project: {
+              select: {
+                manager: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    workloads: {
+      select: {
+        project: {
+          select: {
+            manager: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  orderBy: {
+    name: "asc"
+  }
+}
+
+Invalid value for argument `in[0]`: Can not use `undefined` value within array. Use `null` or filter out `undefined` values.
+    at wn (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:1363)
+    at e.throwValidationError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:10206)
+    at od (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:9323)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8075)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+Path: /api/users
+User: 03572cd6-f958-497c-b84e-cf3b32976a32
+---
+2026-08-13T07:07:13.215Z [GLOBAL_ERROR] 
+Invalid `prisma.user.findMany()` invocation:
+
+{
+  where: {
+    organizationId: "17674cf9-9aab-470b-98d9-b65820a3436e",
+    isApproved: true,
+    OR: [
+      {
+        id: "03572cd6-f958-497c-b84e-cf3b32976a32"
+      },
+      {
+        id: {
+          in: [
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a"
+          ]
+        }
+      },
+      {
+        id: {
+          in: [
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9",
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9"
+          ]
+        }
+      },
+      {
+        taskAssignments: {
+          some: {
+            task: {
+              projectId: {
+                in: [
+                  undefined,
+                  ~~~~~~~~~
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        workloads: {
+          some: {
+            projectId: {
+              in: [
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  select: {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    isApproved: true,
+    avatar: true,
+    createdAt: true,
+    managerId: true,
+    manager: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    customRoleId: true,
+    customRole: {
+      select: {
+        id: true,
+        name: true,
+        permissions: true
+      }
+    },
+    taskAssignments: {
+      select: {
+        task: {
+          select: {
+            project: {
+              select: {
+                manager: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    workloads: {
+      select: {
+        project: {
+          select: {
+            manager: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  orderBy: {
+    name: "asc"
+  }
+}
+
+Invalid value for argument `in[0]`: Can not use `undefined` value within array. Use `null` or filter out `undefined` values.
+Stack: PrismaClientValidationError: 
+Invalid `prisma.user.findMany()` invocation:
+
+{
+  where: {
+    organizationId: "17674cf9-9aab-470b-98d9-b65820a3436e",
+    isApproved: true,
+    OR: [
+      {
+        id: "03572cd6-f958-497c-b84e-cf3b32976a32"
+      },
+      {
+        id: {
+          in: [
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a"
+          ]
+        }
+      },
+      {
+        id: {
+          in: [
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9",
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9"
+          ]
+        }
+      },
+      {
+        taskAssignments: {
+          some: {
+            task: {
+              projectId: {
+                in: [
+                  undefined,
+                  ~~~~~~~~~
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        workloads: {
+          some: {
+            projectId: {
+              in: [
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  select: {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    isApproved: true,
+    avatar: true,
+    createdAt: true,
+    managerId: true,
+    manager: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    customRoleId: true,
+    customRole: {
+      select: {
+        id: true,
+        name: true,
+        permissions: true
+      }
+    },
+    taskAssignments: {
+      select: {
+        task: {
+          select: {
+            project: {
+              select: {
+                manager: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    workloads: {
+      select: {
+        project: {
+          select: {
+            manager: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  orderBy: {
+    name: "asc"
+  }
+}
+
+Invalid value for argument `in[0]`: Can not use `undefined` value within array. Use `null` or filter out `undefined` values.
+    at wn (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:1363)
+    at e.throwValidationError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:10206)
+    at od (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:9323)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8075)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+Path: /api/users
+User: 03572cd6-f958-497c-b84e-cf3b32976a32
+---
+2026-08-13T07:07:15.268Z [GLOBAL_ERROR] 
+Invalid `prisma.user.findMany()` invocation:
+
+{
+  where: {
+    organizationId: "17674cf9-9aab-470b-98d9-b65820a3436e",
+    isApproved: true,
+    OR: [
+      {
+        id: "03572cd6-f958-497c-b84e-cf3b32976a32"
+      },
+      {
+        id: {
+          in: [
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a"
+          ]
+        }
+      },
+      {
+        id: {
+          in: [
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9",
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9"
+          ]
+        }
+      },
+      {
+        taskAssignments: {
+          some: {
+            task: {
+              projectId: {
+                in: [
+                  undefined,
+                  ~~~~~~~~~
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        workloads: {
+          some: {
+            projectId: {
+              in: [
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  select: {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    isApproved: true,
+    avatar: true,
+    createdAt: true,
+    managerId: true,
+    manager: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    customRoleId: true,
+    customRole: {
+      select: {
+        id: true,
+        name: true,
+        permissions: true
+      }
+    },
+    taskAssignments: {
+      select: {
+        task: {
+          select: {
+            project: {
+              select: {
+                manager: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    workloads: {
+      select: {
+        project: {
+          select: {
+            manager: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  orderBy: {
+    name: "asc"
+  }
+}
+
+Invalid value for argument `in[0]`: Can not use `undefined` value within array. Use `null` or filter out `undefined` values.
+Stack: PrismaClientValidationError: 
+Invalid `prisma.user.findMany()` invocation:
+
+{
+  where: {
+    organizationId: "17674cf9-9aab-470b-98d9-b65820a3436e",
+    isApproved: true,
+    OR: [
+      {
+        id: "03572cd6-f958-497c-b84e-cf3b32976a32"
+      },
+      {
+        id: {
+          in: [
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a"
+          ]
+        }
+      },
+      {
+        id: {
+          in: [
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9",
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9"
+          ]
+        }
+      },
+      {
+        taskAssignments: {
+          some: {
+            task: {
+              projectId: {
+                in: [
+                  undefined,
+                  ~~~~~~~~~
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        workloads: {
+          some: {
+            projectId: {
+              in: [
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  select: {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    isApproved: true,
+    avatar: true,
+    createdAt: true,
+    managerId: true,
+    manager: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    customRoleId: true,
+    customRole: {
+      select: {
+        id: true,
+        name: true,
+        permissions: true
+      }
+    },
+    taskAssignments: {
+      select: {
+        task: {
+          select: {
+            project: {
+              select: {
+                manager: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    workloads: {
+      select: {
+        project: {
+          select: {
+            manager: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  orderBy: {
+    name: "asc"
+  }
+}
+
+Invalid value for argument `in[0]`: Can not use `undefined` value within array. Use `null` or filter out `undefined` values.
+    at wn (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:1363)
+    at e.throwValidationError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:10206)
+    at od (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:9323)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8075)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+Path: /api/users
+User: 03572cd6-f958-497c-b84e-cf3b32976a32
+---
+2026-08-13T07:07:17.443Z [GLOBAL_ERROR] 
+Invalid `prisma.user.findMany()` invocation:
+
+{
+  where: {
+    organizationId: "17674cf9-9aab-470b-98d9-b65820a3436e",
+    isApproved: true,
+    OR: [
+      {
+        id: "03572cd6-f958-497c-b84e-cf3b32976a32"
+      },
+      {
+        id: {
+          in: [
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a"
+          ]
+        }
+      },
+      {
+        id: {
+          in: [
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9",
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9"
+          ]
+        }
+      },
+      {
+        taskAssignments: {
+          some: {
+            task: {
+              projectId: {
+                in: [
+                  undefined,
+                  ~~~~~~~~~
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        workloads: {
+          some: {
+            projectId: {
+              in: [
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  select: {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    isApproved: true,
+    avatar: true,
+    createdAt: true,
+    managerId: true,
+    manager: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    customRoleId: true,
+    customRole: {
+      select: {
+        id: true,
+        name: true,
+        permissions: true
+      }
+    },
+    taskAssignments: {
+      select: {
+        task: {
+          select: {
+            project: {
+              select: {
+                manager: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    workloads: {
+      select: {
+        project: {
+          select: {
+            manager: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  orderBy: {
+    name: "asc"
+  }
+}
+
+Invalid value for argument `in[0]`: Can not use `undefined` value within array. Use `null` or filter out `undefined` values.
+Stack: PrismaClientValidationError: 
+Invalid `prisma.user.findMany()` invocation:
+
+{
+  where: {
+    organizationId: "17674cf9-9aab-470b-98d9-b65820a3436e",
+    isApproved: true,
+    OR: [
+      {
+        id: "03572cd6-f958-497c-b84e-cf3b32976a32"
+      },
+      {
+        id: {
+          in: [
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a"
+          ]
+        }
+      },
+      {
+        id: {
+          in: [
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9",
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9"
+          ]
+        }
+      },
+      {
+        taskAssignments: {
+          some: {
+            task: {
+              projectId: {
+                in: [
+                  undefined,
+                  ~~~~~~~~~
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        workloads: {
+          some: {
+            projectId: {
+              in: [
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  select: {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    isApproved: true,
+    avatar: true,
+    createdAt: true,
+    managerId: true,
+    manager: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    customRoleId: true,
+    customRole: {
+      select: {
+        id: true,
+        name: true,
+        permissions: true
+      }
+    },
+    taskAssignments: {
+      select: {
+        task: {
+          select: {
+            project: {
+              select: {
+                manager: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    workloads: {
+      select: {
+        project: {
+          select: {
+            manager: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  orderBy: {
+    name: "asc"
+  }
+}
+
+Invalid value for argument `in[0]`: Can not use `undefined` value within array. Use `null` or filter out `undefined` values.
+    at wn (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:1363)
+    at e.throwValidationError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:10206)
+    at od (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:9323)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8075)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+Path: /api/users
+User: 03572cd6-f958-497c-b84e-cf3b32976a32
+---
+2026-08-13T07:07:20.129Z [GLOBAL_ERROR] 
+Invalid `prisma.user.findMany()` invocation:
+
+{
+  where: {
+    organizationId: "17674cf9-9aab-470b-98d9-b65820a3436e",
+    isApproved: true,
+    OR: [
+      {
+        id: "03572cd6-f958-497c-b84e-cf3b32976a32"
+      },
+      {
+        id: {
+          in: [
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a"
+          ]
+        }
+      },
+      {
+        id: {
+          in: [
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9",
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9"
+          ]
+        }
+      },
+      {
+        taskAssignments: {
+          some: {
+            task: {
+              projectId: {
+                in: [
+                  undefined,
+                  ~~~~~~~~~
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        workloads: {
+          some: {
+            projectId: {
+              in: [
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  select: {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    isApproved: true,
+    avatar: true,
+    createdAt: true,
+    managerId: true,
+    manager: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    customRoleId: true,
+    customRole: {
+      select: {
+        id: true,
+        name: true,
+        permissions: true
+      }
+    },
+    taskAssignments: {
+      select: {
+        task: {
+          select: {
+            project: {
+              select: {
+                manager: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    workloads: {
+      select: {
+        project: {
+          select: {
+            manager: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  orderBy: {
+    name: "asc"
+  }
+}
+
+Invalid value for argument `in[0]`: Can not use `undefined` value within array. Use `null` or filter out `undefined` values.
+Stack: PrismaClientValidationError: 
+Invalid `prisma.user.findMany()` invocation:
+
+{
+  where: {
+    organizationId: "17674cf9-9aab-470b-98d9-b65820a3436e",
+    isApproved: true,
+    OR: [
+      {
+        id: "03572cd6-f958-497c-b84e-cf3b32976a32"
+      },
+      {
+        id: {
+          in: [
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a"
+          ]
+        }
+      },
+      {
+        id: {
+          in: [
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9",
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9"
+          ]
+        }
+      },
+      {
+        taskAssignments: {
+          some: {
+            task: {
+              projectId: {
+                in: [
+                  undefined,
+                  ~~~~~~~~~
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        workloads: {
+          some: {
+            projectId: {
+              in: [
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  select: {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    isApproved: true,
+    avatar: true,
+    createdAt: true,
+    managerId: true,
+    manager: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    customRoleId: true,
+    customRole: {
+      select: {
+        id: true,
+        name: true,
+        permissions: true
+      }
+    },
+    taskAssignments: {
+      select: {
+        task: {
+          select: {
+            project: {
+              select: {
+                manager: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    workloads: {
+      select: {
+        project: {
+          select: {
+            manager: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  orderBy: {
+    name: "asc"
+  }
+}
+
+Invalid value for argument `in[0]`: Can not use `undefined` value within array. Use `null` or filter out `undefined` values.
+    at wn (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:1363)
+    at e.throwValidationError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:10206)
+    at od (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:9323)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8075)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+Path: /api/users
+User: 03572cd6-f958-497c-b84e-cf3b32976a32
+---
+2026-08-13T07:09:10.882Z [GLOBAL_ERROR] 
+Invalid `prisma.user.findMany()` invocation:
+
+{
+  where: {
+    organizationId: "17674cf9-9aab-470b-98d9-b65820a3436e",
+    isApproved: true,
+    OR: [
+      {
+        id: "03572cd6-f958-497c-b84e-cf3b32976a32"
+      },
+      {
+        id: {
+          in: [
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a"
+          ]
+        }
+      },
+      {
+        id: {
+          in: [
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9",
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9"
+          ]
+        }
+      },
+      {
+        taskAssignments: {
+          some: {
+            task: {
+              projectId: {
+                in: [
+                  undefined,
+                  ~~~~~~~~~
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        workloads: {
+          some: {
+            projectId: {
+              in: [
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  select: {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    isApproved: true,
+    avatar: true,
+    createdAt: true,
+    managerId: true,
+    manager: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    customRoleId: true,
+    customRole: {
+      select: {
+        id: true,
+        name: true,
+        permissions: true
+      }
+    },
+    taskAssignments: {
+      select: {
+        task: {
+          select: {
+            project: {
+              select: {
+                manager: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    workloads: {
+      select: {
+        project: {
+          select: {
+            manager: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  orderBy: {
+    name: "asc"
+  }
+}
+
+Invalid value for argument `in[0]`: Can not use `undefined` value within array. Use `null` or filter out `undefined` values.
+Stack: PrismaClientValidationError: 
+Invalid `prisma.user.findMany()` invocation:
+
+{
+  where: {
+    organizationId: "17674cf9-9aab-470b-98d9-b65820a3436e",
+    isApproved: true,
+    OR: [
+      {
+        id: "03572cd6-f958-497c-b84e-cf3b32976a32"
+      },
+      {
+        id: {
+          in: [
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a"
+          ]
+        }
+      },
+      {
+        id: {
+          in: [
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9",
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9"
+          ]
+        }
+      },
+      {
+        taskAssignments: {
+          some: {
+            task: {
+              projectId: {
+                in: [
+                  undefined,
+                  ~~~~~~~~~
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        workloads: {
+          some: {
+            projectId: {
+              in: [
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  select: {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    isApproved: true,
+    avatar: true,
+    createdAt: true,
+    managerId: true,
+    manager: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    customRoleId: true,
+    customRole: {
+      select: {
+        id: true,
+        name: true,
+        permissions: true
+      }
+    },
+    taskAssignments: {
+      select: {
+        task: {
+          select: {
+            project: {
+              select: {
+                manager: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    workloads: {
+      select: {
+        project: {
+          select: {
+            manager: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  orderBy: {
+    name: "asc"
+  }
+}
+
+Invalid value for argument `in[0]`: Can not use `undefined` value within array. Use `null` or filter out `undefined` values.
+    at wn (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:1363)
+    at e.throwValidationError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:10206)
+    at od (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:9323)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8075)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+Path: /api/users
+User: 03572cd6-f958-497c-b84e-cf3b32976a32
+---
+2026-08-13T07:17:50.201Z [GLOBAL_ERROR] 
+Invalid `prisma.user.findMany()` invocation:
+
+{
+  where: {
+    organizationId: "17674cf9-9aab-470b-98d9-b65820a3436e",
+    isApproved: true,
+    OR: [
+      {
+        id: "03572cd6-f958-497c-b84e-cf3b32976a32"
+      },
+      {
+        id: {
+          in: [
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a"
+          ]
+        }
+      },
+      {
+        id: {
+          in: [
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9",
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9"
+          ]
+        }
+      },
+      {
+        taskAssignments: {
+          some: {
+            task: {
+              projectId: {
+                in: [
+                  undefined,
+                  ~~~~~~~~~
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        workloads: {
+          some: {
+            projectId: {
+              in: [
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  select: {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    isApproved: true,
+    avatar: true,
+    createdAt: true,
+    managerId: true,
+    manager: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    customRoleId: true,
+    customRole: {
+      select: {
+        id: true,
+        name: true,
+        permissions: true
+      }
+    },
+    taskAssignments: {
+      select: {
+        task: {
+          select: {
+            project: {
+              select: {
+                manager: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    workloads: {
+      select: {
+        project: {
+          select: {
+            manager: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  orderBy: {
+    name: "asc"
+  }
+}
+
+Invalid value for argument `in[0]`: Can not use `undefined` value within array. Use `null` or filter out `undefined` values.
+Stack: PrismaClientValidationError: 
+Invalid `prisma.user.findMany()` invocation:
+
+{
+  where: {
+    organizationId: "17674cf9-9aab-470b-98d9-b65820a3436e",
+    isApproved: true,
+    OR: [
+      {
+        id: "03572cd6-f958-497c-b84e-cf3b32976a32"
+      },
+      {
+        id: {
+          in: [
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a"
+          ]
+        }
+      },
+      {
+        id: {
+          in: [
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9",
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9"
+          ]
+        }
+      },
+      {
+        taskAssignments: {
+          some: {
+            task: {
+              projectId: {
+                in: [
+                  undefined,
+                  ~~~~~~~~~
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        workloads: {
+          some: {
+            projectId: {
+              in: [
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  select: {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    isApproved: true,
+    avatar: true,
+    createdAt: true,
+    managerId: true,
+    manager: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    customRoleId: true,
+    customRole: {
+      select: {
+        id: true,
+        name: true,
+        permissions: true
+      }
+    },
+    taskAssignments: {
+      select: {
+        task: {
+          select: {
+            project: {
+              select: {
+                manager: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    workloads: {
+      select: {
+        project: {
+          select: {
+            manager: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  orderBy: {
+    name: "asc"
+  }
+}
+
+Invalid value for argument `in[0]`: Can not use `undefined` value within array. Use `null` or filter out `undefined` values.
+    at wn (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:1363)
+    at e.throwValidationError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:10206)
+    at od (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:9323)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8075)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+Path: /api/users
+User: 03572cd6-f958-497c-b84e-cf3b32976a32
+---
+2026-08-13T07:48:02.469Z [GLOBAL_ERROR] 
+Invalid `prisma.user.findMany()` invocation:
+
+{
+  where: {
+    organizationId: "17674cf9-9aab-470b-98d9-b65820a3436e",
+    isApproved: true,
+    OR: [
+      {
+        id: "03572cd6-f958-497c-b84e-cf3b32976a32"
+      },
+      {
+        id: {
+          in: [
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a"
+          ]
+        }
+      },
+      {
+        id: {
+          in: [
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9",
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9"
+          ]
+        }
+      },
+      {
+        taskAssignments: {
+          some: {
+            task: {
+              projectId: {
+                in: [
+                  undefined,
+                  ~~~~~~~~~
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        workloads: {
+          some: {
+            projectId: {
+              in: [
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  select: {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    isApproved: true,
+    avatar: true,
+    createdAt: true,
+    managerId: true,
+    manager: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    customRoleId: true,
+    customRole: {
+      select: {
+        id: true,
+        name: true,
+        permissions: true
+      }
+    },
+    taskAssignments: {
+      select: {
+        task: {
+          select: {
+            project: {
+              select: {
+                manager: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    workloads: {
+      select: {
+        project: {
+          select: {
+            manager: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  orderBy: {
+    name: "asc"
+  }
+}
+
+Invalid value for argument `in[0]`: Can not use `undefined` value within array. Use `null` or filter out `undefined` values.
+Stack: PrismaClientValidationError: 
+Invalid `prisma.user.findMany()` invocation:
+
+{
+  where: {
+    organizationId: "17674cf9-9aab-470b-98d9-b65820a3436e",
+    isApproved: true,
+    OR: [
+      {
+        id: "03572cd6-f958-497c-b84e-cf3b32976a32"
+      },
+      {
+        id: {
+          in: [
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a"
+          ]
+        }
+      },
+      {
+        id: {
+          in: [
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9",
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9"
+          ]
+        }
+      },
+      {
+        taskAssignments: {
+          some: {
+            task: {
+              projectId: {
+                in: [
+                  undefined,
+                  ~~~~~~~~~
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        workloads: {
+          some: {
+            projectId: {
+              in: [
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  select: {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    isApproved: true,
+    avatar: true,
+    createdAt: true,
+    managerId: true,
+    manager: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    customRoleId: true,
+    customRole: {
+      select: {
+        id: true,
+        name: true,
+        permissions: true
+      }
+    },
+    taskAssignments: {
+      select: {
+        task: {
+          select: {
+            project: {
+              select: {
+                manager: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    workloads: {
+      select: {
+        project: {
+          select: {
+            manager: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  orderBy: {
+    name: "asc"
+  }
+}
+
+Invalid value for argument `in[0]`: Can not use `undefined` value within array. Use `null` or filter out `undefined` values.
+    at wn (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:1363)
+    at e.throwValidationError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:10206)
+    at od (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:9323)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8075)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+Path: /api/users
+User: 03572cd6-f958-497c-b84e-cf3b32976a32
+---
+2026-08-13T07:49:07.225Z [GLOBAL_ERROR] 
+Invalid `prisma.user.findMany()` invocation:
+
+{
+  where: {
+    organizationId: "17674cf9-9aab-470b-98d9-b65820a3436e",
+    isApproved: true,
+    OR: [
+      {
+        id: "03572cd6-f958-497c-b84e-cf3b32976a32"
+      },
+      {
+        id: {
+          in: [
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a"
+          ]
+        }
+      },
+      {
+        id: {
+          in: [
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9",
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9"
+          ]
+        }
+      },
+      {
+        taskAssignments: {
+          some: {
+            task: {
+              projectId: {
+                in: [
+                  undefined,
+                  ~~~~~~~~~
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        workloads: {
+          some: {
+            projectId: {
+              in: [
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  select: {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    isApproved: true,
+    avatar: true,
+    createdAt: true,
+    managerId: true,
+    manager: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    customRoleId: true,
+    customRole: {
+      select: {
+        id: true,
+        name: true,
+        permissions: true
+      }
+    },
+    taskAssignments: {
+      select: {
+        task: {
+          select: {
+            project: {
+              select: {
+                manager: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    workloads: {
+      select: {
+        project: {
+          select: {
+            manager: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  orderBy: {
+    name: "asc"
+  }
+}
+
+Invalid value for argument `in[0]`: Can not use `undefined` value within array. Use `null` or filter out `undefined` values.
+Stack: PrismaClientValidationError: 
+Invalid `prisma.user.findMany()` invocation:
+
+{
+  where: {
+    organizationId: "17674cf9-9aab-470b-98d9-b65820a3436e",
+    isApproved: true,
+    OR: [
+      {
+        id: "03572cd6-f958-497c-b84e-cf3b32976a32"
+      },
+      {
+        id: {
+          in: [
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a",
+            "454265a3-1777-413b-a49f-8735ef6ffa2a"
+          ]
+        }
+      },
+      {
+        id: {
+          in: [
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9",
+            "177574c6-ea59-4cb6-8828-cf6ac23e33a9"
+          ]
+        }
+      },
+      {
+        taskAssignments: {
+          some: {
+            task: {
+              projectId: {
+                in: [
+                  undefined,
+                  ~~~~~~~~~
+                  undefined,
+                  undefined,
+                  undefined,
+                  undefined
+                ]
+              }
+            }
+          }
+        }
+      },
+      {
+        workloads: {
+          some: {
+            projectId: {
+              in: [
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  select: {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    isApproved: true,
+    avatar: true,
+    createdAt: true,
+    managerId: true,
+    manager: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    customRoleId: true,
+    customRole: {
+      select: {
+        id: true,
+        name: true,
+        permissions: true
+      }
+    },
+    taskAssignments: {
+      select: {
+        task: {
+          select: {
+            project: {
+              select: {
+                manager: {
+                  select: {
+                    id: true,
+                    name: true
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    workloads: {
+      select: {
+        project: {
+          select: {
+            manager: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  orderBy: {
+    name: "asc"
+  }
+}
+
+Invalid value for argument `in[0]`: Can not use `undefined` value within array. Use `null` or filter out `undefined` values.
+    at wn (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:1363)
+    at e.throwValidationError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:10206)
+    at od (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:9323)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8075)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+    at aa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8908)
+    at sa (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:8439)
+Path: /api/users
+User: 03572cd6-f958-497c-b84e-cf3b32976a32
+---
+2026-08-13T09:46:38.249Z [GLOBAL_ERROR] 
+Invalid `prisma.task.create()` invocation:
+
+{
+  data: {
+    projectId: "214fc384-2599-4a35-b2b6-03c7ef535dad",
+    phaseId: "d2d22baf-2513-411e-a9f3-2f59fd13e8a3",
+    parentId: null,
+    title: "Testing custome rule 2",
+    taskNumber: 4,
+    shortId: "SSPL-4",
+    description: "",
+    status: "TODO",
+    priority: "MEDIUM",
+    completionPercentage: 0,
+    dueDate: new Date("2026-08-13T18:30:00.000Z"),
+    tags: [
+      "CREATOR:03572cd6-f958-497c-b84e-cf3b32976a32"
+    ],
+    storyPoints: 0,
+    type: "TASK",
+    attachments: [],
+    assignees: {
+      create: [
+        {
+          userId: "168ff0b0-b2a7-493e-91a3-59fa595209d8",
+          assignedById: "03572cd6-f958-497c-b84e-cf3b32976a32"
+        }
+      ]
+    }
+  },
+  include: {
+    assignees: {
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true
+          }
+        }
+      }
+    },
+    project: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    phase: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    parent: {
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        shortId: true
+      }
+    }
+  }
+}
+
+Unknown argument `assignedById`. Available options are marked with ?.
+Stack: PrismaClientValidationError: 
+Invalid `prisma.task.create()` invocation:
+
+{
+  data: {
+    projectId: "214fc384-2599-4a35-b2b6-03c7ef535dad",
+    phaseId: "d2d22baf-2513-411e-a9f3-2f59fd13e8a3",
+    parentId: null,
+    title: "Testing custome rule 2",
+    taskNumber: 4,
+    shortId: "SSPL-4",
+    description: "",
+    status: "TODO",
+    priority: "MEDIUM",
+    completionPercentage: 0,
+    dueDate: new Date("2026-08-13T18:30:00.000Z"),
+    tags: [
+      "CREATOR:03572cd6-f958-497c-b84e-cf3b32976a32"
+    ],
+    storyPoints: 0,
+    type: "TASK",
+    attachments: [],
+    assignees: {
+      create: [
+        {
+          userId: "168ff0b0-b2a7-493e-91a3-59fa595209d8",
+          assignedById: "03572cd6-f958-497c-b84e-cf3b32976a32"
+        }
+      ]
+    }
+  },
+  include: {
+    assignees: {
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true
+          }
+        }
+      }
+    },
+    project: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    phase: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    parent: {
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        shortId: true
+      }
+    }
+  }
+}
+
+Unknown argument `assignedById`. Available options are marked with ?.
+    at wn (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:1363)
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6958)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async createTask (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/taskController.js:417:16)
+Path: /api/tasks
+User: 03572cd6-f958-497c-b84e-cf3b32976a32
+---
+2026-08-13T09:47:07.166Z [GLOBAL_ERROR] 
+Invalid `prisma.task.create()` invocation:
+
+{
+  data: {
+    projectId: "214fc384-2599-4a35-b2b6-03c7ef535dad",
+    phaseId: "d2d22baf-2513-411e-a9f3-2f59fd13e8a3",
+    parentId: null,
+    title: "Testing custome rule 2",
+    taskNumber: 4,
+    shortId: "SSPL-4",
+    description: "",
+    status: "TODO",
+    priority: "MEDIUM",
+    completionPercentage: 0,
+    dueDate: new Date("2026-08-13T18:30:00.000Z"),
+    tags: [
+      "CREATOR:03572cd6-f958-497c-b84e-cf3b32976a32"
+    ],
+    storyPoints: 0,
+    type: "TASK",
+    attachments: [],
+    assignees: {
+      create: [
+        {
+          userId: "168ff0b0-b2a7-493e-91a3-59fa595209d8",
+          assignedById: "03572cd6-f958-497c-b84e-cf3b32976a32"
+        }
+      ]
+    }
+  },
+  include: {
+    assignees: {
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true
+          }
+        }
+      }
+    },
+    project: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    phase: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    parent: {
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        shortId: true
+      }
+    }
+  }
+}
+
+Unknown argument `assignedById`. Available options are marked with ?.
+Stack: PrismaClientValidationError: 
+Invalid `prisma.task.create()` invocation:
+
+{
+  data: {
+    projectId: "214fc384-2599-4a35-b2b6-03c7ef535dad",
+    phaseId: "d2d22baf-2513-411e-a9f3-2f59fd13e8a3",
+    parentId: null,
+    title: "Testing custome rule 2",
+    taskNumber: 4,
+    shortId: "SSPL-4",
+    description: "",
+    status: "TODO",
+    priority: "MEDIUM",
+    completionPercentage: 0,
+    dueDate: new Date("2026-08-13T18:30:00.000Z"),
+    tags: [
+      "CREATOR:03572cd6-f958-497c-b84e-cf3b32976a32"
+    ],
+    storyPoints: 0,
+    type: "TASK",
+    attachments: [],
+    assignees: {
+      create: [
+        {
+          userId: "168ff0b0-b2a7-493e-91a3-59fa595209d8",
+          assignedById: "03572cd6-f958-497c-b84e-cf3b32976a32"
+        }
+      ]
+    }
+  },
+  include: {
+    assignees: {
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true
+          }
+        }
+      }
+    },
+    project: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    phase: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    parent: {
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        shortId: true
+      }
+    }
+  }
+}
+
+Unknown argument `assignedById`. Available options are marked with ?.
+    at wn (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:1363)
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6958)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async createTask (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/taskController.js:417:16)
+Path: /api/tasks
+User: 03572cd6-f958-497c-b84e-cf3b32976a32
+---
+2026-08-13T09:57:10.123Z [GLOBAL_ERROR] 
+Invalid `prisma.task.create()` invocation:
+
+{
+  data: {
+    projectId: "214fc384-2599-4a35-b2b6-03c7ef535dad",
+    phaseId: "d2d22baf-2513-411e-a9f3-2f59fd13e8a3",
+    parentId: null,
+    title: "Testing custom role feature 2",
+    taskNumber: 4,
+    shortId: "SSPL-4",
+    description: "",
+    status: "TODO",
+    priority: "MEDIUM",
+    completionPercentage: 0,
+    dueDate: new Date("2026-08-13T18:30:00.000Z"),
+    tags: [
+      "CREATOR:03572cd6-f958-497c-b84e-cf3b32976a32"
+    ],
+    storyPoints: 0,
+    type: "TASK",
+    attachments: [],
+    assignees: {
+      create: [
+        {
+          userId: "168ff0b0-b2a7-493e-91a3-59fa595209d8",
+          assignedById: "03572cd6-f958-497c-b84e-cf3b32976a32"
+        }
+      ]
+    }
+  },
+  include: {
+    assignees: {
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true
+          }
+        }
+      }
+    },
+    project: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    phase: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    parent: {
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        shortId: true
+      }
+    }
+  }
+}
+
+Unknown argument `assignedById`. Available options are marked with ?.
+Stack: PrismaClientValidationError: 
+Invalid `prisma.task.create()` invocation:
+
+{
+  data: {
+    projectId: "214fc384-2599-4a35-b2b6-03c7ef535dad",
+    phaseId: "d2d22baf-2513-411e-a9f3-2f59fd13e8a3",
+    parentId: null,
+    title: "Testing custom role feature 2",
+    taskNumber: 4,
+    shortId: "SSPL-4",
+    description: "",
+    status: "TODO",
+    priority: "MEDIUM",
+    completionPercentage: 0,
+    dueDate: new Date("2026-08-13T18:30:00.000Z"),
+    tags: [
+      "CREATOR:03572cd6-f958-497c-b84e-cf3b32976a32"
+    ],
+    storyPoints: 0,
+    type: "TASK",
+    attachments: [],
+    assignees: {
+      create: [
+        {
+          userId: "168ff0b0-b2a7-493e-91a3-59fa595209d8",
+          assignedById: "03572cd6-f958-497c-b84e-cf3b32976a32"
+        }
+      ]
+    }
+  },
+  include: {
+    assignees: {
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true
+          }
+        }
+      }
+    },
+    project: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    phase: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    parent: {
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        shortId: true
+      }
+    }
+  }
+}
+
+Unknown argument `assignedById`. Available options are marked with ?.
+    at wn (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:1363)
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6958)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async createTask (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/taskController.js:417:16)
+Path: /api/tasks
+User: 03572cd6-f958-497c-b84e-cf3b32976a32
+---
+2026-08-13T09:57:16.486Z [GLOBAL_ERROR] 
+Invalid `prisma.task.create()` invocation:
+
+{
+  data: {
+    projectId: "214fc384-2599-4a35-b2b6-03c7ef535dad",
+    phaseId: "d2d22baf-2513-411e-a9f3-2f59fd13e8a3",
+    parentId: null,
+    title: "Testing custom role feature 2",
+    taskNumber: 4,
+    shortId: "SSPL-4",
+    description: "",
+    status: "TODO",
+    priority: "MEDIUM",
+    completionPercentage: 0,
+    dueDate: new Date("2026-08-13T18:30:00.000Z"),
+    tags: [
+      "CREATOR:03572cd6-f958-497c-b84e-cf3b32976a32"
+    ],
+    storyPoints: 0,
+    type: "TASK",
+    attachments: [],
+    assignees: {
+      create: [
+        {
+          userId: "168ff0b0-b2a7-493e-91a3-59fa595209d8",
+          assignedById: "03572cd6-f958-497c-b84e-cf3b32976a32"
+        }
+      ]
+    }
+  },
+  include: {
+    assignees: {
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true
+          }
+        }
+      }
+    },
+    project: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    phase: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    parent: {
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        shortId: true
+      }
+    }
+  }
+}
+
+Unknown argument `assignedById`. Available options are marked with ?.
+Stack: PrismaClientValidationError: 
+Invalid `prisma.task.create()` invocation:
+
+{
+  data: {
+    projectId: "214fc384-2599-4a35-b2b6-03c7ef535dad",
+    phaseId: "d2d22baf-2513-411e-a9f3-2f59fd13e8a3",
+    parentId: null,
+    title: "Testing custom role feature 2",
+    taskNumber: 4,
+    shortId: "SSPL-4",
+    description: "",
+    status: "TODO",
+    priority: "MEDIUM",
+    completionPercentage: 0,
+    dueDate: new Date("2026-08-13T18:30:00.000Z"),
+    tags: [
+      "CREATOR:03572cd6-f958-497c-b84e-cf3b32976a32"
+    ],
+    storyPoints: 0,
+    type: "TASK",
+    attachments: [],
+    assignees: {
+      create: [
+        {
+          userId: "168ff0b0-b2a7-493e-91a3-59fa595209d8",
+          assignedById: "03572cd6-f958-497c-b84e-cf3b32976a32"
+        }
+      ]
+    }
+  },
+  include: {
+    assignees: {
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatar: true
+          }
+        }
+      }
+    },
+    project: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    phase: {
+      select: {
+        id: true,
+        name: true
+      }
+    },
+    parent: {
+      select: {
+        id: true,
+        title: true,
+        type: true,
+        shortId: true
+      }
+    }
+  }
+}
+
+Unknown argument `assignedById`. Available options are marked with ?.
+    at wn (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:29:1363)
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6958)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async createTask (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/taskController.js:417:16)
+Path: /api/tasks
+User: 03572cd6-f958-497c-b84e-cf3b32976a32
+---
