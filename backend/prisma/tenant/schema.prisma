@@ -37,10 +37,11 @@ model Organization {
   suspendedAt     DateTime?
   suspendedReason String?
 
-  requireApproval      Boolean @default(false)
-  allowClientSignup    Boolean @default(false)
+  requireApproval       Boolean @default(false)
+  allowClientSignup     Boolean @default(false)
   sessionTimeoutMinutes Int?
-  rolePermissions      Json?
+  rolePermissions       Json?
+  maxManagersPerProject Int @default(1)
 
   customFeatures Json?
 
@@ -101,6 +102,7 @@ model User {
   members   User[]  @relation("ManagerRelation")
 
   managedProjects  Project[]  @relation("ProjectManager")
+  managedProjects2 Project[]  @relation("ProjectManagers")
   clientProjects   Project[]  @relation("ProjectClient")
   workloads        Workload[]
 
@@ -139,6 +141,8 @@ model Project {
 
   managerId String?
   manager   User?   @relation("ProjectManager", fields: [managerId], references: [id], onDelete: SetNull)
+
+  managers    User[]  @relation("ProjectManagers")
 
   clientId String?
   client   User?   @relation("ProjectClient", fields: [clientId], references: [id], onDelete: SetNull)

@@ -34,6 +34,35 @@ export const ensureProjectSchema = async (db) => {
       console.error('[SchemaValidator] Project allowMemberTaskCreation migration failed:', migrateErr.message);
     }
   }
+
+  // 3. Check _ProjectManagers join table for multi-managers
+  try {
+    await db.$queryRawUnsafe('SELECT "A", "B" FROM "_ProjectManagers" LIMIT 1');
+  } catch (err) {
+    if (err.message.includes('relation "_ProjectManagers" does not exist') || err.message.includes('does not exist')) {
+      console.log('[SchemaValidator] Auto-migrating: Creating _ProjectManagers table');
+      try {
+        await db.$executeRawUnsafe(`
+          CREATE TABLE IF NOT EXISTS "_ProjectManagers" (
+            "A" TEXT NOT NULL,
+            "B" TEXT NOT NULL
+          )
+        `);
+        await db.$executeRawUnsafe('CREATE UNIQUE INDEX IF NOT EXISTS "_ProjectManagers_AB_unique" ON "_ProjectManagers"("A", "B")');
+        await db.$executeRawUnsafe('CREATE INDEX IF NOT EXISTS "_ProjectManagers_B_index" ON "_ProjectManagers"("B")');
+        
+        // Add foreign keys (ignoring errors if they fail due to existing keys)
+        try {
+          await db.$executeRawUnsafe('ALTER TABLE "_ProjectManagers" ADD CONSTRAINT "_ProjectManagers_A_fkey" FOREIGN KEY ("A") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE');
+          await db.$executeRawUnsafe('ALTER TABLE "_ProjectManagers" ADD CONSTRAINT "_ProjectManagers_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE');
+        } catch (fkErr) {
+          console.log('[SchemaValidator] Note: Foreign keys for _ProjectManagers might already exist or failed:', fkErr.message);
+        }
+      } catch (migrateErr) {
+        console.error('[SchemaValidator] _ProjectManagers creation failed:', migrateErr.message);
+      }
+    }
+  }
 };
 
 export const ensureChatSchema = async (db) => {
@@ -92,10 +121,41 @@ export const ensureOrganizationSchema = async (db) => {
       console.error('[SchemaValidator] Organization migration failed:', migrateErr.message);
     }
   }
+
+  // 2. Check maxManagersPerProject
+  try {
+    await db.$queryRawUnsafe('SELECT "maxManagersPerProject" FROM "Organization" LIMIT 1');
+  } catch (err) {
+    console.log('[SchemaValidator] Auto-migrating Organization table: Adding maxManagersPerProject');
+    try {
+      await db.$executeRawUnsafe('ALTER TABLE "Organization" ADD COLUMN IF NOT EXISTS "maxManagersPerProject" INTEGER DEFAULT 5');
+    } catch (migrateErr) {
+      console.error('[SchemaValidator] maxManagersPerProject migration failed:', migrateErr.message);
+    }
+  }
+};
+
+export const ensureUserSchema = async (db) => {
+  if (!db || !db.$queryRawUnsafe) return;
+
+  // 1. Check notificationPreferences column
+  try {
+    await db.$queryRawUnsafe('SELECT "notificationPreferences" FROM "User" LIMIT 1');
+  } catch (err) {
+    if (err.message.includes('does not exist')) {
+      console.log('[SchemaValidator] Auto-migrating User table: Adding notificationPreferences column');
+      try {
+        await db.$executeRawUnsafe('ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "notificationPreferences" JSONB');
+      } catch (migrateErr) {
+        console.error('[SchemaValidator] notificationPreferences migration failed:', migrateErr.message);
+      }
+    }
+  }
 };
 
 export default { 
   ensureProjectSchema, 
   ensureChatSchema,
-  ensureOrganizationSchema
+  ensureOrganizationSchema,
+  ensureUserSchema
 };

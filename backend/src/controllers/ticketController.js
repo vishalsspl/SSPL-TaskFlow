@@ -4,7 +4,7 @@ import {
     sendTicketStatusUpdateNotification,
     sendTicketCommentNotification
 } from '../services/emailService.js';
-import { createNotification } from '../utils/notifications.js';
+import { createNotification, shouldSendEmail } from '../utils/notifications.js';
 
 
 export const createTicket = async (req, res) => {
@@ -46,15 +46,17 @@ export const createTicket = async (req, res) => {
         const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
         for (const member of staff) {
             if (member.email) {
-                sendNewTicketNotification(
-                    member.email,
-                    ticket.title,
-                    ticket.description,
-                    ticket.priority,
-                    ticket.client.name,
-                    ticket.id,
-                    origin
-                ).catch(err => console.error('Failed to send new ticket notification:', err));
+                if (await shouldSendEmail(req.db, member.id, 'TICKET_CREATED')) {
+                    sendNewTicketNotification(
+                        member.email,
+                        ticket.title,
+                        ticket.description,
+                        ticket.priority,
+                        ticket.client.name,
+                        ticket.id,
+                        origin
+                    ).catch(err => console.error('Failed to send new ticket notification:', err));
+                }
             }
 
             console.log(`[Ticket Debug] Sending notification to Staff UserID: ${member.id}`);
@@ -230,13 +232,15 @@ export const updateTicketStatus = async (req, res) => {
         // Notify Client
         if (ticket.client.email) {
             const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
-            sendTicketStatusUpdateNotification(
-                ticket.client.email,
-                ticket.title,
-                status,
-                req.user.name,
-                origin
-            ).catch(err => console.error('Failed to send ticket status update notification:', err));
+            if (await shouldSendEmail(req.db, ticket.clientId, 'TICKET_STATUS_UPDATED')) {
+                sendTicketStatusUpdateNotification(
+                    ticket.client.email,
+                    ticket.title,
+                    status,
+                    req.user.name,
+                    origin
+                ).catch(err => console.error('Failed to send ticket status update notification:', err));
+            }
 
             createNotification(req, {
                 userId: ticket.clientId,
@@ -309,14 +313,16 @@ export const addComment = async (req, res) => {
             });
             for (const member of staff) {
                 if (member.email) {
-                    sendTicketCommentNotification(
-                        member.email,
-                        comment.ticket.title,
-                        req.user.name,
-                        message,
-                        ticketId,
-                        origin
-                    ).catch(err => console.error('Failed to send comment notification to staff:', err));
+                    if (await shouldSendEmail(req.db, member.id, 'TICKET_COMMENT')) {
+                        sendTicketCommentNotification(
+                            member.email,
+                            comment.ticket.title,
+                            req.user.name,
+                            message,
+                            ticketId,
+                            origin
+                        ).catch(err => console.error('Failed to send comment notification to staff:', err));
+                    }
                 }
 
                 createNotification(req, {
@@ -330,14 +336,16 @@ export const addComment = async (req, res) => {
         } else {
             // Staff commented, notify client
             if (comment.ticket.client.email) {
-                sendTicketCommentNotification(
-                    comment.ticket.client.email,
-                    comment.ticket.title,
-                    req.user.name,
-                    message,
-                    ticketId,
-                    origin
-                ).catch(err => console.error('Failed to send comment notification to client:', err));
+                if (await shouldSendEmail(req.db, comment.ticket.clientId, 'TICKET_COMMENT')) {
+                    sendTicketCommentNotification(
+                        comment.ticket.client.email,
+                        comment.ticket.title,
+                        req.user.name,
+                        message,
+                        ticketId,
+                        origin
+                    ).catch(err => console.error('Failed to send comment notification to client:', err));
+                }
             }
 
             createNotification(req, {

@@ -292,10 +292,10 @@ const Team = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!/^[a-zA-Z0-9\s]+$/.test(formData.name)) {
+    if (!formData.name || formData.name.trim() === '') {
       toast({
         title: "Validation Error",
-        description: "Member name cannot contain special characters. Only alphanumeric characters and spaces are allowed.",
+        description: "Member name is required.",
         variant: "destructive",
       });
       return;

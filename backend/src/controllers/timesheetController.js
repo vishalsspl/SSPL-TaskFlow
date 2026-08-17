@@ -53,7 +53,7 @@ export const getTimeEntries = async (req, res) => {
         if (req.user.role === 'MANAGER') {
             where.OR = [
                 { userId: req.user.id },
-                { project: { managerId: req.user.id } },
+                { project: { managers: { some: { id: req.user.id } } } },
                 { user: { managerId: req.user.id } }
             ];
             if (userId) where.userId = userId;

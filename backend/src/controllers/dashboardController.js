@@ -14,7 +14,6 @@ export const getDashboard = async (req, res) => {
       name: true,
       description: true,
       category: true,
-      managerId: true,
       clientId: true,
       status: true,
       startDate: true,
@@ -23,7 +22,7 @@ export const getDashboard = async (req, res) => {
       usedBudget: true,
       createdAt: true,
       updatedAt: true,
-      manager: {
+      managers: {
         select: {
           id: true,
           name: true,

@@ -8,9 +8,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { formatDistanceToNow } from 'date-fns';
 import api from '@/lib/api';
 import ConfirmDialog from '@/components/ConfirmDialog';
-import useAuthStore from '@/store/useAuthStore';
+import { useAuthStore } from '@/store/authStore';
 
-export default function DocumentList({ projectId, onNewDocument, onEditDocument, onViewDocument, projectManagerId }) {
+export default function DocumentList({ projectId, onNewDocument, onEditDocument, onViewDocument, projectManagers }) {
   const { toast } = useToast();
   const { user } = useAuthStore();
   const [documents, setDocuments] = useState([]);
@@ -98,7 +98,7 @@ export default function DocumentList({ projectId, onNewDocument, onEditDocument,
                     </CardDescription>
                   </div>
                 </div>
-                {(user?.role === 'ADMIN' || user?.role === 'SUPERADMIN' || user?.id === projectManagerId || user?.id === doc.author?.id) && (
+                {(user?.role === 'ADMIN' || user?.role === 'SUPERADMIN' || projectManagers?.some(m => m.id === user?.id) || user?.id === doc.author?.id) && (
                   <div onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

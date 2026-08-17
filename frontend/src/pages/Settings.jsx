@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useHeaderStore } from '@/store/headerStore';
 import { useTheme } from '@/components/ThemeProvider';
-import { Monitor, Moon, Sun, Upload, User, Check, Mail, Shield, Building2, KeyRound, Eye, EyeOff, Lock } from 'lucide-react';
+import { Monitor, Moon, Sun, Upload, User, Check, Mail, Shield, Building2, KeyRound, Eye, EyeOff, Lock, Bell, ListTodo, Users, Ticket, Settings2, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import {
   Dialog,
   DialogContent,
@@ -48,13 +49,79 @@ const ROLE_CONFIG = {
   }
 };
 
-const demoAvatars = [
-  'https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff',
-  'https://ui-avatars.com/api/?name=Manager&background=6366F1&color=fff',
-  'https://ui-avatars.com/api/?name=Member&background=10B981&color=fff',
-  'https://ui-avatars.com/api/?name=User&background=F59E0B&color=fff',
-  'https://ui-avatars.com/api/?name=Dev&background=8B5CF6&color=fff',
-  'https://ui-avatars.com/api/?name=Design&background=EC4899&color=fff',
+const DEMO_AVATARS = [
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix&backgroundColor=b6e3f4',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka&backgroundColor=c0aede',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Jasper&backgroundColor=ffdfbf',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Cleo&backgroundColor=ffd5dc',
+  'https://api.dicebear.com/7.x/avataaars/svg?seed=Leo&backgroundColor=b6e3f4',
+];
+
+const NOTIFICATION_GROUPS = [
+  {
+    id: 'tasks',
+    label: 'Tasks & Projects',
+    description: 'Assignments, status changes, approvals, comments',
+    icon: ListTodo,
+    color: '#0EA5E9',
+    bg: 'rgba(14,165,233,0.1)',
+    items: [
+      { key: 'TASK_ASSIGNED', label: 'Task Assigned', description: 'When a task is assigned to you' },
+      { key: 'TASK_STATUS_UPDATED', label: 'Task Status Updated', description: 'When a task changes status' },
+      { key: 'TASK_COMMENT', label: 'New Task Comment', description: 'When someone comments on your task' },
+      { key: 'TASK_APPROVED', label: 'Task Approved', description: 'When a task is approved' },
+      { key: 'TASK_REJECTED', label: 'Task Rejected', description: 'When a task is rejected' },
+      { key: 'TASK_APPROVAL_REQUEST', label: 'Task Approval Request', description: 'When a task needs your approval' },
+      { key: 'PROJECT_ASSIGNED', label: 'Project Assigned', description: 'When you are assigned to a new project' },
+      { key: 'PROJECT_UPDATED', label: 'Project Updated', description: 'When a project is updated' },
+      { key: 'DOCUMENT_UPLOADED', label: 'Document Uploaded', description: 'When a document is uploaded' },
+    ]
+  },
+  {
+    id: 'team',
+    label: 'Team & HR',
+    description: 'Timesheets, leave requests, team assignments',
+    icon: Users,
+    color: '#10B981',
+    bg: 'rgba(16,185,129,0.1)',
+    items: [
+      { key: 'WORKLOG_SUBMITTED', label: 'Worklog Submitted', description: 'When a team member submits a worklog' },
+      { key: 'TIMESHEET_APPROVED', label: 'Timesheet Approved', description: 'When your timesheet is approved' },
+      { key: 'TIMESHEET_REJECTED', label: 'Timesheet Rejected', description: 'When your timesheet is rejected' },
+      { key: 'LEAVE_SUBMITTED', label: 'Leave Request Submitted', description: 'When a leave request is submitted' },
+      { key: 'LEAVE_APPROVED', label: 'Leave Request Approved', description: 'When your leave request is approved' },
+      { key: 'LEAVE_REJECTED', label: 'Leave Request Rejected', description: 'When your leave request is rejected' },
+      { key: 'TEAM_ASSIGNED', label: 'Team Member Assigned', description: 'When a new member joins your team' },
+    ]
+  },
+  {
+    id: 'tickets',
+    label: 'Support Tickets',
+    description: 'Ticket creation, status updates, comments',
+    icon: Ticket,
+    color: '#F59E0B',
+    bg: 'rgba(245,158,11,0.1)',
+    condition: (user) => user?.role === 'ADMIN' || user?.role === 'CLIENT' || user?.permissions?.['tickets.view'],
+    items: [
+      { key: 'TICKET_CREATED', label: 'Ticket Created', description: 'When a new support ticket is opened' },
+      { key: 'TICKET_STATUS_UPDATED', label: 'Ticket Status Updated', description: 'When a ticket status changes' },
+      { key: 'TICKET_COMMENT', label: 'Ticket Comment', description: 'When a comment is added to a ticket' },
+    ]
+  },
+  {
+    id: 'system',
+    label: 'System & Security',
+    description: 'Role changes, account approvals, credential updates',
+    icon: Settings2,
+    color: '#EF4444',
+    bg: 'rgba(239,68,68,0.1)',
+    items: [
+      { key: 'ROLE_CHANGED', label: 'Role Changed', description: 'When your account role changes' },
+      { key: 'ACCOUNT_APPROVED', label: 'Account Approved', description: 'When an account is approved' },
+      { key: 'CREDENTIALS_UPDATED', label: 'Credentials Updated', description: 'When your password or credentials change' },
+      { key: 'NEW_ORG_SIGNUP', label: 'New Organization Signup', description: 'When a new organization signs up' },
+    ]
+  }
 ];
 
 const Settings = () => {
@@ -86,6 +153,66 @@ const Settings = () => {
       setProfileForm({ name: user.name || '', email: user.email || '' });
     }
   }, [user]);
+
+  // ── Notification Preferences ───────────────────────────────────────────
+  const [notifLoading, setNotifLoading] = useState(false);
+  const [notifPrefs, setNotifPrefs] = useState(null);
+  const [notifSaving, setNotifSaving] = useState(false);
+  const [expandedNotifGroup, setExpandedNotifGroup] = useState(null);
+
+  useEffect(() => {
+    if (activeTab === 'notifications' && !notifPrefs) {
+      loadNotifPrefs();
+    }
+  }, [activeTab]);
+
+  const loadNotifPrefs = async () => {
+    setNotifLoading(true);
+    try {
+      const res = await api.get('/users/notification-preferences');
+      setNotifPrefs(res.data);
+    } catch {
+      // Use defaults if fetch fails
+      setNotifPrefs({
+        email: { tasks: true, team: true, tickets: true, system: true },
+        inApp: { tasks: true, team: true, tickets: true, system: true },
+      });
+    } finally {
+      setNotifLoading(false);
+    }
+  };
+
+  const saveNotifPrefs = async (updatedPrefs) => {
+    setNotifSaving(true);
+    try {
+      const res = await api.put('/users/notification-preferences', updatedPrefs);
+      setNotifPrefs(res.data);
+      toast({ title: 'Preferences Saved', description: 'Your notification settings have been updated.' });
+    } catch {
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to save notification preferences.' });
+    } finally {
+      setNotifSaving(false);
+    }
+  };
+
+  const handleNotifToggle = (channel, category, checked) => {
+    const updatedChannelPrefs = { ...notifPrefs[channel], [category]: checked };
+    
+    // If toggling a main category, also apply the toggle to all its child events
+    const group = NOTIFICATION_GROUPS.find(g => g.id === category);
+    if (group) {
+      group.items.forEach(item => {
+        updatedChannelPrefs[item.key] = checked;
+      });
+    }
+
+    const updated = {
+      ...notifPrefs,
+      [channel]: updatedChannelPrefs,
+    };
+    setNotifPrefs(updated);
+    saveNotifPrefs(updated);
+  };
 
   const handleProfileSave = async () => {
     setIsSavingProfile(true);
@@ -247,6 +374,24 @@ const Settings = () => {
                 <Lock className="w-4 h-4" />
               </div>
               <span className="text-sm">Security</span>
+            </Button>
+            <Button
+              variant="none"
+              className={`flex-1 lg:flex-none justify-start Montserrat font-bold h-12 px-5 rounded-xl transition-all duration-300 gap-3 ${activeTab === 'notifications'
+                ? 'shadow-xl'
+                : 'text-muted-foreground hover:bg-white/5 hover:text-foreground'}`}
+              style={activeTab === 'notifications' ? {
+                backgroundColor: 'rgba(14,165,233,0.15)',
+                color: '#0EA5E9',
+                boxShadow: '0 8px 20px -6px rgba(14,165,233,0.1)',
+                border: '1px solid rgba(14,165,233,0.3)'
+              } : {}}
+              onClick={() => setActiveTab('notifications')}
+            >
+              <div className={`p-1.5 rounded-lg transition-colors ${activeTab === 'notifications' ? 'bg-white/10' : ''}`}>
+                <Bell className="w-4 h-4" />
+              </div>
+              <span className="text-sm">Notifications</span>
             </Button>
           </nav>
         </aside>
@@ -551,6 +696,129 @@ const Settings = () => {
                 </CardContent>
               </Card>
             )}
+
+            {activeTab === 'notifications' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bell className="w-5 h-5" />
+                    Notification Preferences
+                  </CardTitle>
+                  <CardDescription>
+                    Control which notifications you receive via email and in-app alerts.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {notifLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : notifPrefs ? (
+                    <div className="space-y-6">
+                      {/* Header row */}
+                      <div className="grid grid-cols-[1fr_80px_80px_40px] gap-4 items-center px-1">
+                        <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Category</div>
+                        <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground text-center">Email</div>
+                        <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground text-center">In-App</div>
+                        <div></div>
+                      </div>
+                      <Separator />
+
+                      {NOTIFICATION_GROUPS.map((group, idx) => {
+                        if (group.condition && !group.condition(user)) return null;
+                        const isExpanded = expandedNotifGroup === group.id;
+
+                        // Calculate parent switch state based on children
+                        const allEmailTrue = group.items.every(item => notifPrefs.email[item.key] !== false);
+                        const allInAppTrue = group.items.every(item => notifPrefs.inApp[item.key] !== false);
+
+                        return (
+                          <div key={group.id} className="space-y-2">
+                            <div className="grid grid-cols-[1fr_80px_80px_40px] gap-4 items-center px-1 py-2">
+                              <div className="flex items-center gap-3 cursor-pointer" onClick={() => setExpandedNotifGroup(isExpanded ? null : group.id)}>
+                                <div className="p-2 rounded-lg" style={{ backgroundColor: group.bg }}>
+                                  <group.icon className="w-4 h-4" style={{ color: group.color }} />
+                                </div>
+                                <div>
+                                  <p className="font-semibold text-sm">{group.label}</p>
+                                  <p className="text-[11px] text-muted-foreground">{group.description}</p>
+                                </div>
+                              </div>
+                              <div className="flex justify-center">
+                                <Switch
+                                  checked={notifPrefs.email[group.id] !== undefined ? notifPrefs.email[group.id] : allEmailTrue}
+                                  onCheckedChange={(v) => handleNotifToggle('email', group.id, v)}
+                                  disabled={notifSaving}
+                                />
+                              </div>
+                              <div className="flex justify-center">
+                                <Switch
+                                  checked={notifPrefs.inApp[group.id] !== undefined ? notifPrefs.inApp[group.id] : allInAppTrue}
+                                  onCheckedChange={(v) => handleNotifToggle('inApp', group.id, v)}
+                                  disabled={notifSaving}
+                                />
+                              </div>
+                              <div className="flex justify-center">
+                                <button 
+                                  className="p-1 rounded-md hover:bg-muted/50 transition-colors"
+                                  onClick={() => setExpandedNotifGroup(isExpanded ? null : group.id)}
+                                >
+                                  {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                </button>
+                              </div>
+                            </div>
+                            
+                            {isExpanded && (
+                              <div className="pl-12 pr-10 py-3 space-y-4 bg-muted/20 rounded-xl border border-border/40 ml-2 animate-in slide-in-from-top-2">
+                                {group.items.map(item => {
+                                  // Fallback to group preference if item preference is undefined
+                                  const itemEmailChecked = notifPrefs.email[item.key] !== undefined ? notifPrefs.email[item.key] : (notifPrefs.email[group.id] !== false);
+                                  const itemInAppChecked = notifPrefs.inApp[item.key] !== undefined ? notifPrefs.inApp[item.key] : (notifPrefs.inApp[group.id] !== false);
+
+                                  return (
+                                    <div key={item.key} className="grid grid-cols-[1fr_80px_80px] gap-4 items-center">
+                                      <div>
+                                        <p className="font-medium text-xs">{item.label}</p>
+                                        <p className="text-[10px] text-muted-foreground">{item.description}</p>
+                                      </div>
+                                      <div className="flex justify-center">
+                                        <Switch
+                                          checked={itemEmailChecked}
+                                          onCheckedChange={(v) => handleNotifToggle('email', item.key, v)}
+                                          disabled={notifSaving}
+                                          className="scale-75"
+                                        />
+                                      </div>
+                                      <div className="flex justify-center">
+                                        <Switch
+                                          checked={itemInAppChecked}
+                                          onCheckedChange={(v) => handleNotifToggle('inApp', item.key, v)}
+                                          disabled={notifSaving}
+                                          className="scale-75"
+                                        />
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                            
+                            {idx < NOTIFICATION_GROUPS.length - 1 && <Separator className="opacity-50" />}
+                          </div>
+                        );
+                      })}
+
+                      {/* Info note */}
+                      <div className="bg-muted/30 rounded-xl p-4 border border-border/40 mt-4">
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          <strong className="text-foreground/70">Note:</strong> Critical security alerts such as password resets and login notifications will always be sent regardless of these settings.
+                        </p>
+                      </div>
+                    </div>
+                  ) : null}
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </div>
@@ -592,7 +860,7 @@ const Settings = () => {
                 <h4 className="text-sm font-semibold">Demo Avatars</h4>
               </div>
               <div className="grid grid-cols-6 gap-3">
-                {demoAvatars.map((url, idx) => (
+                {DEMO_AVATARS.map((url, idx) => (
                   <div
                     key={idx}
                     className={`relative cursor-pointer rounded-full border-2 transition-all p-0.5 ${user?.avatar === url ? 'border-primary ring-2 ring-primary/20' : 'border-transparent hover:border-muted-foreground/30'}`}

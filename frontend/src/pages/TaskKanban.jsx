@@ -257,7 +257,7 @@ const TaskKanban = () => {
 
     const filteredProjects = projects.filter(project => {
         const matchesSearch = project.name.toLowerCase().includes(globalSearch.toLowerCase());
-        const matchesManager = managerFilter === 'all' || project.managerId === managerFilter;
+        const matchesManager = managerFilter === 'all' || project.managers?.some(m => m.id === managerFilter);
         return matchesSearch && matchesManager;
     });
 
@@ -348,7 +348,7 @@ const TaskKanban = () => {
                                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
                                     <span>{project._count?.tasks || 0} tasks</span>
                                     <span>•</span>
-                                    <span>{project.name.toLowerCase() === 'general' ? '-' : (project.manager?.name || 'No manager')}</span>
+                                    <span>{project.name.toLowerCase() === 'general' ? '-' : (project.managers && project.managers.length > 0 ? project.managers.map(m => m.name).join(', ') : 'No managers')}</span>
                                 </div>
                             </div>
                         ))}
@@ -413,14 +413,14 @@ const TaskKanban = () => {
                             </div>
                         </div>
                         {(() => {
-                            let canCreateTaskGlobal = user?.role === 'ADMIN' || user?.permissions?.['tasks.create'];
+                            let canCreateTaskGlobal = user?.role === 'ADMIN' || (user?.role !== 'MEMBER' && user?.permissions?.['tasks.create']);
                             let canCreate = canCreateTaskGlobal;
                             if (user?.role === 'MEMBER') {
                                 if (selectedProjectId) {
                                     const selectedProject = projects.find(p => p.id === selectedProjectId);
-                                    canCreate = canCreateTaskGlobal || selectedProject?.allowMemberTaskCreation;
+                                    canCreate = !!selectedProject?.allowMemberTaskCreation;
                                 } else {
-                                    canCreate = canCreateTaskGlobal || projects.some(p => p.allowMemberTaskCreation);
+                                    canCreate = projects.some(p => p.allowMemberTaskCreation);
                                 }
                             }
                             return canCreate ? (

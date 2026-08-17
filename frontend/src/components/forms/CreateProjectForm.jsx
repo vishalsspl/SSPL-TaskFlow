@@ -17,6 +17,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { DatePicker } from '@/components/ui/date-picker';
 import { SearchableSelect } from '@/components/ui/searchable-select';
+import { MultiSearchableSelect } from '@/components/ui/multi-searchable-select';
 import RichTextEditor from '@/components/ui/RichTextEditor';
 import UpgradePlanModal from '@/components/ui/UpgradePlanModal';
 import { cn } from '@/lib/utils';
@@ -32,7 +33,7 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
         name: '',
         description: '',
         clientId: '',
-        managerId: user?.role === 'MANAGER' ? user.id : '',
+        managerIds: user?.role === 'MANAGER' ? [user.id] : [],
         startDate: null,
         endDate: null,
         isOngoing: false,
@@ -165,6 +166,7 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
                 totalBudget: formData.totalBudget ? parseFloat(formData.totalBudget) : null,
                 startDate: formData.startDate ? format(new Date(formData.startDate), 'yyyy-MM-dd') : null,
                 endDate: formData.endDate ? format(new Date(formData.endDate), 'yyyy-MM-dd') : null,
+                managerIds: formData.managerIds,
                 allowMemberTaskCreation: formData.allowMemberTaskCreation,
             };
 
@@ -236,14 +238,25 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="manager" className="text-foreground/90 font-semibold">Project Manager</Label>
+                    <Label htmlFor="manager" className="text-foreground/90 font-semibold">Project Managers</Label>
                     <div className="relative">
                         <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70 z-10" />
-                        <SearchableSelect
+                        <MultiSearchableSelect
                             options={managers.map(m => ({ label: m.name, value: m.id }))}
-                            value={formData.managerId}
-                            onChange={(value) => setFormData({ ...formData, managerId: value })}
-                            placeholder="Select Manager (Opt)"
+                            value={formData.managerIds}
+                            onChange={(values) => {
+                                const maxManagers = user?.organization?.maxManagersPerProject || 5;
+                                if (values.length > maxManagers) {
+                                    toast({
+                                        title: "Limit Exceeded",
+                                        description: `You can only select up to ${maxManagers} managers for a project.`,
+                                        variant: "destructive"
+                                    });
+                                    return;
+                                }
+                                setFormData({ ...formData, managerIds: values });
+                            }}
+                            placeholder="Select Managers (Opt)"
                             className="!pl-10 relative"
                         />
                     </div>

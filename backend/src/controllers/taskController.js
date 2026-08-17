@@ -1,5 +1,5 @@
 import { sendTaskAssignmentEmail, sendTaskStatusUpdateEmail, sendTaskUpdateEmail, sendTaskDeleteEmail, sendTaskCommentEmail, sendManagerTaskCreatedEmail } from '../services/emailService.js';
-import { createNotification } from '../utils/notifications.js';
+import { createNotification, shouldSendEmail } from '../utils/notifications.js';
 import prisma from '../lib/prisma.js';
 
 
@@ -85,7 +85,7 @@ export const getAllTasks = async (req, res) => {
       ...(where.AND || []),
       {
         OR: [
-          { project: { managerId: req.user.id } },
+          { project: { managers: { some: { id: req.user.id } } } },
           { assignees: { some: { userId: req.user.id } } },
           { 
             AND: [
@@ -221,7 +221,7 @@ export const getTask = async (req, res) => {
   if (req.user.role === 'MANAGER' && (task.project?.name === 'General' || task.project?.name === 'General Tasks')) {
       const isApprover = task.tags?.includes(`APPROVER:${req.user.id}`);
       const isAssignee = task.assignees.some(a => a.user.id === req.user.id);
-      const isProjectManager = task.project?.managerId === req.user.id;
+      const isProjectManager = task.project?.managers?.some(m => m.id === req.user.id);
       if (!isApprover && !isAssignee && !isProjectManager) {
           return res.status(403).json({ error: 'You do not have permission to view this task.' });
       }
@@ -260,7 +260,8 @@ export const createTask = async (req, res) => {
          where: { 
            name: { in: ['General', 'General Tasks'] }, 
            organizationId: req.user.organizationId 
-         }
+         },
+         include: { managers: { select: { id: true } } }
      });
      if (!generalProject) {
          generalProject = await req.db.project.create({
@@ -269,14 +270,14 @@ export const createTask = async (req, res) => {
                  description: 'General organization tasks',
                  organizationId: req.user.organizationId,
                  status: 'ACTIVE',
-                 managerId: (req.user.role === 'MANAGER') ? req.user.id : null,
+                 managers: (req.user.role === 'MANAGER') ? { connect: [{ id: req.user.id }] } : undefined,
              }
          });
-     } else if (!generalProject.managerId && req.user.role === 'MANAGER') {
+     } else if ((!generalProject.managers || generalProject.managers.length === 0) && req.user.role === 'MANAGER') {
          // If a General project exists but has no manager, assign this manager
          await req.db.project.update({
              where: { id: generalProject.id },
-             data: { managerId: req.user.id }
+             data: { managers: { connect: [{ id: req.user.id }] } }
          });
      }
      projectId = generalProject.id;
@@ -479,15 +480,18 @@ export const createTask = async (req, res) => {
       link: `/task-board?project=${task.projectId}&highlight=${task.id}&action=new`
     });
 
-    // 2. Only send email if enabled and supported
+    // 2. Only send email if enabled, supported, and user has email preference ON
     if (hasEmailSupport && sendEmail && user?.email) {
-      sendTaskAssignmentEmail(
-        user.email,
-        task.title,
-        task.project.name,
-        senderName,
-        { priority: task.priority, dueDate: task.dueDate, status: task.status, description: task.description, baseUrl: origin }
-      ).catch(err => console.error('Failed to send task assignment email:', err));
+      const emailAllowed = await shouldSendEmail(req.db, user.id, 'TASK_ASSIGNED');
+      if (emailAllowed) {
+        sendTaskAssignmentEmail(
+          user.email,
+          task.title,
+          task.project.name,
+          senderName,
+          { priority: task.priority, dueDate: task.dueDate, status: task.status, description: task.description, baseUrl: origin }
+        ).catch(err => console.error('Failed to send task assignment email:', err));
+      }
     }
   }
 
@@ -509,21 +513,25 @@ export const createTask = async (req, res) => {
       ).catch(err => console.error('Failed to send manager task created email:', err));
     }
 
-    // Notify project manager if they exist and are different from the direct manager
+    // Notify project managers if they exist and are different from the direct manager
     const fullProject = await req.db.project.findUnique({
       where: { id: projectId },
-      include: { manager: true }
+      include: { managers: true }
     });
 
-    if (fullProject?.manager?.email && fullProject.manager.email !== creator?.manager?.email) {
-      sendManagerTaskCreatedEmail(
-        fullProject.manager.email,
-        fullProject.manager.name,
-        req.user.name,
-        task.title,
-        task.project.name,
-        origin
-      ).catch(err => console.error('Failed to send project manager task created email:', err));
+    if (fullProject?.managers && fullProject.managers.length > 0) {
+      for (const m of fullProject.managers) {
+        if (m.email && m.email !== creator?.manager?.email) {
+          sendManagerTaskCreatedEmail(
+            m.email,
+            m.name,
+            req.user.name,
+            task.title,
+            task.project.name,
+            origin
+          ).catch(err => console.error('Failed to send project manager task created email:', err));
+        }
+      }
     }
   }
 
@@ -864,6 +872,13 @@ export const updateTask = async (req, res) => {
 
   const addedIds = newAssigneeIds.filter((uid) => !existingAssigneeIds.includes(uid));
 
+  let updatedTags = tags !== undefined ? [...tags] : undefined;
+  if (status === 'COMPLETED' && (existingTask.status === 'IN_REVIEW' || existingTask.tags?.some(t => t.startsWith('PENDING_APPROVAL:')))) {
+    if (!updatedTags) updatedTags = [...(existingTask.tags || [])];
+    updatedTags = updatedTags.filter(t => !t.startsWith('APPROVED_BY:'));
+    updatedTags.push(`APPROVED_BY:${req.user.name}`);
+  }
+
   const task = await req.db.task.update({
     where: { id },
     data: {
@@ -873,7 +888,7 @@ export const updateTask = async (req, res) => {
       priority,
       completionPercentage,
       dueDate: dueDate !== undefined ? (dueDate ? new Date(dueDate) : null) : undefined,
-      tags,
+      tags: updatedTags,
       phaseId: phaseId === '' ? null : phaseId,
       parentId: parentId === '' ? null : (parentId !== undefined ? parentId : undefined),
       storyPoints: storyPoints !== undefined ? (storyPoints ? parseInt(storyPoints) : 0) : undefined,
@@ -892,7 +907,7 @@ export const updateTask = async (req, res) => {
           user: { select: { id: true, name: true, email: true, avatar: true } },
         },
       },
-      project: { select: { id: true, name: true } },
+      project: { select: { id: true, name: true, managers: true } },
       phase: { select: { id: true, name: true } },
       parent: { select: { id: true, title: true, type: true, shortId: true } },
     },
@@ -946,24 +961,27 @@ export const updateTask = async (req, res) => {
   // Always send internal notifications for status changes (Manager or Admin)
   if (status && status !== existingTask.status && (req.user.role === 'ADMIN' || req.user.role === 'MANAGER')) {
     const updatedBy = req.user.name;
-    for (const { user } of task.assignees) {
-      let notificationType = 'TASK_STATUS_UPDATED';
-      let notificationTitle = 'Task Status Updated';
-      let notificationMessage = `Task "${task.title}" status has been updated to ${task.status} by ${updatedBy}`;
+    const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
 
-      // Specific logic for Approval/Rejection
-      if (existingTask.status === 'IN_REVIEW') {
-        if (status === 'COMPLETED') {
-          notificationType = 'TASK_APPROVED';
-          notificationTitle = 'Task Approved 🎉';
-          notificationMessage = `Your task "${task.title}" has been approved by ${updatedBy}. Great job!`;
-        } else if (status === 'TODO' || status === 'IN_PROGRESS') {
-          notificationType = 'TASK_REJECTED';
-          notificationTitle = 'Task Needs Changes ⚠️';
-          notificationMessage = `Your task "${task.title}" was moved back to ${status} by ${updatedBy}. Please review the feedback.`;
-        }
+    let notificationType = 'TASK_STATUS_UPDATED';
+    let notificationTitle = 'Task Status Updated';
+    let notificationMessage = `Task "${task.title}" status has been updated to ${task.status} by ${updatedBy}`;
+
+    // Specific logic for Approval/Rejection
+    if (existingTask.status === 'IN_REVIEW') {
+      if (status === 'COMPLETED') {
+        notificationType = 'TASK_APPROVED';
+        notificationTitle = `Task Approved by ${updatedBy} 🎉`;
+        notificationMessage = `Your task "${task.title}" has been approved by ${updatedBy}. Great job!`;
+      } else if (status === 'TODO' || status === 'IN_PROGRESS') {
+        notificationType = 'TASK_REJECTED';
+        notificationTitle = `Task Needs Changes ⚠️`;
+        notificationMessage = `Your task "${task.title}" was moved back to ${status} by ${updatedBy}. Please review the feedback.`;
       }
+    }
 
+    // 1. Notify assignees
+    for (const { user } of task.assignees) {
       createNotification(req, {
         userId: user.id,
         title: notificationTitle,
@@ -971,6 +989,32 @@ export const updateTask = async (req, res) => {
         type: notificationType,
         link: '/task-board'
       });
+    }
+
+    // 2. Notify co-managers if it was an approval
+    if (notificationType === 'TASK_APPROVED' && task.project?.managers) {
+      const coManagers = task.project.managers.filter(m => m.id !== req.user.id);
+      for (const manager of coManagers) {
+        createNotification(req, {
+          userId: manager.id,
+          title: `Task Approved by ${updatedBy} 🎉`,
+          message: `${updatedBy} approved task "${task.title}".`,
+          type: 'TASK_APPROVED',
+          link: '/task-board'
+        });
+        
+        if (req.user.activeFeatures?.emailsupport !== false && manager.email) {
+          sendTaskStatusUpdateEmail(
+            manager.email,
+            task.title,
+            task.project.name,
+            'COMPLETED (Approved)',
+            updatedBy,
+            null,
+            origin
+          ).catch(err => console.error('Failed to send task approval email to co-manager:', err));
+        }
+      }
     }
   }
 
@@ -1033,13 +1077,17 @@ export const updateTask = async (req, res) => {
 
     const [member, fullProject] = await Promise.all([
       req.db.user.findUnique({ where: { id: req.user.id }, include: { manager: true } }),
-      req.db.project.findUnique({ where: { id: task.projectId }, include: { manager: true } })
+      req.db.project.findUnique({ where: { id: task.projectId }, include: { managers: true } })
     ]);
 
     const managersToNotify = [];
     if (member?.manager) managersToNotify.push(member.manager);
-    if (fullProject?.manager && fullProject.manager.id !== member?.manager?.id) {
-      managersToNotify.push(fullProject.manager);
+    if (fullProject?.managers && fullProject.managers.length > 0) {
+      for (const m of fullProject.managers) {
+        if (m.id !== member?.manager?.id) {
+          managersToNotify.push(m);
+        }
+      }
     }
 
     for (const manager of managersToNotify) {
@@ -1054,14 +1102,17 @@ export const updateTask = async (req, res) => {
 
       // Email notification
       if (hasEmailSupport && sendEmail && manager.email) {
-        sendTaskStatusUpdateEmail(
-          manager.email,
-          task.title,
-          task.project.name,
-          task.status,
-          updatedBy,
-          origin
-        ).catch(err => console.error('Failed to send task status update email to manager:', err));
+        const emailAllowed = await shouldSendEmail(req.db, manager.id, 'TASK_STATUS_UPDATED');
+        if (emailAllowed) {
+          sendTaskStatusUpdateEmail(
+            manager.email,
+            task.title,
+            task.project.name,
+            task.status,
+            updatedBy,
+            origin
+          ).catch(err => console.error('Failed to send task status update email to manager:', err));
+        }
       }
     }
   }
@@ -1309,7 +1360,12 @@ export const updateTaskStatus = async (req, res) => {
     // Verify task belongs to user's organization
     const existingTask = await req.db.task.findFirst({
       where: { id, project: { organizationId: req.user.organizationId } },
-      include: { project: true, assignees: true }
+      include: { 
+        project: {
+          include: { managers: true }
+        }, 
+        assignees: true 
+      }
     });
     if (!existingTask) return res.status(404).json({ error: 'Task not found' });
 
@@ -1349,6 +1405,12 @@ export const updateTaskStatus = async (req, res) => {
       if (status === 'COMPLETED') {
         // Clear rejection reason on approval
         updatedRejectionReason = null;
+        
+        // Add APPROVED_BY tag if it was pending or in review
+        if (existingTask.status === 'IN_REVIEW' || existingTask.tags?.some(t => t.startsWith('PENDING_APPROVAL:'))) {
+           updatedTags = updatedTags.filter(t => !t.startsWith('APPROVED_BY:')); // clear old
+           updatedTags.push(`APPROVED_BY:${req.user.name}`);
+        }
       } else if (status === 'IN_PROGRESS' || status === 'TODO') {
         // If rejecting, save the reason if provided
         if (rejectionReason) {
@@ -1377,7 +1439,7 @@ export const updateTaskStatus = async (req, res) => {
             user: { select: { id: true, name: true, email: true } },
           },
         },
-        project: { select: { name: true, managerId: true } },
+        project: { select: { name: true, managers: { select: { id: true, email: true } } } },
       },
     });
 
@@ -1435,17 +1497,17 @@ export const updateTaskStatus = async (req, res) => {
 
     // Determine base message and title
     let notificationType = 'TASK_STATUS_UPDATED';
-    let notificationTitle = 'Task Status Updated';
+    let notificationTitle = `Task Status Updated by ${updatedBy}`;
     let notificationMessage = `Task "${task.title}" status has been updated to ${task.status} by ${updatedBy}${assignedByName ? ` (Assigned by: ${assignedByName})` : ''}`;
 
     if (existingTask.status === 'IN_REVIEW') {
-      if (status === 'COMPLETED') {
+      if (status === 'COMPLETED' || status === 'DONE') {
         notificationType = 'TASK_APPROVED';
-        notificationTitle = 'Task Approved 🎉';
+        notificationTitle = `Task Approved by ${updatedBy} 🎉`;
         notificationMessage = `Task "${task.title}" has been approved by ${updatedBy}. Great job!`;
       } else if (status === 'TODO' || status === 'IN_PROGRESS') {
         notificationType = 'TASK_REJECTED';
-        notificationTitle = 'Task Needs Changes ⚠️';
+        notificationTitle = `Task Needs Changes (by ${updatedBy}) ⚠️`;
         notificationMessage = `Task "${task.title}" was moved back to ${status} by ${updatedBy}.`;
         if (rejectionReason) {
           notificationMessage += ` Reason: "${rejectionReason}"`;
@@ -1468,6 +1530,15 @@ export const updateTaskStatus = async (req, res) => {
       for (const assigner of assigners) {
         if (assigner.id !== req.user.id) {
            notifyUsers.set(assigner.id, assigner);
+        }
+      }
+
+      // Also notify co-managers
+      if (existingTask.project?.managers) {
+        for (const manager of existingTask.project.managers) {
+          if (manager.id !== req.user.id) {
+            notifyUsers.set(manager.id, manager);
+          }
         }
       }
     }
@@ -1498,27 +1569,29 @@ export const updateTaskStatus = async (req, res) => {
     // Notify Manager for Approval if requested by Member AND it requires approval
     if (req.user.role === 'MEMBER' && status === 'IN_REVIEW') {
       const approverTag = updatedTags.find(t => t.startsWith('APPROVER:'));
-      let managerId = approverTag ? approverTag.split(':')[1] : existingTask.project?.managerId;
+      let approverIds = approverTag ? [approverTag.split(':')[1]] : (existingTask.project?.managers && existingTask.project.managers.length > 0 ? existingTask.project.managers.map(m => m.id) : []);
       const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
       const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
 
       const member = await req.db.user.findUnique({ where: { id: req.user.id }, include: { manager: true } });
 
-      if (managerId) {
-        createNotification(req, {
-          userId: managerId,
-          title: 'Status Approval Required',
-          message: `${req.user.name} moved task "${task.title}" to ${status}. Approval required.`,
-          type: 'TASK_APPROVAL_REQUEST',
-          link: `/task-board?project=${existingTask.projectId}&highlight=${task.id}&action=pending`
-        });
-        
-        // Send email to manager
-        if (hasEmailSupport && sendEmail) {
-          const manager = await req.db.user.findUnique({ where: { id: managerId } });
-          if (manager?.email) {
-            sendTaskStatusUpdateEmail(manager.email, task.title, task.project.name, status, req.user.name, origin)
-              .catch(err => console.error('Failed to send approval email to manager:', err));
+      if (approverIds.length > 0) {
+        for (const mId of approverIds) {
+          createNotification(req, {
+            userId: mId,
+            title: 'Status Approval Required',
+            message: `${req.user.name} moved task "${task.title}" to ${status}. Approval required.`,
+            type: 'TASK_APPROVAL_REQUEST',
+            link: `/task-board?project=${existingTask.projectId}&highlight=${task.id}&action=pending`
+          });
+          
+          // Send email to manager
+          if (hasEmailSupport && sendEmail) {
+            const manager = await req.db.user.findUnique({ where: { id: mId } });
+            if (manager?.email) {
+              sendTaskStatusUpdateEmail(manager.email, task.title, task.project.name, status, req.user.name, origin)
+                .catch(err => console.error('Failed to send approval email to manager:', err));
+            }
           }
         }
       } else {
@@ -1541,7 +1614,7 @@ export const updateTaskStatus = async (req, res) => {
       }
 
       // Also notify direct manager if they are different from the primary approver
-      if (member?.manager && member.manager.id !== managerId) {
+      if (member?.manager && !approverIds.includes(member.manager.id)) {
         createNotification(req, {
           userId: member.manager.id,
           title: 'Task Status Updated',
@@ -1562,13 +1635,17 @@ export const updateTaskStatus = async (req, res) => {
 
       const [member, fullProject] = await Promise.all([
         req.db.user.findUnique({ where: { id: req.user.id }, include: { manager: true } }),
-        req.db.project.findUnique({ where: { id: task.projectId }, include: { manager: true } })
+        req.db.project.findUnique({ where: { id: task.projectId }, include: { managers: true } })
       ]);
 
       const managersToNotify = [];
       if (member?.manager) managersToNotify.push(member.manager);
-      if (fullProject?.manager && fullProject.manager.id !== member?.manager?.id) {
-        managersToNotify.push(fullProject.manager);
+      if (fullProject?.managers && fullProject.managers.length > 0) {
+        for (const m of fullProject.managers) {
+          if (m.id !== member?.manager?.id) {
+            managersToNotify.push(m);
+          }
+        }
       }
 
       if (assignerToNotify && !managersToNotify.some(m => m.id === assignerToNotify.id) && assignerToNotify.id !== req.user.id) {
@@ -1622,11 +1699,13 @@ export const approveTaskStatus = async (req, res) => {
 
     if (!task) return res.status(404).json({ error: 'Task not found' });
 
-    const newTags = task.tags.filter(t => !t.startsWith('PENDING_APPROVAL:'));
+    const newTags = task.tags.filter(t => !t.startsWith('PENDING_APPROVAL:') && !t.startsWith('APPROVED_BY:'));
     
-    if (newTags.length === task.tags.length) {
+    if (newTags.length === task.tags.length && !task.tags.some(t => t.startsWith('PENDING_APPROVAL:'))) {
       return res.status(400).json({ error: 'Task is not pending approval' });
     }
+    
+    newTags.push(`APPROVED_BY:${req.user.name}`);
 
     const updatedTask = await req.db.task.update({
       where: { id },
@@ -1671,7 +1750,7 @@ export const approveTaskStatus = async (req, res) => {
     for (const { user } of updatedTask.assignees) {
       createNotification(req, {
         userId: user.id,
-        title: 'Status Change Approved 🎉',
+        title: `Task Approved by ${req.user.name} 🎉`,
         message: `Your task "${task.title}" was approved by ${req.user.name} and moved to Completed.`,
         type: 'TASK_APPROVED',
         link: `/task-board?project=${task.projectId}&highlight=${task.id}&action=approved`
@@ -1684,7 +1763,8 @@ export const approveTaskStatus = async (req, res) => {
           updatedTask.project.name,
           'COMPLETED (Approved)',
           req.user.name,
-          origin
+          null, // assignedByName
+          origin // baseUrl
         ).catch(err => console.error('Failed to send task approval email:', err));
       }
     }

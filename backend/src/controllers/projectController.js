@@ -11,30 +11,9 @@ const getProjectTeamMembers = async (db, projectId) => {
   return workloads.map(w => w.user);
 };
 
-/** Create and emit an internal notification */
+import { createNotification, shouldSendEmail } from '../utils/notifications.js';
 import { ensureProjectSchema, ensureOrganizationSchema } from '../lib/schemaValidator.js';
 
-const createNotification = async (req, { userId, title, message, type }) => {
-  try {
-    const notification = await req.db.notification.create({
-      data: {
-        userId,
-        title,
-        message,
-        type,
-        organizationId: req.user.organizationId,
-      },
-    });
-
-    if (req.io) {
-      // Emit to organization room - frontend will filter by userId
-      req.io.to(`org-${req.user.organizationId}`).emit('new-notification', notification);
-    }
-    return notification;
-  } catch (error) {
-    console.error('Failed to create internal notification:', error);
-  }
-};
 
 /** Fetch general team members associated with a manager (from other projects) */
 const getManagerGeneralTeam = async (db, managerId, organizationId) => {
@@ -138,7 +117,7 @@ export const getAllProjects = async (req, res) => {
   // If Manager, show projects they manage + the General project
   if (req.user.role === 'MANAGER') {
     where.OR = [
-      { managerId: req.user.id },
+      { managers: { some: { id: req.user.id } } },
       { name: { in: ['General', 'General Tasks'] } }
     ];
   }
@@ -207,7 +186,7 @@ export const getAllProjects = async (req, res) => {
   if (managerIds) {
     const ids = managerIds.split(',').map(id => id.trim()).filter(Boolean);
     if (ids.length > 0) {
-      where.managerId = { in: ids };
+      where.managers = { some: { id: { in: ids } } };
     }
   }
 
@@ -244,7 +223,7 @@ export const getAllProjects = async (req, res) => {
   if (req.user.role === 'MANAGER') {
     taskWhereFilter = {
       OR: [
-        { project: { managerId: req.user.id } },
+        { project: { managers: { some: { id: req.user.id } } } },
         { assignees: { some: { userId: req.user.id } } },
         { assignees: { some: { user: { managerId: req.user.id } } } },
       ]
@@ -261,7 +240,6 @@ export const getAllProjects = async (req, res) => {
     name: true,
     description: true,
     category: true,
-    managerId: true,
     clientId: true,
     status: true,
     startDate: true,
@@ -272,7 +250,7 @@ export const getAllProjects = async (req, res) => {
     createdAt: true,
     updatedAt: true,
     // Relations
-    manager: { select: { id: true, name: true, email: true, role: true, avatar: true } },
+    managers: { select: { id: true, name: true, email: true, role: true, avatar: true } },
     client: { select: { id: true, name: true, email: true, role: true, avatar: true } },
     _count: { select: { tasks: { where: taskWhereFilter }, phases: true } },
     tasks: { where: taskWhereFilter, select: { status: true, storyPoints: true } }
@@ -415,7 +393,7 @@ export const getProject = async (req, res) => {
       name: true,
       description: true,
       category: true,
-      managerId: true,
+
       clientId: true,
       status: true,
       startDate: true,
@@ -433,7 +411,7 @@ export const getProject = async (req, res) => {
           avatar: true,
         },
       },
-      manager: {
+      managers: {
         select: {
           id: true,
           name: true,
@@ -478,8 +456,8 @@ export const getProject = async (req, res) => {
 
   // Authorization Checks
   if (req.user.role === 'MANAGER') {
-    if (project.managerId !== req.user.id && !['General', 'General Tasks'].includes(project.name)) {
-      return res.status(403).json({ error: 'Unauthorized: You are no longer the manager of this project.' });
+    if (!project.managers?.some(m => m.id === req.user.id) && !['General', 'General Tasks'].includes(project.name)) {
+      return res.status(403).json({ error: 'Unauthorized: You are no longer a manager of this project.' });
     }
   } else if (req.user.role === 'CLIENT') {
     if (project.clientId !== req.user.id) {
@@ -518,7 +496,7 @@ export const createProject = async (req, res) => {
     startDate,
     endDate,
     totalBudget,
-    managerId,
+    managerIds = [],
     status,
     category,
     sendEmail = true,
@@ -547,14 +525,27 @@ export const createProject = async (req, res) => {
     });
   }
 
-  // Validation: Ensure clientId and managerId belong to the same organization
+  // Validation: Ensure clientId and managerIds belong to the same organization
   if (clientId) {
     const client = await req.db.user.findFirst({ where: { id: clientId, organizationId, role: 'CLIENT' } });
     if (!client) return res.status(400).json({ error: 'Invalid client for this organization' });
   }
-  if (managerId) {
-    const manager = await req.db.user.findFirst({ where: { id: managerId, organizationId, role: 'MANAGER' } });
-    if (!manager) return res.status(400).json({ error: 'Invalid manager for this organization' });
+  
+  if (!Array.isArray(managerIds)) {
+    return res.status(400).json({ error: 'managerIds must be an array' });
+  }
+
+  if (org && managerIds.length > org.maxManagersPerProject) {
+    return res.status(400).json({ error: `You can only assign up to ${org.maxManagersPerProject} managers to a project.` });
+  }
+
+  if (managerIds.length > 0) {
+    const managers = await req.db.user.findMany({ 
+      where: { id: { in: managerIds }, organizationId, role: 'MANAGER' } 
+    });
+    if (managers.length !== managerIds.length) {
+      return res.status(400).json({ error: 'One or more managers are invalid for this organization' });
+    }
   }
 
   // Check if name starts with a number
@@ -621,7 +612,7 @@ export const createProject = async (req, res) => {
       startDate: startDate ? new Date(startDate) : null,
       endDate: endDate ? new Date(endDate) : null,
       totalBudget,
-      managerId: managerId || null,
+      managers: managerIds.length > 0 ? { connect: managerIds.map(id => ({ id })) } : undefined,
       status: status || 'PLANNING',
       category: category || 'INTERNAL',
       allowMemberTaskCreation: Boolean(allowMemberTaskCreation),
@@ -631,7 +622,6 @@ export const createProject = async (req, res) => {
       name: true,
       description: true,
       category: true,
-      managerId: true,
       clientId: true,
       status: true,
       startDate: true,
@@ -649,7 +639,7 @@ export const createProject = async (req, res) => {
           avatar: true,
         },
       },
-      manager: {
+      managers: {
         select: {
           id: true,
           name: true,
@@ -702,38 +692,44 @@ export const createProject = async (req, res) => {
   // Send rich email notification to manager
   const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
 
-  // Always send internal notification to manager
-  if (project.manager) {
-    createNotification(req, {
-      userId: project.manager.id,
-      title: 'New Project Assigned',
-      message: `You have been assigned as manager for project: ${project.name}`,
-      type: 'PROJECT_ASSIGNED',
-    });
-  }
-
-  if (hasEmailSupport && sendEmail && project.manager?.email) {
-    const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
-    sendProjectManagerEmail(
-      project.manager.email,
-      project,
-      project.manager,
-      project.client || null,
-      req.user.name,
-      origin
-    ).catch(err => console.error('Failed to send manager project email:', err));
+  // Always send internal notification to managers
+  if (project.managers && project.managers.length > 0) {
+    for (const manager of project.managers) {
+      createNotification(req, {
+        userId: manager.id,
+        title: 'New Project Assigned',
+        message: `You have been assigned as a manager for project: ${project.name}`,
+        type: 'PROJECT_ASSIGNED',
+      });
+      
+      if (hasEmailSupport && sendEmail && manager.email) {
+        if (await shouldSendEmail(req.db, manager.id, 'PROJECT_ASSIGNED')) {
+          const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
+          sendProjectManagerEmail(
+            manager.email,
+            project,
+            manager,
+            project.client || null,
+            req.user.name,
+            origin
+          ).catch(err => console.error('Failed to send manager project email:', err));
+        }
+      }
+    }
   }
 
   // Send rich email notification to client
   if (hasEmailSupport && sendEmail && project.client?.email) {
-    const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
-    sendProjectClientEmail(
-      project.client.email,
-      project,
-      project.manager || null,
-      req.user.name,
-      origin
-    ).catch(err => console.error('Failed to send client project email:', err));
+    if (await shouldSendEmail(req.db, project.client.id, 'PROJECT_ASSIGNED')) {
+      const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
+      sendProjectClientEmail(
+        project.client.email,
+        project,
+        project.managers && project.managers.length > 0 ? project.managers[0] : null,
+        req.user.name,
+        origin
+      ).catch(err => console.error('Failed to send client project email:', err));
+    }
   }
 
   // Activity Logging
@@ -832,28 +828,18 @@ export const bulkCreateProjects = async (req, res) => {
 
     try {
       let clientId = null;
-      let managerId = null;
-
-      // Lookup Client
-      if (clientEmail) {
-        const client = await req.db.user.findFirst({ where: { email: clientEmail.toLowerCase().trim(), organizationId, role: 'CLIENT' } });
-        if (!client) {
-          results.push({ row: rowNum, name, status: 'FAILED', error: `Client with email "${clientEmail}" not found or not a client.` });
-          failCount++;
-          continue;
-        }
-        clientId = client.id;
-      }
+      let managerIds = [];
 
       // Lookup Manager
       if (managerEmail) {
-        const manager = await req.db.user.findFirst({ where: { email: managerEmail.toLowerCase().trim(), organizationId, role: 'MANAGER' } });
-        if (!manager) {
-          results.push({ row: rowNum, name, status: 'FAILED', error: `Manager with email "${managerEmail}" not found or not a manager.` });
+        const emails = managerEmail.split(',').map(e => e.toLowerCase().trim()).filter(Boolean);
+        const managers = await req.db.user.findMany({ where: { email: { in: emails }, organizationId, role: 'MANAGER' } });
+        if (managers.length !== emails.length) {
+          results.push({ row: rowNum, name, status: 'FAILED', error: `One or more managers not found.` });
           failCount++;
           continue;
         }
-        managerId = manager.id;
+        managerIds = managers.map(m => m.id);
       }
 
       // ── Normalize Data ──
@@ -891,7 +877,7 @@ export const bulkCreateProjects = async (req, res) => {
           name: name.trim(),
           description: description || null,
           clientId,
-          managerId,
+          managers: managerIds.length > 0 ? { connect: managerIds.map(id => ({ id })) } : undefined,
           startDate: parsedStartDate,
           endDate: parsedEndDate,
           totalBudget: parsedBudget,
@@ -902,7 +888,7 @@ export const bulkCreateProjects = async (req, res) => {
           id: true,
           name: true,
           client: { select: { id: true, name: true, email: true } },
-          manager: { select: { id: true, name: true, email: true } },
+          managers: { select: { id: true, name: true, email: true } },
         }
       });
 
@@ -942,17 +928,25 @@ export const bulkCreateProjects = async (req, res) => {
 
       // Notifications
         const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
-        if (project.manager?.email) {
-          sendProjectManagerEmail(project.manager.email, project, project.manager, project.client || null, req.user.name, origin).catch(() => { });
-          createNotification(req, {
-            userId: project.manager.id,
-            title: 'New Project Assigned (Bulk)',
-            message: `You have been assigned as manager for project: ${project.name}`,
-            type: 'PROJECT_ASSIGNED',
-          });
+        if (project.managers && project.managers.length > 0) {
+          for (const manager of project.managers) {
+            if (manager.email) {
+              if (await shouldSendEmail(req.db, manager.id, 'PROJECT_ASSIGNED')) {
+                sendProjectManagerEmail(manager.email, project, manager, project.client || null, req.user.name, origin).catch(() => { });
+              }
+            }
+            createNotification(req, {
+              userId: manager.id,
+              title: 'New Project Assigned (Bulk)',
+              message: `You have been assigned as manager for project: ${project.name}`,
+              type: 'PROJECT_ASSIGNED',
+            });
+          }
         }
         if (project.client?.email) {
-          sendProjectClientEmail(project.client.email, project, project.manager || null, req.user.name, origin).catch(() => { });
+          if (await shouldSendEmail(req.db, project.client.id, 'PROJECT_ASSIGNED')) {
+            sendProjectClientEmail(project.client.email, project, project.managers && project.managers.length > 0 ? project.managers[0] : null, req.user.name, origin).catch(() => { });
+          }
         }
 
         results.push({ row: rowNum, name: project.name, status: 'SUCCESS' });
@@ -980,7 +974,7 @@ export const updateProject = async (req, res) => {
     endDate,
     totalBudget,
     usedBudget,
-    managerId,
+    managerIds,
     status,
     category,
     sendEmail = true,
@@ -996,7 +990,7 @@ export const updateProject = async (req, res) => {
       id,
       organizationId: req.user.organizationId,
     },
-    select: { id: true, name: true, managerId: true, clientId: true, startDate: true, endDate: true }
+    select: { id: true, name: true, managers: { select: { id: true } }, clientId: true, startDate: true, endDate: true }
   });
 
   if (!existingProject) {
@@ -1017,12 +1011,22 @@ export const updateProject = async (req, res) => {
     const client = await req.db.user.findFirst({ where: { id: clientId, organizationId, role: 'CLIENT' } });
     if (!client) return res.status(400).json({ error: 'Invalid client for this organization' });
   }
-  if (managerId && managerId !== existingProject.managerId) {
-    const manager = await req.db.user.findFirst({ where: { id: managerId, organizationId, role: 'MANAGER' } });
-    if (!manager) return res.status(400).json({ error: 'Invalid manager for this organization' });
+  if (managerIds) {
+    if (!Array.isArray(managerIds)) return res.status(400).json({ error: 'managerIds must be an array' });
+    
+    const org = await req.db.organization.findUnique({ where: { id: organizationId } });
+    if (org && managerIds.length > org.maxManagersPerProject) {
+      return res.status(400).json({ error: `You can only assign up to ${org.maxManagersPerProject} managers to a project.` });
+    }
+
+    if (managerIds.length > 0) {
+      const managers = await req.db.user.findMany({ where: { id: { in: managerIds }, organizationId, role: 'MANAGER' } });
+      if (managers.length !== managerIds.length) return res.status(400).json({ error: 'One or more managers are invalid for this organization' });
+    }
   }
 
-  const isManagerChanged = managerId && managerId !== existingProject.managerId;
+  const existingManagerIds = existingProject.managers ? existingProject.managers.map(m => m.id).sort() : [];
+  const isManagerChanged = managerIds && JSON.stringify([...managerIds].sort()) !== JSON.stringify(existingManagerIds);
   const isClientChanged = clientId && clientId !== existingProject.clientId;
 
   // Validation
@@ -1086,7 +1090,7 @@ export const updateProject = async (req, res) => {
       endDate: endDate === null ? null : (endDate ? new Date(endDate) : undefined),
       totalBudget: totalBudget && totalBudget !== '' ? totalBudget : undefined,
       usedBudget: usedBudget && usedBudget !== '' ? usedBudget : undefined,
-      managerId: managerId !== undefined ? (managerId || null) : undefined,
+      managers: managerIds ? { set: managerIds.map(id => ({ id })) } : undefined,
       status,
       category,
       ...(allowMemberTaskCreation !== undefined && { allowMemberTaskCreation: Boolean(allowMemberTaskCreation) }),
@@ -1096,7 +1100,6 @@ export const updateProject = async (req, res) => {
       name: true,
       description: true,
       category: true,
-      managerId: true,
       clientId: true,
       status: true,
       startDate: true,
@@ -1114,7 +1117,7 @@ export const updateProject = async (req, res) => {
           avatar: true,
         },
       },
-      manager: {
+      managers: {
         select: {
           id: true,
           name: true,
@@ -1149,48 +1152,117 @@ export const updateProject = async (req, res) => {
   // Send rich emails if manager or client changed
   const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
 
-  if (isManagerChanged && project.manager) {
-    createNotification(req, {
-      userId: project.manager.id,
-      title: 'Project Assignment Updated',
-      message: `You have been assigned as manager for project: ${project.name}`,
-      type: 'PROJECT_ASSIGNED',
-    });
+  if (isManagerChanged && project.managers && project.managers.length > 0) {
+    const newManagers = project.managers.filter(m => !existingManagerIds.includes(m.id));
+    const keptManagers = project.managers.filter(m => existingManagerIds.includes(m.id));
+
+    // 1. Notify NEW managers they are assigned
+    for (const manager of newManagers) {
+      createNotification(req, {
+        userId: manager.id,
+        title: 'Project Assignment Updated',
+        message: `You have been assigned as manager for project: ${project.name}`,
+        type: 'PROJECT_ASSIGNED',
+      });
+    }
+
+    // 2. Notify EXISTING managers that a new manager was added
+    if (newManagers.length > 0) {
+      const newManagerNames = newManagers.map(m => m.name).join(', ');
+      for (const manager of keptManagers) {
+        createNotification(req, {
+          userId: manager.id,
+          title: 'Project Manager Added',
+          message: `${newManagerNames} has been added as a manager for project: ${project.name}`,
+          type: 'PROJECT_UPDATED',
+        });
+      }
+
+      // 3. Notify PROJECT MEMBERS that a new manager was added
+      try {
+        const members = await getProjectTeamMembers(req.db, project.id);
+        const membersToNotify = members.filter(m => !existingManagerIds.includes(m.id) && !newManagers.some(nm => nm.id === m.id));
+        
+        for (const member of membersToNotify) {
+          createNotification(req, {
+            userId: member.id,
+            title: 'Project Manager Added',
+            message: `${newManagerNames} has been added as a manager for project: ${project.name}`,
+            type: 'PROJECT_UPDATED',
+          });
+        }
+      } catch (err) {
+        console.error('Failed to notify project members about new manager:', err);
+      }
+    }
   }
 
-  if (hasEmailSupport && sendEmail && (isManagerChanged || isClientChanged || project.manager)) {
+  if (hasEmailSupport && sendEmail && (isManagerChanged || isClientChanged || (project.managers && project.managers.length > 0))) {
 
     const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
     
-    if (project.manager?.email) {
-      if (isManagerChanged) {
-        sendProjectManagerEmail(
-          project.manager.email,
-          project,
-          project.manager,
-          project.client || null,
-          req.user.name,
-          origin
-        ).catch(err => console.error('Failed to send manager project email:', err));
-      } else {
-        // Send generic update email to current manager
-        sendProjectUpdateEmail(
-          project.manager.email,
-          project,
-          req.user.name,
-          origin
-        ).catch(err => console.error('Failed to send manager project update email:', err));
+    if (project.managers && project.managers.length > 0) {
+      for (const manager of project.managers) {
+        if (manager.email) {
+          if (isManagerChanged && (!existingManagerIds.includes(manager.id))) {
+            if (await shouldSendEmail(req.db, manager.id, 'PROJECT_ASSIGNED')) {
+              sendProjectManagerEmail(
+                manager.email,
+                project,
+                manager,
+                project.client || null,
+                req.user.name,
+                origin
+              ).catch(err => console.error('Failed to send manager project email:', err));
+            }
+          } else {
+            // Send generic update email to current manager
+            if (await shouldSendEmail(req.db, manager.id, 'PROJECT_UPDATED')) {
+              sendProjectUpdateEmail(
+                manager.email,
+                project,
+                req.user.name,
+                origin
+              ).catch(err => console.error('Failed to send manager project update email:', err));
+            }
+          }
+        }
+      }
+    }
+
+    // Email PROJECT MEMBERS if new managers were added
+    if (isManagerChanged && project.managers) {
+      const newManagers = project.managers.filter(m => !existingManagerIds.includes(m.id));
+      if (newManagers.length > 0) {
+        try {
+          const members = await getProjectTeamMembers(req.db, project.id);
+          const membersToNotify = members.filter(m => !existingManagerIds.includes(m.id) && !newManagers.some(nm => nm.id === m.id));
+          for (const member of membersToNotify) {
+            if (member.email && await shouldSendEmail(req.db, member.id, 'PROJECT_UPDATED')) {
+              sendProjectUpdateEmail(
+                member.email,
+                project,
+                req.user.name,
+                origin
+              ).catch(err => console.error('Failed to send member project update email:', err));
+            }
+          }
+        } catch (err) {
+           console.error('Failed to email project members about new manager:', err);
+        }
       }
     }
 
     if (project.client?.email) {
-      sendProjectClientEmail(
-        project.client.email,
-        project,
-        project.manager || null,
-        req.user.name,
-        origin
-      ).catch(err => console.error('Failed to send client project email:', err));
+      if (await shouldSendEmail(req.db, project.client.id, 'PROJECT_UPDATED')) {
+        sendProjectClientEmail(
+          project.client.email,
+          project,
+          project.managers && project.managers.length > 0 ? project.managers[0] : null,
+          req.user.name,
+          origin
+        ).catch(err => console.error('Failed to send client project email:', err));
+      }
     }
   }
 
@@ -1212,7 +1284,7 @@ export const deleteProject = async (req, res) => {
     select: { 
       id: true, 
       name: true,
-      manager: { select: { id: true, email: true } }
+      managers: { select: { id: true, email: true } }
     }
   });
 
@@ -1244,24 +1316,27 @@ export const deleteProject = async (req, res) => {
     where: { id },
   });
 
-  // Always send internal notification to manager
-  if (existingProject.manager) {
-    createNotification(req, {
-      userId: existingProject.manager.id,
-      title: 'Project Deleted',
-      message: `The project ${existingProject.name} has been deleted.`,
-      type: 'PROJECT_DELETED',
-    });
-  }
-
-  // Send rich email if email support is active
-  const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
-  if (hasEmailSupport && existingProject.manager?.email) {
-    sendProjectDeleteEmail(
-      existingProject.manager.email,
-      existingProject.name,
-      req.user.name
-    ).catch(err => console.error('Failed to send manager project delete email:', err));
+  // Always send internal notification to managers
+  if (existingProject.managers && existingProject.managers.length > 0) {
+    for (const manager of existingProject.managers) {
+      createNotification(req, {
+        userId: manager.id,
+        title: 'Project Deleted',
+        message: `The project ${existingProject.name} has been deleted.`,
+        type: 'PROJECT_DELETED',
+      });
+      
+      const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
+      if (hasEmailSupport && manager.email) {
+        if (await shouldSendEmail(req.db, manager.id, 'PROJECT_DELETED')) {
+          sendProjectDeleteEmail(
+            manager.email,
+            existingProject.name,
+            req.user.name
+          ).catch(err => console.error('Failed to send manager project delete email:', err));
+        }
+      }
+    }
   }
 
   res.json({ message: 'Project deleted successfully' });
@@ -1280,14 +1355,14 @@ export const addProjectMember = async (req, res) => {
         id: projectId,
         organizationId: req.user.organizationId,
       },
-      select: { id: true, name: true, managerId: true }
+      select: { id: true, name: true, managers: { select: { id: true } } }
     });
 
     if (!project) {
       return res.status(404).json({ error: 'Project not found' });
     }
 
-    if (req.user.role !== 'ADMIN' && project.managerId !== req.user.id) {
+    if (req.user.role !== 'ADMIN' && (!project.managers || !project.managers.some(m => m.id === req.user.id))) {
       return res.status(403).json({ error: 'Only project managers or admins can add members' });
     }
 
@@ -1348,15 +1423,17 @@ export const addProjectMember = async (req, res) => {
     // Send email notification
     const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
     if (hasEmailSupport && workload.user.email) {
-      const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
-      sendProjectMemberAssignmentEmail(
-        workload.user.email,
-        workload.user.name,
-        project.name,
-        project.description,
-        req.user.name,
-        origin
-      ).catch(err => console.error('Failed to send project member email:', err));
+      if (await shouldSendEmail(req.db, workload.user.id, 'PROJECT_ASSIGNED')) {
+        const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
+        sendProjectMemberAssignmentEmail(
+          workload.user.email,
+          workload.user.name,
+          project.name,
+          project.description,
+          req.user.name,
+          origin
+        ).catch(err => console.error('Failed to send project member email:', err));
+      }
     }
 
     res.status(201).json(workload.user);
@@ -1376,19 +1453,19 @@ export const removeProjectMember = async (req, res) => {
     // Verify project belongs to user's organization and requester is manager/admin
     const project = await req.db.project.findFirst({
       where: { id: projectId, organizationId: req.user.organizationId },
-      select: { id: true, name: true, managerId: true }
+      select: { id: true, name: true, managers: { select: { id: true } } }
     });
 
     if (!project) {
       return res.status(404).json({ error: 'Project not found' });
     }
 
-    if (req.user.role !== 'ADMIN' && project.managerId !== req.user.id) {
+    if (req.user.role !== 'ADMIN' && (!project.managers || !project.managers.some(m => m.id === req.user.id))) {
       return res.status(403).json({ error: 'Only project managers or admins can remove members' });
     }
 
     // Prevent removing the project manager
-    if (userId === project.managerId) {
+    if (project.managers && project.managers.some(m => m.id === userId)) {
       return res.status(400).json({ error: 'Cannot remove the project manager' });
     }
 
@@ -1441,7 +1518,7 @@ export const updateProjectPhase = async (req, res) => {
       return res.status(404).json({ error: 'Phase not found' });
     }
 
-    if (req.user.role === 'MANAGER' && phase.project.managerId !== req.user.id) {
+    if (req.user.role === 'MANAGER' && (!phase.project.managers || !phase.project.managers.some(m => m.id === req.user.id))) {
       return res.status(403).json({ error: 'Unauthorized: You are not the manager of this project.' });
     }
 

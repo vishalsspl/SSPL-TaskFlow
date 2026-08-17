@@ -41,6 +41,7 @@ model Organization {
   allowClientSignup     Boolean @default(false)
   sessionTimeoutMinutes Int?
   rolePermissions       Json?
+  maxManagersPerProject Int     @default(1)
 
   customFeatures Json?
 
@@ -100,9 +101,10 @@ model User {
   manager   User?   @relation("ManagerRelation", fields: [managerId], references: [id], onDelete: SetNull)
   members   User[]  @relation("ManagerRelation")
 
-  managedProjects Project[]  @relation("ProjectManager")
-  clientProjects  Project[]  @relation("ProjectClient")
-  workloads       Workload[]
+  managedProjects  Project[]  @relation("ProjectManager")
+  managedProjects2 Project[]  @relation("ProjectManagers")
+  clientProjects   Project[]  @relation("ProjectClient")
+  workloads        Workload[]
 
   taskAssignments TaskAssignee[] @relation("TaskAssigneeRelation")
   assignedTasks   TaskAssignee[] @relation("TaskAssignerRelation")
@@ -139,6 +141,8 @@ model Project {
 
   managerId String?
   manager   User?   @relation("ProjectManager", fields: [managerId], references: [id], onDelete: SetNull)
+
+  managers User[] @relation("ProjectManagers")
 
   clientId String?
   client   User?   @relation("ProjectClient", fields: [clientId], references: [id], onDelete: SetNull)

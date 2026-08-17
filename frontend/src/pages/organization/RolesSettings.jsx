@@ -6,8 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Pencil, Trash2, Shield, Settings2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Shield, Settings2, Users, MoreVertical } from 'lucide-react';
 import api from '@/lib/api';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   Dialog,
   DialogContent,
@@ -16,6 +22,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 
 const RolesSettings = () => {
   const { setHeader } = useHeaderStore();
@@ -28,6 +36,11 @@ const RolesSettings = () => {
   const [currentRole, setCurrentRole] = useState(null);
   const [formData, setFormData] = useState({ name: '', description: '', permissions: { canAssignTasks: false } });
   const [isSaving, setIsSaving] = useState(false);
+
+  const [isUsersDialogOpen, setIsUsersDialogOpen] = useState(false);
+  const [selectedRoleForUsers, setSelectedRoleForUsers] = useState(null);
+  const [roleUsers, setRoleUsers] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
 
   useEffect(() => {
     setHeader("Custom Roles", "Manage organizational custom roles and assignments");
@@ -109,6 +122,26 @@ const RolesSettings = () => {
     }
   };
 
+  const handleViewUsers = async (role) => {
+    setSelectedRoleForUsers(role);
+    setIsUsersDialogOpen(true);
+    setLoadingUsers(true);
+    try {
+      const res = await api.get('/users');
+      // Filter users by customRoleId
+      const usersInRole = res.data.filter(u => u.customRoleId === role.id);
+      setRoleUsers(usersInRole);
+    } catch (error) {
+      toast({
+        title: "Failed to load users",
+        description: "An error occurred while fetching users.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
   return (
     <div className="flex-1 p-0 sm:p-2 pt-2 overflow-y-auto h-full space-y-6">
       <div className="flex items-center justify-between mb-4 mt-2">
@@ -137,21 +170,39 @@ const RolesSettings = () => {
           </div>
         ) : (
           roles.map(role => (
-            <Card key={role.id} className="hover:shadow-md transition-shadow relative overflow-hidden group border-border/50">
+            <Card 
+              key={role.id} 
+              className="hover:shadow-md transition-shadow relative overflow-hidden group border-border/50 cursor-pointer"
+              onClick={() => handleViewUsers(role)}
+            >
               <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
               <CardHeader className="pb-4">
                 <div className="flex justify-between items-start">
                   <div>
                     <CardTitle className="Montserrat text-lg text-foreground/90">{role.name}</CardTitle>
                   </div>
-                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-blue-50 hover:text-blue-600" onClick={() => handleOpenDialog(role)}>
-                      <Pencil className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-red-50 hover:text-red-600" onClick={() => handleDeleteRole(role.id)}>
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                      <DropdownMenuItem onClick={() => handleOpenDialog(role)} className="cursor-pointer gap-2">
+                        <Pencil className="h-4 w-4" />
+                        <span>Edit Role</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDeleteRole(role.id)} className="cursor-pointer gap-2 text-destructive focus:text-destructive">
+                        <Trash2 className="h-4 w-4" />
+                        <span>Delete Role</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </CardHeader>
               <CardContent>
@@ -215,6 +266,39 @@ const RolesSettings = () => {
               {isSaving ? 'Saving...' : 'Save Role'}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isUsersDialogOpen} onOpenChange={setIsUsersDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{selectedRoleForUsers?.name} - Assigned Users</DialogTitle>
+            <DialogDescription>
+              A list of users assigned to the '{selectedRoleForUsers?.name}' role.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[300px] overflow-y-auto pr-2 space-y-4 py-4">
+            {loadingUsers ? (
+              <p className="text-sm text-muted-foreground text-center py-4">Loading users...</p>
+            ) : roleUsers.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">No users are currently assigned to this role.</p>
+            ) : (
+              roleUsers.map(user => (
+                <div key={user.id} className="flex items-center gap-3">
+                  <Avatar className="h-9 w-9">
+                    <AvatarImage src={user.avatar || undefined} />
+                    <AvatarFallback className="bg-primary/10 text-primary">
+                      {user.name?.charAt(0)?.toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium leading-none">{user.name}</span>
+                    <span className="text-xs text-muted-foreground mt-1">{user.email}</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>

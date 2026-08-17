@@ -231,6 +231,21 @@ const KanbanCard = ({ task, isReadOnly, disableDrag, onEdit, onCardClick, onDele
                         </div>
                     )}
 
+                    {(() => {
+                        const approvedTag = task.tags?.find(t => t.startsWith('APPROVED_BY:'));
+                        if (approvedTag && task.status === 'COMPLETED') {
+                            const approvedBy = approvedTag.substring('APPROVED_BY:'.length);
+                            return (
+                                <div className="flex items-center mt-2 mb-1">
+                                    <Badge variant="outline" className="text-green-500 border-green-500/50 bg-green-500/10 text-[7px] sm:text-[8px] font-bold py-0 uppercase tracking-wider">
+                                        Approved by {approvedBy}
+                                    </Badge>
+                                </div>
+                            );
+                        }
+                        return null;
+                    })()}
+
                     {task.project && (
                         <p className="text-[8px] sm:text-[9px] font-black Montserrat text-muted-foreground uppercase tracking-widest truncate">
                             {task.project.name}

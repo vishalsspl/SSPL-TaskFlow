@@ -153,7 +153,7 @@ const ProjectOverview = ({ projectId }) => {
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-4">
                     {phases.map((phase) => {
                         const hasTasks = tasks && tasks.some(task => task.phaseId === phase.id);
-                        const isManagerOrAdmin = user?.role === 'ADMIN' || (user?.role === 'MANAGER' && project.managerId === user?.id);
+                        const isManagerOrAdmin = user?.role === 'ADMIN' || (user?.role === 'MANAGER' && project.managers?.some(m => m.id === user?.id));
                         const canEdit = isManagerOrAdmin && !hasTasks;
                         const phaseContent = (
                             <CardContent className={`p-3 sm:p-4 text-center ${canEdit ? 'cursor-pointer hover:bg-muted/50 transition-colors' : ''}`}>

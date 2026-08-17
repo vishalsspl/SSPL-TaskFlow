@@ -45,6 +45,7 @@ const OrganizationSettings = () => {
     primaryContactName: user?.organization?.primaryContactName || '',
     primaryContactPhone: user?.organization?.primaryContactPhone || '',
     address: user?.organization?.address || '',
+    maxManagersPerProject: user?.organization?.maxManagersPerProject || 5,
   });
 
   useEffect(() => {
@@ -66,6 +67,7 @@ const OrganizationSettings = () => {
         primaryContactName: user.organization.primaryContactName || prev.primaryContactName,
         primaryContactPhone: user.organization.primaryContactPhone || prev.primaryContactPhone,
         address: user.organization.address || prev.address,
+        maxManagersPerProject: user.organization.maxManagersPerProject || prev.maxManagersPerProject,
       }));
     }
   }, [user?.organization?.id, user?.organization?.plan, user?.organization?.updatedAt, updating]);
@@ -86,6 +88,7 @@ const OrganizationSettings = () => {
         primaryContactName: org.primaryContactName || '',
         primaryContactPhone: org.primaryContactPhone || '',
         address: org.address || '',
+        maxManagersPerProject: org.maxManagersPerProject || 5,
       });
       // Sync authStore if needed
       updateUser({ ...user, organization: org });
@@ -361,6 +364,23 @@ const OrganizationSettings = () => {
                 onChange={handleChange}
               />
             </div>
+          </div>
+          
+          <Separator className="bg-border/40 my-4" />
+          
+          <div className="space-y-2">
+            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Max Managers Per Project</Label>
+            <div className="relative max-w-xs">
+              <Input 
+                type="number"
+                name="maxManagersPerProject"
+                value={formData.maxManagersPerProject}
+                onChange={handleChange}
+                min={1}
+                className="rounded-xl border-border/40 h-11" 
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">Set the maximum number of managers that can be assigned to a single project.</p>
           </div>
         </CardContent>
       </Card>

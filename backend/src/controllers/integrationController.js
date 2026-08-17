@@ -2,28 +2,8 @@ import axios from 'axios';
 import { Octokit } from '@octokit/rest';
 import prisma from '../lib/prisma.js';
 import tenantDbManager from '../lib/tenantDbManager.js';
+import { createNotification } from '../utils/notifications.js';
 
-
-const createNotification = async (req, { userId, title, message, type }) => {
-  try {
-    const notification = await req.db.notification.create({
-      data: {
-        userId,
-        title,
-        message,
-        type,
-        organizationId: req.user.organizationId,
-      },
-    });
-
-    if (req.io) {
-      req.io.to(`org-${req.user.organizationId}`).emit('new-notification', notification);
-    }
-    return notification;
-  } catch (error) {
-    console.error('Failed to create internal notification:', error);
-  }
-};
 
 // ── Helper: Get org's GitHub config from DB ──────────────────────────────
 const getOrgGitHubConfig = async (organizationId) => {
@@ -481,7 +461,7 @@ export const getLinkedProjects = async (req, res) => {
     // MANAGER/MEMBER: only see their own projects
     if (role === 'MANAGER') {
       where.OR = [
-        { managerId: userId },
+        { managers: { some: { id: userId } } },
         { workloads: { some: { userId } } }
       ];
     } else if (role === 'MEMBER') {

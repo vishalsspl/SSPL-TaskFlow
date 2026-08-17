@@ -1,4 +1,4 @@
-import { createNotification } from '../utils/notifications.js';
+import { createNotification, shouldSendEmail } from '../utils/notifications.js';
 import { sendDocumentUploadedEmail } from '../services/emailService.js';
 
 export const getDocuments = async (req, res) => {
@@ -106,14 +106,16 @@ export const createDocument = async (req, res) => {
 
             // Send email notification if supported
             if (hasEmailSupport && workload.user?.email) {
-              sendDocumentUploadedEmail(
-                workload.user.email,
-                workload.user.name,
-                title,
-                project.name,
-                uploaderName,
-                origin
-              ).catch(err => console.error('Failed to send document uploaded email:', err));
+              if (await shouldSendEmail(req.db, workload.userId, 'DOCUMENT_UPLOADED')) {
+                sendDocumentUploadedEmail(
+                  workload.user.email,
+                  workload.user.name,
+                  title,
+                  project.name,
+                  uploaderName,
+                  origin
+                ).catch(err => console.error('Failed to send document uploaded email:', err));
+              }
             }
           }
         }
@@ -136,12 +138,12 @@ export const updateDocument = async (req, res) => {
   try {
     const doc = await prisma.document.findUnique({
       where: { id },
-      include: { project: true }
+      include: { project: { include: { managers: true } } }
     });
     if (!doc) return res.status(404).json({ error: 'Document not found' });
 
     const isAuthor = doc.authorId === req.user.id;
-    const isProjectManager = doc.project?.managerId === req.user.id;
+    const isProjectManager = doc.project?.managers?.some(m => m.id === req.user.id);
     const isAdmin = req.user.role === 'ADMIN' || req.user.role === 'SUPERADMIN';
 
     if (!isAuthor && !isProjectManager && !isAdmin) {
@@ -165,12 +167,12 @@ export const deleteDocument = async (req, res) => {
   try {
     const doc = await prisma.document.findUnique({
       where: { id },
-      include: { project: true }
+      include: { project: { include: { managers: true } } }
     });
     if (!doc) return res.status(404).json({ error: 'Document not found' });
 
     const isAuthor = doc.authorId === req.user.id;
-    const isProjectManager = doc.project?.managerId === req.user.id;
+    const isProjectManager = doc.project?.managers?.some(m => m.id === req.user.id);
     const isAdmin = req.user.role === 'ADMIN' || req.user.role === 'SUPERADMIN';
 
     if (!isAuthor && !isProjectManager && !isAdmin) {

@@ -155,7 +155,7 @@ const Tasks = () => {
   const [pointsMax, setPointsMax] = useState('');
   const [progressFilter, setProgressFilter] = useState('');
 
-  const canCreateTaskGlobal = user?.role === 'ADMIN' || user?.permissions?.['tasks.create'] || (user?.role === 'MEMBER' && projects.some(p => p.allowMemberTaskCreation));
+  const canCreateTaskGlobal = user?.role === 'ADMIN' || (user?.role !== 'MEMBER' && user?.permissions?.['tasks.create']) || (user?.role === 'MEMBER' && projects.some(p => p.allowMemberTaskCreation));
   const canImport = user?.role === 'ADMIN' || user?.permissions?.['reports.import'];
 
   // Debounce global search input

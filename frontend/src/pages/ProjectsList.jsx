@@ -96,7 +96,7 @@ const ProjectsList = () => {
     name: '',
     description: '',
     clientId: '',
-    managerId: '',
+    managerIds: [],
     startDate: '',
     endDate: '',
     totalBudget: '',
@@ -222,7 +222,7 @@ const ProjectsList = () => {
       name: project.name,
       description: project.description || '',
       clientId: project.clientId || '',
-      managerId: project.managerId || '',
+      managerIds: project.managers ? project.managers.map(m => m.id) : [],
       startDate: project.startDate ? new Date(project.startDate) : null,
       endDate: project.endDate ? new Date(project.endDate) : null,
       isOngoing: !project.endDate,
@@ -281,7 +281,7 @@ const ProjectsList = () => {
         ...formData,
         category: formData.clientId ? 'CLIENT' : 'INTERNAL',
         clientId: formData.clientId || undefined,
-        managerId: formData.managerId || undefined,
+        managerIds: formData.managerIds || undefined,
         totalBudget: formData.totalBudget && formData.totalBudget !== '' ? formData.totalBudget : undefined,
         startDate: formData.startDate ? format(new Date(formData.startDate), 'yyyy-MM-dd') : null,
         endDate: formData.endDate ? format(new Date(formData.endDate), 'yyyy-MM-dd') : null,
@@ -294,7 +294,7 @@ const ProjectsList = () => {
         name: '',
         description: '',
         clientId: '',
-        managerId: '',
+        managerIds: [],
         startDate: '',
         endDate: '',
         totalBudget: '',
@@ -437,7 +437,7 @@ const ProjectsList = () => {
 
   const filteredProjects = projects.filter(project => {
     // Search, status, and category filtering now done on backend
-    const matchesManager = managerFilter ? project.manager?.id === managerFilter : true;
+    const matchesManager = managerFilter ? project.managers?.some(m => m.id === managerFilter) : true;
     const matchesClient = clientFilter ? project.client?.id === clientFilter : true;
 
     return matchesManager && matchesClient;
@@ -499,7 +499,7 @@ const ProjectsList = () => {
       const response = await api.get('/projects', { params: { clientId: value } });
       const projects = Array.isArray(response.data) ? response.data : response.data.data || [];
       const managerIds = new Set(
-        projects.filter(p => p.managerId).map(p => p.managerId)
+        projects.filter(p => p.managers && p.managers.length > 0).flatMap(p => p.managers.map(m => m.id))
       );
       setFilteredManagerIds(managerIds);
       if (managerFilter && !managerIds.has(managerFilter)) {
@@ -572,18 +572,28 @@ const ProjectsList = () => {
                   </div>
                 </div>
 
-                {/* Manager */}
-                <div className="space-y-2">
-                  <Label htmlFor="managerId" className="text-foreground/90 font-semibold mobile-reduce-label">Manager</Label>
+                {/* Managers */}
+                <div className="space-y-2 col-span-1 md:col-span-1 lg:col-span-1 relative z-20">
+                  <Label htmlFor="managerIds" className="text-foreground/90 font-semibold mobile-reduce-label">Managers</Label>
                   <div className="relative">
                     <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70 z-10" />
-                    <SearchableSelect
-                      value={formData.managerId}
-                      onChange={(value) => setFormData({ ...formData, managerId: value })}
+                    <MultiSearchableSelect
+                      value={formData.managerIds}
+                      onChange={(values) => {
+                        const maxManagers = user?.organization?.maxManagersPerProject || 5;
+                        if (values.length > maxManagers) {
+                            toast({
+                                title: "Limit Exceeded",
+                                description: `You can only select up to ${maxManagers} managers for a project.`,
+                                variant: "destructive"
+                            });
+                            return;
+                        }
+                        setFormData({ ...formData, managerIds: values });
+                      }}
                       options={users.filter(u => u.role === 'MANAGER').map(user => ({ label: user.name, value: user.id }))}
-                      placeholder="Select Manager"
+                      placeholder="Select Managers"
                       className="!pl-10 mobile-reduce-input"
-                      disabled={formData.name?.toLowerCase() === 'general'}
                     />
                   </div>
                 </div>
@@ -923,7 +933,7 @@ const ProjectsList = () => {
                     <TableRow>
                       <TableHead className="cursor-pointer select-none" onClick={() => handleSort('name')}>Project Name {renderSortIcon('name')}</TableHead>
                       <TableHead className="cursor-pointer select-none" onClick={() => handleSort('client')}>Client {renderSortIcon('client')}</TableHead>
-                      <TableHead className="cursor-pointer select-none" onClick={() => handleSort('manager')}>Manager {renderSortIcon('manager')}</TableHead>
+                      <TableHead className="cursor-pointer select-none" onClick={() => handleSort('manager')}>Managers {renderSortIcon('manager')}</TableHead>
                       <TableHead className="cursor-pointer select-none" onClick={() => handleSort('timeline')}>Timeline {renderSortIcon('timeline')}</TableHead>
                       {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && <TableHead className="cursor-pointer select-none" onClick={() => handleSort('budget')}>Budget {renderSortIcon('budget')}</TableHead>}
                       <TableHead className="cursor-pointer select-none" onClick={() => handleSort('status')}>Status {renderSortIcon('status')}</TableHead>
@@ -982,9 +992,9 @@ const ProjectsList = () => {
                             )}
                           </TableCell>
                           <TableCell>
-                            {project.manager && project.name.toLowerCase() !== 'general' ? (
+                            {project.managers && project.managers.length > 0 && project.name.toLowerCase() !== 'general' ? (
                               <div className="text-sm">
-                                <p className="font-medium">{project.manager.name}</p>
+                                <p className="font-medium">{project.managers.map(m => m.name).join(', ')}</p>
                               </div>
                             ) : (
                               <span className="text-muted-foreground text-xs">-</span>

@@ -5,7 +5,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ArrowLeft, Edit2, Loader2, Clock, User, FileIcon } from 'lucide-react';
 import api from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
-import useAuthStore from '@/store/useAuthStore';
+import { useAuthStore } from '@/store/authStore';
 
 const getFileUrl = (url) => {
   if (!url) return '';
@@ -13,7 +13,7 @@ const getFileUrl = (url) => {
   return `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${url.startsWith('/') ? '' : '/'}${url}`;
 };
 
-export default function DocumentViewer({ documentId, onBack, onEdit, projectManagerId }) {
+export default function DocumentViewer({ documentId, onBack, onEdit, projectManagers }) {
   const { toast } = useToast();
   const { user } = useAuthStore();
   const [doc, setDoc] = useState(null);
@@ -55,7 +55,7 @@ export default function DocumentViewer({ documentId, onBack, onEdit, projectMana
             <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> Updated {formatDistanceToNow(new Date(doc.updatedAt), { addSuffix: true })}</span>
           </div>
         </div>
-        {(user?.role === 'ADMIN' || user?.role === 'SUPERADMIN' || user?.id === projectManagerId || user?.id === doc.author?.id) && (
+        {(user?.role === 'ADMIN' || user?.role === 'SUPERADMIN' || projectManagers?.some(m => m.id === user?.id) || user?.id === doc.author?.id) && (
           <Button onClick={onEdit} variant="outline" className="rounded-xl shrink-0">
             <Edit2 className="w-4 h-4 mr-2" />
             Edit

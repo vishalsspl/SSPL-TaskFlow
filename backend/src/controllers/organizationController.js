@@ -1,5 +1,6 @@
 import prisma from '../lib/prisma.js';
 import { sendUserApprovalEmail, sendCredentialsUpdatedEmail } from '../services/emailService.js';
+import { shouldSendEmail } from '../utils/notifications.js';
 import { ensureOrganizationSchema } from '../lib/schemaValidator.js';
 import bcrypt from 'bcryptjs';
 import fs from 'fs';
@@ -74,6 +75,7 @@ export const updateMyOrganization = async (req, res) => {
         requireApproval,
         sessionTimeoutMinutes,
         shiftSettings,
+        maxManagersPerProject,
     } = req.body;
 
     // DEBUG: Log to file
@@ -105,6 +107,7 @@ export const updateMyOrganization = async (req, res) => {
         ...(allowClientSignup !== undefined && { allowClientSignup: Boolean(allowClientSignup) }),
         ...(requireApproval !== undefined && { requireApproval: Boolean(requireApproval) }),
         ...(sessionTimeoutMinutes !== undefined && { sessionTimeoutMinutes: parseInt(sessionTimeoutMinutes) }),
+        ...(maxManagersPerProject !== undefined && { maxManagersPerProject: parseInt(maxManagersPerProject) }),
     };
 
     if (shiftSettings !== undefined) {
@@ -270,8 +273,10 @@ export const updateOrgByAdmin = async (req, res) => {
         });
         const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
         for (const admin of admins) {
-            sendUserApprovalEmail(admin.email, admin.name, origin)
-                .catch(err => console.error('Failed to send approval email:', err));
+            if (await shouldSendEmail(req.db, admin.id, 'ACCOUNT_APPROVED')) {
+                sendUserApprovalEmail(admin.email, admin.name, origin)
+                    .catch(err => console.error('Failed to send approval email:', err));
+            }
         }
     }
 

@@ -25,12 +25,13 @@ export const getChatHistory = async (req, res) => {
                         where: {
                             id: projId,
                             organizationId,
-                        }
+                        },
+                        include: { managers: { select: { id: true } } }
                     });
 
                     if (!project) return res.status(404).json({ error: 'Project not found' });
 
-                    const isManager = project.managerId === userId;
+                    const isManager = project.managers && project.managers.some(m => m.id === userId);
                     const isClient = project.clientId === userId;
 
                     const taskAssignment = await req.db.task.findFirst({
@@ -133,7 +134,7 @@ export const getChatRooms = async (req, res) => {
                 where: {
                     organizationId,
                     OR: [
-                        { managerId: userId },
+                        { managers: { some: { id: userId } } },
                         { clientId: userId },
                         { tasks: { some: { assignees: { some: { userId } } } } },
                         { workloads: { some: { userId } } }

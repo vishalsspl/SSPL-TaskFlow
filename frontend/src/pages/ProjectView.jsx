@@ -598,7 +598,7 @@ const ProjectView = () => {
                 Refresh
               </Button>
               {/* New Task Button */}
-              {(user?.role === 'ADMIN' || user?.permissions?.['tasks.create'] || (user?.role === 'MEMBER' && project?.allowMemberTaskCreation)) && (
+              {(user?.role === 'ADMIN' || (user?.role !== 'MEMBER' && user?.permissions?.['tasks.create']) || (user?.role === 'MEMBER' && project?.allowMemberTaskCreation)) && (
                 <Button size="sm" onClick={() => setShowCreateDialog(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground Montserrat font-bold rounded-lg sm:rounded-xl px-2 sm:px-4 text-[10px] sm:text-sm h-7 sm:h-9">
                   <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                   New Task
@@ -739,7 +739,7 @@ const ProjectView = () => {
                             <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest Montserrat">Workload</p>
                             <p className="text-xs font-black Montserrat text-primary">{w.workloadPercentage}%</p>
                           </div>
-                          {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && w.user.id !== project.managerId && (
+                          {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (!project.managers?.some(m => m.id === w.user.id)) && (
                             <Button 
                               variant="ghost" 
                               size="icon" 
@@ -804,7 +804,7 @@ const ProjectView = () => {
               {docView === 'list' && (
                 <DocumentList
                   projectId={id}
-                  projectManagerId={dashboard?.project?.managerId}
+                  projectManagers={dashboard?.project?.managers}
                   onNewDocument={() => {
                     setSelectedDocId(null);
                     setDocView('edit');
@@ -823,7 +823,7 @@ const ProjectView = () => {
                 <DocumentEditor
                   projectId={id}
                   documentId={selectedDocId}
-                  projectManagerId={dashboard?.project?.managerId}
+                  projectManagers={dashboard?.project?.managers}
                   onBack={() => setDocView(selectedDocId ? 'view' : 'list')}
                   onSave={() => setDocView('list')}
                 />
@@ -831,7 +831,7 @@ const ProjectView = () => {
               {docView === 'view' && (
                 <DocumentViewer
                   documentId={selectedDocId}
-                  projectManagerId={dashboard?.project?.managerId}
+                  projectManagers={dashboard?.project?.managers}
                   onBack={() => setDocView('list')}
                   onEdit={() => setDocView('edit')}
                 />

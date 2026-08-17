@@ -2674,6 +2674,7 @@ export namespace Prisma {
   export type UserCountOutputType = {
     members: number
     managedProjects: number
+    managedProjects2: number
     clientProjects: number
     workloads: number
     taskAssignments: number
@@ -2694,6 +2695,7 @@ export namespace Prisma {
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     members?: boolean | UserCountOutputTypeCountMembersArgs
     managedProjects?: boolean | UserCountOutputTypeCountManagedProjectsArgs
+    managedProjects2?: boolean | UserCountOutputTypeCountManagedProjects2Args
     clientProjects?: boolean | UserCountOutputTypeCountClientProjectsArgs
     workloads?: boolean | UserCountOutputTypeCountWorkloadsArgs
     taskAssignments?: boolean | UserCountOutputTypeCountTaskAssignmentsArgs
@@ -2733,6 +2735,13 @@ export namespace Prisma {
    * UserCountOutputType without action
    */
   export type UserCountOutputTypeCountManagedProjectsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProjectWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountManagedProjects2Args<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ProjectWhereInput
   }
 
@@ -2847,6 +2856,7 @@ export namespace Prisma {
    */
 
   export type ProjectCountOutputType = {
+    managers: number
     phases: number
     tasks: number
     workloads: number
@@ -2856,6 +2866,7 @@ export namespace Prisma {
   }
 
   export type ProjectCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    managers?: boolean | ProjectCountOutputTypeCountManagersArgs
     phases?: boolean | ProjectCountOutputTypeCountPhasesArgs
     tasks?: boolean | ProjectCountOutputTypeCountTasksArgs
     workloads?: boolean | ProjectCountOutputTypeCountWorkloadsArgs
@@ -2873,6 +2884,13 @@ export namespace Prisma {
      * Select specific fields to fetch from the ProjectCountOutputType
      */
     select?: ProjectCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * ProjectCountOutputType without action
+   */
+  export type ProjectCountOutputTypeCountManagersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserWhereInput
   }
 
   /**
@@ -3098,12 +3116,14 @@ export namespace Prisma {
     maxUsers: number | null
     maxProjects: number | null
     sessionTimeoutMinutes: number | null
+    maxManagersPerProject: number | null
   }
 
   export type OrganizationSumAggregateOutputType = {
     maxUsers: number | null
     maxProjects: number | null
     sessionTimeoutMinutes: number | null
+    maxManagersPerProject: number | null
   }
 
   export type OrganizationMinAggregateOutputType = {
@@ -3130,6 +3150,7 @@ export namespace Prisma {
     requireApproval: boolean | null
     allowClientSignup: boolean | null
     sessionTimeoutMinutes: number | null
+    maxManagersPerProject: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -3158,6 +3179,7 @@ export namespace Prisma {
     requireApproval: boolean | null
     allowClientSignup: boolean | null
     sessionTimeoutMinutes: number | null
+    maxManagersPerProject: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -3187,6 +3209,7 @@ export namespace Prisma {
     allowClientSignup: number
     sessionTimeoutMinutes: number
     rolePermissions: number
+    maxManagersPerProject: number
     customFeatures: number
     createdAt: number
     updatedAt: number
@@ -3198,12 +3221,14 @@ export namespace Prisma {
     maxUsers?: true
     maxProjects?: true
     sessionTimeoutMinutes?: true
+    maxManagersPerProject?: true
   }
 
   export type OrganizationSumAggregateInputType = {
     maxUsers?: true
     maxProjects?: true
     sessionTimeoutMinutes?: true
+    maxManagersPerProject?: true
   }
 
   export type OrganizationMinAggregateInputType = {
@@ -3230,6 +3255,7 @@ export namespace Prisma {
     requireApproval?: true
     allowClientSignup?: true
     sessionTimeoutMinutes?: true
+    maxManagersPerProject?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -3258,6 +3284,7 @@ export namespace Prisma {
     requireApproval?: true
     allowClientSignup?: true
     sessionTimeoutMinutes?: true
+    maxManagersPerProject?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -3287,6 +3314,7 @@ export namespace Prisma {
     allowClientSignup?: true
     sessionTimeoutMinutes?: true
     rolePermissions?: true
+    maxManagersPerProject?: true
     customFeatures?: true
     createdAt?: true
     updatedAt?: true
@@ -3404,6 +3432,7 @@ export namespace Prisma {
     allowClientSignup: boolean
     sessionTimeoutMinutes: number | null
     rolePermissions: JsonValue | null
+    maxManagersPerProject: number
     customFeatures: JsonValue | null
     createdAt: Date
     updatedAt: Date
@@ -3453,6 +3482,7 @@ export namespace Prisma {
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: boolean
     rolePermissions?: boolean
+    maxManagersPerProject?: boolean
     customFeatures?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -3493,6 +3523,7 @@ export namespace Prisma {
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: boolean
     rolePermissions?: boolean
+    maxManagersPerProject?: boolean
     customFeatures?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -3523,6 +3554,7 @@ export namespace Prisma {
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: boolean
     rolePermissions?: boolean
+    maxManagersPerProject?: boolean
     customFeatures?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -3580,6 +3612,7 @@ export namespace Prisma {
       allowClientSignup: boolean
       sessionTimeoutMinutes: number | null
       rolePermissions: Prisma.JsonValue | null
+      maxManagersPerProject: number
       customFeatures: Prisma.JsonValue | null
       createdAt: Date
       updatedAt: Date
@@ -4009,6 +4042,7 @@ export namespace Prisma {
     readonly allowClientSignup: FieldRef<"Organization", 'Boolean'>
     readonly sessionTimeoutMinutes: FieldRef<"Organization", 'Int'>
     readonly rolePermissions: FieldRef<"Organization", 'Json'>
+    readonly maxManagersPerProject: FieldRef<"Organization", 'Int'>
     readonly customFeatures: FieldRef<"Organization", 'Json'>
     readonly createdAt: FieldRef<"Organization", 'DateTime'>
     readonly updatedAt: FieldRef<"Organization", 'DateTime'>
@@ -5748,6 +5782,7 @@ export namespace Prisma {
     manager?: boolean | User$managerArgs<ExtArgs>
     members?: boolean | User$membersArgs<ExtArgs>
     managedProjects?: boolean | User$managedProjectsArgs<ExtArgs>
+    managedProjects2?: boolean | User$managedProjects2Args<ExtArgs>
     clientProjects?: boolean | User$clientProjectsArgs<ExtArgs>
     workloads?: boolean | User$workloadsArgs<ExtArgs>
     taskAssignments?: boolean | User$taskAssignmentsArgs<ExtArgs>
@@ -5811,6 +5846,7 @@ export namespace Prisma {
     manager?: boolean | User$managerArgs<ExtArgs>
     members?: boolean | User$membersArgs<ExtArgs>
     managedProjects?: boolean | User$managedProjectsArgs<ExtArgs>
+    managedProjects2?: boolean | User$managedProjects2Args<ExtArgs>
     clientProjects?: boolean | User$clientProjectsArgs<ExtArgs>
     workloads?: boolean | User$workloadsArgs<ExtArgs>
     taskAssignments?: boolean | User$taskAssignmentsArgs<ExtArgs>
@@ -5842,6 +5878,7 @@ export namespace Prisma {
       manager: Prisma.$UserPayload<ExtArgs> | null
       members: Prisma.$UserPayload<ExtArgs>[]
       managedProjects: Prisma.$ProjectPayload<ExtArgs>[]
+      managedProjects2: Prisma.$ProjectPayload<ExtArgs>[]
       clientProjects: Prisma.$ProjectPayload<ExtArgs>[]
       workloads: Prisma.$WorkloadPayload<ExtArgs>[]
       taskAssignments: Prisma.$TaskAssigneePayload<ExtArgs>[]
@@ -6243,6 +6280,7 @@ export namespace Prisma {
     manager<T extends User$managerArgs<ExtArgs> = {}>(args?: Subset<T, User$managerArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     members<T extends User$membersArgs<ExtArgs> = {}>(args?: Subset<T, User$membersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany"> | Null>
     managedProjects<T extends User$managedProjectsArgs<ExtArgs> = {}>(args?: Subset<T, User$managedProjectsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findMany"> | Null>
+    managedProjects2<T extends User$managedProjects2Args<ExtArgs> = {}>(args?: Subset<T, User$managedProjects2Args<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findMany"> | Null>
     clientProjects<T extends User$clientProjectsArgs<ExtArgs> = {}>(args?: Subset<T, User$clientProjectsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findMany"> | Null>
     workloads<T extends User$workloadsArgs<ExtArgs> = {}>(args?: Subset<T, User$workloadsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WorkloadPayload<ExtArgs>, T, "findMany"> | Null>
     taskAssignments<T extends User$taskAssignmentsArgs<ExtArgs> = {}>(args?: Subset<T, User$taskAssignmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskAssigneePayload<ExtArgs>, T, "findMany"> | Null>
@@ -6688,6 +6726,26 @@ export namespace Prisma {
    * User.managedProjects
    */
   export type User$managedProjectsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Project
+     */
+    select?: ProjectSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectInclude<ExtArgs> | null
+    where?: ProjectWhereInput
+    orderBy?: ProjectOrderByWithRelationInput | ProjectOrderByWithRelationInput[]
+    cursor?: ProjectWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ProjectScalarFieldEnum | ProjectScalarFieldEnum[]
+  }
+
+  /**
+   * User.managedProjects2
+   */
+  export type User$managedProjects2Args<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the Project
      */
@@ -7327,6 +7385,7 @@ export namespace Prisma {
     updatedAt?: boolean
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
     manager?: boolean | Project$managerArgs<ExtArgs>
+    managers?: boolean | Project$managersArgs<ExtArgs>
     client?: boolean | Project$clientArgs<ExtArgs>
     phases?: boolean | Project$phasesArgs<ExtArgs>
     tasks?: boolean | Project$tasksArgs<ExtArgs>
@@ -7385,6 +7444,7 @@ export namespace Prisma {
   export type ProjectInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     organization?: boolean | OrganizationDefaultArgs<ExtArgs>
     manager?: boolean | Project$managerArgs<ExtArgs>
+    managers?: boolean | Project$managersArgs<ExtArgs>
     client?: boolean | Project$clientArgs<ExtArgs>
     phases?: boolean | Project$phasesArgs<ExtArgs>
     tasks?: boolean | Project$tasksArgs<ExtArgs>
@@ -7405,6 +7465,7 @@ export namespace Prisma {
     objects: {
       organization: Prisma.$OrganizationPayload<ExtArgs>
       manager: Prisma.$UserPayload<ExtArgs> | null
+      managers: Prisma.$UserPayload<ExtArgs>[]
       client: Prisma.$UserPayload<ExtArgs> | null
       phases: Prisma.$PhasePayload<ExtArgs>[]
       tasks: Prisma.$TaskPayload<ExtArgs>[]
@@ -7798,6 +7859,7 @@ export namespace Prisma {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     organization<T extends OrganizationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, OrganizationDefaultArgs<ExtArgs>>): Prisma__OrganizationClient<$Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     manager<T extends Project$managerArgs<ExtArgs> = {}>(args?: Subset<T, Project$managerArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    managers<T extends Project$managersArgs<ExtArgs> = {}>(args?: Subset<T, Project$managersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany"> | Null>
     client<T extends Project$clientArgs<ExtArgs> = {}>(args?: Subset<T, Project$clientArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     phases<T extends Project$phasesArgs<ExtArgs> = {}>(args?: Subset<T, Project$phasesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PhasePayload<ExtArgs>, T, "findMany"> | Null>
     tasks<T extends Project$tasksArgs<ExtArgs> = {}>(args?: Subset<T, Project$tasksArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TaskPayload<ExtArgs>, T, "findMany"> | Null>
@@ -8182,6 +8244,26 @@ export namespace Prisma {
      */
     include?: UserInclude<ExtArgs> | null
     where?: UserWhereInput
+  }
+
+  /**
+   * Project.managers
+   */
+  export type Project$managersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+    orderBy?: UserOrderByWithRelationInput | UserOrderByWithRelationInput[]
+    cursor?: UserWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UserScalarFieldEnum | UserScalarFieldEnum[]
   }
 
   /**
@@ -23649,6 +23731,7 @@ export namespace Prisma {
     allowClientSignup: 'allowClientSignup',
     sessionTimeoutMinutes: 'sessionTimeoutMinutes',
     rolePermissions: 'rolePermissions',
+    maxManagersPerProject: 'maxManagersPerProject',
     customFeatures: 'customFeatures',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -24241,6 +24324,7 @@ export namespace Prisma {
     allowClientSignup?: BoolFilter<"Organization"> | boolean
     sessionTimeoutMinutes?: IntNullableFilter<"Organization"> | number | null
     rolePermissions?: JsonNullableFilter<"Organization">
+    maxManagersPerProject?: IntFilter<"Organization"> | number
     customFeatures?: JsonNullableFilter<"Organization">
     createdAt?: DateTimeFilter<"Organization"> | Date | string
     updatedAt?: DateTimeFilter<"Organization"> | Date | string
@@ -24280,6 +24364,7 @@ export namespace Prisma {
     allowClientSignup?: SortOrder
     sessionTimeoutMinutes?: SortOrderInput | SortOrder
     rolePermissions?: SortOrderInput | SortOrder
+    maxManagersPerProject?: SortOrder
     customFeatures?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -24322,6 +24407,7 @@ export namespace Prisma {
     allowClientSignup?: BoolFilter<"Organization"> | boolean
     sessionTimeoutMinutes?: IntNullableFilter<"Organization"> | number | null
     rolePermissions?: JsonNullableFilter<"Organization">
+    maxManagersPerProject?: IntFilter<"Organization"> | number
     customFeatures?: JsonNullableFilter<"Organization">
     createdAt?: DateTimeFilter<"Organization"> | Date | string
     updatedAt?: DateTimeFilter<"Organization"> | Date | string
@@ -24361,6 +24447,7 @@ export namespace Prisma {
     allowClientSignup?: SortOrder
     sessionTimeoutMinutes?: SortOrderInput | SortOrder
     rolePermissions?: SortOrderInput | SortOrder
+    maxManagersPerProject?: SortOrder
     customFeatures?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -24399,6 +24486,7 @@ export namespace Prisma {
     allowClientSignup?: BoolWithAggregatesFilter<"Organization"> | boolean
     sessionTimeoutMinutes?: IntNullableWithAggregatesFilter<"Organization"> | number | null
     rolePermissions?: JsonNullableWithAggregatesFilter<"Organization">
+    maxManagersPerProject?: IntWithAggregatesFilter<"Organization"> | number
     customFeatures?: JsonNullableWithAggregatesFilter<"Organization">
     createdAt?: DateTimeWithAggregatesFilter<"Organization"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Organization"> | Date | string
@@ -24496,6 +24584,7 @@ export namespace Prisma {
     manager?: XOR<UserNullableRelationFilter, UserWhereInput> | null
     members?: UserListRelationFilter
     managedProjects?: ProjectListRelationFilter
+    managedProjects2?: ProjectListRelationFilter
     clientProjects?: ProjectListRelationFilter
     workloads?: WorkloadListRelationFilter
     taskAssignments?: TaskAssigneeListRelationFilter
@@ -24534,6 +24623,7 @@ export namespace Prisma {
     manager?: UserOrderByWithRelationInput
     members?: UserOrderByRelationAggregateInput
     managedProjects?: ProjectOrderByRelationAggregateInput
+    managedProjects2?: ProjectOrderByRelationAggregateInput
     clientProjects?: ProjectOrderByRelationAggregateInput
     workloads?: WorkloadOrderByRelationAggregateInput
     taskAssignments?: TaskAssigneeOrderByRelationAggregateInput
@@ -24576,6 +24666,7 @@ export namespace Prisma {
     manager?: XOR<UserNullableRelationFilter, UserWhereInput> | null
     members?: UserListRelationFilter
     managedProjects?: ProjectListRelationFilter
+    managedProjects2?: ProjectListRelationFilter
     clientProjects?: ProjectListRelationFilter
     workloads?: WorkloadListRelationFilter
     taskAssignments?: TaskAssigneeListRelationFilter
@@ -24659,6 +24750,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Project"> | Date | string
     organization?: XOR<OrganizationRelationFilter, OrganizationWhereInput>
     manager?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    managers?: UserListRelationFilter
     client?: XOR<UserNullableRelationFilter, UserWhereInput> | null
     phases?: PhaseListRelationFilter
     tasks?: TaskListRelationFilter
@@ -24689,6 +24781,7 @@ export namespace Prisma {
     updatedAt?: SortOrder
     organization?: OrganizationOrderByWithRelationInput
     manager?: UserOrderByWithRelationInput
+    managers?: UserOrderByRelationAggregateInput
     client?: UserOrderByWithRelationInput
     phases?: PhaseOrderByRelationAggregateInput
     tasks?: TaskOrderByRelationAggregateInput
@@ -24722,6 +24815,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Project"> | Date | string
     organization?: XOR<OrganizationRelationFilter, OrganizationWhereInput>
     manager?: XOR<UserNullableRelationFilter, UserWhereInput> | null
+    managers?: UserListRelationFilter
     client?: XOR<UserNullableRelationFilter, UserWhereInput> | null
     phases?: PhaseListRelationFilter
     tasks?: TaskListRelationFilter
@@ -25992,6 +26086,7 @@ export namespace Prisma {
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -26031,6 +26126,7 @@ export namespace Prisma {
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -26070,6 +26166,7 @@ export namespace Prisma {
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: IntFieldUpdateOperationsInput | number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26109,6 +26206,7 @@ export namespace Prisma {
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: IntFieldUpdateOperationsInput | number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26148,6 +26246,7 @@ export namespace Prisma {
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -26178,6 +26277,7 @@ export namespace Prisma {
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: IntFieldUpdateOperationsInput | number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26208,6 +26308,7 @@ export namespace Prisma {
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: IntFieldUpdateOperationsInput | number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26304,6 +26405,7 @@ export namespace Prisma {
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
@@ -26339,6 +26441,7 @@ export namespace Prisma {
     updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
@@ -26374,6 +26477,7 @@ export namespace Prisma {
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
@@ -26409,6 +26513,7 @@ export namespace Prisma {
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
@@ -26495,6 +26600,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
     manager?: UserCreateNestedOneWithoutManagedProjectsInput
+    managers?: UserCreateNestedManyWithoutManagedProjects2Input
     client?: UserCreateNestedOneWithoutClientProjectsInput
     phases?: PhaseCreateNestedManyWithoutProjectInput
     tasks?: TaskCreateNestedManyWithoutProjectInput
@@ -26523,6 +26629,7 @@ export namespace Prisma {
     prefix?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managers?: UserUncheckedCreateNestedManyWithoutManagedProjects2Input
     phases?: PhaseUncheckedCreateNestedManyWithoutProjectInput
     tasks?: TaskUncheckedCreateNestedManyWithoutProjectInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutProjectInput
@@ -26549,6 +26656,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
     manager?: UserUpdateOneWithoutManagedProjectsNestedInput
+    managers?: UserUpdateManyWithoutManagedProjects2NestedInput
     client?: UserUpdateOneWithoutClientProjectsNestedInput
     phases?: PhaseUpdateManyWithoutProjectNestedInput
     tasks?: TaskUpdateManyWithoutProjectNestedInput
@@ -26577,6 +26685,7 @@ export namespace Prisma {
     prefix?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managers?: UserUncheckedUpdateManyWithoutManagedProjects2NestedInput
     phases?: PhaseUncheckedUpdateManyWithoutProjectNestedInput
     tasks?: TaskUncheckedUpdateManyWithoutProjectNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutProjectNestedInput
@@ -28089,6 +28198,7 @@ export namespace Prisma {
     allowClientSignup?: SortOrder
     sessionTimeoutMinutes?: SortOrder
     rolePermissions?: SortOrder
+    maxManagersPerProject?: SortOrder
     customFeatures?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -28098,6 +28208,7 @@ export namespace Prisma {
     maxUsers?: SortOrder
     maxProjects?: SortOrder
     sessionTimeoutMinutes?: SortOrder
+    maxManagersPerProject?: SortOrder
   }
 
   export type OrganizationMaxOrderByAggregateInput = {
@@ -28124,6 +28235,7 @@ export namespace Prisma {
     requireApproval?: SortOrder
     allowClientSignup?: SortOrder
     sessionTimeoutMinutes?: SortOrder
+    maxManagersPerProject?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -28152,6 +28264,7 @@ export namespace Prisma {
     requireApproval?: SortOrder
     allowClientSignup?: SortOrder
     sessionTimeoutMinutes?: SortOrder
+    maxManagersPerProject?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -28160,6 +28273,7 @@ export namespace Prisma {
     maxUsers?: SortOrder
     maxProjects?: SortOrder
     sessionTimeoutMinutes?: SortOrder
+    maxManagersPerProject?: SortOrder
   }
 
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
@@ -29977,6 +30091,12 @@ export namespace Prisma {
     connect?: ProjectWhereUniqueInput | ProjectWhereUniqueInput[]
   }
 
+  export type ProjectCreateNestedManyWithoutManagersInput = {
+    create?: XOR<ProjectCreateWithoutManagersInput, ProjectUncheckedCreateWithoutManagersInput> | ProjectCreateWithoutManagersInput[] | ProjectUncheckedCreateWithoutManagersInput[]
+    connectOrCreate?: ProjectCreateOrConnectWithoutManagersInput | ProjectCreateOrConnectWithoutManagersInput[]
+    connect?: ProjectWhereUniqueInput | ProjectWhereUniqueInput[]
+  }
+
   export type ProjectCreateNestedManyWithoutClientInput = {
     create?: XOR<ProjectCreateWithoutClientInput, ProjectUncheckedCreateWithoutClientInput> | ProjectCreateWithoutClientInput[] | ProjectUncheckedCreateWithoutClientInput[]
     connectOrCreate?: ProjectCreateOrConnectWithoutClientInput | ProjectCreateOrConnectWithoutClientInput[]
@@ -30093,6 +30213,12 @@ export namespace Prisma {
     create?: XOR<ProjectCreateWithoutManagerInput, ProjectUncheckedCreateWithoutManagerInput> | ProjectCreateWithoutManagerInput[] | ProjectUncheckedCreateWithoutManagerInput[]
     connectOrCreate?: ProjectCreateOrConnectWithoutManagerInput | ProjectCreateOrConnectWithoutManagerInput[]
     createMany?: ProjectCreateManyManagerInputEnvelope
+    connect?: ProjectWhereUniqueInput | ProjectWhereUniqueInput[]
+  }
+
+  export type ProjectUncheckedCreateNestedManyWithoutManagersInput = {
+    create?: XOR<ProjectCreateWithoutManagersInput, ProjectUncheckedCreateWithoutManagersInput> | ProjectCreateWithoutManagersInput[] | ProjectUncheckedCreateWithoutManagersInput[]
+    connectOrCreate?: ProjectCreateOrConnectWithoutManagersInput | ProjectCreateOrConnectWithoutManagersInput[]
     connect?: ProjectWhereUniqueInput | ProjectWhereUniqueInput[]
   }
 
@@ -30260,6 +30386,19 @@ export namespace Prisma {
     connect?: ProjectWhereUniqueInput | ProjectWhereUniqueInput[]
     update?: ProjectUpdateWithWhereUniqueWithoutManagerInput | ProjectUpdateWithWhereUniqueWithoutManagerInput[]
     updateMany?: ProjectUpdateManyWithWhereWithoutManagerInput | ProjectUpdateManyWithWhereWithoutManagerInput[]
+    deleteMany?: ProjectScalarWhereInput | ProjectScalarWhereInput[]
+  }
+
+  export type ProjectUpdateManyWithoutManagersNestedInput = {
+    create?: XOR<ProjectCreateWithoutManagersInput, ProjectUncheckedCreateWithoutManagersInput> | ProjectCreateWithoutManagersInput[] | ProjectUncheckedCreateWithoutManagersInput[]
+    connectOrCreate?: ProjectCreateOrConnectWithoutManagersInput | ProjectCreateOrConnectWithoutManagersInput[]
+    upsert?: ProjectUpsertWithWhereUniqueWithoutManagersInput | ProjectUpsertWithWhereUniqueWithoutManagersInput[]
+    set?: ProjectWhereUniqueInput | ProjectWhereUniqueInput[]
+    disconnect?: ProjectWhereUniqueInput | ProjectWhereUniqueInput[]
+    delete?: ProjectWhereUniqueInput | ProjectWhereUniqueInput[]
+    connect?: ProjectWhereUniqueInput | ProjectWhereUniqueInput[]
+    update?: ProjectUpdateWithWhereUniqueWithoutManagersInput | ProjectUpdateWithWhereUniqueWithoutManagersInput[]
+    updateMany?: ProjectUpdateManyWithWhereWithoutManagersInput | ProjectUpdateManyWithWhereWithoutManagersInput[]
     deleteMany?: ProjectScalarWhereInput | ProjectScalarWhereInput[]
   }
 
@@ -30501,6 +30640,19 @@ export namespace Prisma {
     deleteMany?: ProjectScalarWhereInput | ProjectScalarWhereInput[]
   }
 
+  export type ProjectUncheckedUpdateManyWithoutManagersNestedInput = {
+    create?: XOR<ProjectCreateWithoutManagersInput, ProjectUncheckedCreateWithoutManagersInput> | ProjectCreateWithoutManagersInput[] | ProjectUncheckedCreateWithoutManagersInput[]
+    connectOrCreate?: ProjectCreateOrConnectWithoutManagersInput | ProjectCreateOrConnectWithoutManagersInput[]
+    upsert?: ProjectUpsertWithWhereUniqueWithoutManagersInput | ProjectUpsertWithWhereUniqueWithoutManagersInput[]
+    set?: ProjectWhereUniqueInput | ProjectWhereUniqueInput[]
+    disconnect?: ProjectWhereUniqueInput | ProjectWhereUniqueInput[]
+    delete?: ProjectWhereUniqueInput | ProjectWhereUniqueInput[]
+    connect?: ProjectWhereUniqueInput | ProjectWhereUniqueInput[]
+    update?: ProjectUpdateWithWhereUniqueWithoutManagersInput | ProjectUpdateWithWhereUniqueWithoutManagersInput[]
+    updateMany?: ProjectUpdateManyWithWhereWithoutManagersInput | ProjectUpdateManyWithWhereWithoutManagersInput[]
+    deleteMany?: ProjectScalarWhereInput | ProjectScalarWhereInput[]
+  }
+
   export type ProjectUncheckedUpdateManyWithoutClientNestedInput = {
     create?: XOR<ProjectCreateWithoutClientInput, ProjectUncheckedCreateWithoutClientInput> | ProjectCreateWithoutClientInput[] | ProjectUncheckedCreateWithoutClientInput[]
     connectOrCreate?: ProjectCreateOrConnectWithoutClientInput | ProjectCreateOrConnectWithoutClientInput[]
@@ -30723,6 +30875,12 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type UserCreateNestedManyWithoutManagedProjects2Input = {
+    create?: XOR<UserCreateWithoutManagedProjects2Input, UserUncheckedCreateWithoutManagedProjects2Input> | UserCreateWithoutManagedProjects2Input[] | UserUncheckedCreateWithoutManagedProjects2Input[]
+    connectOrCreate?: UserCreateOrConnectWithoutManagedProjects2Input | UserCreateOrConnectWithoutManagedProjects2Input[]
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+  }
+
   export type UserCreateNestedOneWithoutClientProjectsInput = {
     create?: XOR<UserCreateWithoutClientProjectsInput, UserUncheckedCreateWithoutClientProjectsInput>
     connectOrCreate?: UserCreateOrConnectWithoutClientProjectsInput
@@ -30769,6 +30927,12 @@ export namespace Prisma {
     connectOrCreate?: DocumentCreateOrConnectWithoutProjectInput | DocumentCreateOrConnectWithoutProjectInput[]
     createMany?: DocumentCreateManyProjectInputEnvelope
     connect?: DocumentWhereUniqueInput | DocumentWhereUniqueInput[]
+  }
+
+  export type UserUncheckedCreateNestedManyWithoutManagedProjects2Input = {
+    create?: XOR<UserCreateWithoutManagedProjects2Input, UserUncheckedCreateWithoutManagedProjects2Input> | UserCreateWithoutManagedProjects2Input[] | UserUncheckedCreateWithoutManagedProjects2Input[]
+    connectOrCreate?: UserCreateOrConnectWithoutManagedProjects2Input | UserCreateOrConnectWithoutManagedProjects2Input[]
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
   }
 
   export type PhaseUncheckedCreateNestedManyWithoutProjectInput = {
@@ -30849,6 +31013,19 @@ export namespace Prisma {
     delete?: UserWhereInput | boolean
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutManagedProjectsInput, UserUpdateWithoutManagedProjectsInput>, UserUncheckedUpdateWithoutManagedProjectsInput>
+  }
+
+  export type UserUpdateManyWithoutManagedProjects2NestedInput = {
+    create?: XOR<UserCreateWithoutManagedProjects2Input, UserUncheckedCreateWithoutManagedProjects2Input> | UserCreateWithoutManagedProjects2Input[] | UserUncheckedCreateWithoutManagedProjects2Input[]
+    connectOrCreate?: UserCreateOrConnectWithoutManagedProjects2Input | UserCreateOrConnectWithoutManagedProjects2Input[]
+    upsert?: UserUpsertWithWhereUniqueWithoutManagedProjects2Input | UserUpsertWithWhereUniqueWithoutManagedProjects2Input[]
+    set?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    disconnect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    delete?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    update?: UserUpdateWithWhereUniqueWithoutManagedProjects2Input | UserUpdateWithWhereUniqueWithoutManagedProjects2Input[]
+    updateMany?: UserUpdateManyWithWhereWithoutManagedProjects2Input | UserUpdateManyWithWhereWithoutManagedProjects2Input[]
+    deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
   }
 
   export type UserUpdateOneWithoutClientProjectsNestedInput = {
@@ -30943,6 +31120,19 @@ export namespace Prisma {
     update?: DocumentUpdateWithWhereUniqueWithoutProjectInput | DocumentUpdateWithWhereUniqueWithoutProjectInput[]
     updateMany?: DocumentUpdateManyWithWhereWithoutProjectInput | DocumentUpdateManyWithWhereWithoutProjectInput[]
     deleteMany?: DocumentScalarWhereInput | DocumentScalarWhereInput[]
+  }
+
+  export type UserUncheckedUpdateManyWithoutManagedProjects2NestedInput = {
+    create?: XOR<UserCreateWithoutManagedProjects2Input, UserUncheckedCreateWithoutManagedProjects2Input> | UserCreateWithoutManagedProjects2Input[] | UserUncheckedCreateWithoutManagedProjects2Input[]
+    connectOrCreate?: UserCreateOrConnectWithoutManagedProjects2Input | UserCreateOrConnectWithoutManagedProjects2Input[]
+    upsert?: UserUpsertWithWhereUniqueWithoutManagedProjects2Input | UserUpsertWithWhereUniqueWithoutManagedProjects2Input[]
+    set?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    disconnect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    delete?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    update?: UserUpdateWithWhereUniqueWithoutManagedProjects2Input | UserUpdateWithWhereUniqueWithoutManagedProjects2Input[]
+    updateMany?: UserUpdateManyWithWhereWithoutManagedProjects2Input | UserUpdateManyWithWhereWithoutManagedProjects2Input[]
+    deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
   }
 
   export type PhaseUncheckedUpdateManyWithoutProjectNestedInput = {
@@ -32402,6 +32592,7 @@ export namespace Prisma {
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
@@ -32436,6 +32627,7 @@ export namespace Prisma {
     updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
@@ -32480,6 +32672,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     manager?: UserCreateNestedOneWithoutManagedProjectsInput
+    managers?: UserCreateNestedManyWithoutManagedProjects2Input
     client?: UserCreateNestedOneWithoutClientProjectsInput
     phases?: PhaseCreateNestedManyWithoutProjectInput
     tasks?: TaskCreateNestedManyWithoutProjectInput
@@ -32507,6 +32700,7 @@ export namespace Prisma {
     prefix?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managers?: UserUncheckedCreateNestedManyWithoutManagedProjects2Input
     phases?: PhaseUncheckedCreateNestedManyWithoutProjectInput
     tasks?: TaskUncheckedCreateNestedManyWithoutProjectInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutProjectInput
@@ -33059,6 +33253,7 @@ export namespace Prisma {
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -33097,6 +33292,7 @@ export namespace Prisma {
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -33132,6 +33328,7 @@ export namespace Prisma {
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
@@ -33166,6 +33363,7 @@ export namespace Prisma {
     updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
@@ -33229,6 +33427,7 @@ export namespace Prisma {
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: IntFieldUpdateOperationsInput | number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33267,6 +33466,7 @@ export namespace Prisma {
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: IntFieldUpdateOperationsInput | number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33321,6 +33521,7 @@ export namespace Prisma {
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -33359,6 +33560,7 @@ export namespace Prisma {
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -33419,6 +33621,7 @@ export namespace Prisma {
     customRole?: CustomRoleCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
@@ -33453,6 +33656,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
@@ -33492,6 +33696,7 @@ export namespace Prisma {
     customRole?: CustomRoleCreateNestedOneWithoutUsersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
@@ -33526,6 +33731,7 @@ export namespace Prisma {
     updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
@@ -33570,6 +33776,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
+    managers?: UserCreateNestedManyWithoutManagedProjects2Input
     client?: UserCreateNestedOneWithoutClientProjectsInput
     phases?: PhaseCreateNestedManyWithoutProjectInput
     tasks?: TaskCreateNestedManyWithoutProjectInput
@@ -33597,6 +33804,7 @@ export namespace Prisma {
     prefix?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managers?: UserUncheckedCreateNestedManyWithoutManagedProjects2Input
     phases?: PhaseUncheckedCreateNestedManyWithoutProjectInput
     tasks?: TaskUncheckedCreateNestedManyWithoutProjectInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutProjectInput
@@ -33613,6 +33821,65 @@ export namespace Prisma {
   export type ProjectCreateManyManagerInputEnvelope = {
     data: ProjectCreateManyManagerInput | ProjectCreateManyManagerInput[]
     skipDuplicates?: boolean
+  }
+
+  export type ProjectCreateWithoutManagersInput = {
+    id?: string
+    name: string
+    description?: string | null
+    category?: string | null
+    status?: $Enums.ProjectStatus
+    startDate?: Date | string | null
+    endDate?: Date | string | null
+    totalBudget?: Decimal | DecimalJsLike | number | string | null
+    usedBudget?: Decimal | DecimalJsLike | number | string
+    githubRepo?: string | null
+    githubInstallationId?: string | null
+    allowMemberTaskCreation?: boolean
+    prefix?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    organization: OrganizationCreateNestedOneWithoutProjectsInput
+    manager?: UserCreateNestedOneWithoutManagedProjectsInput
+    client?: UserCreateNestedOneWithoutClientProjectsInput
+    phases?: PhaseCreateNestedManyWithoutProjectInput
+    tasks?: TaskCreateNestedManyWithoutProjectInput
+    workloads?: WorkloadCreateNestedManyWithoutProjectInput
+    workLogs?: WorkLogCreateNestedManyWithoutProjectInput
+    timeEntries?: TimeEntryCreateNestedManyWithoutProjectInput
+    documents?: DocumentCreateNestedManyWithoutProjectInput
+  }
+
+  export type ProjectUncheckedCreateWithoutManagersInput = {
+    id?: string
+    organizationId: string
+    name: string
+    description?: string | null
+    category?: string | null
+    managerId?: string | null
+    clientId?: string | null
+    status?: $Enums.ProjectStatus
+    startDate?: Date | string | null
+    endDate?: Date | string | null
+    totalBudget?: Decimal | DecimalJsLike | number | string | null
+    usedBudget?: Decimal | DecimalJsLike | number | string
+    githubRepo?: string | null
+    githubInstallationId?: string | null
+    allowMemberTaskCreation?: boolean
+    prefix?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    phases?: PhaseUncheckedCreateNestedManyWithoutProjectInput
+    tasks?: TaskUncheckedCreateNestedManyWithoutProjectInput
+    workloads?: WorkloadUncheckedCreateNestedManyWithoutProjectInput
+    workLogs?: WorkLogUncheckedCreateNestedManyWithoutProjectInput
+    timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutProjectInput
+    documents?: DocumentUncheckedCreateNestedManyWithoutProjectInput
+  }
+
+  export type ProjectCreateOrConnectWithoutManagersInput = {
+    where: ProjectWhereUniqueInput
+    create: XOR<ProjectCreateWithoutManagersInput, ProjectUncheckedCreateWithoutManagersInput>
   }
 
   export type ProjectCreateWithoutClientInput = {
@@ -33633,6 +33900,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
     manager?: UserCreateNestedOneWithoutManagedProjectsInput
+    managers?: UserCreateNestedManyWithoutManagedProjects2Input
     phases?: PhaseCreateNestedManyWithoutProjectInput
     tasks?: TaskCreateNestedManyWithoutProjectInput
     workloads?: WorkloadCreateNestedManyWithoutProjectInput
@@ -33659,6 +33927,7 @@ export namespace Prisma {
     prefix?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managers?: UserUncheckedCreateNestedManyWithoutManagedProjects2Input
     phases?: PhaseUncheckedCreateNestedManyWithoutProjectInput
     tasks?: TaskUncheckedCreateNestedManyWithoutProjectInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutProjectInput
@@ -34117,6 +34386,7 @@ export namespace Prisma {
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: IntFieldUpdateOperationsInput | number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -34155,6 +34425,7 @@ export namespace Prisma {
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: IntFieldUpdateOperationsInput | number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -34227,6 +34498,7 @@ export namespace Prisma {
     customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
@@ -34261,6 +34533,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
@@ -34308,6 +34581,22 @@ export namespace Prisma {
   export type ProjectUpdateManyWithWhereWithoutManagerInput = {
     where: ProjectScalarWhereInput
     data: XOR<ProjectUpdateManyMutationInput, ProjectUncheckedUpdateManyWithoutManagerInput>
+  }
+
+  export type ProjectUpsertWithWhereUniqueWithoutManagersInput = {
+    where: ProjectWhereUniqueInput
+    update: XOR<ProjectUpdateWithoutManagersInput, ProjectUncheckedUpdateWithoutManagersInput>
+    create: XOR<ProjectCreateWithoutManagersInput, ProjectUncheckedCreateWithoutManagersInput>
+  }
+
+  export type ProjectUpdateWithWhereUniqueWithoutManagersInput = {
+    where: ProjectWhereUniqueInput
+    data: XOR<ProjectUpdateWithoutManagersInput, ProjectUncheckedUpdateWithoutManagersInput>
+  }
+
+  export type ProjectUpdateManyWithWhereWithoutManagersInput = {
+    where: ProjectScalarWhereInput
+    data: XOR<ProjectUpdateManyMutationInput, ProjectUncheckedUpdateManyWithoutManagersInput>
   }
 
   export type ProjectUpsertWithWhereUniqueWithoutClientInput = {
@@ -34664,6 +34953,7 @@ export namespace Prisma {
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -34702,6 +34992,7 @@ export namespace Prisma {
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -34737,6 +35028,7 @@ export namespace Prisma {
     customRole?: CustomRoleCreateNestedOneWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
@@ -34771,6 +35063,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
@@ -34793,6 +35086,81 @@ export namespace Prisma {
     create: XOR<UserCreateWithoutManagedProjectsInput, UserUncheckedCreateWithoutManagedProjectsInput>
   }
 
+  export type UserCreateWithoutManagedProjects2Input = {
+    id?: string
+    name: string
+    email: string
+    passwordHash: string
+    role?: $Enums.Role
+    avatar?: string | null
+    isApproved?: boolean
+    mustChangePassword?: boolean
+    resetToken?: string | null
+    resetTokenExpiry?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string | null
+    organization?: OrganizationCreateNestedOneWithoutUsersInput
+    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
+    manager?: UserCreateNestedOneWithoutMembersInput
+    members?: UserCreateNestedManyWithoutManagerInput
+    managedProjects?: ProjectCreateNestedManyWithoutManagerInput
+    clientProjects?: ProjectCreateNestedManyWithoutClientInput
+    workloads?: WorkloadCreateNestedManyWithoutUserInput
+    taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeCreateNestedManyWithoutAssignedByInput
+    workLogs?: WorkLogCreateNestedManyWithoutUserInput
+    timeEntries?: TimeEntryCreateNestedManyWithoutUserInput
+    tickets?: TicketCreateNestedManyWithoutClientInput
+    ticketComments?: TicketCommentCreateNestedManyWithoutUserInput
+    taskComments?: TaskCommentCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessageCreateNestedManyWithoutUserInput
+    chatRoomLastSeen?: ChatRoomLastSeenCreateNestedManyWithoutUserInput
+    activityLogs?: ActivityLogCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    attendances?: AttendanceCreateNestedManyWithoutUserInput
+    authoredDocuments?: DocumentCreateNestedManyWithoutAuthorInput
+  }
+
+  export type UserUncheckedCreateWithoutManagedProjects2Input = {
+    id?: string
+    organizationId?: string | null
+    customRoleId?: string | null
+    name: string
+    email: string
+    passwordHash: string
+    role?: $Enums.Role
+    avatar?: string | null
+    isApproved?: boolean
+    mustChangePassword?: boolean
+    resetToken?: string | null
+    resetTokenExpiry?: Date | string | null
+    managerId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string | null
+    members?: UserUncheckedCreateNestedManyWithoutManagerInput
+    managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
+    clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
+    workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
+    taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
+    assignedTasks?: TaskAssigneeUncheckedCreateNestedManyWithoutAssignedByInput
+    workLogs?: WorkLogUncheckedCreateNestedManyWithoutUserInput
+    timeEntries?: TimeEntryUncheckedCreateNestedManyWithoutUserInput
+    tickets?: TicketUncheckedCreateNestedManyWithoutClientInput
+    ticketComments?: TicketCommentUncheckedCreateNestedManyWithoutUserInput
+    taskComments?: TaskCommentUncheckedCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessageUncheckedCreateNestedManyWithoutUserInput
+    chatRoomLastSeen?: ChatRoomLastSeenUncheckedCreateNestedManyWithoutUserInput
+    activityLogs?: ActivityLogUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    attendances?: AttendanceUncheckedCreateNestedManyWithoutUserInput
+    authoredDocuments?: DocumentUncheckedCreateNestedManyWithoutAuthorInput
+  }
+
+  export type UserCreateOrConnectWithoutManagedProjects2Input = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutManagedProjects2Input, UserUncheckedCreateWithoutManagedProjects2Input>
+  }
+
   export type UserCreateWithoutClientProjectsInput = {
     id?: string
     name: string
@@ -34811,6 +35179,7 @@ export namespace Prisma {
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectCreateNestedManyWithoutManagersInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
     assignedTasks?: TaskAssigneeCreateNestedManyWithoutAssignedByInput
@@ -34845,6 +35214,7 @@ export namespace Prisma {
     updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
     assignedTasks?: TaskAssigneeUncheckedCreateNestedManyWithoutAssignedByInput
@@ -35120,6 +35490,7 @@ export namespace Prisma {
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: IntFieldUpdateOperationsInput | number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35158,6 +35529,7 @@ export namespace Prisma {
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: IntFieldUpdateOperationsInput | number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -35199,6 +35571,7 @@ export namespace Prisma {
     customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
@@ -35233,6 +35606,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
@@ -35248,6 +35622,22 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     attendances?: AttendanceUncheckedUpdateManyWithoutUserNestedInput
     authoredDocuments?: DocumentUncheckedUpdateManyWithoutAuthorNestedInput
+  }
+
+  export type UserUpsertWithWhereUniqueWithoutManagedProjects2Input = {
+    where: UserWhereUniqueInput
+    update: XOR<UserUpdateWithoutManagedProjects2Input, UserUncheckedUpdateWithoutManagedProjects2Input>
+    create: XOR<UserCreateWithoutManagedProjects2Input, UserUncheckedCreateWithoutManagedProjects2Input>
+  }
+
+  export type UserUpdateWithWhereUniqueWithoutManagedProjects2Input = {
+    where: UserWhereUniqueInput
+    data: XOR<UserUpdateWithoutManagedProjects2Input, UserUncheckedUpdateWithoutManagedProjects2Input>
+  }
+
+  export type UserUpdateManyWithWhereWithoutManagedProjects2Input = {
+    where: UserScalarWhereInput
+    data: XOR<UserUpdateManyMutationInput, UserUncheckedUpdateManyWithoutManagedProjects2Input>
   }
 
   export type UserUpsertWithoutClientProjectsInput = {
@@ -35279,6 +35669,7 @@ export namespace Prisma {
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUpdateManyWithoutManagersNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
     assignedTasks?: TaskAssigneeUpdateManyWithoutAssignedByNestedInput
@@ -35313,6 +35704,7 @@ export namespace Prisma {
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
     assignedTasks?: TaskAssigneeUncheckedUpdateManyWithoutAssignedByNestedInput
@@ -35485,6 +35877,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
     manager?: UserCreateNestedOneWithoutManagedProjectsInput
+    managers?: UserCreateNestedManyWithoutManagedProjects2Input
     client?: UserCreateNestedOneWithoutClientProjectsInput
     tasks?: TaskCreateNestedManyWithoutProjectInput
     workloads?: WorkloadCreateNestedManyWithoutProjectInput
@@ -35512,6 +35905,7 @@ export namespace Prisma {
     prefix?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managers?: UserUncheckedCreateNestedManyWithoutManagedProjects2Input
     tasks?: TaskUncheckedCreateNestedManyWithoutProjectInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutProjectInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutProjectInput
@@ -35617,6 +36011,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
     manager?: UserUpdateOneWithoutManagedProjectsNestedInput
+    managers?: UserUpdateManyWithoutManagedProjects2NestedInput
     client?: UserUpdateOneWithoutClientProjectsNestedInput
     tasks?: TaskUpdateManyWithoutProjectNestedInput
     workloads?: WorkloadUpdateManyWithoutProjectNestedInput
@@ -35644,6 +36039,7 @@ export namespace Prisma {
     prefix?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managers?: UserUncheckedUpdateManyWithoutManagedProjects2NestedInput
     tasks?: TaskUncheckedUpdateManyWithoutProjectNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutProjectNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutProjectNestedInput
@@ -35685,6 +36081,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
     manager?: UserCreateNestedOneWithoutManagedProjectsInput
+    managers?: UserCreateNestedManyWithoutManagedProjects2Input
     client?: UserCreateNestedOneWithoutClientProjectsInput
     phases?: PhaseCreateNestedManyWithoutProjectInput
     workloads?: WorkloadCreateNestedManyWithoutProjectInput
@@ -35712,6 +36109,7 @@ export namespace Prisma {
     prefix?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managers?: UserUncheckedCreateNestedManyWithoutManagedProjects2Input
     phases?: PhaseUncheckedCreateNestedManyWithoutProjectInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutProjectInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutProjectInput
@@ -36021,6 +36419,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
     manager?: UserUpdateOneWithoutManagedProjectsNestedInput
+    managers?: UserUpdateManyWithoutManagedProjects2NestedInput
     client?: UserUpdateOneWithoutClientProjectsNestedInput
     phases?: PhaseUpdateManyWithoutProjectNestedInput
     workloads?: WorkloadUpdateManyWithoutProjectNestedInput
@@ -36048,6 +36447,7 @@ export namespace Prisma {
     prefix?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managers?: UserUncheckedUpdateManyWithoutManagedProjects2NestedInput
     phases?: PhaseUncheckedUpdateManyWithoutProjectNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutProjectNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutProjectNestedInput
@@ -36314,6 +36714,7 @@ export namespace Prisma {
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     assignedTasks?: TaskAssigneeCreateNestedManyWithoutAssignedByInput
@@ -36348,6 +36749,7 @@ export namespace Prisma {
     updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     assignedTasks?: TaskAssigneeUncheckedCreateNestedManyWithoutAssignedByInput
@@ -36387,6 +36789,7 @@ export namespace Prisma {
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
@@ -36421,6 +36824,7 @@ export namespace Prisma {
     updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
@@ -36536,6 +36940,7 @@ export namespace Prisma {
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     assignedTasks?: TaskAssigneeUpdateManyWithoutAssignedByNestedInput
@@ -36570,6 +36975,7 @@ export namespace Prisma {
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     assignedTasks?: TaskAssigneeUncheckedUpdateManyWithoutAssignedByNestedInput
@@ -36615,6 +37021,7 @@ export namespace Prisma {
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
@@ -36649,6 +37056,7 @@ export namespace Prisma {
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
@@ -36742,6 +37150,7 @@ export namespace Prisma {
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
@@ -36776,6 +37185,7 @@ export namespace Prisma {
     updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
@@ -36891,6 +37301,7 @@ export namespace Prisma {
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
@@ -36925,6 +37336,7 @@ export namespace Prisma {
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
@@ -36959,6 +37371,7 @@ export namespace Prisma {
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
@@ -36993,6 +37406,7 @@ export namespace Prisma {
     updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
@@ -37032,6 +37446,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
     manager?: UserCreateNestedOneWithoutManagedProjectsInput
+    managers?: UserCreateNestedManyWithoutManagedProjects2Input
     client?: UserCreateNestedOneWithoutClientProjectsInput
     phases?: PhaseCreateNestedManyWithoutProjectInput
     tasks?: TaskCreateNestedManyWithoutProjectInput
@@ -37059,6 +37474,7 @@ export namespace Prisma {
     prefix?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managers?: UserUncheckedCreateNestedManyWithoutManagedProjects2Input
     phases?: PhaseUncheckedCreateNestedManyWithoutProjectInput
     tasks?: TaskUncheckedCreateNestedManyWithoutProjectInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutProjectInput
@@ -37159,6 +37575,7 @@ export namespace Prisma {
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
@@ -37193,6 +37610,7 @@ export namespace Prisma {
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
@@ -37238,6 +37656,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
     manager?: UserUpdateOneWithoutManagedProjectsNestedInput
+    managers?: UserUpdateManyWithoutManagedProjects2NestedInput
     client?: UserUpdateOneWithoutClientProjectsNestedInput
     phases?: PhaseUpdateManyWithoutProjectNestedInput
     tasks?: TaskUpdateManyWithoutProjectNestedInput
@@ -37265,6 +37684,7 @@ export namespace Prisma {
     prefix?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managers?: UserUncheckedUpdateManyWithoutManagedProjects2NestedInput
     phases?: PhaseUncheckedUpdateManyWithoutProjectNestedInput
     tasks?: TaskUncheckedUpdateManyWithoutProjectNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutProjectNestedInput
@@ -37355,6 +37775,7 @@ export namespace Prisma {
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
@@ -37389,6 +37810,7 @@ export namespace Prisma {
     updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
@@ -37428,6 +37850,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
     manager?: UserCreateNestedOneWithoutManagedProjectsInput
+    managers?: UserCreateNestedManyWithoutManagedProjects2Input
     client?: UserCreateNestedOneWithoutClientProjectsInput
     phases?: PhaseCreateNestedManyWithoutProjectInput
     tasks?: TaskCreateNestedManyWithoutProjectInput
@@ -37455,6 +37878,7 @@ export namespace Prisma {
     prefix?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managers?: UserUncheckedCreateNestedManyWithoutManagedProjects2Input
     phases?: PhaseUncheckedCreateNestedManyWithoutProjectInput
     tasks?: TaskUncheckedCreateNestedManyWithoutProjectInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutProjectInput
@@ -37555,6 +37979,7 @@ export namespace Prisma {
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
@@ -37589,6 +38014,7 @@ export namespace Prisma {
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
@@ -37634,6 +38060,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
     manager?: UserUpdateOneWithoutManagedProjectsNestedInput
+    managers?: UserUpdateManyWithoutManagedProjects2NestedInput
     client?: UserUpdateOneWithoutClientProjectsNestedInput
     phases?: PhaseUpdateManyWithoutProjectNestedInput
     tasks?: TaskUpdateManyWithoutProjectNestedInput
@@ -37661,6 +38088,7 @@ export namespace Prisma {
     prefix?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managers?: UserUncheckedUpdateManyWithoutManagedProjects2NestedInput
     phases?: PhaseUncheckedUpdateManyWithoutProjectNestedInput
     tasks?: TaskUncheckedUpdateManyWithoutProjectNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutProjectNestedInput
@@ -37751,6 +38179,7 @@ export namespace Prisma {
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
     assignedTasks?: TaskAssigneeCreateNestedManyWithoutAssignedByInput
@@ -37785,6 +38214,7 @@ export namespace Prisma {
     updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
     assignedTasks?: TaskAssigneeUncheckedCreateNestedManyWithoutAssignedByInput
@@ -37824,6 +38254,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
     manager?: UserCreateNestedOneWithoutManagedProjectsInput
+    managers?: UserCreateNestedManyWithoutManagedProjects2Input
     client?: UserCreateNestedOneWithoutClientProjectsInput
     phases?: PhaseCreateNestedManyWithoutProjectInput
     tasks?: TaskCreateNestedManyWithoutProjectInput
@@ -37851,6 +38282,7 @@ export namespace Prisma {
     prefix?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managers?: UserUncheckedCreateNestedManyWithoutManagedProjects2Input
     phases?: PhaseUncheckedCreateNestedManyWithoutProjectInput
     tasks?: TaskUncheckedCreateNestedManyWithoutProjectInput
     workLogs?: WorkLogUncheckedCreateNestedManyWithoutProjectInput
@@ -37892,6 +38324,7 @@ export namespace Prisma {
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
     assignedTasks?: TaskAssigneeUpdateManyWithoutAssignedByNestedInput
@@ -37926,6 +38359,7 @@ export namespace Prisma {
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
     assignedTasks?: TaskAssigneeUncheckedUpdateManyWithoutAssignedByNestedInput
@@ -37971,6 +38405,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
     manager?: UserUpdateOneWithoutManagedProjectsNestedInput
+    managers?: UserUpdateManyWithoutManagedProjects2NestedInput
     client?: UserUpdateOneWithoutClientProjectsNestedInput
     phases?: PhaseUpdateManyWithoutProjectNestedInput
     tasks?: TaskUpdateManyWithoutProjectNestedInput
@@ -37998,6 +38433,7 @@ export namespace Prisma {
     prefix?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managers?: UserUncheckedUpdateManyWithoutManagedProjects2NestedInput
     phases?: PhaseUncheckedUpdateManyWithoutProjectNestedInput
     tasks?: TaskUncheckedUpdateManyWithoutProjectNestedInput
     workLogs?: WorkLogUncheckedUpdateManyWithoutProjectNestedInput
@@ -38030,6 +38466,7 @@ export namespace Prisma {
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -38068,6 +38505,7 @@ export namespace Prisma {
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -38104,6 +38542,7 @@ export namespace Prisma {
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
@@ -38138,6 +38577,7 @@ export namespace Prisma {
     updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
@@ -38221,6 +38661,7 @@ export namespace Prisma {
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: IntFieldUpdateOperationsInput | number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38259,6 +38700,7 @@ export namespace Prisma {
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: IntFieldUpdateOperationsInput | number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38301,6 +38743,7 @@ export namespace Prisma {
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
@@ -38335,6 +38778,7 @@ export namespace Prisma {
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
@@ -38414,6 +38858,7 @@ export namespace Prisma {
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
@@ -38448,6 +38893,7 @@ export namespace Prisma {
     updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
@@ -38533,6 +38979,7 @@ export namespace Prisma {
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
@@ -38567,6 +39014,7 @@ export namespace Prisma {
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
@@ -38601,6 +39049,7 @@ export namespace Prisma {
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
@@ -38635,6 +39084,7 @@ export namespace Prisma {
     updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
@@ -38681,6 +39131,7 @@ export namespace Prisma {
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -38719,6 +39170,7 @@ export namespace Prisma {
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -38833,6 +39285,7 @@ export namespace Prisma {
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
@@ -38867,6 +39320,7 @@ export namespace Prisma {
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
@@ -38919,6 +39373,7 @@ export namespace Prisma {
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: IntFieldUpdateOperationsInput | number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38957,6 +39412,7 @@ export namespace Prisma {
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: IntFieldUpdateOperationsInput | number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39041,6 +39497,7 @@ export namespace Prisma {
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
@@ -39075,6 +39532,7 @@ export namespace Prisma {
     updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
@@ -39121,6 +39579,7 @@ export namespace Prisma {
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -39159,6 +39618,7 @@ export namespace Prisma {
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -39206,6 +39666,7 @@ export namespace Prisma {
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
@@ -39240,6 +39701,7 @@ export namespace Prisma {
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
@@ -39292,6 +39754,7 @@ export namespace Prisma {
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: IntFieldUpdateOperationsInput | number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39330,6 +39793,7 @@ export namespace Prisma {
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: IntFieldUpdateOperationsInput | number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39361,6 +39825,7 @@ export namespace Prisma {
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
@@ -39395,6 +39860,7 @@ export namespace Prisma {
     updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
@@ -39441,6 +39907,7 @@ export namespace Prisma {
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -39479,6 +39946,7 @@ export namespace Prisma {
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -39526,6 +39994,7 @@ export namespace Prisma {
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
@@ -39560,6 +40029,7 @@ export namespace Prisma {
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
@@ -39612,6 +40082,7 @@ export namespace Prisma {
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: IntFieldUpdateOperationsInput | number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39650,6 +40121,7 @@ export namespace Prisma {
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: IntFieldUpdateOperationsInput | number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39681,6 +40153,7 @@ export namespace Prisma {
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
@@ -39715,6 +40188,7 @@ export namespace Prisma {
     updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
@@ -39761,6 +40235,7 @@ export namespace Prisma {
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -39799,6 +40274,7 @@ export namespace Prisma {
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -39846,6 +40322,7 @@ export namespace Prisma {
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
@@ -39880,6 +40357,7 @@ export namespace Prisma {
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
@@ -39932,6 +40410,7 @@ export namespace Prisma {
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: IntFieldUpdateOperationsInput | number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39970,6 +40449,7 @@ export namespace Prisma {
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: IntFieldUpdateOperationsInput | number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40001,6 +40481,7 @@ export namespace Prisma {
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
@@ -40035,6 +40516,7 @@ export namespace Prisma {
     updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
@@ -40081,6 +40563,7 @@ export namespace Prisma {
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -40119,6 +40602,7 @@ export namespace Prisma {
     allowClientSignup?: boolean
     sessionTimeoutMinutes?: number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -40166,6 +40650,7 @@ export namespace Prisma {
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
@@ -40200,6 +40685,7 @@ export namespace Prisma {
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
@@ -40252,6 +40738,7 @@ export namespace Prisma {
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: IntFieldUpdateOperationsInput | number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40290,6 +40777,7 @@ export namespace Prisma {
     allowClientSignup?: BoolFieldUpdateOperationsInput | boolean
     sessionTimeoutMinutes?: NullableIntFieldUpdateOperationsInput | number | null
     rolePermissions?: NullableJsonNullValueInput | InputJsonValue
+    maxManagersPerProject?: IntFieldUpdateOperationsInput | number
     customFeatures?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40321,6 +40809,7 @@ export namespace Prisma {
     updatedAt?: Date | string
     organization: OrganizationCreateNestedOneWithoutProjectsInput
     manager?: UserCreateNestedOneWithoutManagedProjectsInput
+    managers?: UserCreateNestedManyWithoutManagedProjects2Input
     client?: UserCreateNestedOneWithoutClientProjectsInput
     phases?: PhaseCreateNestedManyWithoutProjectInput
     tasks?: TaskCreateNestedManyWithoutProjectInput
@@ -40348,6 +40837,7 @@ export namespace Prisma {
     prefix?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    managers?: UserUncheckedCreateNestedManyWithoutManagedProjects2Input
     phases?: PhaseUncheckedCreateNestedManyWithoutProjectInput
     tasks?: TaskUncheckedCreateNestedManyWithoutProjectInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutProjectInput
@@ -40378,6 +40868,7 @@ export namespace Prisma {
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectCreateNestedManyWithoutClientInput
     workloads?: WorkloadCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeCreateNestedManyWithoutUserInput
@@ -40412,6 +40903,7 @@ export namespace Prisma {
     updatedAt?: Date | string | null
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
+    managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
     workloads?: WorkloadUncheckedCreateNestedManyWithoutUserInput
     taskAssignments?: TaskAssigneeUncheckedCreateNestedManyWithoutUserInput
@@ -40462,6 +40954,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
     manager?: UserUpdateOneWithoutManagedProjectsNestedInput
+    managers?: UserUpdateManyWithoutManagedProjects2NestedInput
     client?: UserUpdateOneWithoutClientProjectsNestedInput
     phases?: PhaseUpdateManyWithoutProjectNestedInput
     tasks?: TaskUpdateManyWithoutProjectNestedInput
@@ -40489,6 +40982,7 @@ export namespace Prisma {
     prefix?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managers?: UserUncheckedUpdateManyWithoutManagedProjects2NestedInput
     phases?: PhaseUncheckedUpdateManyWithoutProjectNestedInput
     tasks?: TaskUncheckedUpdateManyWithoutProjectNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutProjectNestedInput
@@ -40525,6 +41019,7 @@ export namespace Prisma {
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
@@ -40559,6 +41054,7 @@ export namespace Prisma {
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
@@ -40701,6 +41197,7 @@ export namespace Prisma {
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
@@ -40735,6 +41232,7 @@ export namespace Prisma {
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
@@ -40786,6 +41284,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     manager?: UserUpdateOneWithoutManagedProjectsNestedInput
+    managers?: UserUpdateManyWithoutManagedProjects2NestedInput
     client?: UserUpdateOneWithoutClientProjectsNestedInput
     phases?: PhaseUpdateManyWithoutProjectNestedInput
     tasks?: TaskUpdateManyWithoutProjectNestedInput
@@ -40813,6 +41312,7 @@ export namespace Prisma {
     prefix?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managers?: UserUncheckedUpdateManyWithoutManagedProjects2NestedInput
     phases?: PhaseUncheckedUpdateManyWithoutProjectNestedInput
     tasks?: TaskUncheckedUpdateManyWithoutProjectNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutProjectNestedInput
@@ -41097,6 +41597,7 @@ export namespace Prisma {
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
@@ -41131,6 +41632,7 @@ export namespace Prisma {
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
@@ -41369,6 +41871,7 @@ export namespace Prisma {
     customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
@@ -41403,6 +41906,7 @@ export namespace Prisma {
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
+    managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
     taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
@@ -41454,6 +41958,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
+    managers?: UserUpdateManyWithoutManagedProjects2NestedInput
     client?: UserUpdateOneWithoutClientProjectsNestedInput
     phases?: PhaseUpdateManyWithoutProjectNestedInput
     tasks?: TaskUpdateManyWithoutProjectNestedInput
@@ -41481,6 +41986,7 @@ export namespace Prisma {
     prefix?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managers?: UserUncheckedUpdateManyWithoutManagedProjects2NestedInput
     phases?: PhaseUncheckedUpdateManyWithoutProjectNestedInput
     tasks?: TaskUncheckedUpdateManyWithoutProjectNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutProjectNestedInput
@@ -41495,6 +42001,81 @@ export namespace Prisma {
     name?: StringFieldUpdateOperationsInput | string
     description?: NullableStringFieldUpdateOperationsInput | string | null
     category?: NullableStringFieldUpdateOperationsInput | string | null
+    clientId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    totalBudget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
+    githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
+    allowMemberTaskCreation?: BoolFieldUpdateOperationsInput | boolean
+    prefix?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProjectUpdateWithoutManagersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    totalBudget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
+    githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
+    allowMemberTaskCreation?: BoolFieldUpdateOperationsInput | boolean
+    prefix?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
+    manager?: UserUpdateOneWithoutManagedProjectsNestedInput
+    client?: UserUpdateOneWithoutClientProjectsNestedInput
+    phases?: PhaseUpdateManyWithoutProjectNestedInput
+    tasks?: TaskUpdateManyWithoutProjectNestedInput
+    workloads?: WorkloadUpdateManyWithoutProjectNestedInput
+    workLogs?: WorkLogUpdateManyWithoutProjectNestedInput
+    timeEntries?: TimeEntryUpdateManyWithoutProjectNestedInput
+    documents?: DocumentUpdateManyWithoutProjectNestedInput
+  }
+
+  export type ProjectUncheckedUpdateWithoutManagersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organizationId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    clientId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
+    startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    endDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    totalBudget?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    usedBudget?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    githubRepo?: NullableStringFieldUpdateOperationsInput | string | null
+    githubInstallationId?: NullableStringFieldUpdateOperationsInput | string | null
+    allowMemberTaskCreation?: BoolFieldUpdateOperationsInput | boolean
+    prefix?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    phases?: PhaseUncheckedUpdateManyWithoutProjectNestedInput
+    tasks?: TaskUncheckedUpdateManyWithoutProjectNestedInput
+    workloads?: WorkloadUncheckedUpdateManyWithoutProjectNestedInput
+    workLogs?: WorkLogUncheckedUpdateManyWithoutProjectNestedInput
+    timeEntries?: TimeEntryUncheckedUpdateManyWithoutProjectNestedInput
+    documents?: DocumentUncheckedUpdateManyWithoutProjectNestedInput
+  }
+
+  export type ProjectUncheckedUpdateManyWithoutManagersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organizationId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    category?: NullableStringFieldUpdateOperationsInput | string | null
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
     clientId?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
     startDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -41527,6 +42108,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutProjectsNestedInput
     manager?: UserUpdateOneWithoutManagedProjectsNestedInput
+    managers?: UserUpdateManyWithoutManagedProjects2NestedInput
     phases?: PhaseUpdateManyWithoutProjectNestedInput
     tasks?: TaskUpdateManyWithoutProjectNestedInput
     workloads?: WorkloadUpdateManyWithoutProjectNestedInput
@@ -41553,6 +42135,7 @@ export namespace Prisma {
     prefix?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    managers?: UserUncheckedUpdateManyWithoutManagedProjects2NestedInput
     phases?: PhaseUncheckedUpdateManyWithoutProjectNestedInput
     tasks?: TaskUncheckedUpdateManyWithoutProjectNestedInput
     workloads?: WorkloadUncheckedUpdateManyWithoutProjectNestedInput
@@ -42046,6 +42629,94 @@ export namespace Prisma {
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
+  }
+
+  export type UserUpdateWithoutManagedProjects2Input = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isApproved?: BoolFieldUpdateOperationsInput | boolean
+    mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
+    resetToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    organization?: OrganizationUpdateOneWithoutUsersNestedInput
+    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
+    manager?: UserUpdateOneWithoutMembersNestedInput
+    members?: UserUpdateManyWithoutManagerNestedInput
+    managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
+    clientProjects?: ProjectUpdateManyWithoutClientNestedInput
+    workloads?: WorkloadUpdateManyWithoutUserNestedInput
+    taskAssignments?: TaskAssigneeUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUpdateManyWithoutAssignedByNestedInput
+    workLogs?: WorkLogUpdateManyWithoutUserNestedInput
+    timeEntries?: TimeEntryUpdateManyWithoutUserNestedInput
+    tickets?: TicketUpdateManyWithoutClientNestedInput
+    ticketComments?: TicketCommentUpdateManyWithoutUserNestedInput
+    taskComments?: TaskCommentUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessageUpdateManyWithoutUserNestedInput
+    chatRoomLastSeen?: ChatRoomLastSeenUpdateManyWithoutUserNestedInput
+    activityLogs?: ActivityLogUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    attendances?: AttendanceUpdateManyWithoutUserNestedInput
+    authoredDocuments?: DocumentUpdateManyWithoutAuthorNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutManagedProjects2Input = {
+    id?: StringFieldUpdateOperationsInput | string
+    organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isApproved?: BoolFieldUpdateOperationsInput | boolean
+    mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
+    resetToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    members?: UserUncheckedUpdateManyWithoutManagerNestedInput
+    managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
+    clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
+    workloads?: WorkloadUncheckedUpdateManyWithoutUserNestedInput
+    taskAssignments?: TaskAssigneeUncheckedUpdateManyWithoutUserNestedInput
+    assignedTasks?: TaskAssigneeUncheckedUpdateManyWithoutAssignedByNestedInput
+    workLogs?: WorkLogUncheckedUpdateManyWithoutUserNestedInput
+    timeEntries?: TimeEntryUncheckedUpdateManyWithoutUserNestedInput
+    tickets?: TicketUncheckedUpdateManyWithoutClientNestedInput
+    ticketComments?: TicketCommentUncheckedUpdateManyWithoutUserNestedInput
+    taskComments?: TaskCommentUncheckedUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessageUncheckedUpdateManyWithoutUserNestedInput
+    chatRoomLastSeen?: ChatRoomLastSeenUncheckedUpdateManyWithoutUserNestedInput
+    activityLogs?: ActivityLogUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    attendances?: AttendanceUncheckedUpdateManyWithoutUserNestedInput
+    authoredDocuments?: DocumentUncheckedUpdateManyWithoutAuthorNestedInput
+  }
+
+  export type UserUncheckedUpdateManyWithoutManagedProjects2Input = {
+    id?: StringFieldUpdateOperationsInput | string
+    organizationId?: NullableStringFieldUpdateOperationsInput | string | null
+    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    isApproved?: BoolFieldUpdateOperationsInput | boolean
+    mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
+    resetToken?: NullableStringFieldUpdateOperationsInput | string | null
+    resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type PhaseUpdateWithoutProjectInput = {

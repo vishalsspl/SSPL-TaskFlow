@@ -2,7 +2,60 @@ import prisma from '../lib/prisma.js';
 import bcrypt from 'bcryptjs';
 
 import { sendUserApprovalEmail, sendTeamAssignmentEmail, sendUserRejectionEmail, sendRoleChangeEmail } from '../services/emailService.js';
-import { createNotification } from '../utils/notifications.js';
+import { createNotification, shouldSendEmail } from '../utils/notifications.js';
+import { ensureUserSchema } from '../lib/schemaValidator.js';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Notification Preference Categories (maps notification types to categories)
+// ─────────────────────────────────────────────────────────────────────────────
+export const NOTIFICATION_CATEGORIES = {
+  // Tasks & Projects
+  TASK_ASSIGNED: 'tasks',
+  TASK_STATUS_UPDATED: 'tasks',
+  TASK_APPROVED: 'tasks',
+  TASK_REJECTED: 'tasks',
+  TASK_APPROVAL_REQUEST: 'tasks',
+  TASK_COMMENT: 'tasks',
+  PROJECT_ASSIGNED: 'tasks',
+  PROJECT_UPDATED: 'tasks',
+  PROJECT_DELETED: 'tasks',
+  DOCUMENT_UPLOADED: 'tasks',
+  // Team & HR
+  WORKLOG_SUBMITTED: 'team',
+  TIMESHEET_APPROVED: 'team',
+  TIMESHEET_REJECTED: 'team',
+  LEAVE_SUBMITTED: 'team',
+  LEAVE_APPROVED: 'team',
+  LEAVE_REJECTED: 'team',
+  TEAM_ASSIGNED: 'team',
+  // Support Tickets
+  TICKET_CREATED: 'tickets',
+  TICKET_STATUS_UPDATED: 'tickets',
+  TICKET_COMMENT: 'tickets',
+  // System & Security (always-on by default)
+  ROLE_CHANGED: 'system',
+  ACCOUNT_APPROVED: 'system',
+  CREDENTIALS_UPDATED: 'system',
+  NEW_ORG_SIGNUP: 'system',
+};
+
+// Default preferences: everything ON
+export const DEFAULT_NOTIFICATION_PREFERENCES = {
+  email: {
+    tasks: true,
+    team: true,
+    tickets: true,
+    system: true,
+    ...Object.keys(NOTIFICATION_CATEGORIES).reduce((acc, key) => ({ ...acc, [key]: true }), {})
+  },
+  inApp: {
+    tasks: true,
+    team: true,
+    tickets: true,
+    system: true,
+    ...Object.keys(NOTIFICATION_CATEGORIES).reduce((acc, key) => ({ ...acc, [key]: true }), {})
+  },
+};
 
 // Helper to get project IDs managed by a user
 const getManagerProjectIds = async (db, managerId, organizationId) => {
@@ -322,8 +375,8 @@ export const updateUser = async (req, res) => {
     const { name, email, role, password, managerId, customRoleId } = req.body;
     const db = req.db;
 
-    if (name !== undefined && !/^[a-zA-Z0-9\s]+$/.test(name)) {
-      return res.status(400).json({ error: 'Name cannot contain special characters. Only alphanumeric characters and spaces are allowed.' });
+    if (name !== undefined && typeof name !== 'string') {
+      return res.status(400).json({ error: 'Name must be a valid string.' });
     }
 
     // Check if user exists in tenant DB
@@ -346,7 +399,7 @@ export const updateUser = async (req, res) => {
 
     if (name !== undefined) updateData.name = name;
     if (role !== undefined) updateData.role = role;
-    if (customRoleId !== undefined) updateData.customRoleId = customRoleId;
+    if (customRoleId !== undefined) updateData.customRoleId = customRoleId === '' ? null : customRoleId;
 
     if (email !== undefined && req.user.role === 'ADMIN') {
       if (!/^\S+@\S+\.\S+$/.test(email)) {
@@ -372,8 +425,10 @@ export const updateUser = async (req, res) => {
         if (existingUser.managerId !== managerId && (role === 'MEMBER' || (role === undefined && existingUser.role === 'MEMBER'))) {
           isManagerAssigned = true;
         }
+        updateData.managerId = managerId;
+      } else {
+        updateData.managerId = null;
       }
-      updateData.managerId = managerId;
     }
 
     // Only hash and update password if provided
@@ -459,8 +514,10 @@ export const updateUser = async (req, res) => {
       });
 
       const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
-      sendTeamAssignmentEmail(updatedUser.email, updatedUser.name, newManager.name, teamMembers, origin)
-        .catch(err => console.error('Failed to send team assignment email:', err));
+      if (await shouldSendEmail(req.db, updatedUser.id, 'TEAM_ASSIGNED')) {
+        sendTeamAssignmentEmail(updatedUser.email, updatedUser.name, newManager.name, teamMembers, origin)
+          .catch(err => console.error('Failed to send team assignment email:', err));
+      }
     }
 
     if (role !== undefined && role !== existingUser.role) {
@@ -474,9 +531,11 @@ export const updateUser = async (req, res) => {
 
       // Send email if user has an email
       if (updatedUser.email) {
-        const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
-        sendRoleChangeEmail(updatedUser.email, updatedUser.name, role, origin)
-          .catch(err => console.error('Failed to send role change email:', err));
+        if (await shouldSendEmail(req.db, updatedUser.id, 'ROLE_CHANGED')) {
+          const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
+          sendRoleChangeEmail(updatedUser.email, updatedUser.name, role, origin)
+            .catch(err => console.error('Failed to send role change email:', err));
+        }
       }
     }
 
@@ -537,7 +596,9 @@ export const deleteUser = async (req, res) => {
     if (!existingUser.isApproved && existingUser.email) {
       console.log(`[DeleteUser] Triggering rejection email for: ${existingUser.email} (was pending)`);
       try {
-        await sendUserRejectionEmail(existingUser.email, existingUser.name);
+        if (await shouldSendEmail(req.db, existingUser.id, 'ACCOUNT_APPROVED')) {
+          await sendUserRejectionEmail(existingUser.email, existingUser.name);
+        }
       } catch (err) {
         console.error('[DeleteUser] Critical failure sending rejection email:', err);
       }
@@ -620,7 +681,9 @@ export const approveUser = async (req, res) => {
       console.log(`[ApproveUser] Triggering approval email for: ${approvedUser.email}`);
       const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
       try {
-        await sendUserApprovalEmail(approvedUser.email, approvedUser.name, origin);
+        if (await shouldSendEmail(req.db, approvedUser.id, 'ACCOUNT_APPROVED')) {
+          await sendUserApprovalEmail(approvedUser.email, approvedUser.name, origin);
+        }
       } catch (err) {
         console.error('[ApproveUser] Critical failure sending approval email:', err);
       }
@@ -762,8 +825,8 @@ export const updateProfile = async (req, res) => {
     const userId = req.user.id;
     const db = req.db;
 
-    if (name !== undefined && !/^[a-zA-Z0-9\s]+$/.test(name)) {
-      return res.status(400).json({ error: 'Name cannot contain special characters. Only alphanumeric characters and spaces are allowed.' });
+    if (name && typeof name !== 'string') {
+      return res.status(400).json({ error: 'Name must be a valid string.' });
     }
 
     const updateData = {};
@@ -991,5 +1054,57 @@ export const getMemberProgress = async (req, res) => {
   } catch (error) {
     console.error('Error fetching member progress:', error);
     res.status(500).json({ error: 'Failed to fetch member progress' });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Notification Preferences Endpoints
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const getNotificationPreferences = async (req, res) => {
+  try {
+    await ensureUserSchema(req.db);
+
+    const result = await req.db.$queryRawUnsafe(
+      'SELECT "notificationPreferences" FROM "User" WHERE "id" = $1 LIMIT 1',
+      req.user.id
+    );
+
+    const prefs = result?.[0]?.notificationPreferences || DEFAULT_NOTIFICATION_PREFERENCES;
+    res.json(prefs);
+  } catch (error) {
+    console.error('Error fetching notification preferences:', error);
+    res.status(500).json({ error: 'Failed to fetch notification preferences' });
+  }
+};
+
+export const updateNotificationPreferences = async (req, res) => {
+  try {
+    await ensureUserSchema(req.db);
+
+    const { email, inApp } = req.body;
+
+    // Validate structure
+    const validCategories = [
+      'tasks', 'team', 'tickets', 'system',
+      ...Object.keys(NOTIFICATION_CATEGORIES)
+    ];
+    const prefs = { email: {}, inApp: {} };
+
+    for (const cat of validCategories) {
+      if (email && email[cat] !== undefined) prefs.email[cat] = Boolean(email[cat]);
+      if (inApp && inApp[cat] !== undefined) prefs.inApp[cat] = Boolean(inApp[cat]);
+    }
+
+    await req.db.$executeRawUnsafe(
+      'UPDATE "User" SET "notificationPreferences" = $1::jsonb WHERE "id" = $2',
+      JSON.stringify(prefs),
+      req.user.id
+    );
+
+    res.json(prefs);
+  } catch (error) {
+    console.error('Error updating notification preferences:', error);
+    res.status(500).json({ error: 'Failed to update notification preferences' });
   }
 };

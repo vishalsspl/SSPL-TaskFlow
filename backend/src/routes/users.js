@@ -1,5 +1,5 @@
 import express from 'express';
-import { getUsers, updateUser, deleteUser, approveUser, getManagedUsers, updateProfile, getMemberProgress } from '../controllers/userController.js';
+import { getUsers, updateUser, deleteUser, approveUser, getManagedUsers, updateProfile, getMemberProgress, getNotificationPreferences, updateNotificationPreferences } from '../controllers/userController.js';
 
 import { authenticate } from '../middleware/auth.js';
 import attachTenantDb from '../middleware/tenantMiddleware.js';
@@ -74,6 +74,49 @@ router.get('/', getUsers);
  *         description: Unauthorized
  */
 router.patch('/profile', updateProfile);
+
+/**
+ * @swagger
+ * /api/users/notification-preferences:
+ *   get:
+ *     summary: Get the current user's notification preferences
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Notification preferences object
+ *       401:
+ *         description: Unauthorized
+ */
+router.get('/notification-preferences', getNotificationPreferences);
+
+/**
+ * @swagger
+ * /api/users/notification-preferences:
+ *   put:
+ *     summary: Update the current user's notification preferences
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: object
+ *               inApp:
+ *                 type: object
+ *     responses:
+ *       200:
+ *         description: Preferences updated
+ *       401:
+ *         description: Unauthorized
+ */
+router.put('/notification-preferences', updateNotificationPreferences);
 
 /**
  * @swagger

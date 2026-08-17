@@ -209,11 +209,21 @@ export const sendTaskStatusUpdateEmail = async (to, taskTitle, projectName, newS
   try {
     if (!to) return null;
     const statusStr = newStatus.replace(/_/g, ' ');
+    const isApproval = newStatus.toLowerCase().includes('approved');
+    
+    const subject = isApproval 
+      ? `[TaskFlow] (${projectName}) Task Approved by ${updatedBy}: ${taskTitle}`
+      : `[TaskFlow] (${projectName}) Status Updated: ${taskTitle}`;
+      
+    const actionSummary = isApproval 
+      ? `<strong>${updatedBy}</strong> approved your task.`
+      : `<strong>${updatedBy}</strong> updated the status of a task.`;
+
     const info = await transporter.sendMail({
       from: DEFAULT_FROM, to,
-      subject: `[TaskFlow] (${projectName}) Status Updated: ${taskTitle}`,
+      subject,
       html: buildEmailTemplate({
-        actionSummary: `<strong>${updatedBy}</strong> updated the status of a task.`,
+        actionSummary,
         refLabel: `TaskFlow / ${projectName}`,
         refTitle: taskTitle,
         fields: [
@@ -237,11 +247,22 @@ export const sendTaskUpdateEmail = async (to, taskTitle, projectName, updatedByN
     if (!to) return null;
     const dueDateStr = dueDate ? new Date(dueDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Not set';
     const statusStr = status ? status.replace(/_/g, ' ') : 'TODO';
+    
+    const isApproval = status === 'COMPLETED' || status === 'DONE' || (statusStr && statusStr.toLowerCase().includes('approved'));
+    
+    const subject = isApproval 
+      ? `[TaskFlow] (${projectName}) Task Approved by ${updatedByName}: ${taskTitle}`
+      : `[TaskFlow] (${projectName}) Task Updated: ${taskTitle}`;
+      
+    const actionSummary = isApproval 
+      ? `<strong>${updatedByName}</strong> approved a task assigned to you.`
+      : `<strong>${updatedByName}</strong> updated a task assigned to you.`;
+
     const info = await transporter.sendMail({
       from: DEFAULT_FROM, to,
-      subject: `[TaskFlow] (${projectName}) Task Updated: ${taskTitle}`,
+      subject,
       html: buildEmailTemplate({
-        actionSummary: `<strong>${updatedByName}</strong> updated a task assigned to you.`,
+        actionSummary,
         refLabel: `TaskFlow / ${projectName}`,
         refTitle: taskTitle,
         fields: [
