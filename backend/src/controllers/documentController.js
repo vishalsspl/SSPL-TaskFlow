@@ -1,5 +1,6 @@
 import { createNotification, shouldSendEmail } from '../utils/notifications.js';
 import { sendDocumentUploadedEmail } from '../services/emailService.js';
+import prismaGlobal from '../lib/prisma.js';
 
 export const getDocuments = async (req, res) => {
   const { projectId } = req.params;
@@ -67,17 +68,18 @@ export const createDocument = async (req, res) => {
     });
 
     try {
-      await prisma.activityLog.create({
-        data: {
-          userId: authorId,
-          organizationId: req.user.organizationId,
-          projectId,
-          action: 'DOCUMENT_UPLOADED',
-          entity: 'document',
-          entityId: document.id,
-          details: { documentTitle: title },
-        },
-      });
+      const logData = {
+        userId: authorId,
+        organizationId: req.user.organizationId,
+        projectId,
+        action: 'DOCUMENT_UPLOADED',
+        entity: 'document',
+        entityId: document.id,
+        details: { documentTitle: title },
+      };
+      
+      await prisma.activityLog.create({ data: logData });
+      await prismaGlobal.activityLog.create({ data: logData });
     } catch (logErr) {
       console.error('Failed to log document upload activity:', logErr);
     }
@@ -154,6 +156,24 @@ export const updateDocument = async (req, res) => {
       where: { id },
       data: { title, content, attachments: attachments || [] }
     });
+
+    try {
+      const logData = {
+        userId: req.user.id,
+        organizationId: req.user.organizationId,
+        projectId: doc.projectId,
+        action: 'DOCUMENT_UPDATED',
+        entity: 'document',
+        entityId: document.id,
+        details: { documentTitle: title },
+      };
+      
+      await req.db.activityLog.create({ data: logData });
+      await prismaGlobal.activityLog.create({ data: logData });
+    } catch (logErr) {
+      console.error('Failed to log document update activity:', logErr);
+    }
+
     res.json(document);
   } catch (error) {
     console.error('Error updating document:', error);
@@ -180,6 +200,24 @@ export const deleteDocument = async (req, res) => {
     }
 
     await prisma.document.delete({ where: { id } });
+
+    try {
+      const logData = {
+        userId: req.user.id,
+        organizationId: req.user.organizationId,
+        projectId: doc.projectId,
+        action: 'DOCUMENT_DELETED',
+        entity: 'document',
+        entityId: doc.id,
+        details: { documentTitle: doc.title },
+      };
+      
+      await req.db.activityLog.create({ data: logData });
+      await prismaGlobal.activityLog.create({ data: logData });
+    } catch (logErr) {
+      console.error('Failed to log document delete activity:', logErr);
+    }
+
     res.json({ message: 'Document deleted successfully' });
   } catch (error) {
     console.error('Error deleting document:', error);
