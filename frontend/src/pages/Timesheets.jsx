@@ -637,9 +637,9 @@ const Timesheets = () => {
         const status = entry.status;
         const reviewerText = entry.reviewer ? ` by ${entry.reviewer.name.split(' ')[0]}` : '';
         switch (status) {
-            case 'APPROVED': return <Badge className="bg-green-500/10 text-green-500 border-green-500/20 font-bold uppercase text-[9px] sm:text-[10px] tracking-wider whitespace-nowrap">Approved{reviewerText}</Badge>;
+            case 'APPROVED': return <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20 font-bold uppercase text-[9px] sm:text-[10px] tracking-wider whitespace-nowrap hover:bg-green-500/20">Approved{reviewerText}</Badge>;
             case 'REJECTED': return <Badge variant="destructive" className="font-bold uppercase text-[9px] sm:text-[10px] tracking-wider whitespace-nowrap">Rejected{reviewerText}</Badge>;
-            default: return <Badge variant="secondary" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20 font-bold uppercase text-[9px] sm:text-[10px] tracking-wider whitespace-nowrap">Pending</Badge>;
+            default: return <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20 font-bold uppercase text-[9px] sm:text-[10px] tracking-wider whitespace-nowrap hover:bg-yellow-500/20">Pending</Badge>;
         }
     };
 
