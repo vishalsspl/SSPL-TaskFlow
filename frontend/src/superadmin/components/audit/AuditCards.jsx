@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
@@ -6,6 +7,25 @@ const formatAction = (action) => {
   if (action === 'LOGIN_CLOCK_IN') return 'User Login';
   if (action === 'LOGOUT_CLOCK_OUT') return 'User Logout';
   return action.toLowerCase().replace(/_/g, ' ');
+};
+
+const ExpandableText = ({ text, maxLength = 60 }) => {
+  const [expanded, setExpanded] = useState(false);
+  if (!text) return null;
+  const str = String(text);
+  if (str.length <= maxLength) return <span>{str}</span>;
+  
+  return (
+    <span>
+      {expanded ? str : `${str.slice(0, maxLength)}...`}
+      <button 
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setExpanded(!expanded); }} 
+        className="text-primary hover:underline ml-1 font-bold text-[10px]"
+      >
+        {expanded ? 'View Less' : 'View More'}
+      </button>
+    </span>
+  );
 };
 
 const formatValue = (val) => {
@@ -25,7 +45,7 @@ const formatValue = (val) => {
     );
   }
   if (String(val) === 'automatic_login') return 'Login';
-  return String(val);
+  return <ExpandableText text={String(val)} />;
 };
 
 const formatDetails = (details) => {
@@ -45,7 +65,7 @@ const formatDetails = (details) => {
       </div>
     );
   }
-  return <span className="text-xs font-medium">{String(details)}</span>;
+  return <span className="text-xs font-medium"><ExpandableText text={String(details)} /></span>;
 };
 
 const AuditCards = ({ logs, getActionIcon, getStatusBadge, getSeverity, showOrganization = true }) => {
