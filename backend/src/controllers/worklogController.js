@@ -59,7 +59,7 @@ export const addWorklog = async (req, res) => {
         // Verify project/task belongs to user's organization
         const project = await req.db.project.findFirst({
             where: { id: projectId, organizationId: req.user.organizationId },
-            select: { id: true, name: true, managerId: true }
+            select: { id: true, name: true, managers: { select: { id: true, email: true, name: true } } }
         });
         if (!project) return res.status(404).json({ error: 'Project not found' });
 
@@ -128,30 +128,28 @@ export const addWorklog = async (req, res) => {
             console.error('[AddWorklog] Failed to log activity:', logErr.message);
         }
 
-        // Notify project manager if someone else logs time
-        if (project.managerId && project.managerId !== req.user.id) {
-            const manager = await req.db.user.findUnique({
-                where: { id: project.managerId },
-                select: { email: true, name: true }
-            });
+        // Notify project managers if someone else logs time
+        if (project.managers && project.managers.length > 0) {
+            const managersToNotify = project.managers.filter(m => m.id !== req.user.id);
+            for (const manager of managersToNotify) {
+                await createNotification(req, {
+                    userId: manager.id,
+                    title: 'New Worklog Submitted',
+                    message: `${req.user.name} logged ${hoursValue}h on "${task.title}" in ${project.name}`,
+                    type: 'WORKLOG_SUBMITTED',
+                    link: '/timesheets'
+                });
 
-            await createNotification(req, {
-                userId: project.managerId,
-                title: 'New Worklog Submitted',
-                message: `${req.user.name} logged ${hoursValue}h on "${task.title}" in ${project.name}`,
-                type: 'WORKLOG_SUBMITTED',
-                link: '/timesheets'
-            });
-
-            if (manager) {
-                await sendTimesheetSubmissionEmail(
-                    manager.email,
-                    manager.name,
-                    req.user.name,
-                    project.name,
-                    hoursValue,
-                    date || new Date().toISOString()
-                );
+                if (manager.email) {
+                    await sendTimesheetSubmissionEmail(
+                        manager.email,
+                        manager.name,
+                        req.user.name,
+                        project.name,
+                        hoursValue,
+                        date || new Date().toISOString()
+                    );
+                }
             }
         }
 

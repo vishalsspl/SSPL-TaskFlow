@@ -209,7 +209,8 @@ export const createTimeEntry = async (req, res) => {
     let project = null;
     if (projectId) {
         project = await req.db.project.findFirst({
-            where: { id: projectId, organizationId: req.user.organizationId }
+            where: { id: projectId, organizationId: req.user.organizationId },
+            include: { managers: { select: { id: true } } }
         });
         if (!project) return res.status(404).json({ error: 'Project not found' });
     }
@@ -297,8 +298,8 @@ export const createTimeEntry = async (req, res) => {
             targetManagers = admins.map(a => a.id);
         }
     } else {
-        if (project && project.managerId) {
-            targetManagers.push(project.managerId);
+        if (project?.managers) {
+            targetManagers.push(...project.managers.map(m => m.id));
         }
     }
 
