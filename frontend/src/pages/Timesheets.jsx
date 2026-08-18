@@ -171,6 +171,7 @@ const Timesheets = () => {
     const [dateRange, setDateRange] = useState({ from: addDays(new Date(), -6), to: new Date() });
     const [activeTab, setActiveTab] = useState('my-entries');
     const [entries, setEntries] = useState([]);
+    const [historicalLoggedDates, setHistoricalLoggedDates] = useState([]);
     const [pendingLeaves, setPendingLeaves] = useState([]);
     const [attendanceSummary, setAttendanceSummary] = useState([]);
     const [projects, setProjects] = useState([]);
@@ -248,6 +249,29 @@ const Timesheets = () => {
             // ignore silently
         }
     }, []);
+
+    useEffect(() => {
+        const fetchHistoricalDates = async () => {
+            if (!user?.id) return;
+            const start = new Date();
+            start.setMonth(start.getMonth() - 2);
+            const end = new Date();
+            end.setMonth(end.getMonth() + 2);
+            try {
+                const res = await api.get(`/timesheets?startDate=${start.toISOString()}&endDate=${end.toISOString()}&userId=${user.id}`);
+                const data = res.data.entries || res.data.data || res.data;
+                if (Array.isArray(data)) {
+                   setHistoricalLoggedDates(data.map(e => new Date(e.date)));
+                }
+            } catch (err) {}
+        };
+        fetchHistoricalDates();
+    }, [user?.id]);
+
+    const datesWithLogs = useMemo(() => {
+        const currentEntriesDates = entries.filter(e => e.userId === user?.id).map(e => new Date(e.date));
+        return [...historicalLoggedDates, ...currentEntriesDates];
+    }, [entries, historicalLoggedDates, user?.id]);
 
     const fetchEntries = useCallback(async () => {
         try {
@@ -840,6 +864,8 @@ const Timesheets = () => {
                                 defaultMonth={dateRange?.from}
                                 selected={dateRange}
                                 onSelect={setDateRange}
+                                modifiers={{ hasLog: datesWithLogs }}
+                                modifiersClassNames={{ hasLog: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:bg-primary after:rounded-full after:z-10" }}
                                 disabled={(date) => {
                                     if (dateRange?.from && !dateRange?.to) {
                                         const diff = Math.abs(differenceInDays(date, dateRange.from));
