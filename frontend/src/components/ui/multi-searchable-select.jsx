@@ -67,7 +67,7 @@ export function MultiSearchableSelect({
                         className
                     )}
                 >
-                    <div className="flex flex-wrap gap-1 flex-1">
+                    <div className="flex flex-wrap gap-1 flex-1 min-w-0">
                         {selectedLabels.length > 0 ? (
                             selectedLabels.map((opt) => (
                                 <Badge
@@ -88,7 +88,7 @@ export function MultiSearchableSelect({
                                 </Badge>
                             ))
                         ) : (
-                            <span>{placeholder}</span>
+                            <span className="truncate block w-full text-left">{placeholder}</span>
                         )}
                     </div>
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
