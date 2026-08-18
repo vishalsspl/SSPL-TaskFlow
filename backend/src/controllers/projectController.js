@@ -668,6 +668,35 @@ export const createProject = async (req, res) => {
     })),
   });
 
+  // Auto-create a default task so managers can log time immediately
+  const createdPhases = await req.db.phase.findMany({
+    where: { projectId: project.id },
+    orderBy: { order: 'asc' }
+  });
+
+  if (createdPhases.length > 0) {
+    const prefix = project.name.substring(0, 3).toUpperCase().replace(/[^A-Z0-9]/g, 'X');
+    await req.db.task.create({
+      data: {
+        projectId: project.id,
+        phaseId: createdPhases[0].id,
+        title: 'Project Setup & Planning',
+        description: 'Initial project setup and planning activities.',
+        status: 'TODO',
+        priority: 'MEDIUM',
+        type: 'TASK',
+        taskNumber: 1,
+        shortId: `${prefix}-1`,
+        assignees: project.managers?.length > 0 ? {
+          create: project.managers.map(m => ({
+            user: { connect: { id: m.id } },
+            assignedBy: { connect: { id: req.user.id } }
+          }))
+        } : undefined
+      }
+    });
+  }
+
   // Log activity
   try {
     const logData = {
@@ -705,14 +734,14 @@ export const createProject = async (req, res) => {
       if (hasEmailSupport && sendEmail && manager.email) {
         if (await shouldSendEmail(req.db, manager.id, 'PROJECT_ASSIGNED')) {
           const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
-          sendProjectManagerEmail(
+          await sendProjectManagerEmail(
             manager.email,
             project,
             manager,
             project.client || null,
             req.user.name,
             origin
-          ).catch(err => console.error('Failed to send manager project email:', err));
+          );
         }
       }
     }
@@ -732,26 +761,7 @@ export const createProject = async (req, res) => {
     }
   }
 
-  // Activity Logging
-  try {
-    const logData = {
-      userId: req.user.id,
-      organizationId: req.user.organizationId,
-      projectId: project.id,
-      action: 'CREATED',
-      entity: 'project',
-      entityId: project.id,
-      details: { name: project.name },
-    };
-
-    // 1. Log to tenant DB
-    await req.db.activityLog.create({ data: logData });
-
-    // 2. Log to main DB for SuperAdmin visibility
-    await prisma.activityLog.create({ data: logData });
-  } catch (logErr) {
-    console.error('[CreateProject] Failed to log activity:', logErr.message);
-  }
+  // Removed duplicate activity log
 
   res.status(201).json(project);
 };
@@ -910,6 +920,35 @@ export const bulkCreateProjects = async (req, res) => {
           completionPercentage: 0,
         })),
       });
+
+      // Auto-create a default task so managers can log time immediately
+      const createdPhases = await req.db.phase.findMany({
+        where: { projectId: project.id },
+        orderBy: { order: 'asc' }
+      });
+
+      if (createdPhases.length > 0) {
+        const prefix = project.name.substring(0, 3).toUpperCase().replace(/[^A-Z0-9]/g, 'X');
+        await req.db.task.create({
+          data: {
+            projectId: project.id,
+            phaseId: createdPhases[0].id,
+            title: 'Project Setup & Planning',
+            description: 'Initial project setup and planning activities.',
+            status: 'TODO',
+            priority: 'MEDIUM',
+            type: 'TASK',
+            taskNumber: 1,
+            shortId: `${prefix}-1`,
+            assignees: project.managers?.length > 0 ? {
+              create: project.managers.map(m => ({
+                user: { connect: { id: m.id } },
+                assignedBy: { connect: { id: req.user.id } }
+              }))
+            } : undefined
+          }
+        });
+      }
 
       // Activity Logging
       try {
@@ -1206,14 +1245,14 @@ export const updateProject = async (req, res) => {
         if (manager.email) {
           if (isManagerChanged && (!existingManagerIds.includes(manager.id))) {
             if (await shouldSendEmail(req.db, manager.id, 'PROJECT_ASSIGNED')) {
-              sendProjectManagerEmail(
+              await sendProjectManagerEmail(
                 manager.email,
                 project,
                 manager,
                 project.client || null,
                 req.user.name,
                 origin
-              ).catch(err => console.error('Failed to send manager project email:', err));
+              );
             }
           } else {
             // Send generic update email to current manager

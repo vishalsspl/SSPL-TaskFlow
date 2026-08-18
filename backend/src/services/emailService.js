@@ -320,6 +320,10 @@ export const sendProjectManagerEmail = async (to, project, manager, client, assi
         actionSummary: `<strong>${assignedByName}</strong> assigned you as Project Manager.`,
         refLabel: `TaskFlow / Projects`,
         refTitle: project.name,
+        bodyLines: [
+          `Hi ${manager.name},`,
+          `<strong>${assignedByName}</strong> has assigned you as the Project Manager for the project <strong>${project.name}</strong>.`
+        ],
         fields: [
           { label: 'Status', value: project.status || 'PLANNING' },
           { label: 'Start Date', value: startStr },
@@ -353,6 +357,9 @@ export const sendProjectUpdateEmail = async (to, project, assignedByName, baseUr
         actionSummary: `<strong>${assignedByName}</strong> updated a project you manage.`,
         refLabel: `TaskFlow / Projects`,
         refTitle: project.name,
+        bodyLines: [
+          `The project <strong>${project.name}</strong> has been updated by <strong>${assignedByName}</strong>.`
+        ],
         fields: [
           { label: 'Status', value: project.status || 'PLANNING' },
           { label: 'Start Date', value: startStr },
@@ -408,6 +415,10 @@ export const sendProjectClientEmail = async (to, project, manager, assignedByNam
         actionSummary: `${assignedByName ? `<strong>${assignedByName}</strong> configured` : 'A'} project for you.`,
         refLabel: `TaskFlow / Projects`,
         refTitle: project.name,
+        bodyLines: [
+          'Hello,',
+          `You have been assigned as the Client for the project <strong>${project.name}</strong>.`
+        ],
         fields: [
           { label: 'Status', value: project.status || 'PLANNING' },
           { label: 'Start Date', value: startStr },

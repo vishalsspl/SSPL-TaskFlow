@@ -1731,7 +1731,10 @@ const Timesheets = () => {
                                         value={newEntry.taskId}
                                         onChange={(val) => setNewEntry({ ...newEntry, taskId: val })}
                                         disabled={!newEntry.projectId || !!editingEntryId}
-                                        options={tasks.filter(t => t.status !== 'COMPLETED' || t.id === newEntry.taskId).map(t => ({ label: t.title, value: t.id }))}
+                                        options={tasks.map(t => ({ 
+                                            label: t.status === 'COMPLETED' ? `${t.title} (Completed)` : t.title, 
+                                            value: t.id 
+                                        }))}
                                         placeholder="Link to a specific task"
                                         className="bg-muted/30 border-border h-11 rounded-xl font-bold"
                                     />

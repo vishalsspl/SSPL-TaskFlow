@@ -535,6 +535,43 @@ export const createTask = async (req, res) => {
     }
   }
 
+  // When ADMIN creates a task, notify ALL project managers
+  if (hasEmailSupport && sendEmail && req.user.role === 'ADMIN') {
+    const fullProject = await req.db.project.findUnique({
+      where: { id: projectId },
+      include: { managers: { select: { id: true, name: true, email: true } } }
+    });
+
+    if (fullProject?.managers && fullProject.managers.length > 0) {
+      for (const m of fullProject.managers) {
+        // In-app notification
+        createNotification(req, {
+          userId: m.id,
+          title: 'New Task Created',
+          message: `${req.user.name} created a new task "${task.title}" in project: ${task.project.name}`,
+          type: 'TASK_ASSIGNED',
+          link: `/task-board?project=${task.projectId}&highlight=${task.id}&action=new`
+        });
+
+        // Email notification
+        if (m.email) {
+          const emailAllowed = await shouldSendEmail(req.db, m.id, 'TASK_ASSIGNED');
+          if (emailAllowed) {
+            sendManagerTaskCreatedEmail(
+              m.email,
+              m.name,
+              req.user.name,
+              task.title,
+              task.project.name,
+              origin
+            ).catch(err => console.error('Failed to send project manager task created email:', err));
+          }
+        }
+      }
+    }
+  }
+
+
   if (task.phaseId) {
     await recalculatePhaseProgress(req.db, task.phaseId);
   }
@@ -992,7 +1029,7 @@ export const updateTask = async (req, res) => {
     }
 
     // 2. Notify co-managers if it was an approval
-    if (notificationType === 'TASK_APPROVED' && task.project?.managers) {
+    if (task.project?.managers) {
       const coManagers = task.project.managers.filter(m => m.id !== req.user.id);
       for (const manager of coManagers) {
         createNotification(req, {
@@ -1004,15 +1041,18 @@ export const updateTask = async (req, res) => {
         });
         
         if (req.user.activeFeatures?.emailsupport !== false && manager.email) {
-          sendTaskStatusUpdateEmail(
-            manager.email,
-            task.title,
-            task.project.name,
-            'COMPLETED (Approved)',
-            updatedBy,
-            null,
-            origin
-          ).catch(err => console.error('Failed to send task approval email to co-manager:', err));
+          const emailAllowed = await shouldSendEmail(req.db, manager.id, notificationType === 'TASK_APPROVED' ? 'TASK_APPROVED' : 'TASK_STATUS_UPDATED');
+          if (emailAllowed) {
+            sendTaskStatusUpdateEmail(
+              manager.email,
+              task.title,
+              task.project.name,
+              task.status,
+              updatedBy,
+              null,
+              origin
+            ).catch(err => console.error('Failed to send task status email to co-manager:', err));
+          }
         }
       }
     }
@@ -1194,6 +1234,32 @@ export const deleteTask = async (req, res) => {
         existingTask.project.name,
         req.user.name
       ).catch(err => console.error('Failed to send task delete email:', err));
+    }
+  }
+
+  // Notify project managers about the deletion
+  const fullProject = await req.db.project.findUnique({
+    where: { id: existingTask.projectId },
+    include: { managers: { select: { id: true, name: true, email: true } } }
+  });
+  if (fullProject?.managers) {
+    for (const manager of fullProject.managers) {
+      if (manager.id !== req.user.id && !existingTask.assignees.some(a => a.user.id === manager.id)) {
+        createNotification(req, {
+          userId: manager.id,
+          title: 'Task Deleted',
+          message: `The task "${existingTask.title}" has been deleted from project ${existingTask.project.name}.`,
+          type: 'TASK_DELETED',
+        });
+        if (hasEmailSupport && manager.email) {
+          sendTaskDeleteEmail(
+            manager.email,
+            existingTask.title,
+            existingTask.project.name,
+            req.user.name
+          ).catch(err => console.error('Failed to send task delete email to manager:', err));
+        }
+      }
     }
   }
 
@@ -1769,6 +1835,36 @@ export const approveTaskStatus = async (req, res) => {
       }
     }
 
+    // Notify co-managers about the approval
+    const fullProject = await req.db.project.findUnique({
+      where: { id: task.projectId },
+      include: { managers: { select: { id: true, name: true, email: true } } }
+    });
+    if (fullProject?.managers) {
+      for (const manager of fullProject.managers) {
+        if (manager.id !== req.user.id) {
+          createNotification(req, {
+            userId: manager.id,
+            title: `Task Approved by ${req.user.name} 🎉`,
+            message: `Task "${task.title}" was approved by ${req.user.name} and moved to Completed.`,
+            type: 'TASK_APPROVED',
+            link: `/task-board?project=${task.projectId}&highlight=${task.id}&action=approved`
+          });
+          if (hasEmailSupport && sendEmail && manager.email) {
+            sendTaskStatusUpdateEmail(
+              manager.email,
+              task.title,
+              updatedTask.project.name,
+              'COMPLETED (Approved)',
+              req.user.name,
+              null,
+              origin
+            ).catch(err => console.error('Failed to send approval email to co-manager:', err));
+          }
+        }
+      }
+    }
+
     res.json(updatedTask);
   } catch (error) {
     console.error('Error approving task status:', error);
@@ -1863,6 +1959,38 @@ export const rejectTaskStatus = async (req, res) => {
           req.user.name,
           origin
         ).catch(err => console.error('Failed to send task rejection email:', err));
+      }
+    }
+
+    // Notify co-managers about the rejection
+    const fullProject = await req.db.project.findUnique({
+      where: { id: task.projectId },
+      include: { managers: { select: { id: true, name: true, email: true } } }
+    });
+    if (fullProject?.managers) {
+      for (const manager of fullProject.managers) {
+        if (manager.id !== req.user.id) {
+          let coManagerMsg = `Task "${task.title}" was rejected by ${req.user.name} and moved back to In Progress.`;
+          if (rejectionReason) coManagerMsg += ` Reason: "${rejectionReason}"`;
+          createNotification(req, {
+            userId: manager.id,
+            title: 'Task Rejected ⚠️',
+            message: coManagerMsg,
+            type: 'TASK_REJECTED',
+            link: `/task-board?project=${task.projectId}&highlight=${task.id}&action=rejected`
+          });
+          if (hasEmailSupport && sendEmail && manager.email) {
+            sendTaskStatusUpdateEmail(
+              manager.email,
+              task.title,
+              updatedTask.project.name,
+              'IN_PROGRESS (Rejected)',
+              req.user.name,
+              null,
+              origin
+            ).catch(err => console.error('Failed to send rejection email to co-manager:', err));
+          }
+        }
       }
     }
 

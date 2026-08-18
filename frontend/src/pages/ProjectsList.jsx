@@ -92,6 +92,7 @@ const ProjectsList = () => {
   const [memberToAddId, setMemberToAddId] = useState('');
   const [addingMember, setAddingMember] = useState(false);
   const [users, setUsers] = useState([]);
+  const [teamMembersList, setTeamMembersList] = useState([]);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -211,6 +212,10 @@ const ProjectsList = () => {
     try {
       const response = await api.get('/users');
       setUsers(response.data);
+      if (user?.role === 'MANAGER') {
+        const teamResponse = await api.get('/users?teamOnly=true');
+        setTeamMembersList(teamResponse.data);
+      }
     } catch (error) {
       console.error('Failed to fetch users:', error);
     }
@@ -1320,7 +1325,7 @@ const ProjectsList = () => {
                 <SearchableSelect
                   value={memberToAddId}
                   onChange={setMemberToAddId}
-                  options={users
+                  options={(user?.role === 'MANAGER' ? teamMembersList : users)
                     .filter(u => (u.role === 'MEMBER' || u.role === 'MANAGER') && !projectMembers.some(pm => pm.user.id === u.id))
                     .map(u => ({
                       label: `${u.name} (${u.role})`,

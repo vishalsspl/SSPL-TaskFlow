@@ -578,6 +578,16 @@ const Team = () => {
                                 selectedManagerId !== 'MEMBERS_LIST' && 
                                 selectedManagerId !== 'PENDING';
 
+  let currentTotalItems = totalItems;
+  let currentTotalPages = totalPages;
+
+  if (isSpecificManagerView) {
+    currentTotalItems = displayUsers.length;
+    currentTotalPages = Math.max(1, Math.ceil(currentTotalItems / pageSize));
+    const startIndex = (page - 1) * pageSize;
+    displayUsers = displayUsers.slice(startIndex, startIndex + pageSize);
+  }
+
   return (
     <div className="flex-1 flex flex-col min-h-screen lg:min-h-0 p-0 pt-0 gap-4">
       {/* ─── Header Section (Fixed) ─── */}
@@ -1295,8 +1305,8 @@ const Team = () => {
                   </div>
                   <TablePagination
                     currentPage={page}
-                    totalPages={totalPages}
-                    totalItems={totalItems}
+                    totalPages={currentTotalPages}
+                    totalItems={currentTotalItems}
                     pageSize={pageSize}
                     onPageChange={(p) => setPage(p)}
                     onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
