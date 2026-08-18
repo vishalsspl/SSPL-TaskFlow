@@ -485,6 +485,28 @@ export const getProject = async (req, res) => {
     progress = Math.round((completedTasks / project.tasks.length) * 100);
   }
 
+  // Calculate workload balance for team members
+  let totalEffort = 0;
+  const userEfforts = {};
+
+  project.tasks.filter(t => t.status !== 'COMPLETED').forEach(t => {
+    const effort = t.storyPoints || 1;
+    t.assignees.forEach(a => {
+      const uid = a.user.id;
+      userEfforts[uid] = (userEfforts[uid] || 0) + effort;
+      totalEffort += effort;
+    });
+  });
+
+  if (project.workloads) {
+    project.workloads = project.workloads.map(w => {
+      const uid = w.user.id;
+      const uEffort = userEfforts[uid] || 0;
+      const percentage = totalEffort > 0 ? Math.round((uEffort / totalEffort) * 100) : 0;
+      return { ...w, workloadPercentage: Math.min(100, percentage) };
+    });
+  }
+
   res.json({ ...project, progress });
 };
 
