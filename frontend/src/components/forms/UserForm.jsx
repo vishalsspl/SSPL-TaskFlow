@@ -68,9 +68,9 @@ const UserForm = ({ formData, setFormData, editingUser, onSubmit, onCancel, onSe
           </div>
         </div>
 
-        {/* Custom Role */}
+        {/* Profile */}
         <div className="space-y-2">
-          <Label htmlFor="customRole" className="text-foreground/90 font-semibold mobile-reduce-label">Custom Role (Optional)</Label>
+          <Label htmlFor="customRole" className="text-foreground/90 font-semibold mobile-reduce-label">Profile (Optional)</Label>
           <div className="relative">
             <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70 z-10" />
             <SearchableSelect
@@ -80,7 +80,7 @@ const UserForm = ({ formData, setFormData, editingUser, onSubmit, onCancel, onSe
                 { label: 'None', value: '' },
                 ...customRoles.map(cr => ({ label: cr.name, value: cr.id }))
               ]}
-              placeholder="Select Custom Role"
+              placeholder="Select Profile"
               className="!pl-10 relative mobile-reduce-input"
             />
           </div>

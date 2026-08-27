@@ -238,7 +238,7 @@ router.get('/me', authenticate, me);
  *       401:
  *         description: Unauthorized
  */
-router.post('/change-password', authenticate, changePassword);
+router.post('/change-password', authenticate, attachTenantDb, changePassword);
 
 /**
  * @swagger

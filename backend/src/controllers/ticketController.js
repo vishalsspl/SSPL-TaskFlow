@@ -60,7 +60,7 @@ export const createTicket = async (req, res) => {
             }
 
             console.log(`[Ticket Debug] Sending notification to Staff UserID: ${member.id}`);
-            createNotification(req, {
+            await createNotification(req, {
                 userId: member.id,
                 title: 'New Support Ticket',
                 message: `Client ${ticket.client.name} raised a ticket: ${ticket.title}`,
@@ -230,26 +230,28 @@ export const updateTicketStatus = async (req, res) => {
         });
 
         // Notify Client
+        const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
+        
         if (ticket.client.email) {
-            const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
             if (await shouldSendEmail(req.db, ticket.clientId, 'TICKET_STATUS_UPDATED')) {
                 sendTicketStatusUpdateNotification(
                     ticket.client.email,
                     ticket.title,
                     status,
                     req.user.name,
+                    id,
                     origin
                 ).catch(err => console.error('Failed to send ticket status update notification:', err));
             }
-
-            createNotification(req, {
-                userId: ticket.clientId,
-                title: 'Ticket Status Updated',
-                message: `Your ticket "${ticket.title}" status has been updated to ${status.replace('_', ' ')} by ${req.user.name}`,
-                type: 'TICKET_STATUS_UPDATED',
-                link: `/tickets/${id}`
-            });
         }
+
+        await createNotification(req, {
+            userId: ticket.clientId,
+            title: 'Ticket Status Updated',
+            message: `Your ticket "${ticket.title}" status has been updated to ${status.replace('_', ' ')} by ${req.user.name}`,
+            type: 'TICKET_STATUS_UPDATED',
+            link: `/tickets/${id}`
+        });
 
         res.json(ticket);
     } catch (error) {
@@ -325,7 +327,7 @@ export const addComment = async (req, res) => {
                     }
                 }
 
-                createNotification(req, {
+                await createNotification(req, {
                     userId: member.id,
                     title: 'New Ticket Comment',
                     message: `${req.user.name} commented on ticket: ${comment.ticket.title}`,
@@ -348,7 +350,7 @@ export const addComment = async (req, res) => {
                 }
             }
 
-            createNotification(req, {
+            await createNotification(req, {
                 userId: comment.ticket.clientId,
                 title: 'New Ticket Comment',
                 message: `${req.user.name} commented on your ticket: ${comment.ticket.title}`,

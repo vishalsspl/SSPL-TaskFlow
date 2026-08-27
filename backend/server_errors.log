@@ -4224,3 +4224,241 @@ Unknown argument `assignedById`. Available options are marked with ?.
 Path: /api/tasks
 User: 03572cd6-f958-497c-b84e-cf3b32976a32
 ---
+2026-08-24T07:12:21.102Z [GLOBAL_ERROR] 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The table `public._UserCustomRoles` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The table `public._UserCustomRoles` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getUsers (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/userController.js:360:17)
+Path: /api/users
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-08-24T07:12:28.211Z [GLOBAL_ERROR] 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The table `public._UserCustomRoles` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The table `public._UserCustomRoles` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async Promise.all (index 0)
+    at async getUsers (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/userController.js:324:40)
+Path: /api/users
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-08-24T07:12:28.220Z [GLOBAL_ERROR] 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The table `public._UserCustomRoles` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The table `public._UserCustomRoles` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getUsers (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/userController.js:360:17)
+Path: /api/users
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-08-24T07:12:28.244Z [GLOBAL_ERROR] 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The table `public._UserCustomRoles` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The table `public._UserCustomRoles` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async Promise.all (index 0)
+    at async getUsers (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/userController.js:324:40)
+Path: /api/users
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-08-24T07:12:31.244Z [GLOBAL_ERROR] 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The table `public._UserCustomRoles` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The table `public._UserCustomRoles` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getUsers (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/userController.js:360:17)
+Path: /api/users
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-08-24T07:12:41.838Z [GLOBAL_ERROR] 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The table `public._UserCustomRoles` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The table `public._UserCustomRoles` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async Promise.all (index 0)
+    at async getUsers (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/userController.js:324:40)
+Path: /api/users
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-08-24T07:12:41.851Z [GLOBAL_ERROR] 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The table `public._UserCustomRoles` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The table `public._UserCustomRoles` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getUsers (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/userController.js:360:17)
+Path: /api/users
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-08-24T07:12:41.896Z [GLOBAL_ERROR] 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The table `public._UserCustomRoles` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The table `public._UserCustomRoles` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async Promise.all (index 0)
+    at async getUsers (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/userController.js:324:40)
+Path: /api/users
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-08-24T07:12:44.445Z [GLOBAL_ERROR] 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The table `public._UserCustomRoles` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The table `public._UserCustomRoles` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getUsers (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/userController.js:360:17)
+Path: /api/users
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-08-24T07:13:38.150Z [GLOBAL_ERROR] 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The table `public._UserCustomRoles` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The table `public._UserCustomRoles` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getUsers (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/userController.js:360:17)
+Path: /api/users
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-08-24T10:05:03.869Z [GLOBAL_ERROR] 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The table `public._UserCustomRoles` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The table `public._UserCustomRoles` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getUsers (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/userController.js:360:17)
+Path: /api/users
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-08-24T10:05:17.652Z [GLOBAL_ERROR] 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The table `public._UserCustomRoles` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The table `public._UserCustomRoles` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getUsers (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/userController.js:360:17)
+Path: /api/users
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---
+2026-08-24T10:05:32.335Z [GLOBAL_ERROR] 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The table `public._UserCustomRoles` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The table `public._UserCustomRoles` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async getUsers (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/userController.js:360:17)
+Path: /api/users
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---

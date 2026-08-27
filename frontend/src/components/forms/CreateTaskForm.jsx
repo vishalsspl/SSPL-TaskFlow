@@ -38,15 +38,17 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
     const fullUser = users?.find(u => u.id === user?.id) || user;
     
     let canAssignOthers = fullUser?.role !== 'MEMBER';
-    if (fullUser?.role === 'MEMBER' && fullUser?.customRole?.permissions) {
-        try {
-            const perms = typeof fullUser.customRole.permissions === 'string' 
-                ? JSON.parse(fullUser.customRole.permissions) 
-                : fullUser.customRole.permissions;
-            canAssignOthers = !!perms?.canAssignTasks;
-        } catch (e) {
-            console.error('Failed to parse custom role permissions', e);
-        }
+    if (fullUser?.role === 'MEMBER' && fullUser?.customRoles?.length > 0) {
+        canAssignOthers = fullUser.customRoles.some(role => {
+            try {
+                const perms = typeof role.permissions === 'string' 
+                    ? JSON.parse(role.permissions) 
+                    : role.permissions;
+                return !!perms?.assignTasks || !!perms?.canAssignTasks;
+            } catch (e) {
+                return false;
+            }
+        });
     }
 
     const generalProject = projects.find(p => p.name === 'General' || p.name === 'General Tasks');
@@ -407,12 +409,15 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                                         }
                                         return true; // Fallback only if no project selected at all
                                     })
-                                    .map(u => [u.id, { 
-                                        value: u.id, 
-                                        label: u.name,
-                                        sublabel: `${u.email} (${u.role}${u.customRole ? ` • ${u.customRole.name}` : ''})`,
-                                        initial: u.name.charAt(0)
-                                    }])
+                                    .map(u => {
+                                        const rolesText = u.customRoles?.length > 0 ? ` • ${u.customRoles.map(cr => cr.name).join(', ')}` : '';
+                                        return [u.id, { 
+                                            value: u.id, 
+                                            label: u.name,
+                                            sublabel: `${u.email} (${u.role}${rolesText})`,
+                                            initial: u.name.charAt(0)
+                                        }];
+                                    })
                             ).values())}
                             value={formData.assigneeId}
                             onChange={(id) => setFormData({ ...formData, assigneeId: id })}

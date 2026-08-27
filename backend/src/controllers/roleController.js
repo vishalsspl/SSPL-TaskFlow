@@ -1,5 +1,5 @@
+import prisma from '../lib/prisma.js';
 import { createNotification } from '../utils/notifications.js';
-
 export const getRoles = async (req, res) => {
   try {
     const db = req.db;
@@ -32,6 +32,27 @@ export const createRole = async (req, res) => {
       },
     });
 
+    try {
+      const logData = {
+        userId: req.user.id,
+        organizationId: req.user.organizationId,
+        action: 'CREATED',
+        entity: 'role',
+        entityId: newRole.id,
+        details: {
+          role: newRole.name,
+        },
+      };
+
+      // 1. Log to tenant DB
+      await db.activityLog.create({ data: logData });
+
+      // 2. Log to main DB for SuperAdmin visibility
+      await prisma.activityLog.create({ data: logData });
+    } catch (logErr) {
+      console.error('[CreateRole] Activity log failed:', logErr.message);
+    }
+
     res.status(201).json(newRole);
   } catch (error) {
     console.error('Error creating role:', error);
@@ -59,6 +80,33 @@ export const updateRole = async (req, res) => {
       },
     });
 
+    try {
+      const changes = {};
+      if (updatedRole.name !== existingRole.name) changes.name = updatedRole.name;
+      if (updatedRole.description !== existingRole.description) changes.description = updatedRole.description;
+      if (JSON.stringify(updatedRole.permissions) !== JSON.stringify(existingRole.permissions)) changes.permissions = 'Updated';
+
+      const logData = {
+        userId: req.user.id,
+        organizationId: req.user.organizationId,
+        action: 'UPDATED',
+        entity: 'role',
+        entityId: id,
+        details: {
+          role: updatedRole.name,
+          ...changes
+        },
+      };
+
+      // 1. Log to tenant DB
+      await db.activityLog.create({ data: logData });
+
+      // 2. Log to main DB for SuperAdmin visibility
+      await prisma.activityLog.create({ data: logData });
+    } catch (logErr) {
+      console.error('[UpdateRole] Activity log failed:', logErr.message);
+    }
+
     res.json(updatedRole);
   } catch (error) {
     console.error('Error updating role:', error);
@@ -77,6 +125,27 @@ export const deleteRole = async (req, res) => {
     }
 
     await db.customRole.delete({ where: { id } });
+
+    try {
+      const logData = {
+        userId: req.user.id,
+        organizationId: req.user.organizationId,
+        action: 'DELETED',
+        entity: 'role',
+        entityId: id,
+        details: {
+          role: existingRole.name,
+        },
+      };
+
+      // 1. Log to tenant DB
+      await db.activityLog.create({ data: logData });
+
+      // 2. Log to main DB for SuperAdmin visibility
+      await prisma.activityLog.create({ data: logData });
+    } catch (logErr) {
+      console.error('[DeleteRole] Activity log failed:', logErr.message);
+    }
 
     res.json({ message: 'Role deleted successfully' });
   } catch (error) {

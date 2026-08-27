@@ -266,8 +266,7 @@ export const getUsers = async (req, res) => {
     createdAt: true,
     managerId: true,
     manager: { select: { id: true, name: true } },
-    customRoleId: true,
-    customRole: { select: { id: true, name: true, permissions: true } },
+    customRoles: { select: { id: true, name: true, permissions: true } },
     taskAssignments: {
       select: {
         task: {
@@ -372,7 +371,7 @@ export const getUsers = async (req, res) => {
 export const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, email, role, password, managerId, customRoleId } = req.body;
+    const { name, email, role, password, managerId, customRoleIds, addCustomRoleId, removeCustomRoleId } = req.body;
     const db = req.db;
 
     if (name !== undefined && typeof name !== 'string') {
@@ -382,6 +381,7 @@ export const updateUser = async (req, res) => {
     // Check if user exists in tenant DB
     const existingUser = await db.user.findUnique({
       where: { id },
+      include: { customRoles: { select: { id: true, name: true } } },
     });
 
     if (!existingUser) {
@@ -399,7 +399,16 @@ export const updateUser = async (req, res) => {
 
     if (name !== undefined) updateData.name = name;
     if (role !== undefined) updateData.role = role;
-    if (customRoleId !== undefined) updateData.customRoleId = customRoleId === '' ? null : customRoleId;
+    
+    if (customRoleIds !== undefined && Array.isArray(customRoleIds)) {
+      updateData.customRoles = { set: customRoleIds.map(id => ({ id })) };
+    } else {
+      if (addCustomRoleId || removeCustomRoleId) {
+        updateData.customRoles = {};
+        if (addCustomRoleId) updateData.customRoles.connect = { id: addCustomRoleId };
+        if (removeCustomRoleId) updateData.customRoles.disconnect = { id: removeCustomRoleId };
+      }
+    }
 
     if (email !== undefined && req.user.role === 'ADMIN') {
       if (!/^\S+@\S+\.\S+$/.test(email)) {
@@ -445,8 +454,7 @@ export const updateUser = async (req, res) => {
         name: true,
         email: true,
         role: true,
-        customRoleId: true,
-        customRole: { select: { id: true, name: true, permissions: true } },
+        customRoles: { select: { id: true, name: true, permissions: true } },
         avatar: true,
         createdAt: true,
       },
@@ -486,6 +494,25 @@ export const updateUser = async (req, res) => {
 
     // ✅ NEW: Activity Log (Sync to Main DB)
     try {
+      const changes = {};
+      if (updatedUser.name !== existingUser.name) changes.name = updatedUser.name;
+      if (updatedUser.email !== existingUser.email) changes.email = updatedUser.email;
+      if (updatedUser.role !== existingUser.role) changes.role = updatedUser.role;
+
+      const oldCustomRoles = (existingUser.customRoles || []).map(r => r.name).sort().join(', ');
+      const newCustomRoles = (updatedUser.customRoles || []).map(r => r.name).sort().join(', ');
+      if (oldCustomRoles !== newCustomRoles) {
+        changes.profile = newCustomRoles || 'None';
+      }
+
+      if (managerId !== undefined && managerId !== existingUser.managerId) {
+        changes.manager = newManager ? newManager.name : 'None';
+      }
+
+      if (password && password.trim() !== '') {
+        changes.password = 'Updated';
+      }
+
       const logData = {
         userId: req.user.id,
         organizationId: req.user.organizationId,
@@ -493,8 +520,8 @@ export const updateUser = async (req, res) => {
         entity: 'user',
         entityId: id,
         details: {
-          name: updatedUser.name,
-          email: updatedUser.email,
+          member: updatedUser.name,
+          ...changes
         },
       };
 
@@ -507,17 +534,27 @@ export const updateUser = async (req, res) => {
       console.error('[UpdateUser] Activity log failed:', logErr.message);
     }
 
-    if (isManagerAssigned && newManager && updatedUser.email) {
+    if (isManagerAssigned && newManager) {
       const teamMembers = await db.user.findMany({
         where: { managerId: newManager.id, role: 'MEMBER' },
         select: { name: true, email: true }
       });
 
-      const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
-      if (await shouldSendEmail(req.db, updatedUser.id, 'TEAM_ASSIGNED')) {
-        sendTeamAssignmentEmail(updatedUser.email, updatedUser.name, newManager.name, teamMembers, origin)
-          .catch(err => console.error('Failed to send team assignment email:', err));
+      if (updatedUser.email) {
+        const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
+        if (await shouldSendEmail(req.db, updatedUser.id, 'TEAM_ASSIGNED')) {
+          sendTeamAssignmentEmail(updatedUser.email, updatedUser.name, newManager.name, teamMembers, origin)
+            .catch(err => console.error('Failed to send team assignment email:', err));
+        }
       }
+
+      await createNotification(req, {
+        userId: updatedUser.id,
+        title: 'Team Assignment',
+        message: `You have been assigned to ${newManager.name}'s team.`,
+        type: 'TEAM_ASSIGNED',
+        link: '/team'
+      });
     }
 
     if (role !== undefined && role !== existingUser.role) {
@@ -526,7 +563,7 @@ export const updateUser = async (req, res) => {
         userId: updatedUser.id,
         title: 'Role Updated',
         message: `Your account role has been changed from ${existingUser.role} to ${role} by the Admin.`,
-        type: 'ROLE_UPDATED'
+        type: 'ROLE_CHANGED'
       });
 
       // Send email if user has an email
@@ -677,17 +714,24 @@ export const approveUser = async (req, res) => {
       console.error('[ApproveUser] Log failed:', logErr.message);
     }
 
-    if (approvedUser.email) {
-      console.log(`[ApproveUser] Triggering approval email for: ${approvedUser.email}`);
-      const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
-      try {
-        if (await shouldSendEmail(req.db, approvedUser.id, 'ACCOUNT_APPROVED')) {
-          await sendUserApprovalEmail(approvedUser.email, approvedUser.name, origin);
+      if (approvedUser.email) {
+        console.log(`[ApproveUser] Triggering approval email for: ${approvedUser.email}`);
+        const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
+        try {
+          if (await shouldSendEmail(req.db, approvedUser.id, 'ACCOUNT_APPROVED')) {
+            await sendUserApprovalEmail(approvedUser.email, approvedUser.name, origin);
+          }
+        } catch (err) {
+          console.error('[ApproveUser] Critical failure sending approval email:', err);
         }
-      } catch (err) {
-        console.error('[ApproveUser] Critical failure sending approval email:', err);
       }
-    }
+
+      await createNotification(req, {
+        userId: approvedUser.id,
+        title: 'Account Approved',
+        message: 'Your account has been approved by the Administrator. Welcome aboard!',
+        type: 'ACCOUNT_APPROVED'
+      });
 
     res.json(approvedUser);
   } catch (error) {

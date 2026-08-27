@@ -30,7 +30,7 @@ export function DatePicker({ date, setDate, className, disabled, placeholder = "
                     <span className="truncate">{date ? format(date, "PPP") : placeholder}</span>
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 border-border shadow-2xl rounded-2xl" align="start">
+            <PopoverContent className="w-auto !w-fit p-0 border-border shadow-2xl rounded-2xl" align="start">
                 <Calendar
                     mode="single"
                     selected={date}

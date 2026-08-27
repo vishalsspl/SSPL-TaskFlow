@@ -203,7 +203,7 @@ const Layout = () => {
       allowedRoles: ['ADMIN'],
     },
     {
-      name: 'Custom Roles',
+      name: 'Profiles',
       href: '/organization/roles',
       icon: UserIcon,
       allowedRoles: ['ADMIN'],

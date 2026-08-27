@@ -210,7 +210,7 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
                             placeholder="Enter project name"
                             required
                             minLength={3}
-                            maxLength={30}
+                            maxLength={80}
                             className="!pl-10 transition-all focus:ring-2 focus:ring-primary/20"
                         />
                     </div>

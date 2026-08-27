@@ -2672,6 +2672,7 @@ export namespace Prisma {
    */
 
   export type UserCountOutputType = {
+    customRoles: number
     members: number
     managedProjects: number
     managedProjects2: number
@@ -2693,6 +2694,7 @@ export namespace Prisma {
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    customRoles?: boolean | UserCountOutputTypeCountCustomRolesArgs
     members?: boolean | UserCountOutputTypeCountMembersArgs
     managedProjects?: boolean | UserCountOutputTypeCountManagedProjectsArgs
     managedProjects2?: boolean | UserCountOutputTypeCountManagedProjects2Args
@@ -2722,6 +2724,13 @@ export namespace Prisma {
      * Select specific fields to fetch from the UserCountOutputType
      */
     select?: UserCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountCustomRolesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CustomRoleWhereInput
   }
 
   /**
@@ -5546,7 +5555,6 @@ export namespace Prisma {
   export type UserMinAggregateOutputType = {
     id: string | null
     organizationId: string | null
-    customRoleId: string | null
     name: string | null
     email: string | null
     passwordHash: string | null
@@ -5564,7 +5572,6 @@ export namespace Prisma {
   export type UserMaxAggregateOutputType = {
     id: string | null
     organizationId: string | null
-    customRoleId: string | null
     name: string | null
     email: string | null
     passwordHash: string | null
@@ -5582,7 +5589,6 @@ export namespace Prisma {
   export type UserCountAggregateOutputType = {
     id: number
     organizationId: number
-    customRoleId: number
     name: number
     email: number
     passwordHash: number
@@ -5602,7 +5608,6 @@ export namespace Prisma {
   export type UserMinAggregateInputType = {
     id?: true
     organizationId?: true
-    customRoleId?: true
     name?: true
     email?: true
     passwordHash?: true
@@ -5620,7 +5625,6 @@ export namespace Prisma {
   export type UserMaxAggregateInputType = {
     id?: true
     organizationId?: true
-    customRoleId?: true
     name?: true
     email?: true
     passwordHash?: true
@@ -5638,7 +5642,6 @@ export namespace Prisma {
   export type UserCountAggregateInputType = {
     id?: true
     organizationId?: true
-    customRoleId?: true
     name?: true
     email?: true
     passwordHash?: true
@@ -5729,7 +5732,6 @@ export namespace Prisma {
   export type UserGroupByOutputType = {
     id: string
     organizationId: string | null
-    customRoleId: string | null
     name: string
     email: string
     passwordHash: string
@@ -5764,7 +5766,6 @@ export namespace Prisma {
   export type UserSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     organizationId?: boolean
-    customRoleId?: boolean
     name?: boolean
     email?: boolean
     passwordHash?: boolean
@@ -5778,7 +5779,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     organization?: boolean | User$organizationArgs<ExtArgs>
-    customRole?: boolean | User$customRoleArgs<ExtArgs>
+    customRoles?: boolean | User$customRolesArgs<ExtArgs>
     manager?: boolean | User$managerArgs<ExtArgs>
     members?: boolean | User$membersArgs<ExtArgs>
     managedProjects?: boolean | User$managedProjectsArgs<ExtArgs>
@@ -5804,7 +5805,6 @@ export namespace Prisma {
   export type UserSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     organizationId?: boolean
-    customRoleId?: boolean
     name?: boolean
     email?: boolean
     passwordHash?: boolean
@@ -5818,14 +5818,12 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     organization?: boolean | User$organizationArgs<ExtArgs>
-    customRole?: boolean | User$customRoleArgs<ExtArgs>
     manager?: boolean | User$managerArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectScalar = {
     id?: boolean
     organizationId?: boolean
-    customRoleId?: boolean
     name?: boolean
     email?: boolean
     passwordHash?: boolean
@@ -5842,7 +5840,7 @@ export namespace Prisma {
 
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     organization?: boolean | User$organizationArgs<ExtArgs>
-    customRole?: boolean | User$customRoleArgs<ExtArgs>
+    customRoles?: boolean | User$customRolesArgs<ExtArgs>
     manager?: boolean | User$managerArgs<ExtArgs>
     members?: boolean | User$membersArgs<ExtArgs>
     managedProjects?: boolean | User$managedProjectsArgs<ExtArgs>
@@ -5866,7 +5864,6 @@ export namespace Prisma {
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     organization?: boolean | User$organizationArgs<ExtArgs>
-    customRole?: boolean | User$customRoleArgs<ExtArgs>
     manager?: boolean | User$managerArgs<ExtArgs>
   }
 
@@ -5874,7 +5871,7 @@ export namespace Prisma {
     name: "User"
     objects: {
       organization: Prisma.$OrganizationPayload<ExtArgs> | null
-      customRole: Prisma.$CustomRolePayload<ExtArgs> | null
+      customRoles: Prisma.$CustomRolePayload<ExtArgs>[]
       manager: Prisma.$UserPayload<ExtArgs> | null
       members: Prisma.$UserPayload<ExtArgs>[]
       managedProjects: Prisma.$ProjectPayload<ExtArgs>[]
@@ -5898,7 +5895,6 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       organizationId: string | null
-      customRoleId: string | null
       name: string
       email: string
       passwordHash: string
@@ -6276,7 +6272,7 @@ export namespace Prisma {
   export interface Prisma__UserClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     organization<T extends User$organizationArgs<ExtArgs> = {}>(args?: Subset<T, User$organizationArgs<ExtArgs>>): Prisma__OrganizationClient<$Result.GetResult<Prisma.$OrganizationPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
-    customRole<T extends User$customRoleArgs<ExtArgs> = {}>(args?: Subset<T, User$customRoleArgs<ExtArgs>>): Prisma__CustomRoleClient<$Result.GetResult<Prisma.$CustomRolePayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
+    customRoles<T extends User$customRolesArgs<ExtArgs> = {}>(args?: Subset<T, User$customRolesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CustomRolePayload<ExtArgs>, T, "findMany"> | Null>
     manager<T extends User$managerArgs<ExtArgs> = {}>(args?: Subset<T, User$managerArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     members<T extends User$membersArgs<ExtArgs> = {}>(args?: Subset<T, User$membersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany"> | Null>
     managedProjects<T extends User$managedProjectsArgs<ExtArgs> = {}>(args?: Subset<T, User$managedProjectsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findMany"> | Null>
@@ -6327,7 +6323,6 @@ export namespace Prisma {
   interface UserFieldRefs {
     readonly id: FieldRef<"User", 'String'>
     readonly organizationId: FieldRef<"User", 'String'>
-    readonly customRoleId: FieldRef<"User", 'String'>
     readonly name: FieldRef<"User", 'String'>
     readonly email: FieldRef<"User", 'String'>
     readonly passwordHash: FieldRef<"User", 'String'>
@@ -6673,9 +6668,9 @@ export namespace Prisma {
   }
 
   /**
-   * User.customRole
+   * User.customRoles
    */
-  export type User$customRoleArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type User$customRolesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the CustomRole
      */
@@ -6685,6 +6680,11 @@ export namespace Prisma {
      */
     include?: CustomRoleInclude<ExtArgs> | null
     where?: CustomRoleWhereInput
+    orderBy?: CustomRoleOrderByWithRelationInput | CustomRoleOrderByWithRelationInput[]
+    cursor?: CustomRoleWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CustomRoleScalarFieldEnum | CustomRoleScalarFieldEnum[]
   }
 
   /**
@@ -23756,7 +23756,6 @@ export namespace Prisma {
   export const UserScalarFieldEnum: {
     id: 'id',
     organizationId: 'organizationId',
-    customRoleId: 'customRoleId',
     name: 'name',
     email: 'email',
     passwordHash: 'passwordHash',
@@ -24566,7 +24565,6 @@ export namespace Prisma {
     NOT?: UserWhereInput | UserWhereInput[]
     id?: StringFilter<"User"> | string
     organizationId?: StringNullableFilter<"User"> | string | null
-    customRoleId?: StringNullableFilter<"User"> | string | null
     name?: StringFilter<"User"> | string
     email?: StringFilter<"User"> | string
     passwordHash?: StringFilter<"User"> | string
@@ -24580,7 +24578,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeNullableFilter<"User"> | Date | string | null
     organization?: XOR<OrganizationNullableRelationFilter, OrganizationWhereInput> | null
-    customRole?: XOR<CustomRoleNullableRelationFilter, CustomRoleWhereInput> | null
+    customRoles?: CustomRoleListRelationFilter
     manager?: XOR<UserNullableRelationFilter, UserWhereInput> | null
     members?: UserListRelationFilter
     managedProjects?: ProjectListRelationFilter
@@ -24605,7 +24603,6 @@ export namespace Prisma {
   export type UserOrderByWithRelationInput = {
     id?: SortOrder
     organizationId?: SortOrderInput | SortOrder
-    customRoleId?: SortOrderInput | SortOrder
     name?: SortOrder
     email?: SortOrder
     passwordHash?: SortOrder
@@ -24619,7 +24616,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrderInput | SortOrder
     organization?: OrganizationOrderByWithRelationInput
-    customRole?: CustomRoleOrderByWithRelationInput
+    customRoles?: CustomRoleOrderByRelationAggregateInput
     manager?: UserOrderByWithRelationInput
     members?: UserOrderByRelationAggregateInput
     managedProjects?: ProjectOrderByRelationAggregateInput
@@ -24648,7 +24645,6 @@ export namespace Prisma {
     OR?: UserWhereInput[]
     NOT?: UserWhereInput | UserWhereInput[]
     organizationId?: StringNullableFilter<"User"> | string | null
-    customRoleId?: StringNullableFilter<"User"> | string | null
     name?: StringFilter<"User"> | string
     email?: StringFilter<"User"> | string
     passwordHash?: StringFilter<"User"> | string
@@ -24662,7 +24658,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeNullableFilter<"User"> | Date | string | null
     organization?: XOR<OrganizationNullableRelationFilter, OrganizationWhereInput> | null
-    customRole?: XOR<CustomRoleNullableRelationFilter, CustomRoleWhereInput> | null
+    customRoles?: CustomRoleListRelationFilter
     manager?: XOR<UserNullableRelationFilter, UserWhereInput> | null
     members?: UserListRelationFilter
     managedProjects?: ProjectListRelationFilter
@@ -24687,7 +24683,6 @@ export namespace Prisma {
   export type UserOrderByWithAggregationInput = {
     id?: SortOrder
     organizationId?: SortOrderInput | SortOrder
-    customRoleId?: SortOrderInput | SortOrder
     name?: SortOrder
     email?: SortOrder
     passwordHash?: SortOrder
@@ -24711,7 +24706,6 @@ export namespace Prisma {
     NOT?: UserScalarWhereWithAggregatesInput | UserScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"User"> | string
     organizationId?: StringNullableWithAggregatesFilter<"User"> | string | null
-    customRoleId?: StringNullableWithAggregatesFilter<"User"> | string | null
     name?: StringWithAggregatesFilter<"User"> | string
     email?: StringWithAggregatesFilter<"User"> | string
     passwordHash?: StringWithAggregatesFilter<"User"> | string
@@ -26322,7 +26316,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     organization: OrganizationCreateNestedOneWithoutCustomRolesInput
-    users?: UserCreateNestedManyWithoutCustomRoleInput
+    users?: UserCreateNestedManyWithoutCustomRolesInput
   }
 
   export type CustomRoleUncheckedCreateInput = {
@@ -26333,7 +26327,7 @@ export namespace Prisma {
     permissions?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
-    users?: UserUncheckedCreateNestedManyWithoutCustomRoleInput
+    users?: UserUncheckedCreateNestedManyWithoutCustomRolesInput
   }
 
   export type CustomRoleUpdateInput = {
@@ -26344,7 +26338,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     organization?: OrganizationUpdateOneRequiredWithoutCustomRolesNestedInput
-    users?: UserUpdateManyWithoutCustomRoleNestedInput
+    users?: UserUpdateManyWithoutCustomRolesNestedInput
   }
 
   export type CustomRoleUncheckedUpdateInput = {
@@ -26355,7 +26349,7 @@ export namespace Prisma {
     permissions?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    users?: UserUncheckedUpdateManyWithoutCustomRoleNestedInput
+    users?: UserUncheckedUpdateManyWithoutCustomRolesNestedInput
   }
 
   export type CustomRoleCreateManyInput = {
@@ -26401,7 +26395,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
-    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
+    customRoles?: CustomRoleCreateNestedManyWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
@@ -26426,7 +26420,6 @@ export namespace Prisma {
   export type UserUncheckedCreateInput = {
     id?: string
     organizationId?: string | null
-    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -26439,6 +26432,7 @@ export namespace Prisma {
     managerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string | null
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutUsersInput
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
@@ -26473,7 +26467,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
-    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
@@ -26498,7 +26492,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
-    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -26511,6 +26504,7 @@ export namespace Prisma {
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutUsersNestedInput
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
@@ -26534,7 +26528,6 @@ export namespace Prisma {
   export type UserCreateManyInput = {
     id?: string
     organizationId?: string | null
-    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -26567,7 +26560,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
-    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -28470,11 +28462,6 @@ export namespace Prisma {
     isNot?: OrganizationWhereInput | null
   }
 
-  export type CustomRoleNullableRelationFilter = {
-    is?: CustomRoleWhereInput | null
-    isNot?: CustomRoleWhereInput | null
-  }
-
   export type UserNullableRelationFilter = {
     is?: UserWhereInput | null
     isNot?: UserWhereInput | null
@@ -28558,7 +28545,6 @@ export namespace Prisma {
   export type UserCountOrderByAggregateInput = {
     id?: SortOrder
     organizationId?: SortOrder
-    customRoleId?: SortOrder
     name?: SortOrder
     email?: SortOrder
     passwordHash?: SortOrder
@@ -28576,7 +28562,6 @@ export namespace Prisma {
   export type UserMaxOrderByAggregateInput = {
     id?: SortOrder
     organizationId?: SortOrder
-    customRoleId?: SortOrder
     name?: SortOrder
     email?: SortOrder
     passwordHash?: SortOrder
@@ -28594,7 +28579,6 @@ export namespace Prisma {
   export type UserMinOrderByAggregateInput = {
     id?: SortOrder
     organizationId?: SortOrder
-    customRoleId?: SortOrder
     name?: SortOrder
     email?: SortOrder
     passwordHash?: SortOrder
@@ -30009,17 +29993,15 @@ export namespace Prisma {
     connect?: OrganizationWhereUniqueInput
   }
 
-  export type UserCreateNestedManyWithoutCustomRoleInput = {
-    create?: XOR<UserCreateWithoutCustomRoleInput, UserUncheckedCreateWithoutCustomRoleInput> | UserCreateWithoutCustomRoleInput[] | UserUncheckedCreateWithoutCustomRoleInput[]
-    connectOrCreate?: UserCreateOrConnectWithoutCustomRoleInput | UserCreateOrConnectWithoutCustomRoleInput[]
-    createMany?: UserCreateManyCustomRoleInputEnvelope
+  export type UserCreateNestedManyWithoutCustomRolesInput = {
+    create?: XOR<UserCreateWithoutCustomRolesInput, UserUncheckedCreateWithoutCustomRolesInput> | UserCreateWithoutCustomRolesInput[] | UserUncheckedCreateWithoutCustomRolesInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutCustomRolesInput | UserCreateOrConnectWithoutCustomRolesInput[]
     connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
   }
 
-  export type UserUncheckedCreateNestedManyWithoutCustomRoleInput = {
-    create?: XOR<UserCreateWithoutCustomRoleInput, UserUncheckedCreateWithoutCustomRoleInput> | UserCreateWithoutCustomRoleInput[] | UserUncheckedCreateWithoutCustomRoleInput[]
-    connectOrCreate?: UserCreateOrConnectWithoutCustomRoleInput | UserCreateOrConnectWithoutCustomRoleInput[]
-    createMany?: UserCreateManyCustomRoleInputEnvelope
+  export type UserUncheckedCreateNestedManyWithoutCustomRolesInput = {
+    create?: XOR<UserCreateWithoutCustomRolesInput, UserUncheckedCreateWithoutCustomRolesInput> | UserCreateWithoutCustomRolesInput[] | UserUncheckedCreateWithoutCustomRolesInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutCustomRolesInput | UserCreateOrConnectWithoutCustomRolesInput[]
     connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
   }
 
@@ -30031,31 +30013,29 @@ export namespace Prisma {
     update?: XOR<XOR<OrganizationUpdateToOneWithWhereWithoutCustomRolesInput, OrganizationUpdateWithoutCustomRolesInput>, OrganizationUncheckedUpdateWithoutCustomRolesInput>
   }
 
-  export type UserUpdateManyWithoutCustomRoleNestedInput = {
-    create?: XOR<UserCreateWithoutCustomRoleInput, UserUncheckedCreateWithoutCustomRoleInput> | UserCreateWithoutCustomRoleInput[] | UserUncheckedCreateWithoutCustomRoleInput[]
-    connectOrCreate?: UserCreateOrConnectWithoutCustomRoleInput | UserCreateOrConnectWithoutCustomRoleInput[]
-    upsert?: UserUpsertWithWhereUniqueWithoutCustomRoleInput | UserUpsertWithWhereUniqueWithoutCustomRoleInput[]
-    createMany?: UserCreateManyCustomRoleInputEnvelope
+  export type UserUpdateManyWithoutCustomRolesNestedInput = {
+    create?: XOR<UserCreateWithoutCustomRolesInput, UserUncheckedCreateWithoutCustomRolesInput> | UserCreateWithoutCustomRolesInput[] | UserUncheckedCreateWithoutCustomRolesInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutCustomRolesInput | UserCreateOrConnectWithoutCustomRolesInput[]
+    upsert?: UserUpsertWithWhereUniqueWithoutCustomRolesInput | UserUpsertWithWhereUniqueWithoutCustomRolesInput[]
     set?: UserWhereUniqueInput | UserWhereUniqueInput[]
     disconnect?: UserWhereUniqueInput | UserWhereUniqueInput[]
     delete?: UserWhereUniqueInput | UserWhereUniqueInput[]
     connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
-    update?: UserUpdateWithWhereUniqueWithoutCustomRoleInput | UserUpdateWithWhereUniqueWithoutCustomRoleInput[]
-    updateMany?: UserUpdateManyWithWhereWithoutCustomRoleInput | UserUpdateManyWithWhereWithoutCustomRoleInput[]
+    update?: UserUpdateWithWhereUniqueWithoutCustomRolesInput | UserUpdateWithWhereUniqueWithoutCustomRolesInput[]
+    updateMany?: UserUpdateManyWithWhereWithoutCustomRolesInput | UserUpdateManyWithWhereWithoutCustomRolesInput[]
     deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
   }
 
-  export type UserUncheckedUpdateManyWithoutCustomRoleNestedInput = {
-    create?: XOR<UserCreateWithoutCustomRoleInput, UserUncheckedCreateWithoutCustomRoleInput> | UserCreateWithoutCustomRoleInput[] | UserUncheckedCreateWithoutCustomRoleInput[]
-    connectOrCreate?: UserCreateOrConnectWithoutCustomRoleInput | UserCreateOrConnectWithoutCustomRoleInput[]
-    upsert?: UserUpsertWithWhereUniqueWithoutCustomRoleInput | UserUpsertWithWhereUniqueWithoutCustomRoleInput[]
-    createMany?: UserCreateManyCustomRoleInputEnvelope
+  export type UserUncheckedUpdateManyWithoutCustomRolesNestedInput = {
+    create?: XOR<UserCreateWithoutCustomRolesInput, UserUncheckedCreateWithoutCustomRolesInput> | UserCreateWithoutCustomRolesInput[] | UserUncheckedCreateWithoutCustomRolesInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutCustomRolesInput | UserCreateOrConnectWithoutCustomRolesInput[]
+    upsert?: UserUpsertWithWhereUniqueWithoutCustomRolesInput | UserUpsertWithWhereUniqueWithoutCustomRolesInput[]
     set?: UserWhereUniqueInput | UserWhereUniqueInput[]
     disconnect?: UserWhereUniqueInput | UserWhereUniqueInput[]
     delete?: UserWhereUniqueInput | UserWhereUniqueInput[]
     connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
-    update?: UserUpdateWithWhereUniqueWithoutCustomRoleInput | UserUpdateWithWhereUniqueWithoutCustomRoleInput[]
-    updateMany?: UserUpdateManyWithWhereWithoutCustomRoleInput | UserUpdateManyWithWhereWithoutCustomRoleInput[]
+    update?: UserUpdateWithWhereUniqueWithoutCustomRolesInput | UserUpdateWithWhereUniqueWithoutCustomRolesInput[]
+    updateMany?: UserUpdateManyWithWhereWithoutCustomRolesInput | UserUpdateManyWithWhereWithoutCustomRolesInput[]
     deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
   }
 
@@ -30065,10 +30045,10 @@ export namespace Prisma {
     connect?: OrganizationWhereUniqueInput
   }
 
-  export type CustomRoleCreateNestedOneWithoutUsersInput = {
-    create?: XOR<CustomRoleCreateWithoutUsersInput, CustomRoleUncheckedCreateWithoutUsersInput>
-    connectOrCreate?: CustomRoleCreateOrConnectWithoutUsersInput
-    connect?: CustomRoleWhereUniqueInput
+  export type CustomRoleCreateNestedManyWithoutUsersInput = {
+    create?: XOR<CustomRoleCreateWithoutUsersInput, CustomRoleUncheckedCreateWithoutUsersInput> | CustomRoleCreateWithoutUsersInput[] | CustomRoleUncheckedCreateWithoutUsersInput[]
+    connectOrCreate?: CustomRoleCreateOrConnectWithoutUsersInput | CustomRoleCreateOrConnectWithoutUsersInput[]
+    connect?: CustomRoleWhereUniqueInput | CustomRoleWhereUniqueInput[]
   }
 
   export type UserCreateNestedOneWithoutMembersInput = {
@@ -30200,6 +30180,12 @@ export namespace Prisma {
     connectOrCreate?: DocumentCreateOrConnectWithoutAuthorInput | DocumentCreateOrConnectWithoutAuthorInput[]
     createMany?: DocumentCreateManyAuthorInputEnvelope
     connect?: DocumentWhereUniqueInput | DocumentWhereUniqueInput[]
+  }
+
+  export type CustomRoleUncheckedCreateNestedManyWithoutUsersInput = {
+    create?: XOR<CustomRoleCreateWithoutUsersInput, CustomRoleUncheckedCreateWithoutUsersInput> | CustomRoleCreateWithoutUsersInput[] | CustomRoleUncheckedCreateWithoutUsersInput[]
+    connectOrCreate?: CustomRoleCreateOrConnectWithoutUsersInput | CustomRoleCreateOrConnectWithoutUsersInput[]
+    connect?: CustomRoleWhereUniqueInput | CustomRoleWhereUniqueInput[]
   }
 
   export type UserUncheckedCreateNestedManyWithoutManagerInput = {
@@ -30341,14 +30327,17 @@ export namespace Prisma {
     update?: XOR<XOR<OrganizationUpdateToOneWithWhereWithoutUsersInput, OrganizationUpdateWithoutUsersInput>, OrganizationUncheckedUpdateWithoutUsersInput>
   }
 
-  export type CustomRoleUpdateOneWithoutUsersNestedInput = {
-    create?: XOR<CustomRoleCreateWithoutUsersInput, CustomRoleUncheckedCreateWithoutUsersInput>
-    connectOrCreate?: CustomRoleCreateOrConnectWithoutUsersInput
-    upsert?: CustomRoleUpsertWithoutUsersInput
-    disconnect?: CustomRoleWhereInput | boolean
-    delete?: CustomRoleWhereInput | boolean
-    connect?: CustomRoleWhereUniqueInput
-    update?: XOR<XOR<CustomRoleUpdateToOneWithWhereWithoutUsersInput, CustomRoleUpdateWithoutUsersInput>, CustomRoleUncheckedUpdateWithoutUsersInput>
+  export type CustomRoleUpdateManyWithoutUsersNestedInput = {
+    create?: XOR<CustomRoleCreateWithoutUsersInput, CustomRoleUncheckedCreateWithoutUsersInput> | CustomRoleCreateWithoutUsersInput[] | CustomRoleUncheckedCreateWithoutUsersInput[]
+    connectOrCreate?: CustomRoleCreateOrConnectWithoutUsersInput | CustomRoleCreateOrConnectWithoutUsersInput[]
+    upsert?: CustomRoleUpsertWithWhereUniqueWithoutUsersInput | CustomRoleUpsertWithWhereUniqueWithoutUsersInput[]
+    set?: CustomRoleWhereUniqueInput | CustomRoleWhereUniqueInput[]
+    disconnect?: CustomRoleWhereUniqueInput | CustomRoleWhereUniqueInput[]
+    delete?: CustomRoleWhereUniqueInput | CustomRoleWhereUniqueInput[]
+    connect?: CustomRoleWhereUniqueInput | CustomRoleWhereUniqueInput[]
+    update?: CustomRoleUpdateWithWhereUniqueWithoutUsersInput | CustomRoleUpdateWithWhereUniqueWithoutUsersInput[]
+    updateMany?: CustomRoleUpdateManyWithWhereWithoutUsersInput | CustomRoleUpdateManyWithWhereWithoutUsersInput[]
+    deleteMany?: CustomRoleScalarWhereInput | CustomRoleScalarWhereInput[]
   }
 
   export type UserUpdateOneWithoutMembersNestedInput = {
@@ -30610,6 +30599,19 @@ export namespace Prisma {
     update?: DocumentUpdateWithWhereUniqueWithoutAuthorInput | DocumentUpdateWithWhereUniqueWithoutAuthorInput[]
     updateMany?: DocumentUpdateManyWithWhereWithoutAuthorInput | DocumentUpdateManyWithWhereWithoutAuthorInput[]
     deleteMany?: DocumentScalarWhereInput | DocumentScalarWhereInput[]
+  }
+
+  export type CustomRoleUncheckedUpdateManyWithoutUsersNestedInput = {
+    create?: XOR<CustomRoleCreateWithoutUsersInput, CustomRoleUncheckedCreateWithoutUsersInput> | CustomRoleCreateWithoutUsersInput[] | CustomRoleUncheckedCreateWithoutUsersInput[]
+    connectOrCreate?: CustomRoleCreateOrConnectWithoutUsersInput | CustomRoleCreateOrConnectWithoutUsersInput[]
+    upsert?: CustomRoleUpsertWithWhereUniqueWithoutUsersInput | CustomRoleUpsertWithWhereUniqueWithoutUsersInput[]
+    set?: CustomRoleWhereUniqueInput | CustomRoleWhereUniqueInput[]
+    disconnect?: CustomRoleWhereUniqueInput | CustomRoleWhereUniqueInput[]
+    delete?: CustomRoleWhereUniqueInput | CustomRoleWhereUniqueInput[]
+    connect?: CustomRoleWhereUniqueInput | CustomRoleWhereUniqueInput[]
+    update?: CustomRoleUpdateWithWhereUniqueWithoutUsersInput | CustomRoleUpdateWithWhereUniqueWithoutUsersInput[]
+    updateMany?: CustomRoleUpdateManyWithWhereWithoutUsersInput | CustomRoleUpdateManyWithWhereWithoutUsersInput[]
+    deleteMany?: CustomRoleScalarWhereInput | CustomRoleScalarWhereInput[]
   }
 
   export type UserUncheckedUpdateManyWithoutManagerNestedInput = {
@@ -32588,7 +32590,7 @@ export namespace Prisma {
     resetTokenExpiry?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string | null
-    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
+    customRoles?: CustomRoleCreateNestedManyWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
@@ -32612,7 +32614,6 @@ export namespace Prisma {
 
   export type UserUncheckedCreateWithoutOrganizationInput = {
     id?: string
-    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -32625,6 +32626,7 @@ export namespace Prisma {
     managerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string | null
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutUsersInput
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
@@ -32916,7 +32918,7 @@ export namespace Prisma {
     permissions?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
-    users?: UserCreateNestedManyWithoutCustomRoleInput
+    users?: UserCreateNestedManyWithoutCustomRolesInput
   }
 
   export type CustomRoleUncheckedCreateWithoutOrganizationInput = {
@@ -32926,7 +32928,7 @@ export namespace Prisma {
     permissions?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     updatedAt?: Date | string
-    users?: UserUncheckedCreateNestedManyWithoutCustomRoleInput
+    users?: UserUncheckedCreateNestedManyWithoutCustomRolesInput
   }
 
   export type CustomRoleCreateOrConnectWithoutOrganizationInput = {
@@ -32961,7 +32963,6 @@ export namespace Prisma {
     NOT?: UserScalarWhereInput | UserScalarWhereInput[]
     id?: StringFilter<"User"> | string
     organizationId?: StringNullableFilter<"User"> | string | null
-    customRoleId?: StringNullableFilter<"User"> | string | null
     name?: StringFilter<"User"> | string
     email?: StringFilter<"User"> | string
     passwordHash?: StringFilter<"User"> | string
@@ -33311,7 +33312,7 @@ export namespace Prisma {
     create: XOR<OrganizationCreateWithoutCustomRolesInput, OrganizationUncheckedCreateWithoutCustomRolesInput>
   }
 
-  export type UserCreateWithoutCustomRoleInput = {
+  export type UserCreateWithoutCustomRolesInput = {
     id?: string
     name: string
     email: string
@@ -33346,7 +33347,7 @@ export namespace Prisma {
     authoredDocuments?: DocumentCreateNestedManyWithoutAuthorInput
   }
 
-  export type UserUncheckedCreateWithoutCustomRoleInput = {
+  export type UserUncheckedCreateWithoutCustomRolesInput = {
     id?: string
     organizationId?: string | null
     name: string
@@ -33381,14 +33382,9 @@ export namespace Prisma {
     authoredDocuments?: DocumentUncheckedCreateNestedManyWithoutAuthorInput
   }
 
-  export type UserCreateOrConnectWithoutCustomRoleInput = {
+  export type UserCreateOrConnectWithoutCustomRolesInput = {
     where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutCustomRoleInput, UserUncheckedCreateWithoutCustomRoleInput>
-  }
-
-  export type UserCreateManyCustomRoleInputEnvelope = {
-    data: UserCreateManyCustomRoleInput | UserCreateManyCustomRoleInput[]
-    skipDuplicates?: boolean
+    create: XOR<UserCreateWithoutCustomRolesInput, UserUncheckedCreateWithoutCustomRolesInput>
   }
 
   export type OrganizationUpsertWithoutCustomRolesInput = {
@@ -33480,20 +33476,20 @@ export namespace Prisma {
     attendances?: AttendanceUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
-  export type UserUpsertWithWhereUniqueWithoutCustomRoleInput = {
+  export type UserUpsertWithWhereUniqueWithoutCustomRolesInput = {
     where: UserWhereUniqueInput
-    update: XOR<UserUpdateWithoutCustomRoleInput, UserUncheckedUpdateWithoutCustomRoleInput>
-    create: XOR<UserCreateWithoutCustomRoleInput, UserUncheckedCreateWithoutCustomRoleInput>
+    update: XOR<UserUpdateWithoutCustomRolesInput, UserUncheckedUpdateWithoutCustomRolesInput>
+    create: XOR<UserCreateWithoutCustomRolesInput, UserUncheckedCreateWithoutCustomRolesInput>
   }
 
-  export type UserUpdateWithWhereUniqueWithoutCustomRoleInput = {
+  export type UserUpdateWithWhereUniqueWithoutCustomRolesInput = {
     where: UserWhereUniqueInput
-    data: XOR<UserUpdateWithoutCustomRoleInput, UserUncheckedUpdateWithoutCustomRoleInput>
+    data: XOR<UserUpdateWithoutCustomRolesInput, UserUncheckedUpdateWithoutCustomRolesInput>
   }
 
-  export type UserUpdateManyWithWhereWithoutCustomRoleInput = {
+  export type UserUpdateManyWithWhereWithoutCustomRolesInput = {
     where: UserScalarWhereInput
-    data: XOR<UserUpdateManyMutationInput, UserUncheckedUpdateManyWithoutCustomRoleInput>
+    data: XOR<UserUpdateManyMutationInput, UserUncheckedUpdateManyWithoutCustomRolesInput>
   }
 
   export type OrganizationCreateWithoutUsersInput = {
@@ -33618,7 +33614,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
-    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
+    customRoles?: CustomRoleCreateNestedManyWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
     managedProjects2?: ProjectCreateNestedManyWithoutManagersInput
@@ -33642,7 +33638,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutMembersInput = {
     id?: string
     organizationId?: string | null
-    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -33655,6 +33650,7 @@ export namespace Prisma {
     managerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string | null
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutUsersInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
@@ -33693,7 +33689,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
-    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
+    customRoles?: CustomRoleCreateNestedManyWithoutUsersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
     managedProjects2?: ProjectCreateNestedManyWithoutManagersInput
@@ -33717,7 +33713,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutManagerInput = {
     id?: string
     organizationId?: string | null
-    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -33729,6 +33724,7 @@ export namespace Prisma {
     resetTokenExpiry?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string | null
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutUsersInput
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
@@ -34439,35 +34435,20 @@ export namespace Prisma {
     customRoles?: CustomRoleUncheckedUpdateManyWithoutOrganizationNestedInput
   }
 
-  export type CustomRoleUpsertWithoutUsersInput = {
+  export type CustomRoleUpsertWithWhereUniqueWithoutUsersInput = {
+    where: CustomRoleWhereUniqueInput
     update: XOR<CustomRoleUpdateWithoutUsersInput, CustomRoleUncheckedUpdateWithoutUsersInput>
     create: XOR<CustomRoleCreateWithoutUsersInput, CustomRoleUncheckedCreateWithoutUsersInput>
-    where?: CustomRoleWhereInput
   }
 
-  export type CustomRoleUpdateToOneWithWhereWithoutUsersInput = {
-    where?: CustomRoleWhereInput
+  export type CustomRoleUpdateWithWhereUniqueWithoutUsersInput = {
+    where: CustomRoleWhereUniqueInput
     data: XOR<CustomRoleUpdateWithoutUsersInput, CustomRoleUncheckedUpdateWithoutUsersInput>
   }
 
-  export type CustomRoleUpdateWithoutUsersInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    permissions?: NullableJsonNullValueInput | InputJsonValue
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    organization?: OrganizationUpdateOneRequiredWithoutCustomRolesNestedInput
-  }
-
-  export type CustomRoleUncheckedUpdateWithoutUsersInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    organizationId?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    description?: NullableStringFieldUpdateOperationsInput | string | null
-    permissions?: NullableJsonNullValueInput | InputJsonValue
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  export type CustomRoleUpdateManyWithWhereWithoutUsersInput = {
+    where: CustomRoleScalarWhereInput
+    data: XOR<CustomRoleUpdateManyMutationInput, CustomRoleUncheckedUpdateManyWithoutUsersInput>
   }
 
   export type UserUpsertWithoutMembersInput = {
@@ -34495,7 +34476,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
-    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
     managedProjects2?: ProjectUpdateManyWithoutManagersNestedInput
@@ -34519,7 +34500,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutMembersInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
-    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -34532,6 +34512,7 @@ export namespace Prisma {
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutUsersNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
@@ -35025,7 +35006,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
-    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
+    customRoles?: CustomRoleCreateNestedManyWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects2?: ProjectCreateNestedManyWithoutManagersInput
@@ -35049,7 +35030,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutManagedProjectsInput = {
     id?: string
     organizationId?: string | null
-    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -35062,6 +35042,7 @@ export namespace Prisma {
     managerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string | null
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutUsersInput
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
@@ -35100,7 +35081,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
-    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
+    customRoles?: CustomRoleCreateNestedManyWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
@@ -35124,7 +35105,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutManagedProjects2Input = {
     id?: string
     organizationId?: string | null
-    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -35137,6 +35117,7 @@ export namespace Prisma {
     managerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string | null
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutUsersInput
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     clientProjects?: ProjectUncheckedCreateNestedManyWithoutClientInput
@@ -35175,7 +35156,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
-    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
+    customRoles?: CustomRoleCreateNestedManyWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
@@ -35199,7 +35180,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutClientProjectsInput = {
     id?: string
     organizationId?: string | null
-    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -35212,6 +35192,7 @@ export namespace Prisma {
     managerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string | null
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutUsersInput
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
@@ -35568,7 +35549,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
-    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects2?: ProjectUpdateManyWithoutManagersNestedInput
@@ -35592,7 +35573,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutManagedProjectsInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
-    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -35605,6 +35585,7 @@ export namespace Prisma {
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutUsersNestedInput
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
@@ -35665,7 +35646,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
-    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
@@ -35689,7 +35670,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutClientProjectsInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
-    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -35702,6 +35682,7 @@ export namespace Prisma {
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutUsersNestedInput
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
@@ -36710,7 +36691,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
-    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
+    customRoles?: CustomRoleCreateNestedManyWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
@@ -36734,7 +36715,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutTaskAssignmentsInput = {
     id?: string
     organizationId?: string | null
-    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -36747,6 +36727,7 @@ export namespace Prisma {
     managerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string | null
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutUsersInput
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
@@ -36785,7 +36766,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
-    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
+    customRoles?: CustomRoleCreateNestedManyWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
@@ -36809,7 +36790,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutAssignedTasksInput = {
     id?: string
     organizationId?: string | null
-    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -36822,6 +36802,7 @@ export namespace Prisma {
     managerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string | null
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutUsersInput
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
@@ -36936,7 +36917,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
-    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
@@ -36960,7 +36941,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutTaskAssignmentsInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
-    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -36973,6 +36953,7 @@ export namespace Prisma {
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutUsersNestedInput
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
@@ -37017,7 +36998,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
-    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
@@ -37041,7 +37022,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutAssignedTasksInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
-    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -37054,6 +37034,7 @@ export namespace Prisma {
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutUsersNestedInput
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
@@ -37146,7 +37127,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
-    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
+    customRoles?: CustomRoleCreateNestedManyWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
@@ -37170,7 +37151,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutTaskCommentsInput = {
     id?: string
     organizationId?: string | null
-    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -37183,6 +37163,7 @@ export namespace Prisma {
     managerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string | null
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutUsersInput
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
@@ -37297,7 +37278,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
-    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
@@ -37321,7 +37302,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutTaskCommentsInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
-    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -37334,6 +37314,7 @@ export namespace Prisma {
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutUsersNestedInput
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
@@ -37367,7 +37348,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
-    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
+    customRoles?: CustomRoleCreateNestedManyWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
@@ -37391,7 +37372,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutWorkLogsInput = {
     id?: string
     organizationId?: string | null
-    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -37404,6 +37384,7 @@ export namespace Prisma {
     managerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string | null
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutUsersInput
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
@@ -37571,7 +37552,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
-    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
@@ -37595,7 +37576,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutWorkLogsInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
-    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -37608,6 +37588,7 @@ export namespace Prisma {
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutUsersNestedInput
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
@@ -37771,7 +37752,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
-    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
+    customRoles?: CustomRoleCreateNestedManyWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
@@ -37795,7 +37776,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutTimeEntriesInput = {
     id?: string
     organizationId?: string | null
-    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -37808,6 +37788,7 @@ export namespace Prisma {
     managerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string | null
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutUsersInput
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
@@ -37975,7 +37956,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
-    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
@@ -37999,7 +37980,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutTimeEntriesInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
-    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -38012,6 +37992,7 @@ export namespace Prisma {
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutUsersNestedInput
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
@@ -38175,7 +38156,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
-    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
+    customRoles?: CustomRoleCreateNestedManyWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
@@ -38199,7 +38180,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutWorkloadsInput = {
     id?: string
     organizationId?: string | null
-    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -38212,6 +38192,7 @@ export namespace Prisma {
     managerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string | null
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutUsersInput
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
@@ -38320,7 +38301,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
-    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
@@ -38344,7 +38325,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutWorkloadsInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
-    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -38357,6 +38337,7 @@ export namespace Prisma {
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutUsersNestedInput
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
@@ -38538,7 +38519,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
-    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
+    customRoles?: CustomRoleCreateNestedManyWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
@@ -38562,7 +38543,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutTicketsInput = {
     id?: string
     organizationId?: string | null
-    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -38575,6 +38555,7 @@ export namespace Prisma {
     managerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string | null
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutUsersInput
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
@@ -38739,7 +38720,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
-    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
@@ -38763,7 +38744,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutTicketsInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
-    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -38776,6 +38756,7 @@ export namespace Prisma {
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutUsersNestedInput
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
@@ -38854,7 +38835,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
-    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
+    customRoles?: CustomRoleCreateNestedManyWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
@@ -38878,7 +38859,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutTicketCommentsInput = {
     id?: string
     organizationId?: string | null
-    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -38891,6 +38871,7 @@ export namespace Prisma {
     managerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string | null
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutUsersInput
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
@@ -38975,7 +38956,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
-    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
@@ -38999,7 +38980,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutTicketCommentsInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
-    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -39012,6 +38992,7 @@ export namespace Prisma {
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutUsersNestedInput
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
@@ -39045,7 +39026,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
-    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
+    customRoles?: CustomRoleCreateNestedManyWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
@@ -39069,7 +39050,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutChatMessagesInput = {
     id?: string
     organizationId?: string | null
-    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -39082,6 +39062,7 @@ export namespace Prisma {
     managerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string | null
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutUsersInput
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
@@ -39281,7 +39262,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
-    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
@@ -39305,7 +39286,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutChatMessagesInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
-    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -39318,6 +39298,7 @@ export namespace Prisma {
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutUsersNestedInput
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
@@ -39493,7 +39474,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
-    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
+    customRoles?: CustomRoleCreateNestedManyWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
@@ -39517,7 +39498,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutChatRoomLastSeenInput = {
     id?: string
     organizationId?: string | null
-    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -39530,6 +39510,7 @@ export namespace Prisma {
     managerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string | null
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutUsersInput
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
@@ -39662,7 +39643,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
-    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
@@ -39686,7 +39667,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutChatRoomLastSeenInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
-    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -39699,6 +39679,7 @@ export namespace Prisma {
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutUsersNestedInput
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
@@ -39821,7 +39802,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
-    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
+    customRoles?: CustomRoleCreateNestedManyWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
@@ -39845,7 +39826,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutActivityLogsInput = {
     id?: string
     organizationId?: string | null
-    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -39858,6 +39838,7 @@ export namespace Prisma {
     managerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string | null
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutUsersInput
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
@@ -39990,7 +39971,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
-    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
@@ -40014,7 +39995,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutActivityLogsInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
-    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -40027,6 +40007,7 @@ export namespace Prisma {
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutUsersNestedInput
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
@@ -40149,7 +40130,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
-    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
+    customRoles?: CustomRoleCreateNestedManyWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
@@ -40173,7 +40154,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutNotificationsInput = {
     id?: string
     organizationId?: string | null
-    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -40186,6 +40166,7 @@ export namespace Prisma {
     managerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string | null
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutUsersInput
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
@@ -40318,7 +40299,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
-    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
@@ -40342,7 +40323,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutNotificationsInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
-    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -40355,6 +40335,7 @@ export namespace Prisma {
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutUsersNestedInput
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
@@ -40477,7 +40458,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
-    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
+    customRoles?: CustomRoleCreateNestedManyWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
@@ -40501,7 +40482,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutAttendancesInput = {
     id?: string
     organizationId?: string | null
-    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -40514,6 +40494,7 @@ export namespace Prisma {
     managerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string | null
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutUsersInput
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
@@ -40646,7 +40627,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
-    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
@@ -40670,7 +40651,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutAttendancesInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
-    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -40683,6 +40663,7 @@ export namespace Prisma {
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutUsersNestedInput
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
@@ -40864,7 +40845,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string | null
     organization?: OrganizationCreateNestedOneWithoutUsersInput
-    customRole?: CustomRoleCreateNestedOneWithoutUsersInput
+    customRoles?: CustomRoleCreateNestedManyWithoutUsersInput
     manager?: UserCreateNestedOneWithoutMembersInput
     members?: UserCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectCreateNestedManyWithoutManagerInput
@@ -40888,7 +40869,6 @@ export namespace Prisma {
   export type UserUncheckedCreateWithoutAuthoredDocumentsInput = {
     id?: string
     organizationId?: string | null
-    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -40901,6 +40881,7 @@ export namespace Prisma {
     managerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string | null
+    customRoles?: CustomRoleUncheckedCreateNestedManyWithoutUsersInput
     members?: UserUncheckedCreateNestedManyWithoutManagerInput
     managedProjects?: ProjectUncheckedCreateNestedManyWithoutManagerInput
     managedProjects2?: ProjectUncheckedCreateNestedManyWithoutManagersInput
@@ -41015,7 +40996,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
-    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
@@ -41039,7 +41020,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutAuthoredDocumentsInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
-    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -41052,6 +41032,7 @@ export namespace Prisma {
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutUsersNestedInput
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
@@ -41073,7 +41054,6 @@ export namespace Prisma {
 
   export type UserCreateManyOrganizationInput = {
     id?: string
-    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -41193,7 +41173,7 @@ export namespace Prisma {
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
@@ -41217,7 +41197,6 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateWithoutOrganizationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -41230,6 +41209,7 @@ export namespace Prisma {
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutUsersNestedInput
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
@@ -41252,7 +41232,6 @@ export namespace Prisma {
 
   export type UserUncheckedUpdateManyWithoutOrganizationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -41541,7 +41520,7 @@ export namespace Prisma {
     permissions?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    users?: UserUpdateManyWithoutCustomRoleNestedInput
+    users?: UserUpdateManyWithoutCustomRolesNestedInput
   }
 
   export type CustomRoleUncheckedUpdateWithoutOrganizationInput = {
@@ -41551,7 +41530,7 @@ export namespace Prisma {
     permissions?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    users?: UserUncheckedUpdateManyWithoutCustomRoleNestedInput
+    users?: UserUncheckedUpdateManyWithoutCustomRolesNestedInput
   }
 
   export type CustomRoleUncheckedUpdateManyWithoutOrganizationInput = {
@@ -41563,24 +41542,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type UserCreateManyCustomRoleInput = {
-    id?: string
-    organizationId?: string | null
-    name: string
-    email: string
-    passwordHash: string
-    role?: $Enums.Role
-    avatar?: string | null
-    isApproved?: boolean
-    mustChangePassword?: boolean
-    resetToken?: string | null
-    resetTokenExpiry?: Date | string | null
-    managerId?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string | null
-  }
-
-  export type UserUpdateWithoutCustomRoleInput = {
+  export type UserUpdateWithoutCustomRolesInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
@@ -41615,7 +41577,7 @@ export namespace Prisma {
     authoredDocuments?: DocumentUpdateManyWithoutAuthorNestedInput
   }
 
-  export type UserUncheckedUpdateWithoutCustomRoleInput = {
+  export type UserUncheckedUpdateWithoutCustomRolesInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
@@ -41650,7 +41612,7 @@ export namespace Prisma {
     authoredDocuments?: DocumentUncheckedUpdateManyWithoutAuthorNestedInput
   }
 
-  export type UserUncheckedUpdateManyWithoutCustomRoleInput = {
+  export type UserUncheckedUpdateManyWithoutCustomRolesInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
@@ -41670,7 +41632,6 @@ export namespace Prisma {
   export type UserCreateManyManagerInput = {
     id?: string
     organizationId?: string | null
-    customRoleId?: string | null
     name: string
     email: string
     passwordHash: string
@@ -41854,6 +41815,36 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type CustomRoleUpdateWithoutUsersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    permissions?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    organization?: OrganizationUpdateOneRequiredWithoutCustomRolesNestedInput
+  }
+
+  export type CustomRoleUncheckedUpdateWithoutUsersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organizationId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    permissions?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CustomRoleUncheckedUpdateManyWithoutUsersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    organizationId?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    permissions?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UserUpdateWithoutManagerInput = {
     id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
@@ -41868,7 +41859,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
-    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutUsersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
     managedProjects2?: ProjectUpdateManyWithoutManagersNestedInput
@@ -41892,7 +41883,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutManagerInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
-    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -41904,6 +41894,7 @@ export namespace Prisma {
     resetTokenExpiry?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutUsersNestedInput
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects2?: ProjectUncheckedUpdateManyWithoutManagersNestedInput
@@ -41927,7 +41918,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateManyWithoutManagerInput = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
-    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -42645,7 +42635,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     organization?: OrganizationUpdateOneWithoutUsersNestedInput
-    customRole?: CustomRoleUpdateOneWithoutUsersNestedInput
+    customRoles?: CustomRoleUpdateManyWithoutUsersNestedInput
     manager?: UserUpdateOneWithoutMembersNestedInput
     members?: UserUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUpdateManyWithoutManagerNestedInput
@@ -42669,7 +42659,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutManagedProjects2Input = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
-    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string
@@ -42682,6 +42671,7 @@ export namespace Prisma {
     managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    customRoles?: CustomRoleUncheckedUpdateManyWithoutUsersNestedInput
     members?: UserUncheckedUpdateManyWithoutManagerNestedInput
     managedProjects?: ProjectUncheckedUpdateManyWithoutManagerNestedInput
     clientProjects?: ProjectUncheckedUpdateManyWithoutClientNestedInput
@@ -42704,7 +42694,6 @@ export namespace Prisma {
   export type UserUncheckedUpdateManyWithoutManagedProjects2Input = {
     id?: StringFieldUpdateOperationsInput | string
     organizationId?: NullableStringFieldUpdateOperationsInput | string | null
-    customRoleId?: NullableStringFieldUpdateOperationsInput | string | null
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     passwordHash?: StringFieldUpdateOperationsInput | string

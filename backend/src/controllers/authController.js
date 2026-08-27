@@ -2,11 +2,11 @@ import prisma from '../lib/prisma.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import { sendMemberInvitationEmail, sendPasswordResetEmail, sendOrgSignupEmail, sendNewOrgSignupNotificationToSuperAdmin } from '../services/emailService.js';
+import { sendMemberInvitationEmail, sendPasswordResetEmail, sendOrgSignupEmail, sendNewOrgSignupNotificationToSuperAdmin, sendCredentialsUpdatedEmail } from '../services/emailService.js';
 import { provisionTenantDatabase } from '../services/tenantProvisioner.js';
 import tenantDbManager from '../lib/tenantDbManager.js';
 import { getDefaultPermissions } from '../config/permissionDefaults.js';
-
+import { createNotification, shouldSendEmail } from '../utils/notifications.js';
 // ── check-email (public) ──────────────────────────────────────────────────
 export const checkEmail = async (req, res) => {
   const { email } = req.body;
@@ -422,15 +422,23 @@ export const signup = async (req, res) => {
       };
 
       await Promise.all(superAdmins.map(async (admin) => {
-        // 1. Send Email
         const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
-        await sendNewOrgSignupNotificationToSuperAdmin(admin.email, admin.name, orgDetails, adminDetails, origin);
-        
-        // 2. Create In-App Notification in MAIN DB (Using Raw SQL for compatibility)
-        await prisma.$executeRaw`
-          INSERT INTO "Notification" ("id", "userId", "title", "message", "type", "link", "isRead", "createdAt")
-          VALUES (${crypto.randomUUID()}, ${admin.id}, 'New Organization Registered', ${`${org.name} has just signed up. Industry: ${org.industry || 'N/A'}`}, 'NEW_ORG_SIGNUP', '/superadmin/orgs', false, timezone('utc', now()))
-        `;
+
+        if (await shouldSendEmail(prisma, admin.id, 'NEW_ORG_SIGNUP')) {
+          await sendNewOrgSignupNotificationToSuperAdmin(admin.email, admin.name, orgDetails, adminDetails, origin);
+        }
+
+        const prefs = await prisma.$queryRawUnsafe('SELECT "notificationPreferences" FROM "User" WHERE "id" = $1 LIMIT 1', admin.id).catch(() => null);
+        const userPrefs = prefs?.[0]?.notificationPreferences || {};
+        const inAppPrefs = userPrefs.inApp || {};
+        const isEnabled = inAppPrefs.NEW_ORG_SIGNUP !== false && inAppPrefs.system !== false;
+
+        if (isEnabled) {
+          await prisma.$executeRaw`
+            INSERT INTO "Notification" ("id", "userId", "title", "message", "type", "link", "isRead", "createdAt")
+            VALUES (${crypto.randomUUID()}, ${admin.id}, 'New Organization Registered', ${`${org.name} has just signed up. Industry: ${org.industry || 'N/A'}`}, 'NEW_ORG_SIGNUP', '/superadmin/orgs', false, timezone('utc', now()))
+          `;
+        }
       }));
     }
 
@@ -844,6 +852,25 @@ export const changePassword = async (req, res) => {
     });
   } catch (e) {
     console.error('[ChangePassword] Log failed:', e.message);
+  }
+
+  // Send Notification & Email
+  if (req.db && req.db !== prisma) {
+    try {
+      await createNotification(req, {
+        userId: userId,
+        title: 'Credentials Updated',
+        message: 'Your account password has been updated.',
+        type: 'CREDENTIALS_UPDATED'
+      });
+
+      if (await shouldSendEmail(req.db, userId, 'CREDENTIALS_UPDATED')) {
+        const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
+        await sendCredentialsUpdatedEmail(user.email, user.name, null, origin);
+      }
+    } catch (notifErr) {
+      console.error('[ChangePassword] Failed to send notification:', notifErr.message);
+    }
   }
 
   res.json({ message: 'Password updated successfully' });

@@ -1,5 +1,5 @@
 import prisma from '../lib/prisma.js';
-import { createNotification } from '../utils/notifications.js';
+import { createNotification, shouldSendEmail } from '../utils/notifications.js';
 import { sendTimesheetSubmissionEmail, sendLeaveSubmissionEmail, sendTimesheetStatusEmail, sendLeaveStatusEmail } from '../services/emailService.js';
 import { hasPermission } from '../middleware/auth.js';
 const include = {
@@ -323,13 +323,17 @@ export const createTimeEntry = async (req, res) => {
             });
 
             const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
-            if (isLeaveEntry) {
-                // Extract leave type from description e.g. "[Sick Leave] - [Full Day]"
-                const match = description.match(/\[(.*?)\]/);
-                const leaveType = match ? match[1] : 'Leave';
-                await sendLeaveSubmissionEmail(manager.email, manager.name, req.user.name, leaveType, hours, date, origin);
-            } else {
-                await sendTimesheetSubmissionEmail(manager.email, manager.name, req.user.name, project?.name || 'Project', hours, date, origin);
+            const eventType = isLeaveEntry ? 'LEAVE_SUBMITTED' : 'WORKLOG_SUBMITTED';
+            
+            if (await shouldSendEmail(req.db, manager.id, eventType)) {
+                if (isLeaveEntry) {
+                    // Extract leave type from description e.g. "[Sick Leave] - [Full Day]"
+                    const match = description.match(/\[(.*?)\]/);
+                    const leaveType = match ? match[1] : 'Leave';
+                    await sendLeaveSubmissionEmail(manager.email, manager.name, req.user.name, leaveType, hours, date, origin);
+                } else {
+                    await sendTimesheetSubmissionEmail(manager.email, manager.name, req.user.name, project?.name || 'Project', hours, date, origin);
+                }
             }
         }
     }
@@ -457,29 +461,32 @@ export const updateTimeEntryStatus = async (req, res) => {
         });
 
         const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
+        const eventType = isLeaveEntry ? `LEAVE_${status}` : `TIMESHEET_${status}`;
         
-        if (isLeaveEntry) {
-            const match = existingEntry.description?.match(/\[(.*?)\]/);
-            const leaveType = match ? match[1] : 'Leave';
-            await sendLeaveStatusEmail(
-                existingEntry.user.email,
-                existingEntry.user.name,
-                leaveType,
-                status,
-                req.user.name,
-                existingEntry.hours,
-                origin
-            );
-        } else {
-            await sendTimesheetStatusEmail(
-                existingEntry.user.email,
-                existingEntry.user.name,
-                existingEntry.project?.name || 'Leave',
-                status,
-                req.user.name,
-                existingEntry.hours,
-                origin
-            );
+        if (await shouldSendEmail(req.db, existingEntry.userId, eventType)) {
+            if (isLeaveEntry) {
+                const match = existingEntry.description?.match(/\[(.*?)\]/);
+                const leaveType = match ? match[1] : 'Leave';
+                await sendLeaveStatusEmail(
+                    existingEntry.user.email,
+                    existingEntry.user.name,
+                    leaveType,
+                    status,
+                    req.user.name,
+                    existingEntry.hours,
+                    origin
+                );
+            } else {
+                await sendTimesheetStatusEmail(
+                    existingEntry.user.email,
+                    existingEntry.user.name,
+                    existingEntry.project?.name || 'Leave',
+                    status,
+                    req.user.name,
+                    existingEntry.hours,
+                    origin
+                );
+            }
         }
     }
 

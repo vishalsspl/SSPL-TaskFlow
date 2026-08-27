@@ -166,7 +166,6 @@ exports.Prisma.CustomRoleScalarFieldEnum = {
 exports.Prisma.UserScalarFieldEnum = {
   id: 'id',
   organizationId: 'organizationId',
-  customRoleId: 'customRoleId',
   name: 'name',
   email: 'email',
   passwordHash: 'passwordHash',

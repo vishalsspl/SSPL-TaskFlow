@@ -250,6 +250,7 @@ export const getAllProjects = async (req, res) => {
     createdAt: true,
     updatedAt: true,
     // Relations
+    manager: { select: { id: true, name: true, email: true, role: true, avatar: true } },
     managers: { select: { id: true, name: true, email: true, role: true, avatar: true } },
     client: { select: { id: true, name: true, email: true, role: true, avatar: true } },
     _count: { select: { tasks: { where: taskWhereFilter }, phases: true } },
@@ -284,6 +285,16 @@ export const getAllProjects = async (req, res) => {
 
       const { tasks: _, ...projectWithoutTasks } = project;
       
+      // Unify managers and manager for backward compatibility
+      let combinedManagers = [...(projectWithoutTasks.managers || [])];
+      if (projectWithoutTasks.manager && !combinedManagers.some(m => m.id === projectWithoutTasks.manager.id)) {
+        combinedManagers.push(projectWithoutTasks.manager);
+      }
+      projectWithoutTasks.managers = combinedManagers;
+      if (!projectWithoutTasks.manager && combinedManagers.length > 0) {
+        projectWithoutTasks.manager = combinedManagers[0];
+      }
+
       // Override _count.tasks with the filtered tasks length so UI shows only their tasks
       if (projectWithoutTasks._count) {
         projectWithoutTasks._count.tasks = memberTaskCount;
@@ -411,6 +422,14 @@ export const getProject = async (req, res) => {
           avatar: true,
         },
       },
+      manager: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          avatar: true,
+        },
+      },
       managers: {
         select: {
           id: true,
@@ -452,6 +471,16 @@ export const getProject = async (req, res) => {
 
   if (!project) {
     return res.status(404).json({ error: 'Project not found' });
+  }
+
+  // Unify manager and managers for backward compatibility
+  let combinedManagers = [...(project.managers || [])];
+  if (project.manager && !combinedManagers.some(m => m.id === project.manager.id)) {
+    combinedManagers.push(project.manager);
+  }
+  project.managers = combinedManagers;
+  if (!project.manager && combinedManagers.length > 0) {
+    project.manager = combinedManagers[0];
   }
 
   // Authorization Checks
@@ -525,8 +554,8 @@ export const createProject = async (req, res) => {
     allowMemberTaskCreation = false,
   } = req.body;
 
-  if (!name || name.trim().length < 3 || name.trim().length > 30) {
-    return res.status(400).json({ error: 'Project name must be between 3 and 30 characters' });
+  if (!name || name.trim().length < 3 || name.trim().length > 80) {
+    return res.status(400).json({ error: 'Project name must be between 3 and 80 characters' });
   }
 
   const organizationId = req.user.organizationId;
@@ -690,34 +719,7 @@ export const createProject = async (req, res) => {
     })),
   });
 
-  // Auto-create a default task so managers can log time immediately
-  const createdPhases = await req.db.phase.findMany({
-    where: { projectId: project.id },
-    orderBy: { order: 'asc' }
-  });
 
-  if (createdPhases.length > 0) {
-    const prefix = project.name.substring(0, 3).toUpperCase().replace(/[^A-Z0-9]/g, 'X');
-    await req.db.task.create({
-      data: {
-        projectId: project.id,
-        phaseId: createdPhases[0].id,
-        title: 'Project Setup & Planning',
-        description: 'Initial project setup and planning activities.',
-        status: 'TODO',
-        priority: 'MEDIUM',
-        type: 'TASK',
-        taskNumber: 1,
-        shortId: `${prefix}-1`,
-        assignees: project.managers?.length > 0 ? {
-          create: project.managers.map(m => ({
-            user: { connect: { id: m.id } },
-            assignedBy: { connect: { id: req.user.id } }
-          }))
-        } : undefined
-      }
-    });
-  }
 
   // Log activity
   try {
@@ -746,7 +748,7 @@ export const createProject = async (req, res) => {
   // Always send internal notification to managers
   if (project.managers && project.managers.length > 0) {
     for (const manager of project.managers) {
-      createNotification(req, {
+      await createNotification(req, {
         userId: manager.id,
         title: 'New Project Assigned',
         message: `You have been assigned as a manager for project: ${project.name}`,
@@ -943,34 +945,7 @@ export const bulkCreateProjects = async (req, res) => {
         })),
       });
 
-      // Auto-create a default task so managers can log time immediately
-      const createdPhases = await req.db.phase.findMany({
-        where: { projectId: project.id },
-        orderBy: { order: 'asc' }
-      });
 
-      if (createdPhases.length > 0) {
-        const prefix = project.name.substring(0, 3).toUpperCase().replace(/[^A-Z0-9]/g, 'X');
-        await req.db.task.create({
-          data: {
-            projectId: project.id,
-            phaseId: createdPhases[0].id,
-            title: 'Project Setup & Planning',
-            description: 'Initial project setup and planning activities.',
-            status: 'TODO',
-            priority: 'MEDIUM',
-            type: 'TASK',
-            taskNumber: 1,
-            shortId: `${prefix}-1`,
-            assignees: project.managers?.length > 0 ? {
-              create: project.managers.map(m => ({
-                user: { connect: { id: m.id } },
-                assignedBy: { connect: { id: req.user.id } }
-              }))
-            } : undefined
-          }
-        });
-      }
 
       // Activity Logging
       try {
@@ -996,7 +971,7 @@ export const bulkCreateProjects = async (req, res) => {
                 sendProjectManagerEmail(manager.email, project, manager, project.client || null, req.user.name, origin).catch(() => { });
               }
             }
-            createNotification(req, {
+            await createNotification(req, {
               userId: manager.id,
               title: 'New Project Assigned (Bulk)',
               message: `You have been assigned as manager for project: ${project.name}`,
@@ -1093,8 +1068,8 @@ export const updateProject = async (req, res) => {
   // Validation
   if (name !== undefined) {
     const trimmedName = name.trim();
-    if (trimmedName.length < 3 || trimmedName.length > 30) {
-      return res.status(400).json({ error: 'Project name must be between 3 and 30 characters' });
+    if (trimmedName.length < 3 || trimmedName.length > 80) {
+      return res.status(400).json({ error: 'Project name must be between 3 and 80 characters' });
     }
     
     if (/^\d/.test(trimmedName)) {
@@ -1219,7 +1194,7 @@ export const updateProject = async (req, res) => {
 
     // 1. Notify NEW managers they are assigned
     for (const manager of newManagers) {
-      createNotification(req, {
+      await createNotification(req, {
         userId: manager.id,
         title: 'Project Assignment Updated',
         message: `You have been assigned as manager for project: ${project.name}`,
@@ -1231,7 +1206,7 @@ export const updateProject = async (req, res) => {
     if (newManagers.length > 0) {
       const newManagerNames = newManagers.map(m => m.name).join(', ');
       for (const manager of keptManagers) {
-        createNotification(req, {
+        await createNotification(req, {
           userId: manager.id,
           title: 'Project Manager Added',
           message: `${newManagerNames} has been added as a manager for project: ${project.name}`,
@@ -1245,7 +1220,7 @@ export const updateProject = async (req, res) => {
         const membersToNotify = members.filter(m => !existingManagerIds.includes(m.id) && !newManagers.some(nm => nm.id === m.id));
         
         for (const member of membersToNotify) {
-          createNotification(req, {
+          await createNotification(req, {
             userId: member.id,
             title: 'Project Manager Added',
             message: `${newManagerNames} has been added as a manager for project: ${project.name}`,
@@ -1380,7 +1355,7 @@ export const deleteProject = async (req, res) => {
   // Always send internal notification to managers
   if (existingProject.managers && existingProject.managers.length > 0) {
     for (const manager of existingProject.managers) {
-      createNotification(req, {
+      await createNotification(req, {
         userId: manager.id,
         title: 'Project Deleted',
         message: `The project ${existingProject.name} has been deleted.`,
@@ -1474,7 +1449,7 @@ export const addProjectMember = async (req, res) => {
       },
     });
 
-    createNotification(req, {
+    await createNotification(req, {
       userId: userId,
       title: 'Added to Project',
       message: `You have been added to project: ${project.name}`,
@@ -1606,4 +1581,4 @@ export const updateProjectPhase = async (req, res) => {
     console.error('Error updating project phase:', error);
     res.status(500).json({ error: 'Failed to update phase' });
   }
-};
+};

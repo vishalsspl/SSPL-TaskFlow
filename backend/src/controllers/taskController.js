@@ -471,46 +471,60 @@ export const createTask = async (req, res) => {
   const senderName = req.user.name;
 
   for (const { user } of task.assignees) {
-    // 1. Always send in-app notification
-    createNotification(req, {
-      userId: user.id,
-      title: 'New Task Assigned',
-      message: `You have been assigned to task: ${task.title} in project: ${task.project.name}`,
-      type: 'TASK_ASSIGNED',
-      link: `/task-board?project=${task.projectId}&highlight=${task.id}&action=new`
-    });
+    if (user.id !== req.user.id) {
+      // 1. Always send in-app notification
+      await createNotification(req, {
+        userId: user.id,
+        title: 'New Task Assigned',
+        message: `You have been assigned to task: ${task.title} in project: ${task.project.name}`,
+        type: 'TASK_ASSIGNED',
+        link: `/task-board?project=${task.projectId}&highlight=${task.id}&action=new`
+      });
 
-    // 2. Only send email if enabled, supported, and user has email preference ON
-    if (hasEmailSupport && sendEmail && user?.email) {
-      const emailAllowed = await shouldSendEmail(req.db, user.id, 'TASK_ASSIGNED');
-      if (emailAllowed) {
-        sendTaskAssignmentEmail(
-          user.email,
-          task.title,
-          task.project.name,
-          senderName,
-          { priority: task.priority, dueDate: task.dueDate, status: task.status, description: task.description, baseUrl: origin }
-        ).catch(err => console.error('Failed to send task assignment email:', err));
+      // 2. Only send email if enabled, supported, and user has email preference ON
+      if (hasEmailSupport && sendEmail && user?.email) {
+        const emailAllowed = await shouldSendEmail(req.db, user.id, 'TASK_ASSIGNED');
+        if (emailAllowed) {
+          sendTaskAssignmentEmail(
+            user.email,
+            task.title,
+            task.project.name,
+            senderName,
+            { priority: task.priority, dueDate: task.dueDate, status: task.status, description: task.description, baseUrl: origin }
+          ).catch(err => console.error('Failed to send task assignment email:', err));
+        }
       }
     }
   }
 
-  if (hasEmailSupport && sendEmail && req.user.role === 'MEMBER') {
+  if (req.user.role === 'MEMBER') {
     const creator = await req.db.user.findUnique({
       where: { id: req.user.id },
       include: { manager: true }
     });
     
     // Notify member's direct manager
-    if (creator?.manager?.email) {
-      sendManagerTaskCreatedEmail(
-        creator.manager.email,
-        creator.manager.name,
-        req.user.name,
-        task.title,
-        task.project.name,
-        origin
-      ).catch(err => console.error('Failed to send manager task created email:', err));
+    if (creator?.manager) {
+      // In-app notification
+      await createNotification(req, {
+        userId: creator.manager.id,
+        title: 'New Task Created',
+        message: `${req.user.name} created a new task "${task.title}" in project: ${task.project.name}`,
+        type: 'TASK_ASSIGNED',
+        link: `/task-board?project=${task.projectId}&highlight=${task.id}&action=new`
+      });
+
+      // Email notification
+      if (hasEmailSupport && sendEmail && creator.manager.email && (await shouldSendEmail(req.db, creator.manager.id, 'TASK_ASSIGNED'))) {
+        sendManagerTaskCreatedEmail(
+          creator.manager.email,
+          creator.manager.name,
+          req.user.name,
+          task.title,
+          task.project.name,
+          origin
+        ).catch(err => console.error('Failed to send manager task created email:', err));
+      }
     }
 
     // Notify project managers if they exist and are different from the direct manager
@@ -521,15 +535,27 @@ export const createTask = async (req, res) => {
 
     if (fullProject?.managers && fullProject.managers.length > 0) {
       for (const m of fullProject.managers) {
-        if (m.email && m.email !== creator?.manager?.email) {
-          sendManagerTaskCreatedEmail(
-            m.email,
-            m.name,
-            req.user.name,
-            task.title,
-            task.project.name,
-            origin
-          ).catch(err => console.error('Failed to send project manager task created email:', err));
+        if (m.id !== creator?.manager?.id) {
+          // In-app notification
+          await createNotification(req, {
+            userId: m.id,
+            title: 'New Task Created',
+            message: `${req.user.name} created a new task "${task.title}" in project: ${task.project.name}`,
+            type: 'TASK_ASSIGNED',
+            link: `/task-board?project=${task.projectId}&highlight=${task.id}&action=new`
+          });
+
+          // Email notification
+          if (hasEmailSupport && sendEmail && m.email && (await shouldSendEmail(req.db, m.id, 'TASK_ASSIGNED'))) {
+            sendManagerTaskCreatedEmail(
+              m.email,
+              m.name,
+              req.user.name,
+              task.title,
+              task.project.name,
+              origin
+            ).catch(err => console.error('Failed to send project manager task created email:', err));
+          }
         }
       }
     }
@@ -545,7 +571,7 @@ export const createTask = async (req, res) => {
     if (fullProject?.managers && fullProject.managers.length > 0) {
       for (const m of fullProject.managers) {
         // In-app notification
-        createNotification(req, {
+        await createNotification(req, {
           userId: m.id,
           title: 'New Task Created',
           message: `${req.user.name} created a new task "${task.title}" in project: ${task.project.name}`,
@@ -773,22 +799,24 @@ export const bulkCreateTasks = async (req, res) => {
         const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
         const senderName = req.user.name;
         for (const { user } of task.assignees) {
-          if (user?.email) {
-            sendTaskAssignmentEmail(user.email, task.title, task.project.name, senderName, {
-              priority: task.priority,
-              dueDate: task.dueDate,
-              status: task.status,
-              description: task.description,
-              baseUrl: origin
-            }).catch(() => { });
+          if (user.id !== req.user.id) {
+            if (user?.email && (await shouldSendEmail(req.db, user.id, 'TASK_ASSIGNED'))) {
+              sendTaskAssignmentEmail(user.email, task.title, task.project.name, senderName, {
+                priority: task.priority,
+                dueDate: task.dueDate,
+                status: task.status,
+                description: task.description,
+                baseUrl: origin
+              }).catch(() => { });
+            }
+            await createNotification(req, {
+              userId: user.id,
+              title: 'New Task Assigned (Bulk)',
+              message: `You have been assigned to task: ${task.title} in project: ${task.project.name}`,
+              type: 'TASK_ASSIGNED',
+              link: `/task-board?project=${task.projectId}&highlight=${task.id}&action=new`
+            });
           }
-          createNotification(req, {
-            userId: user.id,
-            title: 'New Task Assigned (Bulk)',
-            message: `You have been assigned to task: ${task.title} in project: ${task.project.name}`,
-            type: 'TASK_ASSIGNED',
-            link: `/task-board?project=${task.projectId}&highlight=${task.id}&action=new`
-          });
         }
       }
 
@@ -985,13 +1013,15 @@ export const updateTask = async (req, res) => {
   // Always send internal notifications to newly added assignees
   if (addedIds.length > 0) {
     for (const { user } of task.assignees.filter((a) => addedIds.includes(a.userId))) {
-      createNotification(req, {
-        userId: user.id,
-        title: 'New Task Assigned',
-        message: `You have been assigned to task: ${task.title} in project: ${task.project.name}`,
-        type: 'TASK_ASSIGNED',
-        link: `/task-board?project=${task.projectId}&highlight=${task.id}&action=new`
-      });
+      if (user.id !== req.user.id) {
+        await createNotification(req, {
+          userId: user.id,
+          title: 'New Task Assigned',
+          message: `You have been assigned to task: ${task.title} in project: ${task.project.name}`,
+          type: 'TASK_ASSIGNED',
+          link: `/task-board?project=${task.projectId}&highlight=${task.id}&action=new`
+        });
+      }
     }
   }
 
@@ -1019,7 +1049,7 @@ export const updateTask = async (req, res) => {
 
     // 1. Notify assignees
     for (const { user } of task.assignees) {
-      createNotification(req, {
+      await createNotification(req, {
         userId: user.id,
         title: notificationTitle,
         message: notificationMessage,
@@ -1032,7 +1062,7 @@ export const updateTask = async (req, res) => {
     if (task.project?.managers) {
       const coManagers = task.project.managers.filter(m => m.id !== req.user.id);
       for (const manager of coManagers) {
-        createNotification(req, {
+        await createNotification(req, {
           userId: manager.id,
           title: `Task Approved by ${updatedBy} 🎉`,
           message: `${updatedBy} approved task "${task.title}".`,
@@ -1065,7 +1095,7 @@ export const updateTask = async (req, res) => {
     const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
     const senderName = req.user.name;
     for (const { user } of task.assignees.filter((a) => addedIds.includes(a.userId))) {
-      if (user?.email) {
+      if (user.id !== req.user.id && user?.email && (await shouldSendEmail(req.db, user.id, 'TASK_ASSIGNED'))) {
         sendTaskAssignmentEmail(
           user.email,
           task.title,
@@ -1088,7 +1118,7 @@ export const updateTask = async (req, res) => {
         // Skip newly added assignees because they already received the Assignment Email
         if (addedIds.includes(user.id)) continue;
 
-        if (isStatusChanged) {
+        if (isStatusChanged && (await shouldSendEmail(req.db, user.id, 'TASK_STATUS_UPDATED'))) {
           sendTaskStatusUpdateEmail(
             user.email,
             task.title,
@@ -1132,7 +1162,7 @@ export const updateTask = async (req, res) => {
 
     for (const manager of managersToNotify) {
       // In-app notification
-      createNotification(req, {
+      await createNotification(req, {
         userId: manager.id,
         title: 'Task Status Updated',
         message: `Task "${task.title}" status has been updated to ${task.status} by ${updatedBy}`,
@@ -1220,7 +1250,7 @@ export const deleteTask = async (req, res) => {
 
   for (const { user } of existingTask.assignees) {
     // Always send internal notification
-    createNotification(req, {
+    await createNotification(req, {
       userId: user.id,
       title: 'Task Deleted',
       message: `The task "${existingTask.title}" has been deleted from project ${existingTask.project.name}.`,
@@ -1245,7 +1275,7 @@ export const deleteTask = async (req, res) => {
   if (fullProject?.managers) {
     for (const manager of fullProject.managers) {
       if (manager.id !== req.user.id && !existingTask.assignees.some(a => a.user.id === manager.id)) {
-        createNotification(req, {
+        await createNotification(req, {
           userId: manager.id,
           title: 'Task Deleted',
           message: `The task "${existingTask.title}" has been deleted from project ${existingTask.project.name}.`,
@@ -1611,7 +1641,7 @@ export const updateTaskStatus = async (req, res) => {
 
     // Send notifications
     for (const user of notifyUsers.values()) {
-      if (hasEmailSupport && sendEmail && user.email) {
+      if (hasEmailSupport && sendEmail && user.email && (await shouldSendEmail(req.db, user.id, 'TASK_STATUS_UPDATED'))) {
         sendTaskStatusUpdateEmail(
           user.email,
           task.title,
@@ -1623,7 +1653,7 @@ export const updateTaskStatus = async (req, res) => {
         ).catch(err => console.error('Failed to send task status update email:', err));
       }
 
-      createNotification(req, {
+      await createNotification(req, {
         userId: user.id,
         title: notificationTitle,
         message: notificationMessage,
@@ -1643,7 +1673,7 @@ export const updateTaskStatus = async (req, res) => {
 
       if (approverIds.length > 0) {
         for (const mId of approverIds) {
-          createNotification(req, {
+          await createNotification(req, {
             userId: mId,
             title: 'Status Approval Required',
             message: `${req.user.name} moved task "${task.title}" to ${status}. Approval required.`,
@@ -1654,7 +1684,7 @@ export const updateTaskStatus = async (req, res) => {
           // Send email to manager
           if (hasEmailSupport && sendEmail) {
             const manager = await req.db.user.findUnique({ where: { id: mId } });
-            if (manager?.email) {
+            if (manager?.email && (await shouldSendEmail(req.db, manager.id, 'TASK_APPROVAL_REQUEST'))) {
               sendTaskStatusUpdateEmail(manager.email, task.title, task.project.name, status, req.user.name, origin)
                 .catch(err => console.error('Failed to send approval email to manager:', err));
             }
@@ -1663,7 +1693,7 @@ export const updateTaskStatus = async (req, res) => {
       } else {
         const admins = await req.db.user.findMany({ where: { organizationId: req.user.organizationId, role: 'ADMIN' } });
         for (const admin of admins) {
-          createNotification(req, {
+          await createNotification(req, {
             userId: admin.id,
             title: 'Status Approval Required',
             message: `${req.user.name} moved task "${task.title}" to ${status}. Approval required.`,
@@ -1672,7 +1702,7 @@ export const updateTaskStatus = async (req, res) => {
           });
           
           // Send email to admin
-          if (hasEmailSupport && sendEmail && admin.email) {
+          if (hasEmailSupport && sendEmail && admin.email && (await shouldSendEmail(req.db, admin.id, 'TASK_APPROVAL_REQUEST'))) {
             sendTaskStatusUpdateEmail(admin.email, task.title, task.project.name, status, req.user.name, origin)
               .catch(err => console.error('Failed to send approval email to admin:', err));
           }
@@ -1681,7 +1711,7 @@ export const updateTaskStatus = async (req, res) => {
 
       // Also notify direct manager if they are different from the primary approver
       if (member?.manager && !approverIds.includes(member.manager.id)) {
-        createNotification(req, {
+        await createNotification(req, {
           userId: member.manager.id,
           title: 'Task Status Updated',
           message: `Task "${task.title}" status has been updated to ${task.status} by ${req.user.name}`,
@@ -1689,7 +1719,7 @@ export const updateTaskStatus = async (req, res) => {
           link: `/task-board?project=${existingTask.projectId}&highlight=${task.id}`
         });
 
-        if (hasEmailSupport && sendEmail && member.manager.email) {
+        if (hasEmailSupport && sendEmail && member.manager.email && (await shouldSendEmail(req.db, member.manager.id, 'TASK_STATUS_UPDATED'))) {
           sendTaskStatusUpdateEmail(member.manager.email, task.title, task.project.name, status, req.user.name, origin)
             .catch(err => console.error('Failed to send task status update email to direct manager:', err));
         }
@@ -1720,7 +1750,7 @@ export const updateTaskStatus = async (req, res) => {
 
       for (const manager of managersToNotify) {
         // In-app notification
-        createNotification(req, {
+        await createNotification(req, {
           userId: manager.id,
           title: 'Task Status Updated',
           message: `Task "${task.title}" status has been updated to ${task.status} by ${updatedBy}${assignedByName ? ` (Assigned by: ${assignedByName})` : ''}`,
@@ -1729,7 +1759,7 @@ export const updateTaskStatus = async (req, res) => {
         });
 
         // Email notification
-        if (hasEmailSupport && sendEmail && manager.email) {
+        if (hasEmailSupport && sendEmail && manager.email && (await shouldSendEmail(req.db, manager.id, 'TASK_STATUS_UPDATED'))) {
           sendTaskStatusUpdateEmail(
             manager.email,
             task.title,
@@ -1814,7 +1844,7 @@ export const approveTaskStatus = async (req, res) => {
     const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
 
     for (const { user } of updatedTask.assignees) {
-      createNotification(req, {
+      await createNotification(req, {
         userId: user.id,
         title: `Task Approved by ${req.user.name} 🎉`,
         message: `Your task "${task.title}" was approved by ${req.user.name} and moved to Completed.`,
@@ -1822,7 +1852,7 @@ export const approveTaskStatus = async (req, res) => {
         link: `/task-board?project=${task.projectId}&highlight=${task.id}&action=approved`
       });
 
-      if (hasEmailSupport && sendEmail && user.email) {
+      if (hasEmailSupport && sendEmail && user.email && (await shouldSendEmail(req.db, user.id, 'TASK_APPROVED'))) {
         sendTaskStatusUpdateEmail(
           user.email,
           task.title,
@@ -1843,14 +1873,14 @@ export const approveTaskStatus = async (req, res) => {
     if (fullProject?.managers) {
       for (const manager of fullProject.managers) {
         if (manager.id !== req.user.id) {
-          createNotification(req, {
+          await createNotification(req, {
             userId: manager.id,
             title: `Task Approved by ${req.user.name} 🎉`,
             message: `Task "${task.title}" was approved by ${req.user.name} and moved to Completed.`,
             type: 'TASK_APPROVED',
             link: `/task-board?project=${task.projectId}&highlight=${task.id}&action=approved`
           });
-          if (hasEmailSupport && sendEmail && manager.email) {
+          if (hasEmailSupport && sendEmail && manager.email && (await shouldSendEmail(req.db, manager.id, 'TASK_APPROVED'))) {
             sendTaskStatusUpdateEmail(
               manager.email,
               task.title,
@@ -1942,7 +1972,7 @@ export const rejectTaskStatus = async (req, res) => {
         message += ` Reason: "${rejectionReason}"`;
       }
       
-      createNotification(req, {
+      await createNotification(req, {
         userId: user.id,
         title: 'Task Rejected ⚠️',
         message,
@@ -1950,7 +1980,7 @@ export const rejectTaskStatus = async (req, res) => {
         link: `/task-board?project=${task.projectId}&highlight=${task.id}&action=rejected`
       });
 
-      if (hasEmailSupport && sendEmail && user.email) {
+      if (hasEmailSupport && sendEmail && user.email && (await shouldSendEmail(req.db, user.id, 'TASK_REJECTED'))) {
         sendTaskStatusUpdateEmail(
           user.email,
           task.title,
@@ -1972,14 +2002,14 @@ export const rejectTaskStatus = async (req, res) => {
         if (manager.id !== req.user.id) {
           let coManagerMsg = `Task "${task.title}" was rejected by ${req.user.name} and moved back to In Progress.`;
           if (rejectionReason) coManagerMsg += ` Reason: "${rejectionReason}"`;
-          createNotification(req, {
+          await createNotification(req, {
             userId: manager.id,
             title: 'Task Rejected ⚠️',
             message: coManagerMsg,
             type: 'TASK_REJECTED',
             link: `/task-board?project=${task.projectId}&highlight=${task.id}&action=rejected`
           });
-          if (hasEmailSupport && sendEmail && manager.email) {
+          if (hasEmailSupport && sendEmail && manager.email && (await shouldSendEmail(req.db, manager.id, 'TASK_REJECTED'))) {
             sendTaskStatusUpdateEmail(
               manager.email,
               task.title,
@@ -2070,7 +2100,7 @@ export const addTaskComment = async (req, res) => {
     if (task) {
       for (const assignee of task.assignees) {
         if (assignee.userId !== req.user.id) {
-          createNotification(req, {
+          await createNotification(req, {
             userId: assignee.userId,
             title: 'New Comment',
             message: `${req.user.name} commented on task: ${task.title}`,
@@ -2078,7 +2108,7 @@ export const addTaskComment = async (req, res) => {
             link: `/task-board?project=${task.projectId}&highlight=${task.id}`
           });
           
-          if (hasEmailSupport && assignee.user?.email) {
+          if (hasEmailSupport && assignee.user?.email && (await shouldSendEmail(req.db, assignee.user.id, 'TASK_COMMENT'))) {
             sendTaskCommentEmail(
               assignee.user.email,
               task.title,

@@ -98,7 +98,7 @@ export const createDocument = async (req, res) => {
         for (const workload of project.workloads) {
           if (workload.userId !== authorId) {
             // Send in-app notification
-            createNotification(req, {
+            await createNotification(req, {
               userId: workload.userId,
               title: 'New Document Uploaded',
               message: `A new document "${title}" has been uploaded to project: ${project.name}`,

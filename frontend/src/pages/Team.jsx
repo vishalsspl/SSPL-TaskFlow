@@ -308,6 +308,10 @@ const Team = () => {
         if (!updateData.password) {
           delete updateData.password; // Don't send password if not changing
         }
+        if (updateData.customRoleId !== undefined) {
+          updateData.customRoleIds = updateData.customRoleId ? [updateData.customRoleId] : [];
+          delete updateData.customRoleId;
+        }
         await api.put(`/users/${editingUser.id}`, updateData);
       } else {
         // Create new user via invite
@@ -427,7 +431,7 @@ const Team = () => {
       name: user.name,
       email: user.email,
       role: user.role,
-      customRoleId: user.customRoleId || '',
+      customRoleId: user.customRoles?.[0]?.id || '',
       password: '',
       isApproved: user.isApproved,
       sendEmail: true,
@@ -919,12 +923,13 @@ const Team = () => {
                           <TableHead>Manager</TableHead>
                           <TableHead>Email</TableHead>
                           <TableHead>Role</TableHead>
+                          <TableHead>Role/Profile</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {displayUsers.filter(u => u.role === 'MANAGER' || u.role === 'ADMIN').length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
+                            <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
                               No managers found
                             </TableCell>
                           </TableRow>
@@ -951,6 +956,15 @@ const Team = () => {
                                   {user.role}
                                 </Badge>
                               </TableCell>
+                              <TableCell>
+                                {user.customRoles?.length > 0 ? (
+                                  <Badge variant="outline" className="text-[9px] font-bold">
+                                    {user.customRoles.map(r => r.name).join(', ')}
+                                  </Badge>
+                                ) : (
+                                  <span className="text-muted-foreground text-xs">Not Assigned</span>
+                                )}
+                              </TableCell>
                             </TableRow>
                           ))
                         )}
@@ -972,12 +986,13 @@ const Team = () => {
                           <TableHead>Client</TableHead>
                           <TableHead>Email</TableHead>
                           <TableHead>Role</TableHead>
+                          <TableHead>Role/Profile</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {displayUsers.filter(u => u.role === 'CLIENT').length === 0 ? (
                           <TableRow>
-                            <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
+                            <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
                               No clients found
                             </TableCell>
                           </TableRow>
@@ -1003,6 +1018,15 @@ const Team = () => {
                                 >
                                   {user.role}
                                 </Badge>
+                              </TableCell>
+                              <TableCell>
+                                {user.customRoles?.length > 0 ? (
+                                  <Badge variant="outline" className="text-[9px] font-bold">
+                                    {user.customRoles.map(r => r.name).join(', ')}
+                                  </Badge>
+                                ) : (
+                                  <span className="text-muted-foreground text-xs">Not Assigned</span>
+                                )}
                               </TableCell>
                             </TableRow>
                           ))
@@ -1136,6 +1160,7 @@ const Team = () => {
                             <TableHead>Member</TableHead>
                             <TableHead>Email</TableHead>
                             <TableHead>Role</TableHead>
+                            <TableHead>Role/Profile</TableHead>
                             {selectedManagerId !== 'CLIENTS_LIST' && (
                               <TableHead>{selectedManagerId !== 'ALL' && selectedManagerId !== 'MEMBERS_LIST' ? 'Clients' : 'Managers'}</TableHead>
                             )}
@@ -1145,7 +1170,7 @@ const Team = () => {
                         <TableBody>
                           {displayUsers.length === 0 ? (
                             <TableRow>
-                              <TableCell colSpan={selectedManagerId === 'CLIENTS_LIST' ? 4 : 5} className="text-center py-8 text-muted-foreground">
+                              <TableCell colSpan={selectedManagerId === 'CLIENTS_LIST' ? 5 : 6} className="text-center py-8 text-muted-foreground">
                                 No team members found
                               </TableCell>
                             </TableRow>
@@ -1171,10 +1196,14 @@ const Team = () => {
                                   >
                                     {user.role}
                                   </Badge>
-                                  {user.customRole && (
-                                    <Badge variant="outline" className="ml-2 text-[9px] font-bold">
-                                      {user.customRole.name}
+                                </TableCell>
+                                <TableCell>
+                                  {user.customRoles?.length > 0 ? (
+                                    <Badge variant="outline" className="text-[9px] font-bold">
+                                      {user.customRoles.map(r => r.name).join(', ')}
                                     </Badge>
+                                  ) : (
+                                    <span className="text-muted-foreground text-xs">Not Assigned</span>
                                   )}
                                 </TableCell>
                                 {selectedManagerId !== 'CLIENTS_LIST' && (
@@ -1268,12 +1297,12 @@ const Team = () => {
                                 style={getRoleBadgeStyle(user.role)}
                               >
                                 {user.role}
+                                {user.customRoles?.length > 0 && (
+                                  <Badge variant="secondary" className="bg-primary/5 text-primary text-[10px] sm:text-xs ml-1">
+                                    {user.customRoles.map(r => r.name).join(', ')}
+                                  </Badge>
+                                )}
                               </Badge>
-                              {user.customRole && (
-                                <Badge variant="outline" className="text-[9px] font-bold shrink-0">
-                                  {user.customRole.name}
-                                </Badge>
-                              )}
                             </div>
                             {currentUser?.role !== 'CLIENT' && currentUser?.role !== 'MEMBER' && (
                               <div className="flex gap-2 mt-3">

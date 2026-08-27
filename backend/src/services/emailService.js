@@ -576,7 +576,7 @@ export const sendNewTicketNotification = async (to, ticketTitle, description, pr
   }
 };
 
-export const sendTicketStatusUpdateNotification = async (to, ticketTitle, newStatus, updatedBy) => {
+export const sendTicketStatusUpdateNotification = async (to, ticketTitle, newStatus, updatedBy, ticketId, baseUrl) => {
   try {
     if (!to) return null;
     const info = await transporter.sendMail({
@@ -587,9 +587,11 @@ export const sendTicketStatusUpdateNotification = async (to, ticketTitle, newSta
         refLabel: 'TaskFlow / Support Tickets',
         refTitle: ticketTitle,
         fields: [
-          { label: 'New Status', value: newStatus },
+          { label: 'New Status', value: newStatus.replace('_', ' ') },
           { label: 'Updated By', value: updatedBy }
-        ]
+        ],
+        ctaUrl: `${getBaseUrl(baseUrl)}/tickets/${ticketId}`,
+        ctaLabel: 'View this ticket in TaskFlow'
       }),
     });
     console.log(`[EmailService] Ticket Status Update Email sent to ${to}: ${info.messageId}`);

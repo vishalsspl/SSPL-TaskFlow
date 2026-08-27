@@ -14,7 +14,7 @@ async function main() {
         for (const org of orgs) {
             console.log(`\nPushing schema to: ${org.name}...`);
             try {
-                execSync(`npx prisma db push --schema=prisma/tenant/schema.prisma --accept-data-loss`, {
+                execSync(`npx prisma db push --schema=prisma/tenant/schema.prisma --accept-data-loss --skip-generate`, {
                     env: { ...process.env, TENANT_DATABASE_URL: org.dbUrl },
                     stdio: 'inherit',
                     cwd: process.cwd()

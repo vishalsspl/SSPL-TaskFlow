@@ -1,5 +1,5 @@
 import prisma from '../lib/prisma.js';
-import { createNotification } from '../utils/notifications.js';
+import { createNotification, shouldSendEmail } from '../utils/notifications.js';
 import { sendTimesheetSubmissionEmail } from '../services/emailService.js';
 
 /**
@@ -140,7 +140,7 @@ export const addWorklog = async (req, res) => {
                     link: '/timesheets'
                 });
 
-                if (manager.email) {
+                if (manager.email && (await shouldSendEmail(req.db, manager.id, 'WORKLOG_SUBMITTED'))) {
                     await sendTimesheetSubmissionEmail(
                         manager.email,
                         manager.name,
