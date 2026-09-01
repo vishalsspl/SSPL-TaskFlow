@@ -80,11 +80,34 @@ export const login = async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
 
-  // 1. Look up user in MAIN DB (auth lookup table)
-  const user = await prisma.user.findFirst({
-    where: { email },
-    include: { organization: true },
-  });
+  // Helper: attempt the database lookup with one retry for transient DB errors
+  const findUserWithRetry = async () => {
+    try {
+      return await prisma.user.findFirst({
+        where: { email },
+        include: { organization: true },
+      });
+    } catch (dbErr) {
+      const msg = dbErr.message || '';
+      if (msg.includes('starting up') || msg.includes('Connection refused') || msg.includes('connect ECONNREFUSED')) {
+        console.warn('[Login] Database not ready, retrying in 2s...');
+        await new Promise(r => setTimeout(r, 2000));
+        return await prisma.user.findFirst({
+          where: { email },
+          include: { organization: true },
+        });
+      }
+      throw dbErr;
+    }
+  };
+
+  let user;
+  try {
+    user = await findUserWithRetry();
+  } catch (dbErr) {
+    console.error('[Login] Database error:', dbErr.message);
+    return res.status(503).json({ error: 'Database is temporarily unavailable. Please try again in a few seconds.' });
+  }
 
   if (!user) return res.status(401).json({ error: 'Invalid credentials' });
 

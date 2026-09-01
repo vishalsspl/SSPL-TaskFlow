@@ -1,6 +1,7 @@
 import { sendTaskAssignmentEmail, sendTaskStatusUpdateEmail, sendTaskUpdateEmail, sendTaskDeleteEmail, sendTaskCommentEmail, sendManagerTaskCreatedEmail } from '../services/emailService.js';
 import { createNotification, shouldSendEmail } from '../utils/notifications.js';
 import prisma from '../lib/prisma.js';
+import { sendPushNotification } from '../utils/firebasePush.js';
 
 
 export const getAllTasks = async (req, res) => {
@@ -471,28 +472,26 @@ export const createTask = async (req, res) => {
   const senderName = req.user.name;
 
   for (const { user } of task.assignees) {
-    if (user.id !== req.user.id) {
-      // 1. Always send in-app notification
-      await createNotification(req, {
-        userId: user.id,
-        title: 'New Task Assigned',
-        message: `You have been assigned to task: ${task.title} in project: ${task.project.name}`,
-        type: 'TASK_ASSIGNED',
-        link: `/task-board?project=${task.projectId}&highlight=${task.id}&action=new`
-      });
+    // 1. Always send in-app notification (and Push Notification internally)
+    await createNotification(req, {
+      userId: user.id,
+      title: 'New Task Assigned',
+      message: `You have been assigned to task: ${task.title} in project: ${task.project.name}`,
+      type: 'TASK_ASSIGNED',
+      link: `/task-board?project=${task.projectId}&highlight=${task.id}&action=new`
+    });
 
-      // 2. Only send email if enabled, supported, and user has email preference ON
-      if (hasEmailSupport && sendEmail && user?.email) {
-        const emailAllowed = await shouldSendEmail(req.db, user.id, 'TASK_ASSIGNED');
-        if (emailAllowed) {
-          sendTaskAssignmentEmail(
-            user.email,
-            task.title,
-            task.project.name,
-            senderName,
-            { priority: task.priority, dueDate: task.dueDate, status: task.status, description: task.description, baseUrl: origin }
-          ).catch(err => console.error('Failed to send task assignment email:', err));
-        }
+    // 2. Only send email if enabled, supported, and user has email preference ON
+    if (hasEmailSupport && sendEmail && user?.email && user.id !== req.user.id) {
+      const emailAllowed = await shouldSendEmail(req.db, user.id, 'TASK_ASSIGNED');
+      if (emailAllowed) {
+        sendTaskAssignmentEmail(
+          user.email,
+          task.title,
+          task.project.name,
+          senderName,
+          { priority: task.priority, dueDate: task.dueDate, status: task.status, description: task.description, baseUrl: origin }
+        ).catch(err => console.error('Failed to send task assignment email:', err));
       }
     }
   }

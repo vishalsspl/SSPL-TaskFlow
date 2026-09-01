@@ -5560,6 +5560,7 @@ export namespace Prisma {
     passwordHash: string | null
     role: $Enums.Role | null
     avatar: string | null
+    fcmToken: string | null
     isApproved: boolean | null
     mustChangePassword: boolean | null
     resetToken: string | null
@@ -5577,6 +5578,7 @@ export namespace Prisma {
     passwordHash: string | null
     role: $Enums.Role | null
     avatar: string | null
+    fcmToken: string | null
     isApproved: boolean | null
     mustChangePassword: boolean | null
     resetToken: string | null
@@ -5594,6 +5596,7 @@ export namespace Prisma {
     passwordHash: number
     role: number
     avatar: number
+    fcmToken: number
     isApproved: number
     mustChangePassword: number
     resetToken: number
@@ -5613,6 +5616,7 @@ export namespace Prisma {
     passwordHash?: true
     role?: true
     avatar?: true
+    fcmToken?: true
     isApproved?: true
     mustChangePassword?: true
     resetToken?: true
@@ -5630,6 +5634,7 @@ export namespace Prisma {
     passwordHash?: true
     role?: true
     avatar?: true
+    fcmToken?: true
     isApproved?: true
     mustChangePassword?: true
     resetToken?: true
@@ -5647,6 +5652,7 @@ export namespace Prisma {
     passwordHash?: true
     role?: true
     avatar?: true
+    fcmToken?: true
     isApproved?: true
     mustChangePassword?: true
     resetToken?: true
@@ -5737,6 +5743,7 @@ export namespace Prisma {
     passwordHash: string
     role: $Enums.Role
     avatar: string | null
+    fcmToken: string | null
     isApproved: boolean
     mustChangePassword: boolean
     resetToken: string | null
@@ -5771,6 +5778,7 @@ export namespace Prisma {
     passwordHash?: boolean
     role?: boolean
     avatar?: boolean
+    fcmToken?: boolean
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: boolean
@@ -5810,6 +5818,7 @@ export namespace Prisma {
     passwordHash?: boolean
     role?: boolean
     avatar?: boolean
+    fcmToken?: boolean
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: boolean
@@ -5829,6 +5838,7 @@ export namespace Prisma {
     passwordHash?: boolean
     role?: boolean
     avatar?: boolean
+    fcmToken?: boolean
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: boolean
@@ -5900,6 +5910,7 @@ export namespace Prisma {
       passwordHash: string
       role: $Enums.Role
       avatar: string | null
+      fcmToken: string | null
       isApproved: boolean
       mustChangePassword: boolean
       resetToken: string | null
@@ -6328,6 +6339,7 @@ export namespace Prisma {
     readonly passwordHash: FieldRef<"User", 'String'>
     readonly role: FieldRef<"User", 'Role'>
     readonly avatar: FieldRef<"User", 'String'>
+    readonly fcmToken: FieldRef<"User", 'String'>
     readonly isApproved: FieldRef<"User", 'Boolean'>
     readonly mustChangePassword: FieldRef<"User", 'Boolean'>
     readonly resetToken: FieldRef<"User", 'String'>
@@ -23761,6 +23773,7 @@ export namespace Prisma {
     passwordHash: 'passwordHash',
     role: 'role',
     avatar: 'avatar',
+    fcmToken: 'fcmToken',
     isApproved: 'isApproved',
     mustChangePassword: 'mustChangePassword',
     resetToken: 'resetToken',
@@ -24570,6 +24583,7 @@ export namespace Prisma {
     passwordHash?: StringFilter<"User"> | string
     role?: EnumRoleFilter<"User"> | $Enums.Role
     avatar?: StringNullableFilter<"User"> | string | null
+    fcmToken?: StringNullableFilter<"User"> | string | null
     isApproved?: BoolFilter<"User"> | boolean
     mustChangePassword?: BoolFilter<"User"> | boolean
     resetToken?: StringNullableFilter<"User"> | string | null
@@ -24608,6 +24622,7 @@ export namespace Prisma {
     passwordHash?: SortOrder
     role?: SortOrder
     avatar?: SortOrderInput | SortOrder
+    fcmToken?: SortOrderInput | SortOrder
     isApproved?: SortOrder
     mustChangePassword?: SortOrder
     resetToken?: SortOrderInput | SortOrder
@@ -24650,6 +24665,7 @@ export namespace Prisma {
     passwordHash?: StringFilter<"User"> | string
     role?: EnumRoleFilter<"User"> | $Enums.Role
     avatar?: StringNullableFilter<"User"> | string | null
+    fcmToken?: StringNullableFilter<"User"> | string | null
     isApproved?: BoolFilter<"User"> | boolean
     mustChangePassword?: BoolFilter<"User"> | boolean
     resetToken?: StringNullableFilter<"User"> | string | null
@@ -24688,6 +24704,7 @@ export namespace Prisma {
     passwordHash?: SortOrder
     role?: SortOrder
     avatar?: SortOrderInput | SortOrder
+    fcmToken?: SortOrderInput | SortOrder
     isApproved?: SortOrder
     mustChangePassword?: SortOrder
     resetToken?: SortOrderInput | SortOrder
@@ -24711,6 +24728,7 @@ export namespace Prisma {
     passwordHash?: StringWithAggregatesFilter<"User"> | string
     role?: EnumRoleWithAggregatesFilter<"User"> | $Enums.Role
     avatar?: StringNullableWithAggregatesFilter<"User"> | string | null
+    fcmToken?: StringNullableWithAggregatesFilter<"User"> | string | null
     isApproved?: BoolWithAggregatesFilter<"User"> | boolean
     mustChangePassword?: BoolWithAggregatesFilter<"User"> | boolean
     resetToken?: StringNullableWithAggregatesFilter<"User"> | string | null
@@ -26388,6 +26406,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -26425,6 +26444,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -26460,6 +26480,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -26497,6 +26518,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -26533,6 +26555,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -26549,6 +26572,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -26565,6 +26589,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -28550,6 +28575,7 @@ export namespace Prisma {
     passwordHash?: SortOrder
     role?: SortOrder
     avatar?: SortOrder
+    fcmToken?: SortOrder
     isApproved?: SortOrder
     mustChangePassword?: SortOrder
     resetToken?: SortOrder
@@ -28567,6 +28593,7 @@ export namespace Prisma {
     passwordHash?: SortOrder
     role?: SortOrder
     avatar?: SortOrder
+    fcmToken?: SortOrder
     isApproved?: SortOrder
     mustChangePassword?: SortOrder
     resetToken?: SortOrder
@@ -28584,6 +28611,7 @@ export namespace Prisma {
     passwordHash?: SortOrder
     role?: SortOrder
     avatar?: SortOrder
+    fcmToken?: SortOrder
     isApproved?: SortOrder
     mustChangePassword?: SortOrder
     resetToken?: SortOrder
@@ -32584,6 +32612,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -32619,6 +32648,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -32968,6 +32998,7 @@ export namespace Prisma {
     passwordHash?: StringFilter<"User"> | string
     role?: EnumRoleFilter<"User"> | $Enums.Role
     avatar?: StringNullableFilter<"User"> | string | null
+    fcmToken?: StringNullableFilter<"User"> | string | null
     isApproved?: BoolFilter<"User"> | boolean
     mustChangePassword?: BoolFilter<"User"> | boolean
     resetToken?: StringNullableFilter<"User"> | string | null
@@ -33319,6 +33350,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -33355,6 +33387,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -33607,6 +33640,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -33643,6 +33677,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -33682,6 +33717,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -33718,6 +33754,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -34469,6 +34506,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34505,6 +34543,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34999,6 +35038,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -35035,6 +35075,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -35074,6 +35115,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -35110,6 +35152,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -35149,6 +35192,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -35185,6 +35229,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -35542,6 +35587,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35578,6 +35624,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35639,6 +35686,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35675,6 +35723,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36684,6 +36733,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -36720,6 +36770,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -36759,6 +36810,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -36795,6 +36847,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -36910,6 +36963,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36946,6 +37000,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36991,6 +37046,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37027,6 +37083,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37120,6 +37177,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -37156,6 +37214,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -37271,6 +37330,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37307,6 +37367,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37341,6 +37402,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -37377,6 +37439,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -37545,6 +37608,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37581,6 +37645,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37745,6 +37810,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -37781,6 +37847,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -37949,6 +38016,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37985,6 +38053,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38149,6 +38218,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -38185,6 +38255,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -38294,6 +38365,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38330,6 +38402,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38512,6 +38585,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -38548,6 +38622,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -38713,6 +38788,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38749,6 +38825,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38828,6 +38905,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -38864,6 +38942,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -38949,6 +39028,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38985,6 +39065,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39019,6 +39100,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -39055,6 +39137,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -39255,6 +39338,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39291,6 +39375,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39467,6 +39552,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -39503,6 +39589,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -39636,6 +39723,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39672,6 +39760,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39795,6 +39884,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -39831,6 +39921,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -39964,6 +40055,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40000,6 +40092,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40123,6 +40216,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -40159,6 +40253,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -40292,6 +40387,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40328,6 +40424,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40451,6 +40548,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -40487,6 +40585,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -40620,6 +40719,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40656,6 +40756,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40838,6 +40939,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -40874,6 +40976,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -40989,6 +41092,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41025,6 +41129,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41059,6 +41164,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -41167,6 +41273,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41202,6 +41309,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41237,6 +41345,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41549,6 +41658,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41585,6 +41695,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41620,6 +41731,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41637,6 +41749,7 @@ export namespace Prisma {
     passwordHash: string
     role?: $Enums.Role
     avatar?: string | null
+    fcmToken?: string | null
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -41852,6 +41965,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41888,6 +42002,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41923,6 +42038,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42628,6 +42744,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42664,6 +42781,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42699,6 +42817,7 @@ export namespace Prisma {
     passwordHash?: StringFieldUpdateOperationsInput | string
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
+    fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null

@@ -1,6 +1,7 @@
 import { useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
+import { requestNotificationPermission } from './firebase';
 
 // ── Eagerly loaded (needed immediately on every page load) ─────────────────
 import { Toaster } from './components/ui/toaster';
@@ -180,6 +181,13 @@ function App() {
     if (token && user?.id) {
       // For SuperAdmins, organizationId will be null, which is now handled in server.js
       initSocket(user.id, user.organizationId);
+      
+      // Request Push Notification Permission
+      requestNotificationPermission().then(fcmToken => {
+        if (fcmToken) {
+          api.post('/users/update-fcm', { fcmToken }).catch(err => console.error('Failed to update FCM token', err));
+        }
+      });
     } else if (!token && isConnected) {
       disconnectSocket();
     }

@@ -4462,3 +4462,21 @@ The table `public._UserCustomRoles` does not exist in the current database.
 Path: /api/users
 User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
 ---
+2026-09-01T10:37:37.594Z [GLOBAL_ERROR] 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The column `User.fcmToken` does not exist in the current database.
+Stack: PrismaClientKnownRequestError: 
+Invalid `prisma.user.findMany()` invocation:
+
+
+The column `User.fcmToken` does not exist in the current database.
+    at $n.handleRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6623)
+    at $n.request (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:121:6307)
+    at async l (C:\Users\Shweta\Desktop\Vishal\SSPL-TaskFlow-main\backend\generated\tenant-client\runtime\library.js:130:9633)
+    at async createProject (file:///C:/Users/Shweta/Desktop/Vishal/SSPL-TaskFlow-main/backend/src/controllers/projectController.js:594:22)
+Path: /api/projects
+User: a6f2643a-6e8f-4bf2-bd33-6e86e4236c71
+---

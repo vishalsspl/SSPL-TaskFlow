@@ -55,6 +55,13 @@ export const DEFAULT_NOTIFICATION_PREFERENCES = {
     system: true,
     ...Object.keys(NOTIFICATION_CATEGORIES).reduce((acc, key) => ({ ...acc, [key]: true }), {})
   },
+  push: {
+    tasks: true,
+    team: true,
+    tickets: true,
+    system: true,
+    ...Object.keys(NOTIFICATION_CATEGORIES).reduce((acc, key) => ({ ...acc, [key]: true }), {})
+  },
 };
 
 // Helper to get project IDs managed by a user
@@ -1126,18 +1133,19 @@ export const updateNotificationPreferences = async (req, res) => {
   try {
     await ensureUserSchema(req.db);
 
-    const { email, inApp } = req.body;
+    const { email, inApp, push } = req.body;
 
     // Validate structure
     const validCategories = [
       'tasks', 'team', 'tickets', 'system',
       ...Object.keys(NOTIFICATION_CATEGORIES)
     ];
-    const prefs = { email: {}, inApp: {} };
+    const prefs = { email: {}, inApp: {}, push: {} };
 
     for (const cat of validCategories) {
       if (email && email[cat] !== undefined) prefs.email[cat] = Boolean(email[cat]);
       if (inApp && inApp[cat] !== undefined) prefs.inApp[cat] = Boolean(inApp[cat]);
+      if (push && push[cat] !== undefined) prefs.push[cat] = Boolean(push[cat]);
     }
 
     await req.db.$executeRawUnsafe(
@@ -1152,3 +1160,29 @@ export const updateNotificationPreferences = async (req, res) => {
     res.status(500).json({ error: 'Failed to update notification preferences' });
   }
 };
+
+
+export const updateFcmToken = async (req, res) => {
+  try {
+    const { fcmToken } = req.body;
+    const userId = req.user.id;
+
+    if (req.db) {
+      await req.db.user.update({
+        where: { id: userId },
+        data: { fcmToken }
+      });
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { fcmToken }
+    });
+
+    res.json({ message: 'FCM token updated successfully' });
+  } catch (error) {
+    console.error('Error updating FCM token:', error);
+    res.status(500).json({ error: 'Failed to update FCM token' });
+  }
+};
+

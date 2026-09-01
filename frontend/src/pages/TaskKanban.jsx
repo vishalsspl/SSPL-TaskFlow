@@ -339,7 +339,7 @@ const TaskKanban = () => {
                                         {project.name?.charAt(0)}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <h3 className="font-bold text-foreground Montserrat truncate group-hover:text-primary transition-colors">{project.name}</h3>
+                                        <h3 className="font-bold text-foreground Montserrat group-hover:text-primary transition-colors">{project.name}</h3>
                                         {project.name.toLowerCase() !== 'general' && (
                                             <p className="text-xs text-muted-foreground capitalize">{project.status?.toLowerCase()}</p>
                                         )}
@@ -373,7 +373,7 @@ const TaskKanban = () => {
                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg>
                                 </Button>
                             )}
-                            <h1 className="text-lg sm:text-2xl font-black Montserrat text-foreground tracking-tight truncate">
+                            <h1 className="text-lg sm:text-2xl font-black Montserrat text-foreground tracking-tight">
                                 {projects.find(p => p.id === selectedProjectId)?.name || 'Project Kanban'}
                             </h1>
                         </div>

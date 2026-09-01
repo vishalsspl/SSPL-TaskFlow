@@ -102,6 +102,26 @@ const RolesSettings = () => {
       toast({ title: 'Name is required', variant: 'destructive' });
       return;
     }
+    
+    if (!/[a-zA-Z\p{L}]/u.test(formData.name)) {
+      toast({ title: 'Profile name must contain at least one letter', variant: 'destructive' });
+      return;
+    }
+    
+    if (formData.name.length > 50) {
+      toast({ title: 'Profile name cannot exceed 50 characters', variant: 'destructive' });
+      return;
+    }
+
+    const isDuplicate = roles.some(role => 
+      role.name.toLowerCase().trim() === formData.name.toLowerCase().trim() && 
+      (!currentRole || role.id !== currentRole.id)
+    );
+
+    if (isDuplicate) {
+      toast({ title: 'A profile with this name already exists', variant: 'destructive' });
+      return;
+    }
 
     try {
       setIsSaving(true);
@@ -242,7 +262,10 @@ const RolesSettings = () => {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground line-clamp-2 min-h-[40px]">
+                <p 
+                  className="text-sm text-muted-foreground line-clamp-2 min-h-[40px]"
+                  title={role.description || ''}
+                >
                   {role.description || <span className="italic opacity-50">No description provided</span>}
                 </p>
                 <div className="flex items-center gap-2 mt-2">
@@ -280,10 +303,16 @@ const RolesSettings = () => {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-foreground/90 font-semibold">Profile Name</Label>
+              <div className="flex justify-between items-center">
+                <Label htmlFor="name" className="text-foreground/90 font-semibold">Profile Name</Label>
+                <span className={`text-xs ${formData.name.length >= 50 ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
+                  {formData.name.length}/50
+                </span>
+              </div>
               <Input
                 id="name"
                 value={formData.name}
+                maxLength={50}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="e.g. Frontend Developer"
                 className="h-11"

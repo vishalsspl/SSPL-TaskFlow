@@ -1,5 +1,6 @@
 import prisma from '../lib/prisma.js';
 import { sendProjectManagerEmail, sendProjectClientEmail, sendProjectMemberAssignmentEmail, sendProjectUpdateEmail, sendProjectDeleteEmail } from '../services/emailService.js';
+import { sendPushNotification } from '../utils/firebasePush.js';
 
 /** Fetch team members (MEMBER/MANAGER roles) assigned to a project via Workload */
 const getProjectTeamMembers = async (db, projectId) => {

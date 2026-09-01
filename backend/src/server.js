@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import './config/firebase.js';
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';

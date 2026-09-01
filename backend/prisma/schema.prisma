@@ -92,6 +92,7 @@ model User {
   name           String
   passwordHash   String
   role           Role
+  fcmToken       String?
 
   isApproved         Boolean  @default(false)
   mustChangePassword Boolean  @default(true)

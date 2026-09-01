@@ -1,4 +1,5 @@
 import { NOTIFICATION_CATEGORIES, DEFAULT_NOTIFICATION_PREFERENCES } from '../controllers/userController.js';
+import { sendPushNotification } from './firebasePush.js';
 
 /** Fetch user's notification preferences from DB */
 const getUserNotificationPrefs = async (db, userId) => {
@@ -17,43 +18,58 @@ const getUserNotificationPrefs = async (db, userId) => {
 /** Create and emit an internal notification (respects user preferences) */
 export const createNotification = async (req, { userId, title, message, type, link }) => {
     try {
-      // Check user preferences for in-app notifications
+      // Fetch user preferences
+      const prefs = await getUserNotificationPrefs(req.db, userId);
       const category = NOTIFICATION_CATEGORIES[type];
+      
+      let inAppEnabled = true;
+      let pushEnabled = true;
+
       if (category) {
-        const prefs = await getUserNotificationPrefs(req.db, userId);
-        let isEnabled = true;
-        
         if (prefs?.inApp?.[type] !== undefined) {
-          isEnabled = prefs.inApp[type];
+          inAppEnabled = prefs.inApp[type];
         } else if (prefs?.inApp?.[category] !== undefined) {
-          isEnabled = prefs.inApp[category];
+          inAppEnabled = prefs.inApp[category];
         }
 
-        if (!isEnabled) {
-          console.log(`[Notification] Skipped in-app for ${userId} — type "${type}" disabled`);
-          return null;
+        if (prefs?.push?.[type] !== undefined) {
+          pushEnabled = prefs.push[type];
+        } else if (prefs?.push?.[category] !== undefined) {
+          pushEnabled = prefs.push[category];
         }
       }
 
-      const notification = await req.db.notification.create({
-        data: {
-          userId,
-          title,
-          message,
-          type,
-          link: link || null,
-          organizationId: req.user.organizationId,
-        },
-      });
+      // 1. In-App Notification (Database & WebSocket)
+      if (inAppEnabled) {
+        const notification = await req.db.notification.create({
+          data: {
+            userId,
+            title,
+            message,
+            type,
+            link: link || null,
+            organizationId: req.user.organizationId,
+          },
+        });
+    
+        console.log(`[Notification Debug] Created DB record for ${userId}. Emitting to org-${req.user.organizationId}`);
   
-      console.log(`[Notification Debug] Created DB record for ${userId}. Emitting to org-${req.user.organizationId}`);
-
-      if (req.io) {
-        const room = `org-${req.user.organizationId}`;
-        req.io.to(room).emit('new-notification', notification);
-        console.log(`[Notification Debug] Socket emitted to room: ${room}`);
+        if (req.io) {
+          const room = `org-${req.user.organizationId}`;
+          req.io.to(room).emit('new-notification', notification);
+          console.log(`[Notification Debug] Socket emitted to room: ${room}`);
+        }
+      } else {
+        console.log(`[Notification] Skipped in-app for ${userId} — type "${type}" disabled`);
       }
-      return notification;
+
+      // 2. Push Notification (Firebase)
+      if (pushEnabled) {
+        await sendPushNotification(userId, title, message);
+      }
+
+      // Note: We return null here if inApp was skipped, but that's fine since most callers ignore the return value.
+      return inAppEnabled ? { success: true } : null;
     } catch (error) {
       console.error('Failed to create internal notification:', error);
     }

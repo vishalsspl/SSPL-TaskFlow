@@ -1,5 +1,5 @@
 import express from 'express';
-import { getUsers, updateUser, deleteUser, approveUser, getManagedUsers, updateProfile, getMemberProgress, getNotificationPreferences, updateNotificationPreferences } from '../controllers/userController.js';
+import { getUsers, updateUser, deleteUser, approveUser, getManagedUsers, updateProfile, getMemberProgress, getNotificationPreferences, updateNotificationPreferences, updateFcmToken } from '../controllers/userController.js';
 
 import { authenticate } from '../middleware/auth.js';
 import attachTenantDb from '../middleware/tenantMiddleware.js';
@@ -250,5 +250,7 @@ router.get('/:id/progress', getMemberProgress);
  *         description: User not found
  */
 router.delete('/:id', deleteUser);
+
+router.post('/update-fcm', updateFcmToken);
 
 export default router;

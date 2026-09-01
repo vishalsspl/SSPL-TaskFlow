@@ -1139,7 +1139,7 @@ const ProjectsList = () => {
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
-                          <p className="font-bold text-sm text-foreground truncate">{project.name}</p>
+                          <p className="font-bold text-sm text-foreground">{project.name}</p>
                         </div>
                         {project.name.toLowerCase() !== 'general' && (
                           <div className="flex flex-col items-end gap-1">
