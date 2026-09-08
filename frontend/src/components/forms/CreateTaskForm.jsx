@@ -36,10 +36,13 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
     // Attempt to get the fully populated user object from the users array 
     // to access custom role permissions which might not be in the auth store.
     const fullUser = users?.find(u => u.id === user?.id) || user;
-    
-    let canAssignOthers = fullUser?.role !== 'MEMBER';
-    if (fullUser?.role === 'MEMBER' && fullUser?.customRoles?.length > 0) {
-        canAssignOthers = fullUser.customRoles.some(role => {
+    const effectiveCustomRoles = (fullUser?.customRoles && fullUser.customRoles.length > 0)
+        ? fullUser.customRoles
+        : (user?.customRoles || []);
+
+    let canAssignOthers = fullUser?.role !== 'MEMBER' || !!user?.permissions?.['tasks.assign'] || !!user?.permissions?.['canAssignTasks'];
+    if (!canAssignOthers && effectiveCustomRoles.length > 0) {
+        canAssignOthers = effectiveCustomRoles.some(role => {
             try {
                 const perms = typeof role.permissions === 'string' 
                     ? JSON.parse(role.permissions) 

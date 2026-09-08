@@ -171,6 +171,23 @@ export const login = async (req, res) => {
       });
       if (tenantUser?.customRoles) {
         userWithoutSensitive.customRoles = tenantUser.customRoles;
+        // Merge permissions granted by custom profiles
+        tenantUser.customRoles.forEach(cr => {
+          let p = cr.permissions;
+          if (typeof p === 'string') {
+            try { p = JSON.parse(p); } catch (e) { p = {}; }
+          }
+          if (p && typeof p === 'object') {
+            if (p.canAssignTasks || p.assignTasks) {
+              resolvedPermissions['tasks.assign'] = true;
+              resolvedPermissions['canAssignTasks'] = true;
+            }
+            Object.keys(p).forEach(k => {
+              if (p[k] === true) resolvedPermissions[k] = true;
+            });
+          }
+        });
+        userWithoutSensitive.permissions = resolvedPermissions;
       }
     } catch (err) {
       console.error('[Login] Failed to fetch customRoles from tenant DB:', err.message);
@@ -628,7 +645,7 @@ export const invite = async (req, res) => {
           email,
           passwordHash,
           role,
-          customRoleId,
+          ...(customRoleId ? { customRoles: { connect: [{ id: customRoleId }] } } : {}),
           isApproved: true,
           mustChangePassword: role !== 'ADMIN'
         }
@@ -790,7 +807,7 @@ export const bulkInvite = async (req, res) => {
               email: email.toLowerCase().trim(),
               passwordHash,
               role: normalizedRole,
-              customRoleId,
+              ...(customRoleId ? { customRoles: { connect: [{ id: customRoleId }] } } : {}),
               isApproved: true,
               mustChangePassword: true,
             }
@@ -980,6 +997,23 @@ export const me = async (req, res) => {
         });
         if (tenantUser?.customRoles) {
           userWithoutSensitive.customRoles = tenantUser.customRoles;
+          // Merge permissions granted by custom profiles
+          tenantUser.customRoles.forEach(cr => {
+            let p = cr.permissions;
+            if (typeof p === 'string') {
+              try { p = JSON.parse(p); } catch (e) { p = {}; }
+            }
+            if (p && typeof p === 'object') {
+              if (p.canAssignTasks || p.assignTasks) {
+                resolvedPermissions['tasks.assign'] = true;
+                resolvedPermissions['canAssignTasks'] = true;
+              }
+              Object.keys(p).forEach(k => {
+                if (p[k] === true) resolvedPermissions[k] = true;
+              });
+            }
+          });
+          userWithoutSensitive.permissions = resolvedPermissions;
         }
       }
     } catch (err) {

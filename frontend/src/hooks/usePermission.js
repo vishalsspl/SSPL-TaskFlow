@@ -1,4 +1,4 @@
-import useAuthStore from '../store/authStore';
+import { useAuthStore } from '../store/authStore';
 import { getDefaultPermissions } from '../lib/permissionDefaults';
 
 const usePermission = () => {

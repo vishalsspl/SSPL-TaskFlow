@@ -409,12 +409,14 @@ export const updateUser = async (req, res) => {
     
     if (customRoleIds !== undefined && Array.isArray(customRoleIds)) {
       updateData.customRoles = { set: customRoleIds.map(id => ({ id })) };
-    } else {
-      if (addCustomRoleId || removeCustomRoleId) {
-        updateData.customRoles = {};
-        if (addCustomRoleId) updateData.customRoles.connect = { id: addCustomRoleId };
-        if (removeCustomRoleId) updateData.customRoles.disconnect = { id: removeCustomRoleId };
-      }
+    } else if (req.body.customRoleId !== undefined) {
+      updateData.customRoles = req.body.customRoleId
+        ? { set: [{ id: req.body.customRoleId }] }
+        : { set: [] };
+    } else if (addCustomRoleId || removeCustomRoleId) {
+      updateData.customRoles = {};
+      if (addCustomRoleId) updateData.customRoles.connect = { id: addCustomRoleId };
+      if (removeCustomRoleId) updateData.customRoles.disconnect = { id: removeCustomRoleId };
     }
 
     if (email !== undefined && req.user.role === 'ADMIN') {

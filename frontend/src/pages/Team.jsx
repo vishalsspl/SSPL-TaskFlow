@@ -319,6 +319,7 @@ const Team = () => {
           name: formData.name,
           email: formData.email,
           role: formData.role,
+          customRoleId: formData.customRoleId,
           password: formData.password,
           sendEmail: formData.sendEmail,
         });
