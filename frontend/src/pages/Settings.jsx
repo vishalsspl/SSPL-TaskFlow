@@ -464,20 +464,45 @@ const Settings = () => {
                           />
                         </div>
                       </div>
-                      <div className="space-y-2">
-                        <Label className="text-foreground/90 font-semibold">Account Role</Label>
-                        <div className="relative">
-                          <div className="px-4 h-12 flex items-center border border-input rounded-md bg-muted/30">
-                            <Badge
-                              className="text-[10px] font-black tracking-widest uppercase rounded-sm px-2.5 py-1"
-                              style={{
-                                backgroundColor: ROLE_CONFIG[user?.role]?.bg || 'rgba(16,185,129,0.1)',
-                                color: ROLE_CONFIG[user?.role]?.color || '#10B981',
-                                border: `1px solid ${ROLE_CONFIG[user?.role]?.border || 'rgba(16,185,129,0.2)'}`
-                              }}
-                            >
-                              {user?.role}
-                            </Badge>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-foreground/90 font-semibold">Account Role</Label>
+                          <div className="relative">
+                            <div className="px-4 h-12 flex items-center border border-input rounded-md bg-muted/30">
+                              <Badge
+                                className="text-[10px] font-black tracking-widest uppercase rounded-sm px-2.5 py-1"
+                                style={{
+                                  backgroundColor: ROLE_CONFIG[user?.role]?.bg || 'rgba(16,185,129,0.1)',
+                                  color: ROLE_CONFIG[user?.role]?.color || '#10B981',
+                                  border: `1px solid ${ROLE_CONFIG[user?.role]?.border || 'rgba(16,185,129,0.2)'}`
+                                }}
+                              >
+                                {user?.role}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-foreground/90 font-semibold">Assigned Profile</Label>
+                          <div className="relative">
+                            <div className="px-4 h-12 flex items-center border border-input rounded-md bg-muted/30">
+                              {user?.customRoles && user.customRoles.length > 0 ? (
+                                <div className="flex flex-wrap gap-1.5 items-center">
+                                  {user.customRoles.map((role) => (
+                                    <Badge
+                                      key={role.id || role.name}
+                                      variant="secondary"
+                                      className="text-xs font-bold bg-primary/10 text-primary border-primary/20"
+                                      title={role.description || undefined}
+                                    >
+                                      {role.name}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              ) : (
+                                <span className="text-xs text-muted-foreground italic">No profile assigned</span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>

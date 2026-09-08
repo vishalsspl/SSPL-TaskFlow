@@ -86,8 +86,13 @@ const Dashboard = () => {
     const firstName = user?.name?.split(' ')[0];
     const displayName = user?.name === 'System Admin' ? 'Admin' : firstName;
     const title = (
-      <span className="text-base font-bold">
+      <span className="text-base font-bold flex items-center gap-2 flex-wrap">
         Welcome back, <span className="text-primary">{displayName}</span>
+        {user?.customRoles && user.customRoles.length > 0 && (
+          <Badge variant="secondary" className="text-xs font-bold bg-primary/10 text-primary border border-primary/20">
+            {user.customRoles.map(r => r.name).join(', ')}
+          </Badge>
+        )}
       </span>
     );
     const description = user?.role === 'CLIENT'

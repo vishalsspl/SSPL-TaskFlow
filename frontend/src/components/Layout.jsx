@@ -331,8 +331,13 @@ const Layout = () => {
                 </Avatar>
                 {(isMobile || isSidebarOpen) && (
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium leading-tight">{user?.name}</p>
-                    <p className="text-xs text-muted-foreground capitalize">{user?.role?.toLowerCase()}</p>
+                    <p className="text-sm font-medium leading-tight truncate">{user?.name}</p>
+                    <p className="text-xs text-muted-foreground capitalize truncate">
+                      {user?.role?.toLowerCase()}
+                      {user?.customRoles && user.customRoles.length > 0 && (
+                        <span className="text-primary font-semibold"> • {user.customRoles.map(r => r.name).join(', ')}</span>
+                      )}
+                    </p>
                   </div>
                 )}
               </div>

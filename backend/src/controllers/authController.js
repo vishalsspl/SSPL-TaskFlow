@@ -159,6 +159,24 @@ export const login = async (req, res) => {
   }
   userWithoutSensitive.permissions = resolvedPermissions;
 
+  // Fetch assigned customRoles (profiles) from Tenant DB
+  if (user.role !== 'SUPERADMIN' && user.organization?.dbUrl) {
+    try {
+      const tenantClient = await tenantDbManager.getClient(user.organization.dbUrl);
+      const tenantUser = await tenantClient.user.findUnique({
+        where: { id: user.id },
+        select: {
+          customRoles: { select: { id: true, name: true, description: true, permissions: true } }
+        }
+      });
+      if (tenantUser?.customRoles) {
+        userWithoutSensitive.customRoles = tenantUser.customRoles;
+      }
+    } catch (err) {
+      console.error('[Login] Failed to fetch customRoles from tenant DB:', err.message);
+    }
+  }
+
   // 5. ✅ NEW: Trigger Automatic Clock In (Attendance)
   if (user.role !== 'SUPERADMIN' && user.organization?.dbUrl) {
     try {
@@ -947,6 +965,26 @@ export const me = async (req, res) => {
     }
 
     userWithoutSensitive.organization = orgData;
+  }
+
+  // Fetch assigned customRoles (profiles) from Tenant DB
+  if (req.user.role !== 'SUPERADMIN') {
+    try {
+      const tenantDb = req.db || (freshOrg?.dbUrl ? await tenantDbManager.getClient(freshOrg.dbUrl) : null);
+      if (tenantDb) {
+        const tenantUser = await tenantDb.user.findUnique({
+          where: { id: req.user.id },
+          select: {
+            customRoles: { select: { id: true, name: true, description: true, permissions: true } }
+          }
+        });
+        if (tenantUser?.customRoles) {
+          userWithoutSensitive.customRoles = tenantUser.customRoles;
+        }
+      }
+    } catch (err) {
+      console.error('[Me] Failed to fetch customRoles from tenant DB:', err.message);
+    }
   }
 
   res.json(userWithoutSensitive);
