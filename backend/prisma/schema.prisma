@@ -93,6 +93,7 @@ model User {
   passwordHash   String
   role           Role
   fcmToken       String?
+  notificationPreferences Json?
 
   isApproved         Boolean  @default(false)
   mustChangePassword Boolean  @default(true)

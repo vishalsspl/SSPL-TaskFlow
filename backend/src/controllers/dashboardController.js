@@ -62,13 +62,20 @@ export const getDashboard = async (req, res) => {
   const completedTasksCount = tasks.filter((t) => t.status === 'COMPLETED').length;
 
   const totalStoryPoints = tasks.reduce((sum, t) => sum + (t.storyPoints || 0), 0);
-  const completedStoryPoints = tasks
-    .filter((t) => t.status === 'COMPLETED')
-    .reduce((sum, t) => sum + (t.storyPoints || 0), 0);
+  
+  const completedStoryPoints = tasks.reduce((sum, t) => {
+    let pct = t.completionPercentage || (t.status === 'COMPLETED' ? 100 : 0);
+    return sum + ((t.storyPoints || 0) * (pct / 100));
+  }, 0);
+
+  const partialCompletedTasksCount = tasks.reduce((sum, t) => {
+    let pct = t.completionPercentage || (t.status === 'COMPLETED' ? 100 : 0);
+    return sum + (pct / 100);
+  }, 0);
 
   const progressPercentage = totalStoryPoints > 0
     ? Math.round((completedStoryPoints / totalStoryPoints) * 100)
-    : (totalTasks > 0 ? Math.round((completedTasksCount / totalTasks) * 100) : 0);
+    : (totalTasks > 0 ? Math.round((partialCompletedTasksCount / totalTasks) * 100) : 0);
 
   const overdueTasks = tasks.filter(
     (t) => t.dueDate && new Date(t.dueDate) < now && t.status !== 'COMPLETED'
@@ -109,7 +116,7 @@ export const getDashboard = async (req, res) => {
     : 0;
 
   // Get workload distribution
-  const workloads = await req.db.workload.findMany({
+  const dbWorkloads = await req.db.workload.findMany({
     where: { projectId },
     include: {
       user: {
@@ -121,6 +128,25 @@ export const getDashboard = async (req, res) => {
         },
       },
     },
+  });
+
+  let totalEffort = 0;
+  const userEfforts = {};
+
+  tasks.filter(t => t.status !== 'COMPLETED').forEach(t => {
+    const effort = t.storyPoints || 1;
+    t.assignees.forEach(a => {
+      const uid = a.user.id;
+      userEfforts[uid] = (userEfforts[uid] || 0) + effort;
+      totalEffort += effort;
+    });
+  });
+
+  const workloads = dbWorkloads.map(w => {
+    const uid = w.user.id;
+    const uEffort = userEfforts[uid] || 0;
+    const percentage = totalEffort > 0 ? Math.round((uEffort / totalEffort) * 100) : 0;
+    return { ...w, workloadPercentage: Math.min(100, percentage) };
   });
 
   // Get upcoming deadlines
@@ -159,6 +185,31 @@ export const getDashboard = async (req, res) => {
     take: 10,
   });
 
+  // Dynamically calculate phase completion percentages based on partial task progress
+  const phasesWithProgress = project.phases.map(phase => {
+    const phaseTasks = tasks.filter(t => t.phaseId === phase.id);
+    if (phaseTasks.length === 0) return phase;
+
+    const phaseTotalStoryPoints = phaseTasks.reduce((sum, task) => sum + (task.storyPoints || 0), 0);
+    
+    let progress = 0;
+    if (phaseTotalStoryPoints > 0) {
+      const phaseCompletedStoryPoints = phaseTasks.reduce((sum, task) => {
+        let pct = task.completionPercentage || (task.status === 'COMPLETED' ? 100 : 0);
+        return sum + ((task.storyPoints || 0) * (pct / 100));
+      }, 0);
+      progress = Math.round((phaseCompletedStoryPoints / phaseTotalStoryPoints) * 100);
+    } else {
+      const phaseCompletedCount = phaseTasks.reduce((sum, task) => {
+        let pct = task.completionPercentage || (task.status === 'COMPLETED' ? 100 : 0);
+        return sum + (pct / 100);
+      }, 0);
+      progress = Math.round((phaseCompletedCount / phaseTasks.length) * 100);
+    }
+
+    return { ...phase, completionPercentage: progress };
+  });
+
   const dashboard = {
     project,
     overview: {
@@ -182,7 +233,7 @@ export const getDashboard = async (req, res) => {
     workloads,
     upcomingDeadlines,
     recentActivity,
-    phases: project.phases,
+    phases: phasesWithProgress,
     tasks,
   };
 

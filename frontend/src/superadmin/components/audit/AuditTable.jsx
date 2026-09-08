@@ -18,7 +18,7 @@ const formatAction = (action) => {
   return action.toLowerCase().replace(/_/g, ' ');
 };
 
-const ExpandableText = ({ text, maxLength = 60 }) => {
+const ExpandableText = ({ text, maxLength = 200 }) => {
   const [expanded, setExpanded] = useState(false);
   if (!text) return null;
   const str = String(text);
@@ -130,8 +130,8 @@ const AuditTable = ({ logs, getActionIcon, getStatusBadge, getSeverity, showOrga
                         {getActionIcon(log.action)}
                       </div>
                     </div>
-                    <div className="text-left w-[120px]">
-                      <div className="text-sm font-bold tracking-tight text-foreground/90 capitalize truncate">
+                    <div className="text-left min-w-[160px] max-w-[240px]">
+                      <div className="text-sm font-bold tracking-tight text-foreground/90 capitalize whitespace-normal break-words">
                         {formatAction(log.action)}
                       </div>
                       <div className="text-[10px] font-semibold text-muted-foreground mt-0.5 truncate">

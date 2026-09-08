@@ -148,8 +148,8 @@ const Kanban = () => {
       return;
     }
 
-    if (trimmedTitle.length > 50) {
-        toast({ title: "Validation Error", description: "Task title cannot exceed 50 characters.", variant: "destructive" });
+    if (trimmedTitle.length > 100) {
+        toast({ title: "Validation Error", description: "Task title cannot exceed 100 characters.", variant: "destructive" });
         return;
     }
 
@@ -386,7 +386,7 @@ const Kanban = () => {
                       placeholder="Task title *"
                       value={formData.title}
                       onChange={e => setFormData({ ...formData, title: e.target.value })}
-                      maxLength={30}
+                      maxLength={100}
                       className="text-sm h-9 rounded-xl border-gray-100"
                     />
                     <div className="grid grid-cols-1 gap-2">

@@ -137,8 +137,8 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
             return;
         }
 
-        if (trimmedTitle.length > 50) {
-            toast({ title: "Validation Error", description: "Task title cannot exceed 50 characters.", variant: "destructive" });
+        if (trimmedTitle.length > 100) {
+            toast({ title: "Validation Error", description: "Task title cannot exceed 100 characters.", variant: "destructive" });
             return;
         }
 
@@ -276,7 +276,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                             placeholder="e.g. Design Homepage"
                             required
-                            maxLength={30}
+                            maxLength={100}
                             className="!pl-10 transition-all focus:ring-2 focus:ring-primary/20 mobile-reduce-input"
                         />
                     </div>

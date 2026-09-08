@@ -11,7 +11,16 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-export const messaging = getMessaging(app);
+export let messaging = null;
+import { isSupported } from 'firebase/messaging';
+
+isSupported().then((supported) => {
+  if (supported) {
+    messaging = getMessaging(app);
+  } else {
+    console.warn("Firebase Messaging is not supported in this environment (needs HTTPS).");
+  }
+});
 
 export const requestNotificationPermission = async () => {
   try {
@@ -20,6 +29,10 @@ export const requestNotificationPermission = async () => {
       // Pass the environment variables via URL params to the Service Worker
       const swUrl = `/firebase-messaging-sw.js?apiKey=${firebaseConfig.apiKey}&authDomain=${firebaseConfig.authDomain}&projectId=${firebaseConfig.projectId}&storageBucket=${firebaseConfig.storageBucket}&messagingSenderId=${firebaseConfig.messagingSenderId}&appId=${firebaseConfig.appId}`;
       const registration = await navigator.serviceWorker.register(swUrl);
+      
+      if (!messaging) {
+        throw new Error("Firebase Messaging is not supported or initialized.");
+      }
       
       const token = await getToken(messaging, { 
         vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,

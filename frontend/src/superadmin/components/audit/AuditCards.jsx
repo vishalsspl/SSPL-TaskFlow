@@ -9,7 +9,7 @@ const formatAction = (action) => {
   return action.toLowerCase().replace(/_/g, ' ');
 };
 
-const ExpandableText = ({ text, maxLength = 60 }) => {
+const ExpandableText = ({ text, maxLength = 200 }) => {
   const [expanded, setExpanded] = useState(false);
   if (!text) return null;
   const str = String(text);
@@ -79,7 +79,7 @@ const AuditCards = ({ logs, getActionIcon, getStatusBadge, getSeverity, showOrga
               <div className="flex items-center gap-3 min-w-0">
                 <div className="shrink-0">{getActionIcon(log.action)}</div>
                 <div className="min-w-0">
-                  <div className="text-sm font-bold capitalize truncate">{formatAction(log.action)}</div>
+                  <div className="text-sm font-bold capitalize whitespace-normal break-words">{formatAction(log.action)}</div>
                   <div className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground">
                     {log.createdAt ? new Date(log.createdAt).toLocaleString() : '-'}
                   </div>

@@ -1361,16 +1361,20 @@ const recalculatePhaseProgress = async (db, phaseId) => {
 
   // Calculate story point progress: (Completed Pts / Total Pts) * 100
   const totalStoryPoints = tasks.reduce((sum, task) => sum + (task.storyPoints || 0), 0);
-  const completedStoryPoints = tasks
-    .filter((task) => task.status === 'COMPLETED')
-    .reduce((sum, task) => sum + (task.storyPoints || 0), 0);
-
+  
   let progress = 0;
   if (totalStoryPoints > 0) {
+    const completedStoryPoints = tasks.reduce((sum, task) => {
+      let pct = task.completionPercentage || (task.status === 'COMPLETED' ? 100 : 0);
+      return sum + ((task.storyPoints || 0) * (pct / 100));
+    }, 0);
     progress = Math.round((completedStoryPoints / totalStoryPoints) * 100);
   } else {
     // Fallback to task count if no story points are defined
-    const completedCount = tasks.filter(t => t.status === 'COMPLETED').length;
+    const completedCount = tasks.reduce((sum, task) => {
+      let pct = task.completionPercentage || (task.status === 'COMPLETED' ? 100 : 0);
+      return sum + (pct / 100);
+    }, 0);
     progress = Math.round((completedCount / tasks.length) * 100);
   }
 

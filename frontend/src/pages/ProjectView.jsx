@@ -258,7 +258,7 @@ const ProjectView = () => {
           <div class="container">
             <div class="cover">
               <div class="title">${project.name}</div>
-              <div class="client">Project Status Report | ${project.client?.name || 'Internal'}</div>
+              <div class="client">Project Status Report${project.client?.name ? ` | ${project.client.name}` : ''}</div>
               <div class="date">${today}</div>
             </div>
 

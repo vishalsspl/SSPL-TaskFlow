@@ -75,11 +75,13 @@ export const createDocument = async (req, res) => {
         action: 'DOCUMENT_UPLOADED',
         entity: 'document',
         entityId: document.id,
-        details: { documentTitle: title },
+        details: { documentTitle: title, message: `Uploaded document "${title}"` },
       };
       
-      await prisma.activityLog.create({ data: logData });
-      await prismaGlobal.activityLog.create({ data: logData });
+      if (req.db && req.db.activityLog) {
+        await req.db.activityLog.create({ data: logData }).catch(e => console.error('Tenant log error:', e));
+      }
+      await prismaGlobal.activityLog.create({ data: logData }).catch(e => console.error('Global log error:', e));
     } catch (logErr) {
       console.error('Failed to log document upload activity:', logErr);
     }
@@ -89,35 +91,27 @@ export const createDocument = async (req, res) => {
         where: { id: projectId },
         include: { workloads: { include: { user: true } } }
       });
-      
-      const hasEmailSupport = req.user.activeFeatures?.emailsupport !== false;
-      const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
-      const uploaderName = req.user.name;
 
       if (project && project.workloads) {
         for (const workload of project.workloads) {
           if (workload.userId !== authorId) {
-            // Send in-app notification
-            await createNotification(req, {
-              userId: workload.userId,
-              title: 'New Document Uploaded',
-              message: `A new document "${title}" has been uploaded to project: ${project.name}`,
-              type: 'DOCUMENT_UPLOADED',
-              link: `/projects/${projectId}?tab=docs`
-            });
+            await createNotification(
+              req.db,
+              workload.userId,
+              'New Document Uploaded',
+              `A new document "${title}" has been uploaded to project: ${project.name}`,
+              'DOCUMENT_UPLOADED',
+              `/projects/${projectId}`
+            ).catch(err => console.error('Failed to create document upload notification:', err));
 
-            // Send email notification if supported
-            if (hasEmailSupport && workload.user?.email) {
-              if (await shouldSendEmail(req.db, workload.userId, 'DOCUMENT_UPLOADED')) {
-                sendDocumentUploadedEmail(
-                  workload.user.email,
-                  workload.user.name,
-                  title,
-                  project.name,
-                  uploaderName,
-                  origin
-                ).catch(err => console.error('Failed to send document uploaded email:', err));
-              }
+            if (await shouldSendEmail(req.db, workload.userId, 'DOCUMENT_UPLOADED')) {
+              sendDocumentUploadedEmail(
+                workload.user.email,
+                workload.user.name,
+                title,
+                project.name,
+                req.user.name
+              ).catch(err => console.error('Failed to send document uploaded email:', err));
             }
           }
         }
@@ -135,7 +129,7 @@ export const createDocument = async (req, res) => {
 
 export const updateDocument = async (req, res) => {
   const { id } = req.params;
-  const { title, content, attachments } = req.body;
+  const { title, content, type, category, isPublic, isPrivate, tags, attachments } = req.body;
   const prisma = req.db;
   try {
     const doc = await prisma.document.findUnique({
@@ -154,22 +148,33 @@ export const updateDocument = async (req, res) => {
 
     const document = await prisma.document.update({
       where: { id },
-      data: { title, content, attachments: attachments || [] }
+      data: {
+        title: title !== undefined ? title : doc.title,
+        content: content !== undefined ? content : doc.content,
+        type: type !== undefined ? type : doc.type,
+        category: category !== undefined ? category : doc.category,
+        isPublic: isPublic !== undefined ? isPublic : doc.isPublic,
+        isPrivate: isPrivate !== undefined ? isPrivate : doc.isPrivate,
+        tags: tags !== undefined ? tags : doc.tags,
+        attachments: attachments !== undefined ? attachments : doc.attachments,
+      }
     });
 
     try {
       const logData = {
         userId: req.user.id,
         organizationId: req.user.organizationId,
-        projectId: doc.projectId,
+        projectId: document.projectId,
         action: 'DOCUMENT_UPDATED',
         entity: 'document',
         entityId: document.id,
-        details: { documentTitle: title },
+        details: { documentTitle: document.title, message: `Updated document "${document.title}"` },
       };
       
-      await req.db.activityLog.create({ data: logData });
-      await prismaGlobal.activityLog.create({ data: logData });
+      if (req.db && req.db.activityLog) {
+        await req.db.activityLog.create({ data: logData }).catch(e => console.error('Tenant log error:', e));
+      }
+      await prismaGlobal.activityLog.create({ data: logData }).catch(e => console.error('Global log error:', e));
     } catch (logErr) {
       console.error('Failed to log document update activity:', logErr);
     }
@@ -209,11 +214,13 @@ export const deleteDocument = async (req, res) => {
         action: 'DOCUMENT_DELETED',
         entity: 'document',
         entityId: doc.id,
-        details: { documentTitle: doc.title },
+        details: { documentTitle: doc.title, message: `Deleted document "${doc.title}"` },
       };
       
-      await req.db.activityLog.create({ data: logData });
-      await prismaGlobal.activityLog.create({ data: logData });
+      if (req.db && req.db.activityLog) {
+        await req.db.activityLog.create({ data: logData }).catch(e => console.error('Tenant log error:', e));
+      }
+      await prismaGlobal.activityLog.create({ data: logData }).catch(e => console.error('Global log error:', e));
     } catch (logErr) {
       console.error('Failed to log document delete activity:', logErr);
     }
