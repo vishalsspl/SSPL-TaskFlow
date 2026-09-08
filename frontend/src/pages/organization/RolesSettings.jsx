@@ -4,6 +4,7 @@ import { useHeaderStore } from '@/store/headerStore';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
@@ -110,6 +111,11 @@ const RolesSettings = () => {
     
     if (formData.name.length > 50) {
       toast({ title: 'Profile name cannot exceed 50 characters', variant: 'destructive' });
+      return;
+    }
+
+    if (formData.description && formData.description.length > 500) {
+      toast({ title: 'Profile description cannot exceed 500 characters', variant: 'destructive' });
       return;
     }
 
@@ -319,13 +325,19 @@ const RolesSettings = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description" className="text-foreground/90 font-semibold">Description (Optional)</Label>
-              <Input
+              <div className="flex justify-between items-center">
+                <Label htmlFor="description" className="text-foreground/90 font-semibold">Description (Optional)</Label>
+                <span className={`text-xs ${formData.description?.length >= 500 ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
+                  {formData.description?.length || 0}/500
+                </span>
+              </div>
+              <Textarea
                 id="description"
                 value={formData.description}
+                maxLength={500}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Brief description of this profile"
-                className="h-11"
+                className="min-h-[80px] rounded-xl resize-none"
               />
             </div>
             <div className="flex items-center justify-between mt-2 p-4 border rounded-xl bg-muted/50">
@@ -354,34 +366,57 @@ const RolesSettings = () => {
       </Dialog>
 
       <Dialog open={isUsersDialogOpen} onOpenChange={setIsUsersDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[450px]">
           <DialogHeader>
-            <DialogTitle>{selectedRoleForUsers?.name} - Assigned Users</DialogTitle>
+            <DialogTitle>{selectedRoleForUsers?.name} Profile</DialogTitle>
             <DialogDescription>
-              A list of users assigned to the '{selectedRoleForUsers?.name}' profile.
+              View profile details and assigned team members.
             </DialogDescription>
           </DialogHeader>
-          <div className="max-h-[300px] overflow-y-auto pr-2 space-y-4 py-4">
-            {loadingUsers ? (
-              <p className="text-sm text-muted-foreground text-center py-4">Loading users...</p>
-            ) : roleUsers.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">No users are currently assigned to this profile.</p>
-            ) : (
-              roleUsers.map(user => (
-                <div key={user.id} className="flex items-center gap-3">
-                  <Avatar className="h-9 w-9">
-                    <AvatarImage src={user.avatar || undefined} />
-                    <AvatarFallback className="bg-primary/10 text-primary">
-                      {user.name?.charAt(0)?.toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium leading-none">{user.name}</span>
-                    <span className="text-xs text-muted-foreground mt-1">{user.email}</span>
-                  </div>
-                </div>
-              ))
-            )}
+
+          <div className="space-y-4 py-2">
+            {/* Description Section */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Description</Label>
+              <div className="bg-muted/40 p-3 rounded-xl border border-border/50 text-sm text-foreground/90 whitespace-pre-wrap break-words max-h-[140px] overflow-y-auto">
+                {selectedRoleForUsers?.description?.trim() ? (
+                  selectedRoleForUsers.description
+                ) : (
+                  <span className="italic text-muted-foreground text-xs">No description provided for this profile.</span>
+                )}
+              </div>
+            </div>
+
+            {/* Assigned Users Section */}
+            <div className="pt-2 border-t border-border/50 space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                  Assigned Users ({roleUsers.length})
+                </Label>
+              </div>
+              <div className="max-h-[200px] overflow-y-auto pr-1 space-y-3">
+                {loadingUsers ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">Loading users...</p>
+                ) : roleUsers.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">No users are currently assigned to this profile.</p>
+                ) : (
+                  roleUsers.map(user => (
+                    <div key={user.id} className="flex items-center gap-3">
+                      <Avatar className="h-9 w-9">
+                        <AvatarImage src={user.avatar || undefined} />
+                        <AvatarFallback className="bg-primary/10 text-primary">
+                          {user.name?.charAt(0)?.toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium leading-none">{user.name}</span>
+                        <span className="text-xs text-muted-foreground mt-1">{user.email}</span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

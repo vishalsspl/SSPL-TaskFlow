@@ -23,6 +23,10 @@ export const createRole = async (req, res) => {
       return res.status(400).json({ error: 'Role name is required' });
     }
 
+    if (description && description.length > 500) {
+      return res.status(400).json({ error: 'Profile description cannot exceed 500 characters' });
+    }
+
     const newRole = await db.customRole.create({
       data: {
         organizationId: req.user.organizationId,
@@ -69,6 +73,10 @@ export const updateRole = async (req, res) => {
     const existingRole = await db.customRole.findUnique({ where: { id } });
     if (!existingRole || existingRole.organizationId !== req.user.organizationId) {
       return res.status(404).json({ error: 'Role not found' });
+    }
+
+    if (description && description.length > 500) {
+      return res.status(400).json({ error: 'Profile description cannot exceed 500 characters' });
     }
 
     const updatedRole = await db.customRole.update({
