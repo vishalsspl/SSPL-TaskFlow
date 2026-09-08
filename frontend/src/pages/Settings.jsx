@@ -741,11 +741,10 @@ const Settings = () => {
                   ) : notifPrefs ? (
                     <div className="space-y-6">
                       {/* Header row */}
-                      <div className="grid grid-cols-[1fr_80px_80px_40px] gap-4 items-center px-1">
+                      <div className="grid grid-cols-[1fr_80px_80px] gap-4 items-center px-2 py-1">
                         <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Category</div>
                         <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground text-center">Email</div>
                         <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground text-center">In-App</div>
-                        <div></div>
                       </div>
                       <Separator />
 
@@ -759,54 +758,52 @@ const Settings = () => {
 
                         return (
                           <div key={group.id} className="space-y-2">
-                            <div className="grid grid-cols-[1fr_80px_80px_40px] gap-4 items-center px-1 py-2">
-                              <div className="flex items-center gap-3 cursor-pointer" onClick={() => setExpandedNotifGroup(isExpanded ? null : group.id)}>
-                                <div className="p-2 rounded-lg" style={{ backgroundColor: group.bg }}>
+                            <div className="grid grid-cols-[1fr_80px_80px] gap-4 items-center px-2 py-2 rounded-xl hover:bg-muted/30 transition-colors">
+                              <div 
+                                className="flex items-center gap-3 cursor-pointer group/cat select-none min-w-0" 
+                                onClick={() => setExpandedNotifGroup(isExpanded ? null : group.id)}
+                              >
+                                <div className="p-1 rounded-md text-muted-foreground group-hover/cat:text-foreground group-hover/cat:bg-muted/50 transition-colors shrink-0">
+                                  {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                </div>
+                                <div className="p-2 rounded-lg shrink-0" style={{ backgroundColor: group.bg }}>
                                   <group.icon className="w-4 h-4" style={{ color: group.color }} />
                                 </div>
-                                <div>
-                                  <p className="font-semibold text-sm">{group.label}</p>
-                                  <p className="text-[11px] text-muted-foreground">{group.description}</p>
+                                <div className="min-w-0">
+                                  <p className="font-semibold text-sm truncate">{group.label}</p>
+                                  <p className="text-[11px] text-muted-foreground truncate">{group.description}</p>
                                 </div>
                               </div>
-                              <div className="flex justify-center">
+                              <div className="flex justify-center items-center">
                                 <Switch
                                   checked={notifPrefs.email[group.id] !== undefined ? notifPrefs.email[group.id] : allEmailTrue}
                                   onCheckedChange={(v) => handleNotifToggle('email', group.id, v)}
                                   disabled={notifSaving}
                                 />
                               </div>
-                              <div className="flex justify-center">
+                              <div className="flex justify-center items-center">
                                 <Switch
                                   checked={notifPrefs.inApp[group.id] !== undefined ? notifPrefs.inApp[group.id] : allInAppTrue}
                                   onCheckedChange={(v) => handleNotifToggle('inApp', group.id, v)}
                                   disabled={notifSaving}
                                 />
                               </div>
-                              <div className="flex justify-center">
-                                <button 
-                                  className="p-1 rounded-md hover:bg-muted/50 transition-colors"
-                                  onClick={() => setExpandedNotifGroup(isExpanded ? null : group.id)}
-                                >
-                                  {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                                </button>
-                              </div>
                             </div>
                             
                             {isExpanded && (
-                              <div className="pl-12 pr-10 py-3 space-y-4 bg-muted/20 rounded-xl border border-border/40 ml-2 animate-in slide-in-from-top-2">
+                              <div className="py-3 px-2 space-y-3 bg-muted/20 rounded-xl border border-border/40 animate-in slide-in-from-top-2">
                                 {group.items.map(item => {
                                   // Fallback to group preference if item preference is undefined
                                   const itemEmailChecked = notifPrefs.email[item.key] !== undefined ? notifPrefs.email[item.key] : (notifPrefs.email[group.id] !== false);
                                   const itemInAppChecked = notifPrefs.inApp[item.key] !== undefined ? notifPrefs.inApp[item.key] : (notifPrefs.inApp[group.id] !== false);
 
                                   return (
-                                    <div key={item.key} className="grid grid-cols-[1fr_80px_80px] gap-4 items-center">
-                                      <div>
-                                        <p className="font-medium text-xs">{item.label}</p>
-                                        <p className="text-[10px] text-muted-foreground">{item.description}</p>
+                                    <div key={item.key} className="grid grid-cols-[1fr_80px_80px] gap-4 items-center pl-10 pr-0">
+                                      <div className="min-w-0">
+                                        <p className="font-medium text-xs text-foreground/90 truncate">{item.label}</p>
+                                        <p className="text-[10px] text-muted-foreground truncate">{item.description}</p>
                                       </div>
-                                      <div className="flex justify-center">
+                                      <div className="flex justify-center items-center">
                                         <Switch
                                           checked={itemEmailChecked}
                                           onCheckedChange={(v) => handleNotifToggle('email', item.key, v)}
@@ -814,7 +811,7 @@ const Settings = () => {
                                           className="scale-75"
                                         />
                                       </div>
-                                      <div className="flex justify-center">
+                                      <div className="flex justify-center items-center">
                                         <Switch
                                           checked={itemInAppChecked}
                                           onCheckedChange={(v) => handleNotifToggle('inApp', item.key, v)}
