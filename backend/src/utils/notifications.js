@@ -1,5 +1,15 @@
 import { NOTIFICATION_CATEGORIES, DEFAULT_NOTIFICATION_PREFERENCES } from '../controllers/userController.js';
-import { sendPushNotification } from './firebasePush.js';
+
+const safeSendPush = async (userId, title, message) => {
+  try {
+    const mod = await import('./firebasePush.js').catch(() => null);
+    if (mod && mod.sendPushNotification) {
+      await mod.sendPushNotification(userId, title, message);
+    }
+  } catch (err) {
+    // Graceful fallback if firebasePush is missing or not configured
+  }
+};
 
 /** Fetch user's notification preferences from DB */
 const getUserNotificationPrefs = async (db, userId) => {
@@ -65,7 +75,7 @@ export const createNotification = async (req, { userId, title, message, type, li
 
       // 2. Push Notification (Firebase)
       if (pushEnabled) {
-        await sendPushNotification(userId, title, message);
+        await safeSendPush(userId, title, message);
       }
 
       // Note: We return null here if inApp was skipped, but that's fine since most callers ignore the return value.
