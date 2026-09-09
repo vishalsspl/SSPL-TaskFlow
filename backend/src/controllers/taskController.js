@@ -1,7 +1,6 @@
 import { sendTaskAssignmentEmail, sendTaskStatusUpdateEmail, sendTaskUpdateEmail, sendTaskDeleteEmail, sendTaskCommentEmail, sendManagerTaskCreatedEmail } from '../services/emailService.js';
 import { createNotification, shouldSendEmail } from '../utils/notifications.js';
 import prisma from '../lib/prisma.js';
-import { sendPushNotification } from '../utils/firebasePush.js';
 
 
 export const getAllTasks = async (req, res) => {
