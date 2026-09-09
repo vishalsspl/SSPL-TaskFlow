@@ -10,7 +10,7 @@ import api from '@/lib/api';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { useAuthStore } from '@/store/authStore';
 
-export default function DocumentList({ projectId, onNewDocument, onEditDocument, onViewDocument, projectManagers }) {
+export default function DocumentList({ projectId, onNewDocument, onEditDocument, onViewDocument, projectManagers, presentationMode = false }) {
   const { toast } = useToast();
   const { user } = useAuthStore();
   const [documents, setDocuments] = useState([]);
@@ -62,9 +62,11 @@ export default function DocumentList({ projectId, onNewDocument, onEditDocument,
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <Button onClick={onNewDocument} className="rounded-xl px-6 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/20 w-full sm:w-auto">
-          <Plus className="w-4 h-4 mr-2" /> New Document
-        </Button>
+        {!presentationMode && (
+          <Button onClick={onNewDocument} className="rounded-xl px-6 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/20 w-full sm:w-auto">
+            <Plus className="w-4 h-4 mr-2" /> New Document
+          </Button>
+        )}
       </div>
 
       {loading ? (
@@ -77,9 +79,11 @@ export default function DocumentList({ projectId, onNewDocument, onEditDocument,
             <FileText className="h-12 w-12 text-muted-foreground opacity-30 mb-4" />
             <p className="text-lg font-bold text-foreground mb-1">No documents found</p>
             <p className="text-sm text-muted-foreground mb-6">Get started by creating your first project document.</p>
-            <Button onClick={onNewDocument} variant="outline" className="rounded-xl">
-              <Plus className="w-4 h-4 mr-2" /> Create Document
-            </Button>
+            {!presentationMode && (
+              <Button onClick={onNewDocument} variant="outline" className="rounded-xl">
+                <Plus className="w-4 h-4 mr-2" /> Create Document
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : (

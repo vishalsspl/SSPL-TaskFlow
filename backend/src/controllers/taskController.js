@@ -937,6 +937,21 @@ export const updateTask = async (req, res) => {
   const addedIds = newAssigneeIds.filter((uid) => !existingAssigneeIds.includes(uid));
 
   let updatedTags = tags !== undefined ? [...tags] : undefined;
+  if (updatedTags !== undefined) {
+    const existingSystemTags = (existingTask.tags || []).filter(t =>
+      t.startsWith('CREATOR:') ||
+      t.startsWith('APPROVER:') ||
+      t.startsWith('PENDING_APPROVAL:') ||
+      t.startsWith('APPROVED_BY:')
+    );
+    const userTagsOnly = updatedTags.filter(t =>
+      !t.startsWith('CREATOR:') &&
+      !t.startsWith('APPROVER:') &&
+      !t.startsWith('PENDING_APPROVAL:') &&
+      !t.startsWith('APPROVED_BY:')
+    );
+    updatedTags = Array.from(new Set([...userTagsOnly, ...existingSystemTags]));
+  }
   if (status === 'COMPLETED' && (existingTask.status === 'IN_REVIEW' || existingTask.tags?.some(t => t.startsWith('PENDING_APPROVAL:')))) {
     if (!updatedTags) updatedTags = [...(existingTask.tags || [])];
     updatedTags = updatedTags.filter(t => !t.startsWith('APPROVED_BY:'));

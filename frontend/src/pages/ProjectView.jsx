@@ -805,6 +805,7 @@ const ProjectView = () => {
                 <DocumentList
                   projectId={id}
                   projectManagers={dashboard?.project?.managers}
+                  presentationMode={presentationMode}
                   onNewDocument={() => {
                     setSelectedDocId(null);
                     setDocView('edit');

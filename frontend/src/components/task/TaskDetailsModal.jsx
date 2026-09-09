@@ -13,7 +13,6 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { formatDate, priorityColors, statusColors, taskTypeColors } from '@/lib/utils';
 import { getFileUrl } from '@/lib/api';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 const getTaskProgress = (task) => {
     if (task.status === 'COMPLETED') return 100;
@@ -89,12 +88,10 @@ const TaskDetailsModal = ({ open, onOpenChange, task, canEdit, onEditClick }) =>
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="w-[calc(100%-2rem)] sm:max-w-[700px] max-h-[85vh] bg-background border-none text-foreground rounded-[24px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] p-0 flex flex-col">
-                
-                <ScrollArea className="flex-1 w-full max-h-[85vh] overflow-y-auto">
-                    <div className="p-6 sm:p-8 space-y-6 sm:space-y-8">
-                        
-                        {/* 1. Header Section */}
+            <DialogContent className="w-[calc(100%-2rem)] sm:max-w-[700px] max-h-[85vh] bg-background border-none text-foreground rounded-[24px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] p-0 flex flex-col overflow-hidden">
+                <div className="flex-1 w-full overflow-y-auto p-6 sm:p-8 space-y-6 sm:space-y-8">
+                    
+                    {/* 1. Header Section */}
                         <div className="space-y-4">
                             <div className="flex flex-wrap items-center gap-2">
                                 <Badge className={`${taskTypeColors[task.type || 'TASK']} border-0 px-2.5 py-1 text-[9px] font-black tracking-widest uppercase flex items-center gap-1.5 shadow-sm`}>
@@ -300,9 +297,6 @@ const TaskDetailsModal = ({ open, onOpenChange, task, canEdit, onEditClick }) =>
                                 </div>
                             </div>
                         )}
-                        
-                        {/* Bottom Padding */}
-                        <div className="h-4"></div>
                         </TabsContent>
 
                         <TabsContent value="comments" className="mt-0 outline-none flex flex-col h-full min-h-[300px]">
@@ -430,7 +424,6 @@ const TaskDetailsModal = ({ open, onOpenChange, task, canEdit, onEditClick }) =>
                         )}
                         </Tabs>
                     </div>
-                </ScrollArea>
             </DialogContent>
         </Dialog>
     );

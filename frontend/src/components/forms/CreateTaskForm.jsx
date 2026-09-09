@@ -28,6 +28,16 @@ import api, { getFileUrl } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthStore } from '@/store/authStore';
 
+const isSystemTag = (tag) => {
+    if (typeof tag !== 'string') return false;
+    return (
+        tag.startsWith('CREATOR:') ||
+        tag.startsWith('APPROVER:') ||
+        tag.startsWith('PENDING_APPROVAL:') ||
+        tag.startsWith('APPROVED_BY:')
+    );
+};
+
 const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initialProjectId = '', task = null }) => {
     const { toast } = useToast();
     const { user } = useAuthStore();
@@ -69,7 +79,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
         completionPercentage: task?.completionPercentage || 0,
         dueDate: task?.dueDate ? new Date(task.dueDate) : null,
         completedAt: task?.completedAt ? new Date(task.completedAt) : null,
-        tags: task?.tags?.join(', ') || '',
+        tags: (task?.tags || []).filter(t => !isSystemTag(t)).join(', '),
         storyPoints: task?.storyPoints || 0,
         type: task?.type || 'TASK',
         sendEmail: localStorage.getItem('preferNoEmail') !== 'true',
@@ -206,11 +216,20 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
 
         setLoading(true);
         try {
+            const userTags = formData.tags
+                ? (typeof formData.tags === 'string'
+                    ? formData.tags.split(',').map(t => t.trim()).filter(Boolean)
+                    : formData.tags)
+                : [];
+            const cleanedUserTags = userTags.filter(t => !isSystemTag(t));
+            const existingSystemTags = (task?.tags || []).filter(t => isSystemTag(t));
+            const finalTags = isEdit ? [...cleanedUserTags, ...existingSystemTags] : cleanedUserTags;
+
             const payload = {
                 ...formData,
                 title: trimmedTitle,
                 parentId: formData.parentId || null,
-                tags: formData.tags ? (typeof formData.tags === 'string' ? formData.tags.split(',').map(t => t.trim()) : formData.tags) : [],
+                tags: finalTags,
                 completionPercentage: Number(formData.completionPercentage),
                 assigneeIds: formData.assigneeId ? [formData.assigneeId] : [],
                 storyPoints: Number(formData.storyPoints),
