@@ -387,6 +387,7 @@ export const importDocument = async (req, res) => {
     
     let type = 'DOCUMENT';
     let content = '';
+    let attachments = [];
 
     if (ext === 'docx') {
       type = 'DOCUMENT';
@@ -396,8 +397,33 @@ export const importDocument = async (req, res) => {
       type = 'SPREADSHEET';
       const result = await importXlsxToSheetData(req.file.buffer);
       content = JSON.stringify(result);
+    } else if (ext === 'pdf') {
+      type = 'DOCUMENT';
+      const fs = await import('fs');
+      const path = await import('path');
+      const { v4: uuidv4 } = await import('uuid');
+      
+      const uploadDir = path.join(process.cwd(), 'uploads');
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      
+      const uniqueName = `${uuidv4()}.${ext}`;
+      const filePath = path.join(uploadDir, uniqueName);
+      fs.writeFileSync(filePath, req.file.buffer);
+      
+      const fileUrl = `/uploads/${uniqueName}`;
+      
+      // Inline iframe to view PDF + Attachment link
+      content = `<iframe src="${fileUrl}" width="100%" height="800px" style="border: none;"></iframe>`;
+      attachments = [{
+        name: req.file.originalname,
+        url: fileUrl,
+        size: req.file.size,
+        type: req.file.mimetype || 'application/pdf'
+      }];
     } else {
-      return res.status(400).json({ error: 'Unsupported file type. Use .docx or .xlsx' });
+      return res.status(400).json({ error: 'Unsupported file type. Use .docx, .xlsx, or .pdf' });
     }
 
     const document = await prisma.document.create({
@@ -406,6 +432,7 @@ export const importDocument = async (req, res) => {
         title,
         content,
         type,
+        attachments: JSON.stringify(attachments),
         authorId: req.user.id,
       }
     });

@@ -120,8 +120,8 @@ export default function CreateDocumentModal({ open, onOpenChange, projectId, onC
     if (!file) return;
 
     const ext = file.name.split('.').pop().toLowerCase();
-    if (!['docx', 'xlsx'].includes(ext)) {
-      toast({ title: 'Error', description: 'Only .docx and .xlsx files are supported', variant: 'destructive' });
+    if (!['docx', 'xlsx', 'pdf'].includes(ext)) {
+      toast({ title: 'Error', description: 'Only .docx, .xlsx, and .pdf files are supported', variant: 'destructive' });
       return;
     }
 
@@ -265,7 +265,7 @@ export default function CreateDocumentModal({ open, onOpenChange, projectId, onC
               <input
                 type="file"
                 ref={fileInputRef}
-                accept=".docx,.xlsx"
+                accept=".docx,.xlsx,.pdf"
                 onChange={handleFileUpload}
                 className="hidden"
               />
@@ -273,7 +273,7 @@ export default function CreateDocumentModal({ open, onOpenChange, projectId, onC
                 <Upload className="w-8 h-8 text-muted-foreground" />
               </div>
               <p className="font-bold text-sm mb-1">Upload a file</p>
-              <p className="text-xs text-muted-foreground mb-4">Supports .docx and .xlsx files (max 25MB)</p>
+              <p className="text-xs text-muted-foreground mb-4">Supports .docx, .xlsx, and .pdf files (max 25MB)</p>
               <Button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
