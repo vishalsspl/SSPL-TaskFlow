@@ -511,7 +511,6 @@ enum TicketStatus {
 }
 
 enum TimeEntryStatus {
-  DRAFT
   PENDING
   APPROVED
   REJECTED

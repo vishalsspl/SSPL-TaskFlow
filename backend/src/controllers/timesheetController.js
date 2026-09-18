@@ -66,7 +66,7 @@ export const getTimeEntries = async (req, res) => {
             {
                 OR: [
                     { userId: req.user.id },
-                    { status: { not: 'DRAFT' } }
+                    { status: { not: 'PENDING' } }
                 ]
             }
         ];
@@ -260,7 +260,7 @@ export const createTimeEntry = async (req, res) => {
             date: new Date(date),
             hours: parseFloat(hours),
             description,
-            status: 'DRAFT',
+            status: 'PENDING',
             billable,
             isManual: true,
         },
@@ -276,7 +276,7 @@ export const createTimeEntry = async (req, res) => {
             userId: req.user.id,
             organizationId: req.user.organizationId,
             projectId,
-            action: 'LOGGED_TIME_DRAFT',
+            action: 'LOGGED_TIME_PENDING',
             entity: 'time_entry',
             entityId: entry.id,
             details: { hours, date },
@@ -300,7 +300,7 @@ export const submitTimesheets = async (req, res) => {
         
         const where = {
             userId: req.user.id,
-            status: 'DRAFT'
+            status: 'PENDING'
         };
 
         if (startDate && endDate) {
