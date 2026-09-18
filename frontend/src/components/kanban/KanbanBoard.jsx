@@ -67,7 +67,6 @@ const KanbanBoard = ({
     const { toast } = useToast();
     const [activeId, setActiveId] = useState(null);
     const [selectedTasks, setSelectedTasks] = useState([]);
-    const [recentlyMovedId, setRecentlyMovedId] = useState(null);
     const [isMobile, setIsMobile] = useState(false);
     const [activeColumnIndex, setActiveColumnIndex] = useState(0);
     const scrollRef = useRef(null);
@@ -97,18 +96,10 @@ const KanbanBoard = ({
         return () => container.removeEventListener('scroll', handleScroll);
     }, [handleScroll]);
 
-    // Clear the highlight after 2 seconds
-    useEffect(() => {
-        if (recentlyMovedId) {
-            const timer = setTimeout(() => setRecentlyMovedId(null), 2000);
-            return () => clearTimeout(timer);
-        }
-    }, [recentlyMovedId]);
-
     const sensors = useSensors(
         useSensor(MouseSensor, {
             activationConstraint: {
-                distance: 5,
+                distance: 3,
             },
         }),
         useSensor(KeyboardSensor, {
@@ -164,6 +155,12 @@ const KanbanBoard = ({
         if (newStatus) {
             const currentTask = tasks.find(t => t.id === activeTaskId);
             if (currentTask && currentTask.status !== newStatus) {
+                // Universal rule: Cannot jump directly from TODO to IN_REVIEW
+                if (currentTask.status === 'TODO' && newStatus === 'IN_REVIEW') {
+                    toast({ title: 'Invalid Flow', description: 'Please move the task to In Progress first before moving to In Review.', variant: 'destructive' });
+                    return;
+                }
+
                 // Restrictions for MEMBER role
                 if (currentUser?.role === 'MEMBER') {
                     // Prevent moving out of COMPLETED
@@ -178,8 +175,6 @@ const KanbanBoard = ({
                     }
                 }
 
-                setRecentlyMovedId(activeTaskId);
-                
                 // Auto-scroll on mobile
                 if (window.innerWidth < 768) {
                     const targetIndex = COLUMN_IDS.indexOf(newStatus);
@@ -193,8 +188,6 @@ const KanbanBoard = ({
     };
 
     const handleManualStatusChange = (taskId, newStatus) => {
-        setRecentlyMovedId(taskId);
-        
         // Auto-scroll on mobile
         if (window.innerWidth < 768) {
             const targetIndex = COLUMN_IDS.indexOf(newStatus);
@@ -254,10 +247,10 @@ const KanbanBoard = ({
             <div className="relative h-full flex flex-col">
                 {/* Columns container */}
                 <div ref={scrollRef} className="flex flex-1 min-h-0 w-full gap-2 sm:gap-4 overflow-x-auto pb-0 sm:pb-4 px-1 sm:px-0 no-scrollbar scroll-smooth snap-x snap-mandatory">
-                    <KanbanColumn id="TODO" title="To Do" tasks={columns.TODO} isReadOnly={isReadOnly} disableDrag={actuallyDisableDrag} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={handleManualStatusChange} recentlyMovedId={recentlyMovedId} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} selectedTasks={selectedTasks} onToggleSelect={toggleTaskSelection} onToggleSelectAll={handleToggleSelectAll} onBulkApprove={handleBulkApproveClick} onBulkReject={handleBulkRejectClick} currentUser={currentUser} />
-                    <KanbanColumn id="IN_PROGRESS" title="In Progress" tasks={columns.IN_PROGRESS} isReadOnly={isReadOnly} disableDrag={actuallyDisableDrag} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={handleManualStatusChange} recentlyMovedId={recentlyMovedId} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} selectedTasks={selectedTasks} onToggleSelect={toggleTaskSelection} onToggleSelectAll={handleToggleSelectAll} onBulkApprove={handleBulkApproveClick} onBulkReject={handleBulkRejectClick} currentUser={currentUser} />
-                    <KanbanColumn id="IN_REVIEW" title="In Review" tasks={columns.IN_REVIEW} isReadOnly={isReadOnly} disableDrag={actuallyDisableDrag} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={handleManualStatusChange} recentlyMovedId={recentlyMovedId} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} selectedTasks={selectedTasks} onToggleSelect={toggleTaskSelection} onToggleSelectAll={handleToggleSelectAll} onBulkApprove={handleBulkApproveClick} onBulkReject={handleBulkRejectClick} currentUser={currentUser} />
-                    <KanbanColumn id="COMPLETED" title="Completed" tasks={columns.COMPLETED} isReadOnly={isReadOnly} disableDrag={actuallyDisableDrag} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={handleManualStatusChange} recentlyMovedId={recentlyMovedId} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} selectedTasks={selectedTasks} onToggleSelect={toggleTaskSelection} onToggleSelectAll={handleToggleSelectAll} onBulkApprove={handleBulkApproveClick} onBulkReject={handleBulkRejectClick} currentUser={currentUser} />
+                    <KanbanColumn id="TODO" title="To Do" tasks={columns.TODO} isReadOnly={isReadOnly} disableDrag={actuallyDisableDrag} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={handleManualStatusChange} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} selectedTasks={selectedTasks} onToggleSelect={toggleTaskSelection} onToggleSelectAll={handleToggleSelectAll} onBulkApprove={handleBulkApproveClick} onBulkReject={handleBulkRejectClick} currentUser={currentUser} />
+                    <KanbanColumn id="IN_PROGRESS" title="In Progress" tasks={columns.IN_PROGRESS} isReadOnly={isReadOnly} disableDrag={actuallyDisableDrag} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={handleManualStatusChange} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} selectedTasks={selectedTasks} onToggleSelect={toggleTaskSelection} onToggleSelectAll={handleToggleSelectAll} onBulkApprove={handleBulkApproveClick} onBulkReject={handleBulkRejectClick} currentUser={currentUser} />
+                    <KanbanColumn id="IN_REVIEW" title="In Review" tasks={columns.IN_REVIEW} isReadOnly={isReadOnly} disableDrag={actuallyDisableDrag} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={handleManualStatusChange} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} selectedTasks={selectedTasks} onToggleSelect={toggleTaskSelection} onToggleSelectAll={handleToggleSelectAll} onBulkApprove={handleBulkApproveClick} onBulkReject={handleBulkRejectClick} currentUser={currentUser} />
+                    <KanbanColumn id="COMPLETED" title="Completed" tasks={columns.COMPLETED} isReadOnly={isReadOnly} disableDrag={actuallyDisableDrag} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={handleManualStatusChange} highlightTaskId={highlightTaskId} highlightAction={highlightAction} onApprove={onApprove} onReject={onReject} selectedTasks={selectedTasks} onToggleSelect={toggleTaskSelection} onToggleSelectAll={handleToggleSelectAll} onBulkApprove={handleBulkApproveClick} onBulkReject={handleBulkRejectClick} currentUser={currentUser} />
                 </div>
 
                 {/* Mobile Navigation Bar */}
@@ -306,8 +299,16 @@ const KanbanBoard = ({
             </div>
 
             {createPortal(
-                <DragOverlay>
-                    {activeTask ? <KanbanCard task={activeTask} isReadOnly={isReadOnly} disableDrag={actuallyDisableDrag} /> : null}
+                <DragOverlay dropAnimation={null}>
+                    {activeTask ? (
+                        <KanbanCard 
+                            task={activeTask} 
+                            isReadOnly={true} 
+                            disableDrag={true} 
+                            isOverlay={true}
+                            currentUser={currentUser}
+                        />
+                    ) : null}
                 </DragOverlay>,
                 document.body
             )}

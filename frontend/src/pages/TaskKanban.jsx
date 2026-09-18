@@ -53,6 +53,12 @@ const TaskKanban = () => {
     const [rejectTaskIds, setRejectTaskIds] = useState([]);
     const [rejectionReason, setRejectionReason] = useState('');
 
+    const [showLogTimeDialog, setShowLogTimeDialog] = useState(false);
+    const [logTimeTask, setLogTimeTask] = useState(null);
+    const [logTimeHours, setLogTimeHours] = useState('');
+    const [logTimeDescription, setLogTimeDescription] = useState('');
+    const [logTimeBillable, setLogTimeBillable] = useState(false);
+
     const [managerFilter, setManagerFilter] = useState('all');
     const [hideCompleted, setHideCompleted] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
@@ -178,13 +184,60 @@ const TaskKanban = () => {
     };
 
     const handleStatusChange = async (taskId, newStatus) => {
+        if (newStatus === 'IN_REVIEW') {
+            const task = tasks.find(t => t.id === taskId);
+            setLogTimeTask(task);
+            setShowLogTimeDialog(true);
+            return;
+        }
+        await proceedWithStatusChange(taskId, newStatus);
+    };
+
+    const proceedWithStatusChange = async (taskId, newStatus) => {
+        const previousTasks = [...tasks];
+        // Optimistically update the UI instantly so there is no delay or snapping back
+        setTasks(prevTasks => prevTasks.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
+
         try {
             await api.patch(`/tasks/${taskId}/status`, { status: newStatus });
             toast({ title: 'Status Updated', description: `Task moved to ${newStatus.replace('_', ' ')}.` });
             fetchData();
         } catch (error) {
             console.error('Failed to update status:', error);
+            // Rollback on error
+            setTasks(previousTasks);
             toast({ title: 'Error', description: error.response?.data?.error || 'Failed to update task status.', variant: 'destructive' });
+        }
+    };
+
+    const handleLogTimeSubmit = async () => {
+        if (!logTimeHours || isNaN(parseFloat(logTimeHours))) {
+            toast({ title: 'Error', description: 'Please enter valid hours.', variant: 'destructive' });
+            return;
+        }
+
+        try {
+            await api.post('/timesheets', {
+                projectId: logTimeTask.projectId || logTimeTask.project?.id,
+                taskId: logTimeTask.id,
+                date: new Date().toISOString(),
+                hours: parseFloat(logTimeHours),
+                description: logTimeDescription || `Worked on task: ${logTimeTask.title}`,
+                billable: logTimeBillable
+            });
+            
+            toast({ title: 'Time Logged', description: 'Hours saved as DRAFT to your timesheet.' });
+            
+            setShowLogTimeDialog(false);
+            await proceedWithStatusChange(logTimeTask.id, 'IN_REVIEW');
+            
+            setLogTimeTask(null);
+            setLogTimeHours('');
+            setLogTimeDescription('');
+            setLogTimeBillable(false);
+        } catch (error) {
+            console.error('Failed to log time:', error);
+            toast({ title: 'Error', description: error.response?.data?.error || 'Failed to log time.', variant: 'destructive' });
         }
     };
 
@@ -346,7 +399,13 @@ const TaskKanban = () => {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                    <span>{project._count?.tasks || 0} tasks</span>
+                                    <span>
+                                        {(() => {
+                                            const matchingTasks = tasks.filter(t => (t.projectId === project.id || t.project?.id === project.id));
+                                            if (matchingTasks.length > 0) return `${matchingTasks.length} tasks`;
+                                            return `${project._count?.tasks || 0} tasks`;
+                                        })()}
+                                    </span>
                                     <span>•</span>
                                     <span>{project.name.toLowerCase() === 'general' ? '-' : (project.managers && project.managers.length > 0 ? project.managers.map(m => m.name).join(', ') : 'No managers')}</span>
                                 </div>
@@ -439,14 +498,7 @@ const TaskKanban = () => {
             <div className="flex-1 min-h-0 rounded-xl sm:rounded-3xl bg-card/50 border border-border p-1.5 sm:p-3 md:p-4 glass flex flex-col overflow-hidden">
                 <KanbanBoard
                     tasks={filteredTasks}
-                    onTaskUpdate={async (taskId, newStatus) => {
-                        try {
-                            await api.patch(`/tasks/${taskId}/status`, { status: newStatus });
-                            fetchData();
-                        } catch (error) {
-                            console.error('Failed to update status:', error);
-                        }
-                    }}
+                    onTaskUpdate={isReadOnly ? undefined : handleStatusChange}
                     isReadOnly={isReadOnly}
                     onCardClick={user?.role !== 'CLIENT' ? handleTaskClick : undefined}
                     onEdit={user?.role !== 'CLIENT' ? handleEditClick : undefined}
@@ -552,6 +604,66 @@ const TaskKanban = () => {
                             className="px-4 py-2 rounded-lg font-bold text-sm bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             Reject Task
+                        </button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={showLogTimeDialog} onOpenChange={setShowLogTimeDialog}>
+                <DialogContent className="sm:max-w-md bg-card border-border text-foreground rounded-xl">
+                    <DialogHeader>
+                        <DialogTitle className="font-black Montserrat">Log Task Time</DialogTitle>
+                        <DialogDescription className="text-muted-foreground font-medium">
+                            How many hours did you spend on this task before sending for review?
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4 space-y-4">
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold uppercase text-muted-foreground">Hours Spent</label>
+                            <Input
+                                type="number"
+                                placeholder="e.g. 1.5 for 1 hour 30 mins"
+                                value={logTimeHours}
+                                onChange={(e) => setLogTimeHours(e.target.value)}
+                                min="0"
+                                step="0.25"
+                                className="bg-muted/30 border-border"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold uppercase text-muted-foreground">Description (Optional)</label>
+                            <Input
+                                type="text"
+                                placeholder="Briefly describe what you did..."
+                                value={logTimeDescription}
+                                onChange={(e) => setLogTimeDescription(e.target.value)}
+                                className="bg-muted/30 border-border"
+                            />
+                        </div>
+                        <div className="flex items-center gap-3 pt-1">
+                            <Switch id="log-time-billable" checked={logTimeBillable} onCheckedChange={setLogTimeBillable} />
+                            <label htmlFor="log-time-billable" className="text-sm font-semibold text-foreground/80 cursor-pointer">Billable</label>
+                        </div>
+                    </div>
+                    <div className="flex justify-end gap-3">
+                        <button
+                            onClick={() => {
+                                setShowLogTimeDialog(false);
+                                setLogTimeTask(null);
+                                setLogTimeHours('');
+                                setLogTimeDescription('');
+                                setLogTimeBillable(false);
+                            }}
+                            className="px-4 py-2 rounded-lg font-bold text-sm bg-muted text-foreground hover:bg-muted/80 transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleLogTimeSubmit}
+                            disabled={!logTimeHours}
+                            className="px-4 py-2 rounded-lg font-bold text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Submit & Move
                         </button>
                     </div>
                 </DialogContent>

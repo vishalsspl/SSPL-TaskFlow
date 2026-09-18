@@ -22,6 +22,7 @@ export const NOTIFICATION_CATEGORIES = {
   DOCUMENT_UPLOADED: 'tasks',
   // Team & HR
   WORKLOG_SUBMITTED: 'team',
+  TIMESHEET_SUBMITTED: 'team',
   TIMESHEET_APPROVED: 'team',
   TIMESHEET_REJECTED: 'team',
   LEAVE_SUBMITTED: 'team',

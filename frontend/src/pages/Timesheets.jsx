@@ -551,6 +551,27 @@ const Timesheets = () => {
         }
     };
 
+    const handleSubmitTimesheets = async () => {
+        try {
+            setSubmitting(true);
+            // Optionally pass startDate and endDate if you only want to submit for the current date range filter
+            await api.post('/timesheets/submit', {
+                startDate: dateRange.from ? dateRange.from.toISOString() : undefined,
+                endDate: dateRange.to ? dateRange.to.toISOString() : undefined
+            });
+            toast({ title: "Success", description: "Timesheets submitted successfully." });
+            fetchEntries();
+        } catch (error) {
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: error.response?.data?.error || "Failed to submit timesheets."
+            });
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
     const handleEditEntry = (entry) => {
         let portion = '';
         let leaveType = '';
@@ -631,6 +652,33 @@ const Timesheets = () => {
         }
     };
 
+    const handleBulkAction = async (status) => {
+        const visibleEntries = entries
+            .filter(e => e.userId !== user?.id)
+            .filter(e => e.status === 'PENDING')
+            .filter(e => selectedDateFilter ? isSameDay(parseISO(e.date), selectedDateFilter) : true)
+            .filter(e => selectedProjectFilter === 'all' ? true : e.projectId === selectedProjectFilter)
+            .filter(e => selectedMemberFilter === 'all' ? true : e.userId === selectedMemberFilter);
+
+        if (visibleEntries.length === 0) {
+            toast({ title: "No pending logs", description: "There are no pending logs to update." });
+            return;
+        }
+
+        try {
+            setSubmitting(true);
+            await Promise.all(visibleEntries.map(e => api.patch(`/timesheets/${e.id}/status`, { status })));
+            
+            toast({ title: "Success", description: `All visible logs have been ${status.toLowerCase()}.` });
+            fetchEntries();
+            fetchPendingLeaves();
+        } catch (err) {
+            toast({ variant: "destructive", title: "Error", description: "Failed to update some logs." });
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
     const handleDeleteEntry = async (id) => {
         setEntryToDelete(id);
         setShowDeleteDialog(true);
@@ -663,6 +711,7 @@ const Timesheets = () => {
         switch (status) {
             case 'APPROVED': return <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20 font-bold uppercase text-[9px] sm:text-[10px] tracking-wider whitespace-nowrap hover:bg-green-500/20">Approved{reviewerText}</Badge>;
             case 'REJECTED': return <Badge variant="destructive" className="font-bold uppercase text-[9px] sm:text-[10px] tracking-wider whitespace-nowrap">Rejected{reviewerText}</Badge>;
+            case 'DRAFT': return <Badge variant="outline" className="bg-gray-500/10 text-gray-500 border-gray-500/20 font-bold uppercase text-[9px] sm:text-[10px] tracking-wider whitespace-nowrap hover:bg-gray-500/20">Draft</Badge>;
             default: return <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20 font-bold uppercase text-[9px] sm:text-[10px] tracking-wider whitespace-nowrap hover:bg-yellow-500/20">Pending</Badge>;
         }
     };
@@ -763,6 +812,22 @@ const Timesheets = () => {
         </Select>
     );
 
+    const MemberFilterDropdown = (
+        <Select value={selectedMemberFilter} onValueChange={setSelectedMemberFilter}>
+            <SelectTrigger className="w-[150px] sm:w-[200px] h-9 rounded-xl font-bold bg-muted/30 border-border">
+                <SelectValue placeholder="Filter Member" />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl border-border bg-card">
+                <SelectItem value="all" className="font-bold cursor-pointer rounded-lg">All Members</SelectItem>
+                {(isOrgAdmin ? users : users.filter(u => u.managerId === user?.id)).map(u => (
+                    <SelectItem key={u.id} value={u.id} className="font-bold cursor-pointer rounded-lg">
+                        {u.name}
+                    </SelectItem>
+                ))}
+            </SelectContent>
+        </Select>
+    );
+
     return (
         <div className="flex-1 space-y-4 p-0 sm:p-2 overflow-y-auto overflow-x-hidden no-scrollbar h-full w-full max-w-full">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-card p-4 rounded-xl border border-border shadow-sm">
@@ -791,6 +856,17 @@ const Timesheets = () => {
                         >
                             <Plus className="mr-2 h-4 w-4" /> Log Hours
                         </Button>
+                    )}
+                    {!isOrgAdmin && entries.some(e => e.userId === user?.id && e.status === 'DRAFT') && (
+                        <div title={new Date().getDay() !== 5 ? "This button is enabled on Friday only" : ""}>
+                            <Button 
+                                onClick={handleSubmitTimesheets} 
+                                disabled={submitting || new Date().getDay() !== 5} 
+                                className="bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl h-10 px-6 shadow-lg shadow-green-500/20 transition-all active:scale-95 w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <CheckCircle2 className="mr-2 h-4 w-4" /> Submit Weekly Timesheet
+                            </Button>
+                        </div>
                     )}
                     {isOrgAdmin && (
                         <>
@@ -886,7 +962,7 @@ const Timesheets = () => {
                     const targetEntries = isOrgAdmin 
                         ? entries.filter(e => (selectedMemberFilter === 'all' ? true : e.userId === selectedMemberFilter) && (selectedProjectFilter === 'all' ? true : e.projectId === selectedProjectFilter))
                         : (activeTab === 'team-logs' || activeTab === 'leave-logs') 
-                            ? entries.filter(e => e.userId !== user?.id && (selectedProjectFilter === 'all' ? true : e.projectId === selectedProjectFilter))
+                            ? entries.filter(e => e.userId !== user?.id && (selectedProjectFilter === 'all' ? true : e.projectId === selectedProjectFilter) && (selectedMemberFilter === 'all' ? true : e.userId === selectedMemberFilter))
                             : entries.filter(e => e.userId === user?.id && (selectedProjectFilter === 'all' ? true : e.projectId === selectedProjectFilter));
                     
                     const myDayEntries = targetEntries.filter(e => isSameDay(parseISO(e.date), day));
@@ -929,7 +1005,16 @@ const Timesheets = () => {
                     // Total Worked = productive hours only
                     const totalWorkedHours = productiveHours;
 
-                    return { day, productiveHours, nonProdHours, billableHours, leaveHours, totalWorkedHours, totalDayHours, orgBizHrs };
+                    const hasPending = myDayEntries.some(e => e.status === 'PENDING' || e.status === 'DRAFT');
+                    const hasRejected = myDayEntries.some(e => e.status === 'REJECTED');
+                    const isAllApproved = myDayEntries.length > 0 && myDayEntries.every(e => e.status === 'APPROVED');
+                    
+                    let dayStatus = 'NONE';
+                    if (hasPending) dayStatus = 'PENDING';
+                    else if (hasRejected) dayStatus = 'REJECTED';
+                    else if (isAllApproved) dayStatus = 'APPROVED';
+
+                    return { day, productiveHours, nonProdHours, billableHours, leaveHours, totalWorkedHours, totalDayHours, orgBizHrs, dayStatus };
                 });
 
                 // Weekly totals
@@ -945,7 +1030,7 @@ const Timesheets = () => {
                 return (
                     <>
                         <div className="flex sm:grid overflow-x-auto no-scrollbar sm:overflow-visible py-2 px-2 sm:p-0 snap-x snap-mandatory sm:grid-cols-7 gap-3">
-                            {weekData.map(({ day, productiveHours, nonProdHours, billableHours, leaveHours, totalWorkedHours, totalDayHours }) => {
+                            {weekData.map(({ day, productiveHours, nonProdHours, billableHours, leaveHours, totalWorkedHours, totalDayHours, dayStatus }) => {
                                 const isToday = isSameDay(day, new Date());
                                 const isSelected = selectedDateFilter && isSameDay(day, selectedDateFilter);
                                 const dayPct = (v) => totalDayHours > 0 ? Math.round((v / totalDayHours) * 100) : 0;
@@ -965,6 +1050,15 @@ const Timesheets = () => {
                                                 className="absolute bottom-0 left-0 right-0 bg-blue-200 dark:bg-blue-500/25 pointer-events-none transition-all duration-500" 
                                                 style={{ height: `${dayPct(leaveHours)}%` }} 
                                             />
+                                        )}
+                                        {dayStatus !== 'NONE' && (
+                                            <div className={`w-full py-0.5 text-[7px] font-black text-center text-white uppercase tracking-widest z-20 ${
+                                                dayStatus === 'APPROVED' ? 'bg-green-500' :
+                                                dayStatus === 'PENDING' ? 'bg-yellow-500 text-yellow-950' :
+                                                'bg-red-500'
+                                            }`}>
+                                                {dayStatus}
+                                            </div>
                                         )}
                                         <CardHeader className="relative z-10 p-1 sm:p-2 text-center border-b border-border/50 bg-muted/10">
                                             <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-muted-foreground">{format(day, 'EEE')}</p>
@@ -1168,6 +1262,7 @@ const Timesheets = () => {
                                         .filter(e => e.status === 'PENDING')
                                         .filter(e => selectedDateFilter ? isSameDay(parseISO(e.date), selectedDateFilter) : true)
                                         .filter(e => selectedProjectFilter === 'all' ? true : e.projectId === selectedProjectFilter)
+                                        .filter(e => selectedMemberFilter === 'all' ? true : e.userId === selectedMemberFilter)
                                         .length;
                                     return teamLogsCount > 0 ? (
                                         <Badge variant="secondary" className="bg-primary/20 text-primary hover:bg-primary/30 rounded-full px-2 py-0 text-[10px]">
@@ -1179,7 +1274,10 @@ const Timesheets = () => {
                             <TabsTrigger value="leave-logs" className="rounded-lg font-bold data-[state=active]:bg-blue-500/10 data-[state=active]:text-blue-500 flex items-center gap-2">
                                 Leave Logs
                                 {(() => {
-                                    const pendingCount = pendingLeaves.filter(e => e.status === 'PENDING').length;
+                                    const pendingCount = pendingLeaves
+                                        .filter(e => e.status === 'PENDING')
+                                        .filter(e => selectedMemberFilter === 'all' ? true : e.userId === selectedMemberFilter)
+                                        .length;
                                     return pendingCount > 0 ? (
                                         <Badge variant="secondary" className="bg-blue-500 text-white hover:bg-blue-600 rounded-full px-2 py-0 text-[10px]">
                                             {pendingCount}
@@ -1264,7 +1362,7 @@ const Timesheets = () => {
                                                         </div>
                                                         <div className="flex items-center gap-2 sm:gap-3">
                                                             {getStatusBadge(entry)}
-                                                            {entry.status === 'PENDING' && (
+                                                            {(entry.status === 'PENDING' || entry.status === 'DRAFT') && (
                                                                 <div className="flex items-center gap-1 transition-all">
                                                                     <Button
                                                                         variant="ghost"
@@ -1319,11 +1417,35 @@ const Timesheets = () => {
                                 <CardTitle className="text-lg font-black Montserrat">Team Logs</CardTitle>
                                 <CardDescription className="text-xs font-medium">Review, approve, or reject time logs from your team</CardDescription>
                             </div>
-                            <div className="shrink-0">{ProjectFilterDropdown}</div>
+                            <div className="shrink-0 flex items-center gap-2 flex-wrap sm:flex-nowrap">
+                                {hasApprovePermission && (
+                                    <>
+                                        <Button 
+                                            size="sm" 
+                                            variant="outline" 
+                                            className="h-9 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white rounded-xl font-bold"
+                                            onClick={() => handleBulkAction('REJECTED')}
+                                            disabled={submitting}
+                                        >
+                                            <X className="mr-1.5 h-4 w-4" /> Reject All
+                                        </Button>
+                                        <Button 
+                                            size="sm" 
+                                            className="h-9 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold"
+                                            onClick={() => handleBulkAction('APPROVED')}
+                                            disabled={submitting}
+                                        >
+                                            <Check className="mr-1.5 h-4 w-4" /> Approve All
+                                        </Button>
+                                    </>
+                                )}
+                                {MemberFilterDropdown}
+                                {ProjectFilterDropdown}
+                            </div>
                         </CardHeader>
                         <CardContent className="p-0">
                             <ScrollArea className="h-[400px]">
-                                {entries.filter(e => e.userId !== user?.id && (!selectedDateFilter || isSameDay(parseISO(e.date), selectedDateFilter)) && (selectedProjectFilter === 'all' ? true : e.projectId === selectedProjectFilter)).length === 0 ? (
+                                {entries.filter(e => e.userId !== user?.id && (!selectedDateFilter || isSameDay(parseISO(e.date), selectedDateFilter)) && (selectedProjectFilter === 'all' ? true : e.projectId === selectedProjectFilter) && (selectedMemberFilter === 'all' ? true : e.userId === selectedMemberFilter)).length === 0 ? (
                                     <div className="flex flex-col items-center justify-center py-20 text-center opacity-50">
                                         <CheckCircle2 className="h-12 w-12 mb-4 text-muted-foreground" />
                                         <p className="font-bold text-muted-foreground Montserrat">No team logs found for this day.</p>
@@ -1334,6 +1456,7 @@ const Timesheets = () => {
                                             .filter(e => e.userId !== user?.id)
                                             .filter(e => selectedDateFilter ? isSameDay(parseISO(e.date), selectedDateFilter) : true)
                                             .filter(e => selectedProjectFilter === 'all' ? true : e.projectId === selectedProjectFilter)
+                                            .filter(e => selectedMemberFilter === 'all' ? true : e.userId === selectedMemberFilter)
                                             .map((entry) => (
                                                 <div key={entry.id} className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:bg-muted/30 transition-colors">
                                                     <div className="flex items-center gap-3 sm:gap-4 min-w-0">
@@ -1389,7 +1512,7 @@ const Timesheets = () => {
                                                             {getStatusBadge(entry)}
                                                             {hasApprovePermission && (entry.status === 'PENDING' || user?.role === 'ADMIN') && (
                                                                 <div className="flex items-center gap-1 border-l pl-3 border-border">
-                                                                    {entry.status === 'PENDING' && (
+                                                                    {(entry.status === 'PENDING' || entry.status === 'DRAFT') && (
                                                                     <>
                                                                         <Button size="icon" variant="outline" className="h-8 w-8 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white rounded-lg" onClick={() => handleStatusUpdate(entry.id, 'REJECTED')} title="Reject">
                                                                             <X className="h-4 w-4" />
@@ -1419,21 +1542,28 @@ const Timesheets = () => {
 
                 <TabsContent value="leave-logs" className="space-y-4">
                     <Card className="border-border bg-card shadow-xl overflow-hidden rounded-2xl">
-                        <CardHeader className="border-b border-border bg-muted/20">
-                            <CardTitle className="text-lg font-black Montserrat">Leave Requests</CardTitle>
-                            <CardDescription className="text-xs font-medium">Review and manage leave requests from your team</CardDescription>
+                        <CardHeader className="border-b border-border bg-muted/20 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div>
+                                <CardTitle className="text-lg font-black Montserrat">Leave Requests</CardTitle>
+                                <CardDescription className="text-xs font-medium">Review and manage leave requests from your team</CardDescription>
+                            </div>
+                            <div className="shrink-0 flex items-center gap-2">
+                                {MemberFilterDropdown}
+                            </div>
                         </CardHeader>
                         <CardContent className="p-0">
                             <ScrollArea className="h-[400px]">
-                                {pendingLeaves.length === 0 ? (
+                                {pendingLeaves.filter(e => selectedMemberFilter === 'all' ? true : e.userId === selectedMemberFilter).length === 0 ? (
                                     <div className="flex flex-col items-center justify-center py-20 text-center opacity-50">
                                         <CheckCircle2 className="h-12 w-12 mb-4 text-muted-foreground" />
                                         <p className="font-bold text-muted-foreground Montserrat">No leave requests found.</p>
                                     </div>
                                 ) : (
                                     <div className="divide-y divide-border">
-                                        {pendingLeaves.map((entry) => (
-                                            <div key={entry.id} className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:bg-muted/30 transition-colors">
+                                        {pendingLeaves
+                                            .filter(e => selectedMemberFilter === 'all' ? true : e.userId === selectedMemberFilter)
+                                            .map((entry) => (
+                                                <div key={entry.id} className="p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hover:bg-muted/30 transition-colors">
                                                 <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                                                     <Avatar className="h-9 w-9 border shrink-0">
                                                         <AvatarImage src={entry.user.avatar} />

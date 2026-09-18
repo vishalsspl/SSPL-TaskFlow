@@ -74,6 +74,7 @@ router.get('/', getUsers);
  *         description: Unauthorized
  */
 router.patch('/profile', updateProfile);
+router.post('/update-fcm', updateFcmToken);
 
 /**
  * @swagger
@@ -250,7 +251,5 @@ router.get('/:id/progress', getMemberProgress);
  *         description: User not found
  */
 router.delete('/:id', deleteUser);
-
-router.post('/update-fcm', updateFcmToken);
 
 export default router;

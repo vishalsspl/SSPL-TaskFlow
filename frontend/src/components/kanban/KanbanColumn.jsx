@@ -4,7 +4,7 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CheckSquare, Square } from 'lucide-react';
 import KanbanCard from './KanbanCard';
 
-const KanbanColumn = ({ id, title, tasks, isReadOnly, disableDrag, onEdit, onCardClick, onDelete, onStatusChange, recentlyMovedId, highlightTaskId, highlightAction, onApprove, onReject, selectedTasks, onToggleSelect, onToggleSelectAll, onBulkApprove, onBulkReject, currentUser }) => {
+const KanbanColumn = ({ id, title, tasks, isReadOnly, disableDrag, onEdit, onCardClick, onDelete, onStatusChange, highlightTaskId, highlightAction, onApprove, onReject, selectedTasks, onToggleSelect, onToggleSelectAll, onBulkApprove, onBulkReject, currentUser }) => {
     const { setNodeRef } = useDroppable({
         id: id,
         data: {
@@ -51,7 +51,7 @@ const KanbanColumn = ({ id, title, tasks, isReadOnly, disableDrag, onEdit, onCar
                     <h3 className="font-black text-[9px] sm:text-[10px] md:text-[11px] uppercase tracking-widest text-foreground Montserrat truncate max-w-[80px] sm:max-w-none">{title}</h3>
                 </div>
                 <div className="flex items-center gap-2">
-                    {id === 'IN_REVIEW' && tasks.length > 0 && onToggleSelectAll && (currentUser?.role === 'ADMIN' || currentUser?.role === 'MANAGER') && (
+                    {id === 'IN_REVIEW' && tasks.length > 0 && onToggleSelectAll && (currentUser?.role === 'ADMIN' || currentUser?.role === 'MANAGER' || tasks.some(t => t.assignees?.some(a => (a.assignedById === currentUser?.id || a.assignedBy?.id === currentUser?.id) && (a.userId !== currentUser?.id && a.user?.id !== currentUser?.id)))) && (
                         <button 
                             onClick={() => onToggleSelectAll(tasks, !isAllSelected)}
                             className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
@@ -89,7 +89,7 @@ const KanbanColumn = ({ id, title, tasks, isReadOnly, disableDrag, onEdit, onCar
                 <div ref={setNodeRef} className="flex flex-col gap-3 min-h-[150px] pb-4 w-full max-w-[600px] sm:max-w-none mx-auto items-center sm:items-stretch">
                     <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
                         {tasks.map((task) => (
-                            <KanbanCard key={task.id} task={task} isReadOnly={isReadOnly} disableDrag={disableDrag} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={onStatusChange} isHighlighted={task.id === recentlyMovedId || task.id === highlightTaskId} highlightAction={task.id === highlightTaskId ? highlightAction : null} onApprove={onApprove} onReject={onReject} isSelected={selectedTasks?.includes(task.id)} onToggleSelect={onToggleSelect} currentUser={currentUser} />
+                            <KanbanCard key={task.id} task={task} isReadOnly={isReadOnly} disableDrag={disableDrag} onEdit={onEdit} onCardClick={onCardClick} onDelete={onDelete} onStatusChange={onStatusChange} isHighlighted={task.id === highlightTaskId} highlightAction={task.id === highlightTaskId ? highlightAction : null} onApprove={onApprove} onReject={onReject} isSelected={selectedTasks?.includes(task.id)} onToggleSelect={onToggleSelect} currentUser={currentUser} />
                         ))}
                     </SortableContext>
                     {tasks.length === 0 && (

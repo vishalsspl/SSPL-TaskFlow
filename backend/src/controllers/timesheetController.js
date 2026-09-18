@@ -60,6 +60,16 @@ export const getTimeEntries = async (req, res) => {
         } else {
             if (userId) where.userId = userId;
         }
+        
+        // Exclude drafts of other users
+        where.AND = [
+            {
+                OR: [
+                    { userId: req.user.id },
+                    { status: { not: 'DRAFT' } }
+                ]
+            }
+        ];
     }
 
     if (page) {
@@ -242,7 +252,6 @@ export const createTimeEntry = async (req, res) => {
     }
     // --------------------------------------------------------------
 
-
     const entry = await req.db.timeEntry.create({
         data: {
             userId: req.user.id,
@@ -251,11 +260,14 @@ export const createTimeEntry = async (req, res) => {
             date: new Date(date),
             hours: parseFloat(hours),
             description,
-            status: 'PENDING',
+            status: 'DRAFT',
             billable,
             isManual: true,
         },
-        include,
+        include: {
+            project: { select: { id: true, name: true } },
+            task: { select: { id: true, title: true } }
+        }
     });
 
     // Log activity
@@ -264,7 +276,7 @@ export const createTimeEntry = async (req, res) => {
             userId: req.user.id,
             organizationId: req.user.organizationId,
             projectId,
-            action: 'LOGGED_TIME',
+            action: 'LOGGED_TIME_DRAFT',
             entity: 'time_entry',
             entityId: entry.id,
             details: { hours, date },
@@ -279,66 +291,138 @@ export const createTimeEntry = async (req, res) => {
         console.error('[CreateTimeEntry] Failed to log activity:', logErr.message);
     }
 
-    let targetManagers = [];
+    res.status(201).json(entry);
+};
 
-    if (isLeaveEntry) {
-        const currentUser = await req.db.user.findUnique({
-            where: { id: req.user.id },
-            select: { managerId: true }
-        });
+export const submitTimesheets = async (req, res) => {
+    try {
+        const { startDate, endDate } = req.body;
         
-        if (currentUser?.managerId) {
-            targetManagers.push(currentUser.managerId);
-        } else {
-            // Fallback to all admins if no direct manager is assigned
-            const admins = await req.db.user.findMany({
-                where: { organizationId: req.user.organizationId, role: { in: ['ADMIN', 'MANAGER'] } },
-                select: { id: true }
-            });
-            targetManagers = admins.map(a => a.id);
-        }
-    } else {
-        if (project?.managers) {
-            targetManagers.push(...project.managers.map(m => m.id));
-        }
-    }
+        const where = {
+            userId: req.user.id,
+            status: 'DRAFT'
+        };
 
-    // Remove self from notifications to avoid notifying yourself of your own submission
-    targetManagers = [...new Set(targetManagers.filter(id => id !== req.user.id))];
+        if (startDate && endDate) {
+            const end = new Date(endDate);
+            end.setUTCHours(23, 59, 59, 999);
+            where.date = { gte: new Date(startDate), lte: end };
+        }
 
-    if (targetManagers.length > 0) {
-        const managers = await req.db.user.findMany({
-            where: { id: { in: targetManagers } },
-            select: { id: true, email: true, name: true }
+        const draftEntries = await req.db.timeEntry.findMany({
+            where,
+            include: { project: true }
         });
-        
-        for (const manager of managers) {
-            await createNotification(req, {
-                userId: manager.id,
-                title: isLeaveEntry ? 'Leave Requires Approval' : 'Timesheet Requires Approval',
-                message: isLeaveEntry 
-                    ? `${req.user.name} applied for leave on ${date}` 
-                    : `${req.user.name} logged ${hours}h on ${project?.name || 'Project'}`,
-                type: isLeaveEntry ? 'LEAVE_SUBMITTED' : 'WORKLOG_SUBMITTED' 
-            });
 
-            const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
-            const eventType = isLeaveEntry ? 'LEAVE_SUBMITTED' : 'WORKLOG_SUBMITTED';
+        if (draftEntries.length === 0) {
+            return res.status(400).json({ error: 'No draft entries found to submit.' });
+        }
+
+        await req.db.timeEntry.updateMany({
+            where,
+            data: { status: 'PENDING' }
+        });
+
+        // Group entries by project/manager for notifications
+        const managersToNotify = new Set();
+        let totalHours = 0;
+        let isLeaveIncluded = false;
+
+        for (const entry of draftEntries) {
+            totalHours += entry.hours;
             
-            if (await shouldSendEmail(req.db, manager.id, eventType)) {
-                if (isLeaveEntry) {
-                    // Extract leave type from description e.g. "[Sick Leave] - [Full Day]"
-                    const match = description.match(/\[(.*?)\]/);
-                    const leaveType = match ? match[1] : 'Leave';
-                    await sendLeaveSubmissionEmail(manager.email, manager.name, req.user.name, leaveType, hours, date, origin);
+            const LEAVE_TAGS = ['[Sick Leave]', '[Casual Leave]', '[Paid Leave]', '[Unpaid Leave]'];
+            const isLeaveEntry = entry.description && LEAVE_TAGS.some(tag => entry.description.includes(tag));
+            
+            if (isLeaveEntry) isLeaveIncluded = true;
+
+            let targetManagers = [];
+            if (isLeaveEntry) {
+                const currentUser = await req.db.user.findUnique({
+                    where: { id: req.user.id },
+                    select: { managerId: true }
+                });
+                
+                if (currentUser?.managerId) {
+                    targetManagers.push(currentUser.managerId);
                 } else {
-                    await sendTimesheetSubmissionEmail(manager.email, manager.name, req.user.name, project?.name || 'Project', hours, date, origin);
+                    const admins = await req.db.user.findMany({
+                        where: { organizationId: req.user.organizationId, role: { in: ['ADMIN', 'MANAGER'] } },
+                        select: { id: true }
+                    });
+                    targetManagers = admins.map(a => a.id);
+                }
+            } else if (entry.projectId) {
+                const project = await req.db.project.findFirst({
+                    where: { id: entry.projectId },
+                    include: { managers: { select: { id: true } } }
+                });
+                if (project?.managers) {
+                    targetManagers.push(...project.managers.map(m => m.id));
+                }
+            }
+
+            targetManagers.forEach(m => {
+                if (m !== req.user.id) managersToNotify.add(m);
+            });
+        }
+
+        if (managersToNotify.size > 0) {
+            const managers = await req.db.user.findMany({
+                where: { id: { in: Array.from(managersToNotify) } },
+                select: { id: true, email: true, name: true }
+            });
+            
+            const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
+
+            if (isLeaveIncluded) {
+                const firstLeaveLog = draftEntries.find(e => {
+                    const LEAVE_TAGS = ['[Sick Leave]', '[Casual Leave]', '[Paid Leave]', '[Unpaid Leave]'];
+                    return e.description && LEAVE_TAGS.some(tag => e.description.includes(tag));
+                });
+                let leaveType = 'Leave';
+                if (firstLeaveLog) {
+                    const match = firstLeaveLog.description.match(/\[(.*?)\]/);
+                    leaveType = match ? match[1] : 'Leave';
+                }
+
+                for (const manager of managers) {
+                    await createNotification(req, {
+                        userId: manager.id,
+                        title: 'Leave Requires Approval',
+                        message: `${req.user.name} submitted a leave request.`,
+                        type: 'LEAVE_SUBMITTED' 
+                    });
+
+                    if (await shouldSendEmail(req.db, manager.id, 'LEAVE_SUBMITTED')) {
+                        await sendLeaveSubmissionEmail(manager.email, manager.name, req.user.name, leaveType, totalHours, new Date().toISOString(), origin);
+                    }
+                }
+            } else {
+                for (const manager of managers) {
+                    await createNotification(req, {
+                        userId: manager.id,
+                        title: 'Timesheet Requires Approval',
+                        message: `${req.user.name} submitted a timesheet for review.`,
+                        type: 'TIMESHEET_SUBMITTED' 
+                    });
+
+                    if (await shouldSendEmail(req.db, manager.id, 'TIMESHEET_SUBMITTED')) {
+                        const uniqueProjectNames = [...new Set(draftEntries.map(e => e.project?.name).filter(Boolean))];
+                        const projectName = uniqueProjectNames.length > 1 ? 'Multiple Projects' : (uniqueProjectNames[0] || 'Unknown Project');
+                        const latestDate = new Date(Math.max(...draftEntries.map(e => new Date(e.date))));
+
+                        await sendTimesheetSubmissionEmail(manager.email, manager.name, req.user.name, projectName, totalHours, latestDate.toISOString(), origin);
+                    }
                 }
             }
         }
-    }
 
-    res.status(201).json(entry);
+        res.json({ message: 'Timesheets submitted successfully' });
+    } catch (error) {
+        console.error('Error submitting timesheets:', error);
+        res.status(500).json({ error: 'Failed to submit timesheets' });
+    }
 };
 
 export const updateTimeEntry = async (req, res) => {
@@ -394,7 +478,14 @@ export const updateTimeEntry = async (req, res) => {
     if (description !== undefined) data.description = description;
     if (billable !== undefined) data.billable = billable;
 
-    const entry = await req.db.timeEntry.update({ where: { id }, data, include });
+    const entry = await req.db.timeEntry.update({ 
+        where: { id }, 
+        data, 
+        include: {
+            project: { select: { id: true, name: true } },
+            task: { select: { id: true, title: true } }
+        }
+    });
     
     // Log activity
     try {
@@ -445,10 +536,14 @@ export const updateTimeEntryStatus = async (req, res) => {
         return res.status(404).json({ error: 'Time entry not found' });
     }
 
-    const entry = await req.db.timeEntry.update({ where: { id }, data: { status }, include });
+    const entry = await req.db.timeEntry.update({ 
+        where: { id }, 
+        data: { status }, 
+        include: { project: true, user: true } 
+    });
 
-    // Ensure we don't notify loop if the user approves their own entry (if they are a manager acting as admin)
-    if (existingEntry.userId !== req.user.id && (status === 'APPROVED' || status === 'REJECTED')) {
+    // Always notify the user about status changes
+    if (status === 'APPROVED' || status === 'REJECTED') {
         const isLeaveEntry = existingEntry.project?.name === 'Leave Tracker';
 
         await createNotification(req, {

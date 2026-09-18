@@ -197,6 +197,7 @@ export type TaskType = (typeof TaskType)[keyof typeof TaskType]
 
 
 export const TimeEntryStatus: {
+  DRAFT: 'DRAFT',
   PENDING: 'PENDING',
   APPROVED: 'APPROVED',
   REJECTED: 'REJECTED'
@@ -213,6 +214,14 @@ export const TicketStatus: {
 };
 
 export type TicketStatus = (typeof TicketStatus)[keyof typeof TicketStatus]
+
+
+export const DocumentType: {
+  DOCUMENT: 'DOCUMENT',
+  SPREADSHEET: 'SPREADSHEET'
+};
+
+export type DocumentType = (typeof DocumentType)[keyof typeof DocumentType]
 
 }
 
@@ -255,6 +264,10 @@ export const TimeEntryStatus: typeof $Enums.TimeEntryStatus
 export type TicketStatus = $Enums.TicketStatus
 
 export const TicketStatus: typeof $Enums.TicketStatus
+
+export type DocumentType = $Enums.DocumentType
+
+export const DocumentType: typeof $Enums.DocumentType
 
 /**
  * ##  Prisma Client ʲˢ
@@ -5597,6 +5610,7 @@ export namespace Prisma {
     role: number
     avatar: number
     fcmToken: number
+    notificationPreferences: number
     isApproved: number
     mustChangePassword: number
     resetToken: number
@@ -5653,6 +5667,7 @@ export namespace Prisma {
     role?: true
     avatar?: true
     fcmToken?: true
+    notificationPreferences?: true
     isApproved?: true
     mustChangePassword?: true
     resetToken?: true
@@ -5744,6 +5759,7 @@ export namespace Prisma {
     role: $Enums.Role
     avatar: string | null
     fcmToken: string | null
+    notificationPreferences: JsonValue | null
     isApproved: boolean
     mustChangePassword: boolean
     resetToken: string | null
@@ -5779,6 +5795,7 @@ export namespace Prisma {
     role?: boolean
     avatar?: boolean
     fcmToken?: boolean
+    notificationPreferences?: boolean
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: boolean
@@ -5819,6 +5836,7 @@ export namespace Prisma {
     role?: boolean
     avatar?: boolean
     fcmToken?: boolean
+    notificationPreferences?: boolean
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: boolean
@@ -5839,6 +5857,7 @@ export namespace Prisma {
     role?: boolean
     avatar?: boolean
     fcmToken?: boolean
+    notificationPreferences?: boolean
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: boolean
@@ -5911,6 +5930,7 @@ export namespace Prisma {
       role: $Enums.Role
       avatar: string | null
       fcmToken: string | null
+      notificationPreferences: Prisma.JsonValue | null
       isApproved: boolean
       mustChangePassword: boolean
       resetToken: string | null
@@ -6340,6 +6360,7 @@ export namespace Prisma {
     readonly role: FieldRef<"User", 'Role'>
     readonly avatar: FieldRef<"User", 'String'>
     readonly fcmToken: FieldRef<"User", 'String'>
+    readonly notificationPreferences: FieldRef<"User", 'Json'>
     readonly isApproved: FieldRef<"User", 'Boolean'>
     readonly mustChangePassword: FieldRef<"User", 'Boolean'>
     readonly resetToken: FieldRef<"User", 'String'>
@@ -22748,6 +22769,7 @@ export namespace Prisma {
     projectId: string | null
     authorId: string | null
     title: string | null
+    type: $Enums.DocumentType | null
     content: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -22758,6 +22780,7 @@ export namespace Prisma {
     projectId: string | null
     authorId: string | null
     title: string | null
+    type: $Enums.DocumentType | null
     content: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -22768,6 +22791,7 @@ export namespace Prisma {
     projectId: number
     authorId: number
     title: number
+    type: number
     content: number
     attachments: number
     createdAt: number
@@ -22781,6 +22805,7 @@ export namespace Prisma {
     projectId?: true
     authorId?: true
     title?: true
+    type?: true
     content?: true
     createdAt?: true
     updatedAt?: true
@@ -22791,6 +22816,7 @@ export namespace Prisma {
     projectId?: true
     authorId?: true
     title?: true
+    type?: true
     content?: true
     createdAt?: true
     updatedAt?: true
@@ -22801,6 +22827,7 @@ export namespace Prisma {
     projectId?: true
     authorId?: true
     title?: true
+    type?: true
     content?: true
     attachments?: true
     createdAt?: true
@@ -22885,6 +22912,7 @@ export namespace Prisma {
     projectId: string
     authorId: string
     title: string
+    type: $Enums.DocumentType
     content: string
     attachments: JsonValue
     createdAt: Date
@@ -22913,6 +22941,7 @@ export namespace Prisma {
     projectId?: boolean
     authorId?: boolean
     title?: boolean
+    type?: boolean
     content?: boolean
     attachments?: boolean
     createdAt?: boolean
@@ -22926,6 +22955,7 @@ export namespace Prisma {
     projectId?: boolean
     authorId?: boolean
     title?: boolean
+    type?: boolean
     content?: boolean
     attachments?: boolean
     createdAt?: boolean
@@ -22939,6 +22969,7 @@ export namespace Prisma {
     projectId?: boolean
     authorId?: boolean
     title?: boolean
+    type?: boolean
     content?: boolean
     attachments?: boolean
     createdAt?: boolean
@@ -22965,6 +22996,7 @@ export namespace Prisma {
       projectId: string
       authorId: string
       title: string
+      type: $Enums.DocumentType
       content: string
       attachments: Prisma.JsonValue
       createdAt: Date
@@ -23368,6 +23400,7 @@ export namespace Prisma {
     readonly projectId: FieldRef<"Document", 'String'>
     readonly authorId: FieldRef<"Document", 'String'>
     readonly title: FieldRef<"Document", 'String'>
+    readonly type: FieldRef<"Document", 'DocumentType'>
     readonly content: FieldRef<"Document", 'String'>
     readonly attachments: FieldRef<"Document", 'Json'>
     readonly createdAt: FieldRef<"Document", 'DateTime'>
@@ -23774,6 +23807,7 @@ export namespace Prisma {
     role: 'role',
     avatar: 'avatar',
     fcmToken: 'fcmToken',
+    notificationPreferences: 'notificationPreferences',
     isApproved: 'isApproved',
     mustChangePassword: 'mustChangePassword',
     resetToken: 'resetToken',
@@ -24019,6 +24053,7 @@ export namespace Prisma {
     projectId: 'projectId',
     authorId: 'authorId',
     title: 'title',
+    type: 'type',
     content: 'content',
     attachments: 'attachments',
     createdAt: 'createdAt',
@@ -24303,6 +24338,20 @@ export namespace Prisma {
    */
   export type ListEnumTicketStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TicketStatus[]'>
     
+
+
+  /**
+   * Reference to a field of type 'DocumentType'
+   */
+  export type EnumDocumentTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DocumentType'>
+    
+
+
+  /**
+   * Reference to a field of type 'DocumentType[]'
+   */
+  export type ListEnumDocumentTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DocumentType[]'>
+    
   /**
    * Deep Input Types
    */
@@ -24584,6 +24633,7 @@ export namespace Prisma {
     role?: EnumRoleFilter<"User"> | $Enums.Role
     avatar?: StringNullableFilter<"User"> | string | null
     fcmToken?: StringNullableFilter<"User"> | string | null
+    notificationPreferences?: JsonNullableFilter<"User">
     isApproved?: BoolFilter<"User"> | boolean
     mustChangePassword?: BoolFilter<"User"> | boolean
     resetToken?: StringNullableFilter<"User"> | string | null
@@ -24623,6 +24673,7 @@ export namespace Prisma {
     role?: SortOrder
     avatar?: SortOrderInput | SortOrder
     fcmToken?: SortOrderInput | SortOrder
+    notificationPreferences?: SortOrderInput | SortOrder
     isApproved?: SortOrder
     mustChangePassword?: SortOrder
     resetToken?: SortOrderInput | SortOrder
@@ -24666,6 +24717,7 @@ export namespace Prisma {
     role?: EnumRoleFilter<"User"> | $Enums.Role
     avatar?: StringNullableFilter<"User"> | string | null
     fcmToken?: StringNullableFilter<"User"> | string | null
+    notificationPreferences?: JsonNullableFilter<"User">
     isApproved?: BoolFilter<"User"> | boolean
     mustChangePassword?: BoolFilter<"User"> | boolean
     resetToken?: StringNullableFilter<"User"> | string | null
@@ -24705,6 +24757,7 @@ export namespace Prisma {
     role?: SortOrder
     avatar?: SortOrderInput | SortOrder
     fcmToken?: SortOrderInput | SortOrder
+    notificationPreferences?: SortOrderInput | SortOrder
     isApproved?: SortOrder
     mustChangePassword?: SortOrder
     resetToken?: SortOrderInput | SortOrder
@@ -24729,6 +24782,7 @@ export namespace Prisma {
     role?: EnumRoleWithAggregatesFilter<"User"> | $Enums.Role
     avatar?: StringNullableWithAggregatesFilter<"User"> | string | null
     fcmToken?: StringNullableWithAggregatesFilter<"User"> | string | null
+    notificationPreferences?: JsonNullableWithAggregatesFilter<"User">
     isApproved?: BoolWithAggregatesFilter<"User"> | boolean
     mustChangePassword?: BoolWithAggregatesFilter<"User"> | boolean
     resetToken?: StringNullableWithAggregatesFilter<"User"> | string | null
@@ -26008,6 +26062,7 @@ export namespace Prisma {
     projectId?: StringFilter<"Document"> | string
     authorId?: StringFilter<"Document"> | string
     title?: StringFilter<"Document"> | string
+    type?: EnumDocumentTypeFilter<"Document"> | $Enums.DocumentType
     content?: StringFilter<"Document"> | string
     attachments?: JsonFilter<"Document">
     createdAt?: DateTimeFilter<"Document"> | Date | string
@@ -26021,6 +26076,7 @@ export namespace Prisma {
     projectId?: SortOrder
     authorId?: SortOrder
     title?: SortOrder
+    type?: SortOrder
     content?: SortOrder
     attachments?: SortOrder
     createdAt?: SortOrder
@@ -26037,6 +26093,7 @@ export namespace Prisma {
     projectId?: StringFilter<"Document"> | string
     authorId?: StringFilter<"Document"> | string
     title?: StringFilter<"Document"> | string
+    type?: EnumDocumentTypeFilter<"Document"> | $Enums.DocumentType
     content?: StringFilter<"Document"> | string
     attachments?: JsonFilter<"Document">
     createdAt?: DateTimeFilter<"Document"> | Date | string
@@ -26050,6 +26107,7 @@ export namespace Prisma {
     projectId?: SortOrder
     authorId?: SortOrder
     title?: SortOrder
+    type?: SortOrder
     content?: SortOrder
     attachments?: SortOrder
     createdAt?: SortOrder
@@ -26067,6 +26125,7 @@ export namespace Prisma {
     projectId?: StringWithAggregatesFilter<"Document"> | string
     authorId?: StringWithAggregatesFilter<"Document"> | string
     title?: StringWithAggregatesFilter<"Document"> | string
+    type?: EnumDocumentTypeWithAggregatesFilter<"Document"> | $Enums.DocumentType
     content?: StringWithAggregatesFilter<"Document"> | string
     attachments?: JsonWithAggregatesFilter<"Document">
     createdAt?: DateTimeWithAggregatesFilter<"Document"> | Date | string
@@ -26407,6 +26466,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -26445,6 +26505,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -26481,6 +26542,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -26519,6 +26581,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -26556,6 +26619,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -26573,6 +26637,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -26590,6 +26655,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -27908,6 +27974,7 @@ export namespace Prisma {
   export type DocumentCreateInput = {
     id?: string
     title: string
+    type?: $Enums.DocumentType
     content: string
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -27921,6 +27988,7 @@ export namespace Prisma {
     projectId: string
     authorId: string
     title: string
+    type?: $Enums.DocumentType
     content: string
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -27930,6 +27998,7 @@ export namespace Prisma {
   export type DocumentUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
+    type?: EnumDocumentTypeFieldUpdateOperationsInput | $Enums.DocumentType
     content?: StringFieldUpdateOperationsInput | string
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -27943,6 +28012,7 @@ export namespace Prisma {
     projectId?: StringFieldUpdateOperationsInput | string
     authorId?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
+    type?: EnumDocumentTypeFieldUpdateOperationsInput | $Enums.DocumentType
     content?: StringFieldUpdateOperationsInput | string
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -27954,6 +28024,7 @@ export namespace Prisma {
     projectId: string
     authorId: string
     title: string
+    type?: $Enums.DocumentType
     content: string
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -27963,6 +28034,7 @@ export namespace Prisma {
   export type DocumentUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
+    type?: EnumDocumentTypeFieldUpdateOperationsInput | $Enums.DocumentType
     content?: StringFieldUpdateOperationsInput | string
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -27974,6 +28046,7 @@ export namespace Prisma {
     projectId?: StringFieldUpdateOperationsInput | string
     authorId?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
+    type?: EnumDocumentTypeFieldUpdateOperationsInput | $Enums.DocumentType
     content?: StringFieldUpdateOperationsInput | string
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -28576,6 +28649,7 @@ export namespace Prisma {
     role?: SortOrder
     avatar?: SortOrder
     fcmToken?: SortOrder
+    notificationPreferences?: SortOrder
     isApproved?: SortOrder
     mustChangePassword?: SortOrder
     resetToken?: SortOrder
@@ -29562,11 +29636,19 @@ export namespace Prisma {
     durationMinutes?: SortOrder
   }
 
+  export type EnumDocumentTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.DocumentType | EnumDocumentTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.DocumentType[] | ListEnumDocumentTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.DocumentType[] | ListEnumDocumentTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumDocumentTypeFilter<$PrismaModel> | $Enums.DocumentType
+  }
+
   export type DocumentCountOrderByAggregateInput = {
     id?: SortOrder
     projectId?: SortOrder
     authorId?: SortOrder
     title?: SortOrder
+    type?: SortOrder
     content?: SortOrder
     attachments?: SortOrder
     createdAt?: SortOrder
@@ -29578,6 +29660,7 @@ export namespace Prisma {
     projectId?: SortOrder
     authorId?: SortOrder
     title?: SortOrder
+    type?: SortOrder
     content?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -29588,9 +29671,20 @@ export namespace Prisma {
     projectId?: SortOrder
     authorId?: SortOrder
     title?: SortOrder
+    type?: SortOrder
     content?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type EnumDocumentTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.DocumentType | EnumDocumentTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.DocumentType[] | ListEnumDocumentTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.DocumentType[] | ListEnumDocumentTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumDocumentTypeWithAggregatesFilter<$PrismaModel> | $Enums.DocumentType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumDocumentTypeFilter<$PrismaModel>
+    _max?: NestedEnumDocumentTypeFilter<$PrismaModel>
   }
 
   export type UserCreateNestedManyWithoutOrganizationInput = {
@@ -32104,6 +32198,10 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type EnumDocumentTypeFieldUpdateOperationsInput = {
+    set?: $Enums.DocumentType
+  }
+
   export type ProjectUpdateOneRequiredWithoutDocumentsNestedInput = {
     create?: XOR<ProjectCreateWithoutDocumentsInput, ProjectUncheckedCreateWithoutDocumentsInput>
     connectOrCreate?: ProjectCreateOrConnectWithoutDocumentsInput
@@ -32605,6 +32703,23 @@ export namespace Prisma {
     _max?: NestedEnumTicketStatusFilter<$PrismaModel>
   }
 
+  export type NestedEnumDocumentTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.DocumentType | EnumDocumentTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.DocumentType[] | ListEnumDocumentTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.DocumentType[] | ListEnumDocumentTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumDocumentTypeFilter<$PrismaModel> | $Enums.DocumentType
+  }
+
+  export type NestedEnumDocumentTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.DocumentType | EnumDocumentTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.DocumentType[] | ListEnumDocumentTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.DocumentType[] | ListEnumDocumentTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumDocumentTypeWithAggregatesFilter<$PrismaModel> | $Enums.DocumentType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumDocumentTypeFilter<$PrismaModel>
+    _max?: NestedEnumDocumentTypeFilter<$PrismaModel>
+  }
+
   export type UserCreateWithoutOrganizationInput = {
     id?: string
     name: string
@@ -32613,6 +32728,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -32649,6 +32765,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -32999,6 +33116,7 @@ export namespace Prisma {
     role?: EnumRoleFilter<"User"> | $Enums.Role
     avatar?: StringNullableFilter<"User"> | string | null
     fcmToken?: StringNullableFilter<"User"> | string | null
+    notificationPreferences?: JsonNullableFilter<"User">
     isApproved?: BoolFilter<"User"> | boolean
     mustChangePassword?: BoolFilter<"User"> | boolean
     resetToken?: StringNullableFilter<"User"> | string | null
@@ -33351,6 +33469,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -33388,6 +33507,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -33641,6 +33761,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -33678,6 +33799,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -33718,6 +33840,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -33755,6 +33878,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -34356,6 +34480,7 @@ export namespace Prisma {
   export type DocumentCreateWithoutAuthorInput = {
     id?: string
     title: string
+    type?: $Enums.DocumentType
     content: string
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -34367,6 +34492,7 @@ export namespace Prisma {
     id?: string
     projectId: string
     title: string
+    type?: $Enums.DocumentType
     content: string
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -34507,6 +34633,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34544,6 +34671,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34942,6 +35070,7 @@ export namespace Prisma {
     projectId?: StringFilter<"Document"> | string
     authorId?: StringFilter<"Document"> | string
     title?: StringFilter<"Document"> | string
+    type?: EnumDocumentTypeFilter<"Document"> | $Enums.DocumentType
     content?: StringFilter<"Document"> | string
     attachments?: JsonFilter<"Document">
     createdAt?: DateTimeFilter<"Document"> | Date | string
@@ -35039,6 +35168,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -35076,6 +35206,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -35116,6 +35247,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -35153,6 +35285,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -35193,6 +35326,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -35230,6 +35364,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -35453,6 +35588,7 @@ export namespace Prisma {
   export type DocumentCreateWithoutProjectInput = {
     id?: string
     title: string
+    type?: $Enums.DocumentType
     content: string
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -35464,6 +35600,7 @@ export namespace Prisma {
     id?: string
     authorId: string
     title: string
+    type?: $Enums.DocumentType
     content: string
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -35588,6 +35725,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35625,6 +35763,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35687,6 +35826,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -35724,6 +35864,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -36734,6 +36875,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -36771,6 +36913,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -36811,6 +36954,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -36848,6 +36992,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -36964,6 +37109,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37001,6 +37147,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37047,6 +37194,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37084,6 +37232,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37178,6 +37327,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -37215,6 +37365,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -37331,6 +37482,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37368,6 +37520,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37403,6 +37556,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -37440,6 +37594,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -37609,6 +37764,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37646,6 +37802,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -37811,6 +37968,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -37848,6 +38006,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -38017,6 +38176,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38054,6 +38214,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38219,6 +38380,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -38256,6 +38418,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -38366,6 +38529,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38403,6 +38567,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38586,6 +38751,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -38623,6 +38789,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -38789,6 +38956,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38826,6 +38994,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38906,6 +39075,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -38943,6 +39113,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -39029,6 +39200,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39066,6 +39238,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39101,6 +39274,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -39138,6 +39312,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -39339,6 +39514,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39376,6 +39552,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39553,6 +39730,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -39590,6 +39768,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -39724,6 +39903,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39761,6 +39941,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -39885,6 +40066,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -39922,6 +40104,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -40056,6 +40239,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40093,6 +40277,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40217,6 +40402,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -40254,6 +40440,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -40388,6 +40575,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40425,6 +40613,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40549,6 +40738,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -40586,6 +40776,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -40720,6 +40911,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40757,6 +40949,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -40940,6 +41133,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -40977,6 +41171,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -41093,6 +41288,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41130,6 +41326,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41165,6 +41362,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -41274,6 +41472,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41310,6 +41509,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41346,6 +41546,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41659,6 +41860,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41696,6 +41898,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41732,6 +41935,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -41750,6 +41954,7 @@ export namespace Prisma {
     role?: $Enums.Role
     avatar?: string | null
     fcmToken?: string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: boolean
     mustChangePassword?: boolean
     resetToken?: string | null
@@ -41922,6 +42127,7 @@ export namespace Prisma {
     id?: string
     projectId: string
     title: string
+    type?: $Enums.DocumentType
     content: string
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -41966,6 +42172,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42003,6 +42210,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42039,6 +42247,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42637,6 +42846,7 @@ export namespace Prisma {
   export type DocumentUpdateWithoutAuthorInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
+    type?: EnumDocumentTypeFieldUpdateOperationsInput | $Enums.DocumentType
     content?: StringFieldUpdateOperationsInput | string
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42648,6 +42858,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     projectId?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
+    type?: EnumDocumentTypeFieldUpdateOperationsInput | $Enums.DocumentType
     content?: StringFieldUpdateOperationsInput | string
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42658,6 +42869,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     projectId?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
+    type?: EnumDocumentTypeFieldUpdateOperationsInput | $Enums.DocumentType
     content?: StringFieldUpdateOperationsInput | string
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42731,6 +42943,7 @@ export namespace Prisma {
     id?: string
     authorId: string
     title: string
+    type?: $Enums.DocumentType
     content: string
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: Date | string
@@ -42745,6 +42958,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42782,6 +42996,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -42818,6 +43033,7 @@ export namespace Prisma {
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     avatar?: NullableStringFieldUpdateOperationsInput | string | null
     fcmToken?: NullableStringFieldUpdateOperationsInput | string | null
+    notificationPreferences?: NullableJsonNullValueInput | InputJsonValue
     isApproved?: BoolFieldUpdateOperationsInput | boolean
     mustChangePassword?: BoolFieldUpdateOperationsInput | boolean
     resetToken?: NullableStringFieldUpdateOperationsInput | string | null
@@ -43031,6 +43247,7 @@ export namespace Prisma {
   export type DocumentUpdateWithoutProjectInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
+    type?: EnumDocumentTypeFieldUpdateOperationsInput | $Enums.DocumentType
     content?: StringFieldUpdateOperationsInput | string
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43042,6 +43259,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     authorId?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
+    type?: EnumDocumentTypeFieldUpdateOperationsInput | $Enums.DocumentType
     content?: StringFieldUpdateOperationsInput | string
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43052,6 +43270,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     authorId?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
+    type?: EnumDocumentTypeFieldUpdateOperationsInput | $Enums.DocumentType
     content?: StringFieldUpdateOperationsInput | string
     attachments?: JsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string

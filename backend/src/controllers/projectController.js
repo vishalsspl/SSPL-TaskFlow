@@ -230,7 +230,11 @@ export const getAllProjects = async (req, res) => {
     };
   } else if (req.user.role === 'MEMBER') {
     taskWhereFilter = {
-      assignees: { some: { userId: req.user.id } }
+      OR: [
+        { assignees: { some: { userId: req.user.id } } },
+        { assignees: { some: { assignedById: req.user.id } } },
+        { tags: { has: `CREATOR:${req.user.id}` } }
+      ]
     };
   }
 

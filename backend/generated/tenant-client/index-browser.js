@@ -172,6 +172,7 @@ exports.Prisma.UserScalarFieldEnum = {
   role: 'role',
   avatar: 'avatar',
   fcmToken: 'fcmToken',
+  notificationPreferences: 'notificationPreferences',
   isApproved: 'isApproved',
   mustChangePassword: 'mustChangePassword',
   resetToken: 'resetToken',
@@ -369,6 +370,7 @@ exports.Prisma.DocumentScalarFieldEnum = {
   projectId: 'projectId',
   authorId: 'authorId',
   title: 'title',
+  type: 'type',
   content: 'content',
   attachments: 'attachments',
   createdAt: 'createdAt',
@@ -464,6 +466,7 @@ exports.TaskType = exports.$Enums.TaskType = {
 };
 
 exports.TimeEntryStatus = exports.$Enums.TimeEntryStatus = {
+  DRAFT: 'DRAFT',
   PENDING: 'PENDING',
   APPROVED: 'APPROVED',
   REJECTED: 'REJECTED'
@@ -474,6 +477,11 @@ exports.TicketStatus = exports.$Enums.TicketStatus = {
   IN_PROGRESS: 'IN_PROGRESS',
   RESOLVED: 'RESOLVED',
   CLOSED: 'CLOSED'
+};
+
+exports.DocumentType = exports.$Enums.DocumentType = {
+  DOCUMENT: 'DOCUMENT',
+  SPREADSHEET: 'SPREADSHEET'
 };
 
 exports.Prisma.ModelName = {

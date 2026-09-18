@@ -2,6 +2,7 @@ import express from 'express';
 import {
     getTimeEntries,
     createTimeEntry,
+    submitTimesheets,
     updateTimeEntry,
     updateTimeEntryStatus,
     deleteTimeEntry,
@@ -24,6 +25,7 @@ router.use(attachTenantDb);
 // Time entries
 router.get('/', getTimeEntries);
 router.post('/', requirePermission('timesheets.create'), createTimeEntry);
+router.post('/submit', requirePermission('timesheets.create'), submitTimesheets);
 router.put('/:id', requirePermission('timesheets.create'), updateTimeEntry);
 router.patch('/:id/status', requirePermission('timesheets.approve'), updateTimeEntryStatus);
 router.delete('/:id', deleteTimeEntry);

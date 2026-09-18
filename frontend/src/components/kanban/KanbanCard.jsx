@@ -26,11 +26,36 @@ const STATUS_OPTIONS = [
     { value: 'COMPLETED', label: 'Completed', color: '#48A111' },
 ];
 
-const KanbanCard = ({ task, isReadOnly, disableDrag, onEdit, onCardClick, onDelete, onStatusChange, isHighlighted, highlightAction, onApprove, onReject, isSelected, onToggleSelect, currentUser }) => {
+const KanbanCard = ({ 
+    task, 
+    isReadOnly, 
+    disableDrag, 
+    onEdit, 
+    onCardClick, 
+    onDelete, 
+    onStatusChange, 
+    isHighlighted, 
+    highlightAction, 
+    onApprove, 
+    onReject, 
+    isSelected, 
+    onToggleSelect, 
+    currentUser,
+    isOverlay = false
+}) => {
     const { user } = useAuthStore();
-    const canEditTask = user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.permissions?.['tasks.editAny'] || (user?.role === 'MEMBER' && task.project?.allowMemberTaskCreation);
+    const effectiveUser = currentUser || user;
+    const canEditTask = effectiveUser?.role === 'ADMIN' || effectiveUser?.role === 'MANAGER' || effectiveUser?.permissions?.['tasks.editAny'] || (effectiveUser?.role === 'MEMBER' && task.project?.allowMemberTaskCreation);
     const pendingTag = task.tags?.find(t => t.startsWith('PENDING_APPROVAL:'));
     const isPendingApproval = !!pendingTag;
+
+    const isAssignedToMe = task.assignees?.some(a => (a.userId === effectiveUser?.id || a.user?.id === effectiveUser?.id));
+    const isAssignerOfAnother = task.assignees?.some(a => (a.assignedById === effectiveUser?.id || a.assignedBy?.id === effectiveUser?.id));
+    const isCreatorOfOther = task.tags?.includes(`CREATOR:${effectiveUser?.id}`);
+    const isDesignatedApprover = task.tags?.includes(`APPROVER:${effectiveUser?.id}`);
+    const hasRolePermission = effectiveUser?.permissions?.['tasks.approve'] || effectiveUser?.role === 'ADMIN' || effectiveUser?.role === 'MANAGER';
+
+    const canApproveOrReject = !isAssignedToMe && (hasRolePermission || isAssignerOfAnother || isCreatorOfOther || isDesignatedApprover);
 
     const {
         attributes,
@@ -45,23 +70,23 @@ const KanbanCard = ({ task, isReadOnly, disableDrag, onEdit, onCardClick, onDele
             type: 'Task',
             task,
         },
-        disabled: disableDrag ?? isReadOnly,
-
-
+        disabled: isOverlay || (disableDrag ?? isReadOnly),
     });
 
-    const style = {
-        transform: CSS.Transform.toString(transform),
-        transition,
-        opacity: isDragging ? 0.5 : 1,
-    };
+    const style = isOverlay
+        ? { cursor: 'grabbing' }
+        : {
+            transform: CSS.Translate.toString(transform),
+            transition,
+            opacity: isDragging ? 0.3 : 1,
+        };
 
-    if (isDragging) {
+    if (isDragging && !isOverlay) {
         return (
             <div
                 ref={setNodeRef}
                 style={style}
-                className="opacity-50 h-[150px] bg-muted rounded-lg border border-dashed border-border"
+                className="opacity-30 h-[120px] bg-muted/40 rounded-xl sm:rounded-2xl border-2 border-dashed border-border mb-3 w-full"
             />
         );
     }
@@ -82,10 +107,16 @@ const KanbanCard = ({ task, isReadOnly, disableDrag, onEdit, onCardClick, onDele
     }
 
     return (
-        <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="mb-3 group w-full max-w-[550px] sm:max-w-none mx-auto px-2 sm:px-0">
+        <div 
+            ref={isOverlay ? null : setNodeRef} 
+            style={style} 
+            {...(isOverlay ? {} : attributes)} 
+            {...(isOverlay ? {} : listeners)} 
+            className={`mb-3 group w-full max-w-[550px] sm:max-w-none mx-auto px-2 sm:px-0 ${isOverlay ? 'shadow-2xl opacity-95 pointer-events-none' : ''}`}
+        >
             <Card
-                className={`bg-card/60 backdrop-blur-sm border ${disableDrag ? '' : 'cursor-grab active:cursor-grabbing'} hover:border-primary/40 hover:bg-accent/50 transition-all duration-300 rounded-xl sm:rounded-2xl overflow-hidden shadow-xl ${highlightClasses}`}
-                onClick={() => onCardClick && onCardClick(task)}
+                className={`bg-card backdrop-blur-md border border-border/80 ${isOverlay ? 'cursor-grabbing shadow-2xl' : (disableDrag ? '' : 'cursor-grab active:cursor-grabbing')} hover:border-primary/40 hover:bg-accent/50 transition-all duration-300 rounded-xl sm:rounded-2xl overflow-hidden shadow-sm ${highlightClasses}`}
+                onClick={() => !isOverlay && onCardClick && onCardClick(task)}
             >
                 <div className="p-3 sm:p-2.5 space-y-2 sm:space-y-1.5">
                     <div className="flex items-start justify-between gap-2">
@@ -108,7 +139,7 @@ const KanbanCard = ({ task, isReadOnly, disableDrag, onEdit, onCardClick, onDele
                                     {task.storyPoints} PTS
                                 </span>
                             )}
-                            {task.status === 'IN_REVIEW' && (user?.role === 'ADMIN' || user?.role === 'MANAGER') && onToggleSelect && (
+                            {task.status === 'IN_REVIEW' && canApproveOrReject && onToggleSelect && (
                                 <button 
                                     onClick={(e) => { e.stopPropagation(); onToggleSelect(task.id); }}
                                     className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors mr-1"
@@ -154,7 +185,7 @@ const KanbanCard = ({ task, isReadOnly, disableDrag, onEdit, onCardClick, onDele
                                                 </DropdownMenuSubTrigger>
                                                 <DropdownMenuPortal>
                                                     <DropdownMenuSubContent className="w-36 sm:w-40 bg-card border-border text-foreground">
-                                                        {STATUS_OPTIONS.filter(s => s.value !== task.status && !(user?.role === 'MEMBER' && s.value === 'COMPLETED')).map((status) => (
+                                                        {STATUS_OPTIONS.filter(s => s.value !== task.status && !(user?.role === 'MEMBER' && s.value === 'COMPLETED') && !(task.status === 'TODO' && s.value === 'IN_REVIEW')).map((status) => (
                                                             <DropdownMenuItem
                                                                 key={status.value}
                                                                 onClick={(e) => { e.stopPropagation(); onStatusChange(task.id, status.value); }}
@@ -210,7 +241,7 @@ const KanbanCard = ({ task, isReadOnly, disableDrag, onEdit, onCardClick, onDele
                                     Pending Approval
                                 </Badge>
                             </div>
-                            {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
+                            {canApproveOrReject && (
                                 <div className="flex gap-1">
                                     <button
                                         onClick={(e) => { e.stopPropagation(); onApprove && onApprove(task.id); }}

@@ -131,7 +131,37 @@ export const getAllTasks = async (req, res) => {
     assignees: { include: { user: { select: { id: true, name: true, email: true, avatar: true } }, assignedBy: { select: { id: true, name: true } } } },
     project: { select: { id: true, name: true, allowMemberTaskCreation: true } },
     phase: { select: { id: true, name: true } },
-    parent: { select: { id: true, title: true, type: true, shortId: true } },
+    parent: { 
+      select: { 
+        id: true, 
+        title: true, 
+        type: true, 
+        shortId: true, 
+        status: true, 
+        priority: true,
+        completionPercentage: true,
+        dueDate: true,
+        project: { select: { id: true, name: true } },
+        assignees: { include: { user: { select: { id: true, name: true, avatar: true } }, assignedBy: { select: { id: true, name: true } } } },
+        parent: { select: { id: true, title: true, type: true, shortId: true, status: true } }
+      } 
+    },
+    children: { 
+      select: { 
+        id: true, 
+        title: true, 
+        type: true, 
+        status: true, 
+        priority: true, 
+        shortId: true,
+        completionPercentage: true,
+        dueDate: true,
+        project: { select: { id: true, name: true } },
+        assignees: { include: { user: { select: { id: true, name: true, avatar: true } }, assignedBy: { select: { id: true, name: true } } } },
+        children: { select: { id: true, title: true, type: true, status: true, shortId: true } }
+      },
+      orderBy: { createdAt: 'asc' }
+    },
   };
 
   let prismaOrderBy = { title: 'asc' };
@@ -202,8 +232,37 @@ export const getTask = async (req, res) => {
       assignees: { include: { user: { select: { id: true, name: true, email: true, avatar: true } }, assignedBy: { select: { id: true, name: true } } } },
       project: { select: { id: true, name: true } },
       phase: true,
-      parent: { select: { id: true, title: true, type: true, shortId: true } },
-      children: { select: { id: true, title: true, type: true, status: true, shortId: true } },
+      parent: { 
+        select: { 
+          id: true, 
+          title: true, 
+          type: true, 
+          shortId: true, 
+          status: true, 
+          priority: true,
+          completionPercentage: true,
+          dueDate: true,
+          project: { select: { id: true, name: true } },
+          assignees: { include: { user: { select: { id: true, name: true, avatar: true } }, assignedBy: { select: { id: true, name: true } } } },
+          parent: { select: { id: true, title: true, type: true, shortId: true, status: true } }
+        } 
+      },
+      children: { 
+        select: { 
+          id: true, 
+          title: true, 
+          type: true, 
+          status: true, 
+          priority: true, 
+          shortId: true,
+          completionPercentage: true,
+          dueDate: true,
+          project: { select: { id: true, name: true } },
+          assignees: { include: { user: { select: { id: true, name: true, avatar: true } }, assignedBy: { select: { id: true, name: true } } } },
+          children: { select: { id: true, title: true, type: true, status: true, shortId: true } }
+        },
+        orderBy: { createdAt: 'asc' }
+      },
     },
   });
 
@@ -905,6 +964,10 @@ export const updateTask = async (req, res) => {
     }
   }
 
+  if (status === 'IN_REVIEW' && existingTask.status === 'TODO') {
+    return res.status(400).json({ error: 'You cannot move a task directly from To Do to In Review. Please move it to In Progress first.' });
+  }
+
   if (req.user.role === 'MEMBER' && status === 'COMPLETED') {
     return res.status(403).json({ error: 'Members cannot move tasks directly to Completed.' });
   }
@@ -1492,6 +1555,10 @@ export const updateTaskStatus = async (req, res) => {
     // Members are ALWAYS subject to strict rules. Custom roles who were assigned by someone else are also subject to strict rules.
     const isStrictReviewer = req.user.role === 'MEMBER' || (wasAssignedBySomeoneElse && !['SUPERADMIN', 'ADMIN', 'MANAGER'].includes(req.user.role));
 
+    if (status === 'IN_REVIEW' && existingTask.status === 'TODO') {
+      return res.status(400).json({ error: 'You cannot move a task directly from To Do to In Review. Please move it to In Progress first.' });
+    }
+
     if (isStrictReviewer) {
       if (status === 'COMPLETED') {
         return res.status(403).json({ error: 'You cannot move this task directly to Completed. Please move it to In Review so the assigner can review it.' });
@@ -1522,7 +1589,20 @@ export const updateTaskStatus = async (req, res) => {
         // Add APPROVED_BY tag if it was pending or in review
         if (existingTask.status === 'IN_REVIEW' || existingTask.tags?.some(t => t.startsWith('PENDING_APPROVAL:'))) {
            updatedTags = updatedTags.filter(t => !t.startsWith('APPROVED_BY:')); // clear old
-           updatedTags.push(`APPROVED_BY:${req.user.name}`);
+           
+           let approverRoleTitle = 'Member';
+           if (req.user.role === 'ADMIN') approverRoleTitle = 'Admin';
+           else if (req.user.role === 'MANAGER') approverRoleTitle = 'Manager';
+           else {
+             const userWithCustomRoles = await req.db.user.findUnique({
+               where: { id: req.user.id },
+               include: { customRoles: { select: { name: true } } }
+             });
+             if (userWithCustomRoles?.customRoles && userWithCustomRoles.customRoles.length > 0) {
+               approverRoleTitle = userWithCustomRoles.customRoles.map(r => r.name).join(', ');
+             }
+           }
+           updatedTags.push(`APPROVED_BY:${req.user.name} (${approverRoleTitle})`);
         }
       } else if (status === 'IN_PROGRESS' || status === 'TODO') {
         // If rejecting, save the reason if provided
@@ -1800,17 +1880,44 @@ export const updateTaskStatus = async (req, res) => {
 export const approveTaskStatus = async (req, res) => {
   const { id } = req.params;
   const { sendEmail = true } = req.body;
-  try {
-    if (req.user.role !== 'ADMIN' && req.user.role !== 'MANAGER') {
-      return res.status(403).json({ error: 'Only managers can approve status changes.' });
-    }
 
+  try {
     const task = await req.db.task.findFirst({
       where: { id, project: { organizationId: req.user.organizationId } },
-      include: { assignees: { include: { user: true } }, project: true }
+      include: { assignees: { include: { user: true, assignedBy: true } }, project: true }
     });
 
     if (!task) return res.status(404).json({ error: 'Task not found' });
+
+    // Permission: Admin, Manager, Custom Role with approval permissions, OR any user who assigned this task to another user
+    const isAssignedToMe = task.assignees.some(a => a.userId === req.user.id || a.user?.id === req.user.id);
+
+    // Strict rule: No user can approve their own assigned tasks
+    if (isAssignedToMe) {
+      return res.status(403).json({ error: 'You cannot approve your own task.' });
+    }
+
+    const isAssignerOfAnother = task.assignees.some(a => (a.assignedById === req.user.id || a.assignedBy?.id === req.user.id));
+    const isCreatorOfOther = task.tags?.includes(`CREATOR:${req.user.id}`);
+    const isDesignatedApprover = task.tags?.includes(`APPROVER:${req.user.id}`);
+    const hasRolePermission = req.user.permissions?.['tasks.approve'] || req.user.role === 'ADMIN' || req.user.role === 'MANAGER';
+
+    // Fallback: Check if user created the task via ActivityLog or TaskAssignee table
+    let isOriginalCreatorOrAssigner = isAssignerOfAnother || isCreatorOfOther;
+    if (!isOriginalCreatorOrAssigner) {
+      const creatorLog = await req.db.activityLog.findFirst({
+        where: { entity: 'task', entityId: task.id, action: 'CREATED', userId: req.user.id }
+      });
+      if (creatorLog) {
+        isOriginalCreatorOrAssigner = true;
+      }
+    }
+
+    const canApprove = hasRolePermission || isOriginalCreatorOrAssigner || isDesignatedApprover;
+
+    if (!canApprove) {
+      return res.status(403).json({ error: 'You do not have permission to approve this task.' });
+    }
 
     const newTags = task.tags.filter(t => !t.startsWith('PENDING_APPROVAL:') && !t.startsWith('APPROVED_BY:'));
     
@@ -1818,7 +1925,21 @@ export const approveTaskStatus = async (req, res) => {
       return res.status(400).json({ error: 'Task is not pending approval' });
     }
     
-    newTags.push(`APPROVED_BY:${req.user.name}`);
+    let approverRoleTitle = 'Member';
+    if (req.user.role === 'ADMIN') approverRoleTitle = 'Admin';
+    else if (req.user.role === 'MANAGER') approverRoleTitle = 'Manager';
+    else {
+      // Check custom roles for this user
+      const userWithCustomRoles = await req.db.user.findUnique({
+        where: { id: req.user.id },
+        include: { customRoles: { select: { name: true } } }
+      });
+      if (userWithCustomRoles?.customRoles && userWithCustomRoles.customRoles.length > 0) {
+        approverRoleTitle = userWithCustomRoles.customRoles.map(r => r.name).join(', ');
+      }
+    }
+
+    newTags.push(`APPROVED_BY:${req.user.name} (${approverRoleTitle})`);
 
     const updatedTask = await req.db.task.update({
       where: { id },
@@ -1924,16 +2045,42 @@ export const rejectTaskStatus = async (req, res) => {
   const { rejectionReason, sendEmail = true } = req.body;
 
   try {
-    if (req.user.role !== 'ADMIN' && req.user.role !== 'MANAGER') {
-      return res.status(403).json({ error: 'Only managers can reject status changes.' });
-    }
-
     const task = await req.db.task.findFirst({
       where: { id, project: { organizationId: req.user.organizationId } },
-      include: { assignees: { include: { user: true } }, project: true }
+      include: { assignees: { include: { user: true, assignedBy: true } }, project: true }
     });
 
     if (!task) return res.status(404).json({ error: 'Task not found' });
+
+    // Permission: Admin, Manager, Custom Role with approval permissions, OR any user who assigned this task to another user
+    const isAssignedToMe = task.assignees.some(a => a.userId === req.user.id || a.user?.id === req.user.id);
+
+    // Strict rule: No user can reject/approve their own assigned tasks
+    if (isAssignedToMe) {
+      return res.status(403).json({ error: 'You cannot reject your own task.' });
+    }
+
+    const isAssignerOfAnother = task.assignees.some(a => (a.assignedById === req.user.id || a.assignedBy?.id === req.user.id));
+    const isCreatorOfOther = task.tags?.includes(`CREATOR:${req.user.id}`);
+    const isDesignatedApprover = task.tags?.includes(`APPROVER:${req.user.id}`);
+    const hasRolePermission = req.user.permissions?.['tasks.approve'] || req.user.role === 'ADMIN' || req.user.role === 'MANAGER';
+
+    // Fallback: Check if user created the task via ActivityLog or TaskAssignee table
+    let isOriginalCreatorOrAssigner = isAssignerOfAnother || isCreatorOfOther;
+    if (!isOriginalCreatorOrAssigner) {
+      const creatorLog = await req.db.activityLog.findFirst({
+        where: { entity: 'task', entityId: task.id, action: 'CREATED', userId: req.user.id }
+      });
+      if (creatorLog) {
+        isOriginalCreatorOrAssigner = true;
+      }
+    }
+
+    const canReject = hasRolePermission || isOriginalCreatorOrAssigner || isDesignatedApprover;
+
+    if (!canReject) {
+      return res.status(403).json({ error: 'You do not have permission to reject this task.' });
+    }
 
     const pendingTag = task.tags.find(t => t.startsWith('PENDING_APPROVAL:'));
     if (!pendingTag) {

@@ -59,8 +59,8 @@ import CreateTaskForm from '@/components/forms/CreateTaskForm';
 import TaskDetailsModal from '@/components/task/TaskDetailsModal';
 import Chat from '@/components/Chat';
 import DocumentList from '@/components/documents/DocumentList';
-import DocumentEditor from '@/components/documents/DocumentEditor';
-import DocumentViewer from '@/components/documents/DocumentViewer';
+import DocumentContainer from '@/components/documents/DocumentContainer';
+import CreateDocumentModal from '@/components/documents/CreateDocumentModal';
 
 
 const ProjectView = () => {
@@ -808,7 +808,7 @@ const ProjectView = () => {
                   presentationMode={presentationMode}
                   onNewDocument={() => {
                     setSelectedDocId(null);
-                    setDocView('edit');
+                    setDocView('create');
                   }}
                   onEditDocument={(docId) => {
                     setSelectedDocId(docId);
@@ -816,27 +816,29 @@ const ProjectView = () => {
                   }}
                   onViewDocument={(docId) => {
                     setSelectedDocId(docId);
-                    setDocView('view');
+                    setDocView('edit');
                   }}
                 />
               )}
               {docView === 'edit' && (
-                <DocumentEditor
+                <DocumentContainer
                   projectId={id}
                   documentId={selectedDocId}
                   projectManagers={dashboard?.project?.managers}
-                  onBack={() => setDocView(selectedDocId ? 'view' : 'list')}
-                  onSave={() => setDocView('list')}
-                />
-              )}
-              {docView === 'view' && (
-                <DocumentViewer
-                  documentId={selectedDocId}
-                  projectManagers={dashboard?.project?.managers}
                   onBack={() => setDocView('list')}
-                  onEdit={() => setDocView('edit')}
                 />
               )}
+              <CreateDocumentModal
+                open={docView === 'create'}
+                onOpenChange={(open) => {
+                  if (!open) setDocView('list');
+                }}
+                projectId={id}
+                onCreated={(doc) => {
+                  setSelectedDocId(doc.id);
+                  setDocView('edit');
+                }}
+              />
             </div>
           </TabsContent>
 

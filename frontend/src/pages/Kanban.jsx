@@ -203,6 +203,12 @@ const Kanban = () => {
     setDragOverCol(null);
     if (!draggedTask || draggedTask.status === newStatus) { setDraggedTask(null); return; }
 
+    if (draggedTask.status === 'TODO' && newStatus === 'IN_REVIEW') {
+      toast({ title: 'Invalid Flow', description: 'Please move the task to In Progress first before moving to In Review.', variant: 'destructive' });
+      setDraggedTask(null);
+      return;
+    }
+
     if (user?.role === 'MEMBER') {
       if (newStatus === 'COMPLETED') {
         toast({ title: 'Not Allowed', description: 'Members cannot move tasks directly to Completed. Please use In Review.', variant: 'destructive' });
@@ -252,8 +258,8 @@ const Kanban = () => {
       await api.put(`/tasks/${taskId}`, { status: newStatus });
       setTasks(tasks.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
       toast({ title: 'Status Updated', description: `Task moved to ${STATUS_CONFIG[newStatus]?.label || newStatus}.` });
-    } catch {
-      toast({ title: 'Error', description: 'Failed to update status.', variant: 'destructive' });
+    } catch (error) {
+      toast({ title: 'Error', description: error.response?.data?.error || 'Failed to update status.', variant: 'destructive' });
     }
   };
 
@@ -464,6 +470,12 @@ const Kanban = () => {
                     const pendingTag = task.tags?.find(t => t.startsWith('PENDING_APPROVAL:'));
                     const isPendingApproval = !!pendingTag;
 
+                    const isAssignedToMe = task.assignees?.some(a => (a.userId === user?.id || a.user?.id === user?.id));
+                    const isAssignerOfAnother = task.assignees?.some(a => (a.assignedById === user?.id || a.assignedBy?.id === user?.id) && (a.userId !== user?.id && a.user?.id !== user?.id));
+                    const isCreatorOfOther = task.tags?.includes(`CREATOR:${user?.id}`) && !isAssignedToMe;
+
+                    const canApproveOrReject = (user?.role === 'ADMIN' || user?.role === 'MANAGER' || isAssignerOfAnother || isCreatorOfOther) && (!isAssignedToMe || user?.role === 'ADMIN' || user?.role === 'MANAGER');
+
                     return (
                       <div
                         key={task.id}
@@ -538,7 +550,7 @@ const Kanban = () => {
                             <span className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">
                               Pending Approval
                             </span>
-                            {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && (
+                            {canApproveOrReject && (
                               <div className="flex gap-1">
                                 <button
                                   onClick={(e) => { e.stopPropagation(); handleApproveStatus(task.id); }}

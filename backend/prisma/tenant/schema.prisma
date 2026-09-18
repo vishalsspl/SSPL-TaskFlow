@@ -511,24 +511,31 @@ enum TicketStatus {
 }
 
 enum TimeEntryStatus {
+  DRAFT
   PENDING
   APPROVED
   REJECTED
 }
 
+enum DocumentType {
+  DOCUMENT
+  SPREADSHEET
+}
+
 // ─── Document (Native Wiki / Docs) ──────────────────────────────────────────
 model Document {
-  id          String   @id @default(uuid())
+  id          String       @id @default(uuid())
   projectId   String
   authorId    String
   
   title       String
-  content     String   @db.Text
-  attachments Json     @default("[]")
+  type        DocumentType @default(DOCUMENT)
+  content     String       @db.Text
+  attachments Json         @default("[]")
   
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  author      User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now()) @updatedAt
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now()) @updatedAt
 }
