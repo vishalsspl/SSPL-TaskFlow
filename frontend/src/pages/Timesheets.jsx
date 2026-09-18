@@ -857,7 +857,7 @@ const Timesheets = () => {
                             <Plus className="mr-2 h-4 w-4" /> Log Hours
                         </Button>
                     )}
-                    {!isOrgAdmin && entries.some(e => e.userId === user?.id && e.status === 'DRAFT') && (
+                    {!isOrgAdmin && entries.some(e => e.userId === user?.id && e.status === 'PENDING') && (
                         <div title={new Date().getDay() !== 5 ? "This button is enabled on Friday only" : ""}>
                             <Button 
                                 onClick={handleSubmitTimesheets} 

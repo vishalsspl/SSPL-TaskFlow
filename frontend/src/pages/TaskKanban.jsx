@@ -226,7 +226,7 @@ const TaskKanban = () => {
                 billable: logTimeBillable
             });
             
-            toast({ title: 'Time Logged', description: 'Hours saved as DRAFT to your timesheet.' });
+            toast({ title: 'Time Logged', description: 'Hours saved to your timesheet.' });
             
             setShowLogTimeDialog(false);
             await proceedWithStatusChange(logTimeTask.id, 'IN_REVIEW');
