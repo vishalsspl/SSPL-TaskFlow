@@ -40,7 +40,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { formatDate, priorityColors, statusColors, taskTypeColors } from '@/lib/utils';
+import { formatDate, priorityColors, statusColors, taskTypeColors, stripHtml } from '@/lib/utils';
 import {
   Plus,
   CheckSquare,
@@ -951,8 +951,8 @@ const Tasks = () => {
                               {task.title}
                             </p>
                             {task.description && (
-                              <p className="text-[10px] text-muted-foreground line-clamp-1 w-full" title={task.description}>
-                                {task.description}
+                              <p className="text-[10px] text-muted-foreground line-clamp-1 w-full" title={stripHtml(task.description)}>
+                                {stripHtml(task.description)}
                               </p>
                             )}
                           </div>

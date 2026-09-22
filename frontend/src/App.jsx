@@ -33,6 +33,7 @@ const ProjectView = lazy(() => import('./pages/ProjectView'));
 const KanbanBoard = lazy(() => import('./pages/KanbanBoard'));
 const TaskKanban = lazy(() => import('./pages/TaskKanban'));
 const Tasks = lazy(() => import('./pages/Tasks'));
+const Documents = lazy(() => import('./pages/Documents'));
 const Team = lazy(() => import('./pages/Team'));
 const Settings = lazy(() => import('./pages/Settings'));
 const ChatPage = lazy(() => import('./pages/ChatPage'));
@@ -281,6 +282,10 @@ function App() {
               <Route
                 path="tasks"
                 element={<FeatureGuard feature="tasks"><PermissionGuard permKey="tasks.view"><Tasks /></PermissionGuard></FeatureGuard>}
+              />
+              <Route
+                path="documents"
+                element={user?.role !== 'CLIENT' ? <Documents /> : <Navigate to="/dashboard" replace />}
               />
               <Route
                 path="team"

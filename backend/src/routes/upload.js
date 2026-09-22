@@ -4,14 +4,9 @@ import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 import { authenticate } from '../middleware/auth.js';
+import { uploadDir } from '../config/storage.js';
 
 const router = express.Router();
-
-// Ensure uploads directory exists
-const uploadDir = path.join(process.cwd(), 'uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
 
 // Configure multer storage
 const storage = multer.diskStorage({

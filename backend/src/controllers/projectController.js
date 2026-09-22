@@ -257,7 +257,7 @@ export const getAllProjects = async (req, res) => {
     manager: { select: { id: true, name: true, email: true, role: true, avatar: true } },
     managers: { select: { id: true, name: true, email: true, role: true, avatar: true } },
     client: { select: { id: true, name: true, email: true, role: true, avatar: true } },
-    _count: { select: { tasks: { where: taskWhereFilter }, phases: true } },
+    _count: { select: { tasks: { where: taskWhereFilter }, phases: true, documents: true } },
     tasks: { where: taskWhereFilter, select: { status: true, storyPoints: true } }
   };
 

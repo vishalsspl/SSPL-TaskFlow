@@ -75,3 +75,19 @@ export const taskTypeColors = {
   EPIC: 'bg-purple-500/10 text-purple-500 border border-purple-500/20 Montserrat font-bold',
   SUBTASK: 'bg-cyan-500/10 text-cyan-500 border border-cyan-500/20 Montserrat font-bold',
 };
+
+export function stripHtml(html) {
+  if (!html || typeof html !== 'string') return '';
+  return html
+    .replace(/<\/(p|div|h[1-6]|li)>/gi, ' ')
+    .replace(/<br\s*\/?>/gi, ' ')
+    .replace(/<[^>]*>?/gm, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/\s+/g, ' ')
+    .trim();
+}

@@ -29,7 +29,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Plus, MessageSquare, Clock, Search } from 'lucide-react';
-import { formatRelativeTime } from '@/lib/utils';
+import { formatRelativeTime, stripHtml } from '@/lib/utils';
 import TablePagination from '@/components/ui/table-pagination';
 
 const TicketList = () => {
@@ -186,14 +186,7 @@ const TicketList = () => {
                                                 <TableCell className="text-left">
                                                     <div className="font-medium">{ticket.title}</div>
                                                     <div className="text-xs text-muted-foreground line-clamp-1">
-                                                        {ticket.description
-                                                            .replace(/<[^>]*>?/gm, '')
-                                                            .replace(/&nbsp;/g, ' ')
-                                                            .replace(/&amp;/g, '&')
-                                                            .replace(/&quot;/g, '"')
-                                                            .replace(/&apos;/g, "'")
-                                                            .replace(/&lt;/g, '<')
-                                                            .replace(/&gt;/g, '>')}
+                                                        {stripHtml(ticket.description)}
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>{ticket.client?.name}</TableCell>
@@ -244,9 +237,7 @@ const TicketList = () => {
                                             </Badge>
                                         </div>
                                         <p className="text-xs text-muted-foreground line-clamp-1 mb-3">
-                                            {ticket.description
-                                                .replace(/<[^>]*>?/gm, '')
-                                                .replace(/&nbsp;/g, ' ')}
+                                            {stripHtml(ticket.description)}
                                         </p>
                                         <div className="flex items-center justify-between text-xs text-muted-foreground">
                                             <div className="flex items-center gap-2">

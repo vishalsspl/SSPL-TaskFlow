@@ -32,7 +32,7 @@ import {
   Zap,
   Ticket,
 } from 'lucide-react';
-import { formatCurrency, formatDate } from '@/lib/utils';
+import { formatCurrency, formatDate, stripHtml } from '@/lib/utils';
 import { LineChart, PieChart, BarChart, ModernAreaChart } from '@/components/ui/charts'; // Make sure this path is correct or update charts
 import ProjectOverview from '@/components/ProjectOverview';
 import { PieChart as RechartsPie, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
@@ -680,7 +680,7 @@ const Dashboard = () => {
                               <p className="text-sm font-bold leading-none text-foreground Montserrat">{project.name}</p>
                             </div>
                             <p className="text-xs text-gray-500 line-clamp-1 Montserrat leading-relaxed">
-                              {project.description?.replace(/<[^>]*>/g, '')}
+                              {stripHtml(project.description)}
                             </p>
                             <div className="flex items-center gap-4 text-[10px] text-gray-500 font-bold uppercase tracking-wider pt-1">
                               <div className="flex items-center gap-1.5">

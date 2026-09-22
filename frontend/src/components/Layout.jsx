@@ -61,6 +61,7 @@ import {
   ShieldCheck,
   ChevronLeft,
   ChevronRight,
+  FileText,
 } from 'lucide-react';
 import { useChatStore } from '@/store/chatStore';
 import { useHeaderStore } from '@/store/headerStore';
@@ -150,6 +151,12 @@ const Layout = () => {
     { name: 'Projects', href: '/projects', icon: FolderKanban, featureKey: 'projects', permKey: 'projects.view' },
     { name: 'Kanban Board', href: '/task-board', icon: Kanban, featureKey: 'kanban', permKey: 'kanban.view' },
     { name: 'Tasks', href: '/tasks', icon: CheckSquare, featureKey: 'tasks', permKey: 'tasks.view' },
+    {
+      name: 'Documents',
+      href: '/documents',
+      icon: FileText,
+      allowedRoles: ['ADMIN', 'MANAGER', 'MEMBER'],
+    },
     {
       name: 'Tickets',
       href: '/tickets',

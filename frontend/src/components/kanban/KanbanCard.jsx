@@ -4,7 +4,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, User, MoreVertical, Pencil, Trash2, ArrowRightLeft, Bug, Zap, BookOpen, GitBranch, CheckSquare, Clock, CheckCircle2, XCircle, Square } from 'lucide-react';
-import { priorityColors, taskTypeColors } from '@/lib/utils';
+import { priorityColors, taskTypeColors, stripHtml } from '@/lib/utils';
 import { useAuthStore } from '@/store/authStore';
 import {
     DropdownMenu,
@@ -229,7 +229,7 @@ const KanbanCard = ({
                             <p 
                                 className="text-[9px] sm:text-[10px] text-muted-foreground line-clamp-1" 
                             >
-                                {task.description.replace(/<[^>]*>?/gm, '').replace(/&nbsp;/g, ' ')}
+                                {stripHtml(task.description)}
                             </p>
                         )}
                     </div>

@@ -7,6 +7,7 @@ import {
   importDocxToHtml, 
   importXlsxToSheetData 
 } from '../services/documentExportService.js';
+import { uploadDir } from '../config/storage.js';
 
 export const getDocuments = async (req, res) => {
   const { projectId } = req.params;
@@ -402,11 +403,6 @@ export const importDocument = async (req, res) => {
       const fs = await import('fs');
       const path = await import('path');
       const { v4: uuidv4 } = await import('uuid');
-      
-      const uploadDir = path.join(process.cwd(), 'uploads');
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
       
       const uniqueName = `${uuidv4()}.${ext}`;
       const filePath = path.join(uploadDir, uniqueName);

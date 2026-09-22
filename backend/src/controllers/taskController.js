@@ -141,6 +141,7 @@ export const getAllTasks = async (req, res) => {
         priority: true,
         completionPercentage: true,
         dueDate: true,
+        createdAt: true,
         project: { select: { id: true, name: true } },
         assignees: { include: { user: { select: { id: true, name: true, avatar: true } }, assignedBy: { select: { id: true, name: true } } } },
         parent: { select: { id: true, title: true, type: true, shortId: true, status: true } }
@@ -156,6 +157,7 @@ export const getAllTasks = async (req, res) => {
         shortId: true,
         completionPercentage: true,
         dueDate: true,
+        createdAt: true,
         project: { select: { id: true, name: true } },
         assignees: { include: { user: { select: { id: true, name: true, avatar: true } }, assignedBy: { select: { id: true, name: true } } } },
         children: { select: { id: true, title: true, type: true, status: true, shortId: true } }
@@ -242,6 +244,7 @@ export const getTask = async (req, res) => {
           priority: true,
           completionPercentage: true,
           dueDate: true,
+          createdAt: true,
           project: { select: { id: true, name: true } },
           assignees: { include: { user: { select: { id: true, name: true, avatar: true } }, assignedBy: { select: { id: true, name: true } } } },
           parent: { select: { id: true, title: true, type: true, shortId: true, status: true } }
@@ -257,6 +260,7 @@ export const getTask = async (req, res) => {
           shortId: true,
           completionPercentage: true,
           dueDate: true,
+          createdAt: true,
           project: { select: { id: true, name: true } },
           assignees: { include: { user: { select: { id: true, name: true, avatar: true } }, assignedBy: { select: { id: true, name: true } } } },
           children: { select: { id: true, title: true, type: true, status: true, shortId: true } }

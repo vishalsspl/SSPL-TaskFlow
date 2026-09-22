@@ -327,6 +327,20 @@ const TaskDetailsModal = ({ open, onOpenChange, task: initialTask, canEdit, onEd
                                     </div>
                                 </div>
 
+                                {/* Created Date */}
+                                {currentTask?.createdAt && (
+                                    <div className="flex flex-col gap-1.5 md:border-l md:border-border/50 md:pl-6">
+                                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest Montserrat">Created Date</span>
+                                        <div 
+                                            className="flex items-center gap-2 text-sm font-semibold text-foreground"
+                                            title={!isNaN(new Date(currentTask.createdAt).getTime()) ? new Date(currentTask.createdAt).toLocaleString() : ''}
+                                        >
+                                            <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
+                                            {formatDate(currentTask.createdAt)}
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Due Date */}
                                 {currentTask?.dueDate && (
                                     <div className="flex flex-col gap-1.5 md:border-l md:border-border/50 md:pl-6">

@@ -35,6 +35,7 @@ import prisma from './lib/prisma.js';
 import tenantDbManager from './lib/tenantDbManager.js';
 import { attachIo } from './middleware/socketMiddleware.js';
 import { initCronJobs } from './utils/cronJobs.js';
+import { uploadDir } from './config/storage.js';
 
 
 // dotenv.config(); is now handled by the import above
@@ -85,7 +86,7 @@ app.use('/api/documents', documentRoutes);
 app.use('/api/roles', roleRoutes);
 
 // Static file serving for uploads
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+app.use('/uploads', express.static(uploadDir));
 
 // Socket.io
 io.on('connection', (socket) => {
