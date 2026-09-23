@@ -392,7 +392,7 @@ const Kanban = () => {
                       placeholder="Task title *"
                       value={formData.title}
                       onChange={e => setFormData({ ...formData, title: e.target.value })}
-                      maxLength={100}
+                      maxLength={50}
                       className="text-sm h-9 rounded-xl border-gray-100"
                     />
                     <div className="grid grid-cols-1 gap-2">

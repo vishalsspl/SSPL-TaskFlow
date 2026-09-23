@@ -160,8 +160,13 @@ export const createTimeEntry = async (req, res) => {
     const LEAVE_TAGS = ['[Sick Leave]', '[Casual Leave]', '[Paid Leave]', '[Unpaid Leave]'];
     const isLeaveEntry = description && LEAVE_TAGS.some(tag => description.includes(tag));
 
-    if (!date || !hours) {
+    if (!date || hours === undefined || hours === null || hours === '') {
         return res.status(400).json({ error: 'Date and hours are required' });
+    }
+
+    const parsedHours = parseFloat(hours);
+    if (isNaN(parsedHours) || parsedHours <= 0) {
+        return res.status(400).json({ error: 'Hours must be greater than 0' });
     }
 
     if (!isLeaveEntry && (!projectId || !taskId)) {

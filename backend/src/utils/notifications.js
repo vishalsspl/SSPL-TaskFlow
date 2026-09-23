@@ -66,7 +66,11 @@ export const createNotification = async (req, { userId, title, message, type, li
   
         if (req.io) {
           const room = `org-${req.user.organizationId}`;
-          req.io.to(room).emit('new-notification', notification);
+          const payload = {
+            ...notification,
+            actorId: req.user?.id || req.user?.userId
+          };
+          req.io.to(room).emit('new-notification', payload);
           console.log(`[Notification Debug] Socket emitted to room: ${room}`);
         }
       } else {

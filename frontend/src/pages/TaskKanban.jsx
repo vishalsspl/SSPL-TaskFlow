@@ -87,7 +87,7 @@ const TaskKanban = () => {
             setHighlightTaskId(highlightId);
             setHighlightAction(action);
             
-            // Clear highlight after 3 seconds
+            // Clear highlight after 4.5 seconds
             const timer = setTimeout(() => {
                 setHighlightTaskId(null);
                 setHighlightAction(null);
@@ -97,7 +97,7 @@ const TaskKanban = () => {
                 newParams.delete('highlight');
                 newParams.delete('action');
                 window.history.replaceState({}, '', `${location.pathname}?${newParams.toString()}`);
-            }, 3000);
+            }, 4500);
             
             return () => clearTimeout(timer);
         }
@@ -106,6 +106,16 @@ const TaskKanban = () => {
     useEffect(() => {
         fetchData();
     }, []);
+
+    useEffect(() => {
+        if (highlightTaskId && tasks.length > 0) {
+            const targetTask = tasks.find(t => t.id === highlightTaskId);
+            const targetProjId = targetTask?.projectId || targetTask?.project?.id;
+            if (targetProjId && selectedProjectId !== targetProjId) {
+                setSelectedProjectId(targetProjId);
+            }
+        }
+    }, [highlightTaskId, tasks, selectedProjectId]);
 
     useEffect(() => {
         if (!selectedProjectId) {
@@ -193,14 +203,16 @@ const TaskKanban = () => {
         await proceedWithStatusChange(taskId, newStatus);
     };
 
-    const proceedWithStatusChange = async (taskId, newStatus) => {
+    const proceedWithStatusChange = async (taskId, newStatus, showToast = true) => {
         const previousTasks = [...tasks];
         // Optimistically update the UI instantly so there is no delay or snapping back
         setTasks(prevTasks => prevTasks.map(t => t.id === taskId ? { ...t, status: newStatus } : t));
 
         try {
             await api.patch(`/tasks/${taskId}/status`, { status: newStatus });
-            toast({ title: 'Status Updated', description: `Task moved to ${newStatus.replace('_', ' ')}.` });
+            if (showToast) {
+                toast({ title: 'Status Updated', description: `Task moved to ${newStatus.replace('_', ' ')}.` });
+            }
             fetchData();
         } catch (error) {
             console.error('Failed to update status:', error);
@@ -211,8 +223,13 @@ const TaskKanban = () => {
     };
 
     const handleLogTimeSubmit = async () => {
-        if (!logTimeHours || isNaN(parseFloat(logTimeHours))) {
-            toast({ title: 'Error', description: 'Please enter valid hours.', variant: 'destructive' });
+        const parsedHours = parseFloat(logTimeHours);
+        if (!logTimeHours || isNaN(parsedHours) || parsedHours <= 0) {
+            toast({
+                title: 'Validation Error',
+                description: 'Please enter hours greater than 0.',
+                variant: 'destructive'
+            });
             return;
         }
 
@@ -221,15 +238,15 @@ const TaskKanban = () => {
                 projectId: logTimeTask.projectId || logTimeTask.project?.id,
                 taskId: logTimeTask.id,
                 date: new Date().toISOString(),
-                hours: parseFloat(logTimeHours),
+                hours: parsedHours,
                 description: logTimeDescription || `Worked on task: ${logTimeTask.title}`,
                 billable: logTimeBillable
             });
             
-            toast({ title: 'Time Logged', description: 'Hours saved to your timesheet.' });
-            
             setShowLogTimeDialog(false);
-            await proceedWithStatusChange(logTimeTask.id, 'IN_REVIEW');
+            await proceedWithStatusChange(logTimeTask.id, 'IN_REVIEW', false);
+
+            toast({ title: 'Time Logged & Status Updated', description: 'Hours saved to timesheet and task moved to IN REVIEW.' });
             
             setLogTimeTask(null);
             setLogTimeHours('');
@@ -237,7 +254,11 @@ const TaskKanban = () => {
             setLogTimeBillable(false);
         } catch (error) {
             console.error('Failed to log time:', error);
-            toast({ title: 'Error', description: error.response?.data?.error || 'Failed to log time.', variant: 'destructive' });
+            toast({
+                title: 'Validation Error',
+                description: error.response?.data?.error || 'Failed to log time.',
+                variant: 'destructive'
+            });
         }
     };
 
@@ -317,11 +338,15 @@ const TaskKanban = () => {
     const filteredTasks = tasks.filter(task => {
         if (!selectedProjectId) return false;
 
-        const matchesSearch = task.title.toLowerCase().includes(globalSearch.toLowerCase()) ||
-            (task.description && task.description.toLowerCase().includes(globalSearch.toLowerCase()));
-
         const matchesProject = task.projectId === selectedProjectId ||
             task.project?.id === selectedProjectId;
+
+        if (highlightTaskId && task.id === highlightTaskId) {
+            return matchesProject;
+        }
+
+        const matchesSearch = task.title.toLowerCase().includes(globalSearch.toLowerCase()) ||
+            (task.description && task.description.toLowerCase().includes(globalSearch.toLowerCase()));
 
         const matchesPriority = !priorityFilter || task.priority === priorityFilter;
 

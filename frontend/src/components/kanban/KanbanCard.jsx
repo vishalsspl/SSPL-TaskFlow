@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Card, CardContent } from '@/components/ui/card';
@@ -81,6 +81,21 @@ const KanbanCard = ({
             opacity: isDragging ? 0.3 : 1,
         };
 
+    const cardRef = useRef(null);
+
+    useEffect(() => {
+        if (isHighlighted && cardRef.current) {
+            const timer = setTimeout(() => {
+                cardRef.current?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                    inline: 'center'
+                });
+            }, 300);
+            return () => clearTimeout(timer);
+        }
+    }, [isHighlighted]);
+
     if (isDragging && !isOverlay) {
         return (
             <div
@@ -108,7 +123,12 @@ const KanbanCard = ({
 
     return (
         <div 
-            ref={isOverlay ? null : setNodeRef} 
+            ref={(node) => {
+                if (!isOverlay) {
+                    setNodeRef(node);
+                }
+                cardRef.current = node;
+            }} 
             style={style} 
             {...(isOverlay ? {} : attributes)} 
             {...(isOverlay ? {} : listeners)} 

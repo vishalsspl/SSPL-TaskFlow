@@ -118,6 +118,18 @@ const KanbanBoard = ({
         setActiveColumnIndex(index);
     };
 
+    useEffect(() => {
+        if (highlightTaskId && tasks.length > 0) {
+            const task = tasks.find(t => t.id === highlightTaskId);
+            if (task) {
+                const colIdx = COLUMN_IDS.indexOf(task.status);
+                if (colIdx !== -1 && isMobile) {
+                    scrollToColumn(colIdx);
+                }
+            }
+        }
+    }, [highlightTaskId, tasks, isMobile]);
+
     const goLeft = () => {
         if (activeColumnIndex > 0) scrollToColumn(activeColumnIndex - 1);
     };

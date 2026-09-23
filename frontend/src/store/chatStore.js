@@ -127,14 +127,19 @@ export const useChatStore = create((set, get) => ({
         socket.on('new-notification', (notification) => {
             console.log('[Socket Debug] New notification received:', notification);
             const currentUserId = get().userId;
-            console.log(`[Socket Debug] Current UserID: ${currentUserId}, Target UserID: ${notification.userId}`);
+            console.log(`[Socket Debug] Current UserID: ${currentUserId}, Target UserID: ${notification.userId}, ActorID: ${notification.actorId}`);
             if (String(notification.userId) === String(currentUserId)) {
                 console.log('[Socket Debug] User matched! Adding notification to store.');
                 useNotificationStore.getState().addNotification(notification);
-                toast({
-                    title: notification.title,
-                    description: notification.message,
-                });
+                
+                // Only show popup toast if notification was triggered by another user (prevents double toasts for own actions like creating a task)
+                const isOwnAction = notification.actorId && String(notification.actorId) === String(currentUserId);
+                if (!isOwnAction) {
+                    toast({
+                        title: notification.title,
+                        description: notification.message,
+                    });
+                }
             }
         });
 

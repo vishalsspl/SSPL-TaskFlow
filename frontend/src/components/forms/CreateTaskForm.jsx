@@ -298,7 +298,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                             placeholder="e.g. Design Homepage"
                             required
-                            maxLength={100}
+                            maxLength={50}
                             className="!pl-10 transition-all focus:ring-2 focus:ring-primary/20 mobile-reduce-input"
                         />
                     </div>

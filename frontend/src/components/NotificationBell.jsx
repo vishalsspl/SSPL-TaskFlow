@@ -73,7 +73,7 @@ const NotificationBell = () => {
       case 'TASK_STATUS_UPDATED':
       case 'TASK_APPROVED':
       case 'TASK_REJECTED':
-        return '/tasks';
+        return '/task-board';
       case 'TASK_APPROVAL_REQUEST':
         return '/task-board';
       case 'PROJECT_ASSIGNED':
