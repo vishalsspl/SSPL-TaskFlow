@@ -465,7 +465,7 @@ const Tasks = () => {
       {/* ─── Filter Toolbar ─── */}
       <div className="flex-none px-0 sm:px-0">
         <div className="bg-secondary/40 p-2 rounded-2xl mb-2 mt-4 shadow-inner backdrop-blur-sm" style={{ border: '1px solid var(--table-border)' }}>
-            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 min-w-0">
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 min-w-0 overflow-x-auto no-scrollbar">
               <div className="flex flex-row items-center gap-2 w-full xl:w-auto">
                 <Button
                   variant="outline"
@@ -486,8 +486,8 @@ const Tasks = () => {
                 )}
               </div>
 
-              <div className="flex flex-col md:flex-row items-center gap-3 w-full xl:w-auto flex-1 justify-end min-w-0">
-                <div className={`flex-col md:flex-row xl:flex-nowrap flex-wrap items-center gap-2 xl:gap-1 w-full md:w-auto min-w-0 ${showFiltersMobile ? 'flex' : 'hidden md:flex'}`}>
+              <div className="flex flex-col md:flex-row items-center gap-3 w-full xl:w-auto flex-1 justify-end">
+                <div className={`flex-col md:flex-row xl:flex-nowrap flex-wrap items-center gap-2 xl:gap-1 w-full md:w-auto ${showFiltersMobile ? 'flex' : 'hidden md:flex'}`}>
                   <SearchableSelect
                     options={projectOptions}
                     value={projectFilter}
