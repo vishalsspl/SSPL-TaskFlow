@@ -106,13 +106,10 @@ export function MultiSearchableSelect({
                                     value={`${option.label}===${option.value}`}
                                     keywords={[option.label]}
                                     onSelect={() => toggle(option.value)}
+                                    className={cn(
+                                        value.includes(option.value) && "font-bold text-primary bg-primary/5"
+                                    )}
                                 >
-                                    <Check
-                                        className={cn(
-                                            "mr-2 h-4 w-4",
-                                            value.includes(option.value) ? "opacity-100" : "opacity-0"
-                                        )}
-                                    />
                                     <div className="flex flex-col flex-1 min-w-0">
                                         <span className="truncate">{option.label}</span>
                                         {option.email && (

@@ -75,14 +75,11 @@ export function SearchableSelect({
                                         onChange(option.value)
                                         setOpen(false)
                                     }}
-                                    className="flex items-center gap-2 text-xs"
+                                    className={cn(
+                                        "flex items-center gap-2 text-xs",
+                                        value === option.value && "font-bold text-primary bg-primary/5"
+                                    )}
                                 >
-                                    <Check
-                                        className={cn(
-                                            "h-4 w-4 shrink-0",
-                                            value === option.value ? "opacity-100" : "opacity-0"
-                                        )}
-                                    />
                                     {renderOption ? renderOption(option) : (
                                         <div className="flex items-center gap-2">
                                             {option.icon && <span className="shrink-0">{option.icon}</span>}
