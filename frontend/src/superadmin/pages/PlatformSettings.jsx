@@ -7,6 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Globe,
   Mail,
   Zap,
@@ -431,6 +438,29 @@ const PlatformSettings = () => {
             {passwordLoading ? 'Updating...' : 'Update Password'}
           </Button>
         </div>
+      </SettingSection>
+
+      {/* ── Billing & Expiration Policies ────────────────────────────────────────────── */}
+      <SettingSection
+        title="Billing & Expiration Policies"
+        description="Configure what happens when an organization's plan expires"
+        icon={AlertCircle}
+      >
+        <FormRow label="Plan Expiration Policy" description="Action to take automatically after the 7-day grace period">
+          <Select
+            value={settings.expirationPolicy || 'AUTO_DOWNGRADE'}
+            onValueChange={val => mark('expirationPolicy', val)}
+          >
+            <SelectTrigger className="w-full h-14 rounded-2xl bg-background/50 border-border/40 px-5 font-bold focus:ring-4 focus:ring-primary/10 transition-all shadow-inner">
+              <SelectValue placeholder="Select Policy" />
+            </SelectTrigger>
+            <SelectContent className="rounded-xl border-border/40 shadow-xl bg-background/95 backdrop-blur-xl">
+              <SelectItem value="AUTO_DOWNGRADE" className="font-semibold cursor-pointer py-2.5">Auto-Downgrade to FREE Plan</SelectItem>
+              <SelectItem value="SUSPEND" className="font-semibold cursor-pointer py-2.5">Suspend Organization</SelectItem>
+              <SelectItem value="MANUAL" className="font-semibold cursor-pointer py-2.5">Manual Action Only (Just send emails)</SelectItem>
+            </SelectContent>
+          </Select>
+        </FormRow>
       </SettingSection>
 
       {/* ── Override Hub ────────────────────────────────────────────── */}

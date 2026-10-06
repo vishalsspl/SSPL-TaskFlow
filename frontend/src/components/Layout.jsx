@@ -61,7 +61,7 @@ import {
   ShieldCheck,
   ChevronLeft,
   ChevronRight,
-  FileText,
+  FileText, X,
 } from 'lucide-react';
 import { useChatStore } from '@/store/chatStore';
 import { useHeaderStore } from '@/store/headerStore';
@@ -84,7 +84,11 @@ const Layout = () => {
   const { activeTaskId, isRunning, setRecorderOpen, autoSaveWorklog, saveWorklog } = useTimerStore();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showExpiryCounter, setShowExpiryCounter] = useState(true);
   const { theme, setTheme } = useTheme();
+
+  const endDate = user?.organization?.currentPeriodEnd || user?.organization?.trialEndsAt;
+  const remainingDays = endDate ? Math.ceil((new Date(endDate) - new Date()) / (1000 * 60 * 60 * 24)) : null;
 
   // Timer protection: Handle window close/refresh
   useEffect(() => {
@@ -154,7 +158,7 @@ const Layout = () => {
     {
       name: 'Documents',
       href: '/documents',
-      icon: FileText,
+      icon: FileText, X,
       allowedRoles: ['ADMIN', 'MANAGER', 'MEMBER'],
     },
     {
@@ -488,6 +492,28 @@ const Layout = () => {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+            {user?.role === 'ADMIN' && showExpiryCounter && remainingDays !== null && remainingDays <= 7 && (
+              <div className="hidden md:flex items-center gap-3 px-3 sm:px-4 py-1.5 sm:py-2 bg-rose-500/10 border border-rose-500/20 rounded-2xl animate-in slide-in-from-right fade-in duration-500">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                  <span className="text-[10px] sm:text-[11px] font-black tracking-widest uppercase text-rose-500">
+                    {remainingDays > 0 ? 'Plan Expires In' : 'Plan Status'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs sm:text-sm font-black text-rose-600 bg-rose-500/10 px-2 py-0.5 rounded-md">
+                    {remainingDays > 0 ? `${remainingDays} ${remainingDays === 1 ? 'Day' : 'Days'}` : 'Expired'}
+                  </span>
+                </div>
+                <button 
+                  onClick={() => setShowExpiryCounter(false)}
+                  className="ml-1 sm:ml-2 text-rose-500/60 hover:text-rose-500 hover:bg-rose-500/10 p-1 rounded-full transition-all"
+                  title="Dismiss"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
             {activeTaskId && (
               <Button
                 variant="ghost"

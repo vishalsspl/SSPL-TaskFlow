@@ -376,8 +376,8 @@ export const createTask = async (req, res) => {
   finalTags.push(`CREATOR:${req.user.id}`);
 
   const trimmedTitle = title.trim();
-  if (trimmedTitle.length > 30) {
-    return res.status(400).json({ error: 'Task title cannot exceed 30 characters' });
+  if (trimmedTitle.length > 50) {
+    return res.status(400).json({ error: 'Task title cannot exceed 50 characters' });
   }
 
   // Check if title starts with a number
@@ -932,8 +932,8 @@ export const updateTask = async (req, res) => {
     if (!trimmedTitle) {
       return res.status(400).json({ error: 'Task title cannot be empty or contain only blank spaces.' });
     }
-    if (trimmedTitle.length > 30) {
-      return res.status(400).json({ error: 'Task title cannot exceed 30 characters' });
+    if (trimmedTitle.length > 50) {
+      return res.status(400).json({ error: 'Task title cannot exceed 50 characters' });
     }
     if (/^\d/.test(trimmedTitle)) {
       return res.status(400).json({ error: 'Task title cannot start with a number' });
@@ -1590,24 +1590,22 @@ export const updateTaskStatus = async (req, res) => {
         // Clear rejection reason on approval
         updatedRejectionReason = null;
         
-        // Add APPROVED_BY tag if it was pending or in review
-        if (existingTask.status === 'IN_REVIEW' || existingTask.tags?.some(t => t.startsWith('PENDING_APPROVAL:'))) {
-           updatedTags = updatedTags.filter(t => !t.startsWith('APPROVED_BY:')); // clear old
-           
-           let approverRoleTitle = 'Member';
-           if (req.user.role === 'ADMIN') approverRoleTitle = 'Admin';
-           else if (req.user.role === 'MANAGER') approverRoleTitle = 'Manager';
-           else {
-             const userWithCustomRoles = await req.db.user.findUnique({
-               where: { id: req.user.id },
-               include: { customRoles: { select: { name: true } } }
-             });
-             if (userWithCustomRoles?.customRoles && userWithCustomRoles.customRoles.length > 0) {
-               approverRoleTitle = userWithCustomRoles.customRoles.map(r => r.name).join(', ');
-             }
-           }
-           updatedTags.push(`APPROVED_BY:${req.user.name} (${approverRoleTitle})`);
+        // Add APPROVED_BY tag whenever task is marked COMPLETED
+        updatedTags = updatedTags.filter(t => !t.startsWith('APPROVED_BY:')); // clear old
+        
+        let approverRoleTitle = 'Member';
+        if (req.user.role === 'ADMIN') approverRoleTitle = 'Admin';
+        else if (req.user.role === 'MANAGER') approverRoleTitle = 'Manager';
+        else {
+          const userWithCustomRoles = await req.db.user.findUnique({
+            where: { id: req.user.id },
+            include: { customRoles: { select: { name: true } } }
+          });
+          if (userWithCustomRoles?.customRoles && userWithCustomRoles.customRoles.length > 0) {
+            approverRoleTitle = userWithCustomRoles.customRoles.map(r => r.name).join(', ');
+          }
         }
+        updatedTags.push(`APPROVED_BY:${req.user.name} (${approverRoleTitle})`);
       } else if (status === 'IN_PROGRESS' || status === 'TODO') {
         // If rejecting, save the reason if provided
         if (rejectionReason) {
@@ -1655,19 +1653,23 @@ export const updateTaskStatus = async (req, res) => {
 
     // Log activity
     try {
+      const isApproved = status === 'COMPLETED';
+      const logAction = isApproved ? 'APPROVED' : 'UPDATED';
+
       const logData = {
         userId: req.user.id,
         organizationId: req.user.organizationId,
         projectId: task.projectId || task.project?.id || existingTask?.projectId || null,
-        action: 'UPDATED',
+        action: logAction,
         entity: 'task',
         entityId: task.id,
         details: {
           title: task.title,
           projectName: task.project?.name || null,
-          action: 'Status Updated',
+          action: isApproved ? 'Task Approved' : 'Status Updated',
           status,
           oldStatus: existingTask.status,
+          approvedBy: isApproved ? req.user.name : undefined,
           ...(assignedByName ? { assignedBy: assignedByName } : {})
         },
       };
@@ -1965,13 +1967,14 @@ export const approveTaskStatus = async (req, res) => {
         userId: req.user.id,
         organizationId: req.user.organizationId,
         projectId: task.projectId || task.project?.id || null,
-        action: 'UPDATED',
+        action: 'APPROVED',
         entity: 'task',
         entityId: task.id,
         details: {
           title: task.title,
           projectName: task.project?.name || null,
-          action: 'Status Updated',
+          action: 'Task Approved',
+          approvedBy: `${req.user.name} (${approverRoleTitle})`,
           status: 'COMPLETED',
           oldStatus: task.status
         },

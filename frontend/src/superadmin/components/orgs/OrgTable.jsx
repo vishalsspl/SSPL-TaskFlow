@@ -4,7 +4,7 @@ import {
   TableHeader, TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Building2, ShieldAlert, Edit2, Globe, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Building2, ShieldAlert, Edit2, Globe, Trash2, Info, Bell } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger,
@@ -15,9 +15,11 @@ const OrgTable = ({
   getStatusBadge,
   getPlanBadge,
   onEdit,
+  onDetails,
   onSuspend,
   onApprove,
   onDelete,
+  onRemindExpiry,
 }) => {
   const PROJECT_COLORS = [
     '#8B5CF6', '#0EA5E9', '#10B981', '#F59E0B', '#F43F5E', '#F97316', '#D946EF'
@@ -32,12 +34,22 @@ const OrgTable = ({
             <TableHead className="text-[10px] font-black uppercase tracking-widest text-center">Status</TableHead>
             <TableHead className="text-[10px] font-black uppercase tracking-widest text-center">Users / Limit</TableHead>
             <TableHead className="text-[10px] font-black uppercase tracking-widest text-center">Joined</TableHead>
+            <TableHead className="text-[10px] font-black uppercase tracking-widest text-center">End Date</TableHead>
             <TableHead className="text-[10px] font-black uppercase tracking-widest text-center pr-8">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {orgs.map((org, idx) => {
             const rowColor = PROJECT_COLORS[idx % PROJECT_COLORS.length];
+            const endDate = org.currentPeriodEnd || org.trialEndsAt;
+            let endDateColor = 'text-emerald-500';
+            if (endDate) {
+              const diff = new Date(endDate) - new Date();
+              if (diff < 0) endDateColor = 'text-red-500';
+              else if (diff < 7 * 24 * 60 * 60 * 1000) endDateColor = 'text-amber-500';
+              else endDateColor = 'text-muted-foreground';
+            }
+
             return (
               <TableRow key={org.id} className="cursor-pointer transition-all hover:bg-white/[0.02] border-b border-border/5" style={{ borderLeft: `4px solid ${rowColor}`, background: `${rowColor}0d` }}>
                 <TableCell className="py-5">
@@ -76,6 +88,11 @@ const OrgTable = ({
                     {org.createdAt ? new Date(org.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
                   </span>
                 </TableCell>
+                <TableCell className="text-center">
+                  <span className={`text-[10px] font-black font-mono uppercase tracking-widest ${endDateColor}`}>
+                    {endDate ? new Date(endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Lifetime'}
+                  </span>
+                </TableCell>
                 <TableCell className="text-center pr-8">
                   <div className="flex items-center justify-center gap-2">
                     <DropdownMenu>
@@ -91,6 +108,9 @@ const OrgTable = ({
                         <DropdownMenuSeparator className="bg-border/10 dark:bg-white/5" />
                         {org.status === 'PENDING' ? (
                           <>
+                            <DropdownMenuItem className="text-blue-500 hover:text-white hover:bg-blue-500 rounded-xl cursor-pointer font-bold text-[10px] tracking-widest uppercase py-3 mb-1 transition-all" onClick={() => onDetails(org)}>
+                              <Info className="w-4 h-4 mr-3" /> Details
+                            </DropdownMenuItem>
                             <DropdownMenuItem className="text-green-500 hover:text-white hover:bg-green-500 rounded-xl cursor-pointer font-bold text-[10px] tracking-widest uppercase py-3 mb-1 transition-all" onClick={() => onApprove(org)}>
                               <ShieldAlert className="w-4 h-4 mr-3" /> Approve
                             </DropdownMenuItem>
@@ -100,9 +120,20 @@ const OrgTable = ({
                           </>
                         ) : (
                           <>
+                            <DropdownMenuItem className="text-blue-500 hover:text-white hover:bg-blue-500 rounded-xl cursor-pointer font-bold text-[10px] tracking-widest uppercase py-3 mb-1 transition-all" onClick={() => onDetails(org)}>
+                              <Info className="w-4 h-4 mr-3" /> Details
+                            </DropdownMenuItem>
                             <DropdownMenuItem className="text-foreground dark:text-white rounded-xl cursor-pointer font-bold text-[10px] tracking-widest uppercase py-3 mb-1 transition-all focus:bg-primary/10" onClick={() => onEdit(org)}>
                               <Edit2 className="w-4 h-4 mr-3 text-primary" /> Edit
                             </DropdownMenuItem>
+                            {endDate && (new Date(endDate) - new Date() < 7 * 24 * 60 * 60 * 1000) && (
+                              <DropdownMenuItem
+                                className="text-amber-500 hover:text-white hover:bg-amber-500 rounded-xl cursor-pointer font-bold text-[10px] tracking-widest uppercase py-3 mb-1 transition-all"
+                                onClick={() => onRemindExpiry(org)}
+                              >
+                                <Bell className="w-4 h-4 mr-3" /> Remind Expiry
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem
                               className="text-orange-500 hover:text-white hover:bg-orange-500 rounded-xl cursor-pointer font-bold text-[10px] tracking-widest uppercase py-3 mb-1 transition-all"
                               onClick={() => onSuspend(org)}

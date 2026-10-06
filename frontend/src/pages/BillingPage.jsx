@@ -8,6 +8,14 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
   CreditCard,
   Crown,
   CheckCircle2,
@@ -41,6 +49,7 @@ const BillingPage = () => {
   const [loading, setLoading] = useState(true);
   const [paymentLoading, setPaymentLoading] = useState(null); // 'STARTER' | 'PRO' | null
   const [billingCycle, setBillingCycle] = useState('monthly');
+  const [confirmPlan, setConfirmPlan] = useState(null);
 
   useEffect(() => {
     setHeader('Billing & Plans', 'Manage your subscription and payment history');
@@ -440,7 +449,8 @@ const BillingPage = () => {
             {/* ── Mobile: Full-width Compact Stacked Cards ── */}
             <div className="md:hidden space-y-4">
               {plans.map((plan) => {
-                const isCurrentPlan = currentPlan === plan.name;
+                const isSamePlan = currentPlan === plan.name;
+                const isCurrentActivePlan = isSamePlan && planData?.status !== 'TRIAL' && !user?.organization?.isExpired;
                 const isDowngrade = planOrder[plan.name] < planOrder[currentPlan];
                 const features = getFeatures(plan.name);
 
@@ -452,18 +462,18 @@ const BillingPage = () => {
                       "bg-secondary/30 border backdrop-blur-md",
                       plan.border,
                       plan.popular ? "ring-1 ring-primary/30 bg-secondary/50" : "",
-                      isCurrentPlan ? "ring-2 ring-primary/50" : ""
+                      isSamePlan ? "ring-2 ring-primary/50" : ""
                     )}
                   >
                     {/* Top badge */}
-                    {(plan.popular && !isCurrentPlan) && (
+                    {(plan.popular && !isSamePlan) && (
                       <div className="bg-primary text-white text-center py-1 text-[8px] font-bold tracking-[0.2em] uppercase">
                         MOST POPULAR
                       </div>
                     )}
-                    {isCurrentPlan && (
+                    {isSamePlan && (
                       <div className="bg-emerald-500 text-white text-center py-1 text-[8px] font-bold tracking-[0.2em] uppercase">
-                        CURRENT PLAN
+                        {isCurrentActivePlan ? 'CURRENT PLAN' : planData?.status === 'TRIAL' ? 'CURRENT TRIAL' : 'EXPIRED PLAN'}
                       </div>
                     )}
 
@@ -506,25 +516,27 @@ const BillingPage = () => {
                         size="sm"
                         className={cn(
                           "w-full rounded-lg py-2.5 font-bold text-[9px] tracking-widest uppercase gap-1.5",
-                          isCurrentPlan
+                          isCurrentActivePlan
                             ? "bg-secondary text-muted-foreground cursor-default"
                             : isDowngrade
                               ? "bg-secondary text-muted-foreground/50 cursor-not-allowed"
                               : plan.btnClass
                         )}
-                        disabled={isCurrentPlan || isDowngrade || paymentLoading !== null}
+                        disabled={isCurrentActivePlan || isDowngrade || paymentLoading !== null}
                         onClick={() => {
                           if (plan.name === 'ENTERPRISE') {
                             window.location.href = 'mailto:sales@sspl.com?subject=Enterprise Plan Inquiry';
                             return;
                           }
-                          handleUpgrade(plan.name);
+                          setConfirmPlan(plan);
                         }}
                       >
                         {paymentLoading === plan.name ? (
                           <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Processing...</>
-                        ) : isCurrentPlan ? (
+                        ) : isCurrentActivePlan ? (
                           'Current Plan'
+                        ) : isSamePlan && (planData?.status === 'TRIAL' || user?.organization?.isExpired) ? (
+                          <>Subscribe Now <ArrowUpRight className="w-3 h-3" /></>
                         ) : isDowngrade ? (
                           'Downgrade N/A'
                         ) : plan.name === 'ENTERPRISE' ? (
@@ -542,7 +554,8 @@ const BillingPage = () => {
             {/* ── Desktop: 3-Column Grid ── */}
             <div className="hidden md:grid md:grid-cols-3 gap-6">
               {plans.map((plan) => {
-                const isCurrentPlan = currentPlan === plan.name;
+                const isSamePlan = currentPlan === plan.name;
+                const isCurrentActivePlan = isSamePlan && planData?.status !== 'TRIAL' && !user?.organization?.isExpired;
                 const isDowngrade = planOrder[plan.name] < planOrder[currentPlan];
 
                 return (
@@ -553,17 +566,17 @@ const BillingPage = () => {
                       "bg-secondary/30 border backdrop-blur-md",
                       plan.border,
                       plan.popular ? "ring-1 ring-primary/30 shadow-2xl bg-secondary/50" : "",
-                      isCurrentPlan ? "ring-2 ring-primary/50 shadow-xl" : ""
+                      isSamePlan ? "ring-2 ring-primary/50 shadow-xl" : ""
                     )}
                   >
-                    {plan.popular && !isCurrentPlan && (
+                    {plan.popular && !isSamePlan && (
                       <div className="absolute top-0 left-1/2 translate-x-[-50%] translate-y-[-50%] bg-primary text-white px-4 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase shadow-lg">
                         MOST POPULAR
                       </div>
                     )}
-                    {isCurrentPlan && (
+                    {isSamePlan && (
                       <div className="absolute top-0 left-1/2 translate-x-[-50%] translate-y-[-50%] bg-emerald-500 text-white px-4 py-1 rounded-full text-[9px] font-bold tracking-widest uppercase shadow-lg">
-                        CURRENT PLAN
+                        {isCurrentActivePlan ? 'CURRENT PLAN' : planData?.status === 'TRIAL' ? 'CURRENT TRIAL' : 'EXPIRED PLAN'}
                       </div>
                     )}
 
@@ -604,25 +617,27 @@ const BillingPage = () => {
                     <Button
                       className={cn(
                         "w-full rounded-xl py-5 font-bold text-[10px] tracking-widest uppercase transition-all duration-300 gap-2",
-                        isCurrentPlan
+                        isCurrentActivePlan
                           ? "bg-secondary text-muted-foreground cursor-default"
                           : isDowngrade
                             ? "bg-secondary text-muted-foreground/50 cursor-not-allowed"
                             : plan.btnClass
                       )}
-                      disabled={isCurrentPlan || isDowngrade || paymentLoading !== null}
+                      disabled={isCurrentActivePlan || isDowngrade || paymentLoading !== null}
                       onClick={() => {
                         if (plan.name === 'ENTERPRISE') {
                           window.location.href = 'mailto:sales@sspl.com?subject=Enterprise Plan Inquiry';
                           return;
                         }
-                        handleUpgrade(plan.name);
+                        setConfirmPlan(plan);
                       }}
                     >
                       {paymentLoading === plan.name ? (
                         <><Loader2 className="w-4 h-4 animate-spin" /> Processing...</>
-                      ) : isCurrentPlan ? (
+                      ) : isCurrentActivePlan ? (
                         'Current Plan'
+                      ) : isSamePlan && (planData?.status === 'TRIAL' || user?.organization?.isExpired) ? (
+                        <>Subscribe Now <ArrowUpRight className="w-3.5 h-3.5" /></>
                       ) : isDowngrade ? (
                         'Downgrade N/A'
                       ) : plan.name === 'ENTERPRISE' ? (
@@ -722,6 +737,59 @@ const BillingPage = () => {
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={!!confirmPlan} onOpenChange={(open) => !open && setConfirmPlan(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Zap className="w-5 h-5 text-primary" /> Confirm Upgrade to {confirmPlan?.title}
+            </DialogTitle>
+            <DialogDescription className="text-sm">
+              You are about to upgrade your workspace to the <strong className="text-foreground uppercase tracking-wide">{confirmPlan?.title}</strong> plan on a <strong>{billingCycle}</strong> billing cycle.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="bg-secondary/30 rounded-xl p-4 my-4 space-y-3">
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-muted-foreground font-medium">Selected Plan</span>
+              <Badge className={cn("font-bold", confirmPlan?.badge)}>{confirmPlan?.title}</Badge>
+            </div>
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-muted-foreground font-medium">Billing Cycle</span>
+              <span className="font-bold capitalize">{billingCycle}</span>
+            </div>
+            <Separator className="bg-border/50" />
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-muted-foreground font-medium">Amount to Pay</span>
+              <span className="font-bold text-base text-foreground tracking-tight">
+                {confirmPlan?.name ? calculatePrice(confirmPlan.name) : ''}
+                <span className="text-xs text-muted-foreground ml-1">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
+              </span>
+            </div>
+            {billingCycle === 'annually' && (
+              <p className="text-[10px] text-emerald-500 font-medium flex items-center gap-1">
+                <Check className="w-3 h-3" /> You are saving by choosing the annual plan!
+              </p>
+            )}
+          </div>
+
+          <DialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-0 mt-2">
+            <Button variant="ghost" className="w-full sm:w-auto" onClick={() => setConfirmPlan(null)}>
+              Cancel
+            </Button>
+            <Button 
+              className="w-full sm:w-auto gap-2" 
+              onClick={() => {
+                const planName = confirmPlan.name;
+                setConfirmPlan(null);
+                handleUpgrade(planName);
+              }}
+            >
+              Proceed to Checkout <ArrowUpRight className="w-4 h-4" />
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

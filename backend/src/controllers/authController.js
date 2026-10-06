@@ -2,7 +2,7 @@ import prisma from '../lib/prisma.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import { sendMemberInvitationEmail, sendPasswordResetEmail, sendOrgSignupEmail, sendNewOrgSignupNotificationToSuperAdmin, sendCredentialsUpdatedEmail } from '../services/emailService.js';
+import { sendMemberInvitationEmail, sendPasswordResetEmail, sendOrgSignupEmail, sendNewOrgSignupNotificationToSuperAdmin, sendCredentialsUpdatedEmail, sendVerificationOTPEmail } from '../services/emailService.js';
 import { provisionTenantDatabase } from '../services/tenantProvisioner.js';
 import tenantDbManager from '../lib/tenantDbManager.js';
 import { getDefaultPermissions } from '../config/permissionDefaults.js';
@@ -307,11 +307,59 @@ export const checkOrg = async (req, res) => {
   }
 };
 
+// ── sendSignupOTP ───────────────────────────────────────────────────────────
+const otpStore = new Map();
+export const sendSignupOTP = async (req, res) => {
+  console.log('[sendSignupOTP] Endpoint hit! Request body:', req.body);
+  const { email, name } = req.body;
+  if (!email || !name) {
+    console.log('[sendSignupOTP] Failed: Missing email or name');
+    return res.status(400).json({ error: 'Email and name are required' });
+  }
+
+  try {
+    const existingUser = await prisma.user.findFirst({ where: { email } });
+    if (existingUser) {
+      console.log(`[sendSignupOTP] Failed: User already exists for email ${email}`);
+      return res.status(400).json({ error: 'You are already registered with this email.' });
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    otpStore.set(email.toLowerCase().trim(), { otp, expiry: Date.now() + 15 * 60 * 1000 });
+    
+    // Log OTP to console for development/debugging
+    console.log(`\n================================`);
+    console.log(`[DEBUG] OTP for ${email}: ${otp}`);
+    console.log(`================================\n`);
+
+    const info = await sendVerificationOTPEmail(email, name, otp);
+    if (!info) {
+      return res.status(500).json({ error: 'Failed to send OTP email due to server mail configuration.' });
+    }
+    res.json({ message: 'OTP sent successfully' });
+  } catch (err) {
+    console.error('[sendSignupOTP] Failed to send OTP:', err);
+    res.status(500).json({ error: 'Failed to send OTP email' });
+  }
+};
+
 // ── signup ─────────────────────────────────────────────────────────────────
 export const signup = async (req, res) => {
   console.log('[Signup] Request Body:', req.body);
-  const { name, email, password, organizationName, industry, size, website, country, timezone, role: requestedRole } = req.body;
+  const { name, email, password, organizationName, industry, size, website, country, timezone, role: requestedRole, otp } = req.body;
   const role = requestedRole || 'ADMIN';
+
+  if (role === 'ADMIN') {
+    if (!otp) return res.status(400).json({ error: 'Verification OTP is required.' });
+    const stored = otpStore.get(email.toLowerCase().trim());
+    if (!stored || stored.otp !== otp) {
+      return res.status(400).json({ error: 'Invalid OTP.' });
+    }
+    if (stored.expiry < Date.now()) {
+      return res.status(400).json({ error: 'OTP has expired.' });
+    }
+    otpStore.delete(email.toLowerCase().trim());
+  }
 
   if (!name || !email || !password || !organizationName) {
     return res.status(400).json({ error: 'Name, email, password, and organisation name are required' });

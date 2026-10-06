@@ -130,7 +130,7 @@ const SuperAdminUserList = () => {
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="group/back w-fit flex items-center gap-2 text-muted-foreground/60 hover:text-primary transition-all font-bold uppercase tracking-widest text-[9px] p-0 h-auto"
+                    className="group/back w-fit flex items-center gap-2 text-primary hover:text-primary transition-all font-bold uppercase tracking-widest text-xs p-0 h-auto"
                     onClick={() => setSelectedOrgId(null)}
                   >
                     <div className="p-1.5 rounded-full bg-secondary group-hover/back:bg-primary group-hover/back:text-primary-foreground transition-all duration-300">
@@ -147,9 +147,9 @@ const SuperAdminUserList = () => {
                       <h2 className="text-xl sm:text-3xl font-black tracking-tight text-foreground truncate block w-full">
                         {orgs.find(o => o.id === selectedOrgId)?.name || 'Organization Details'}
                       </h2>
-                      <div className="flex flex-wrap items-center gap-2 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-60 mt-0.5">
+                      <div className="flex flex-wrap items-center gap-2 text-[10px] sm:text-xs font-semibold uppercase tracking-widest text-muted-foreground mt-1">
                         <span className="flex items-center gap-1.5">
-                          <div className="w-1 h-1 rounded-full bg-primary" />
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary" />
                           Managed Workspace
                         </span>
                         <span className="hidden sm:inline">•</span>
@@ -161,7 +161,7 @@ const SuperAdminUserList = () => {
 
                 <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto mt-2 md:mt-0 pt-4 md:pt-0">
                   <div className="relative w-full sm:w-[240px]">
-                    <div className="absolute -top-5 sm:-top-6 left-1 text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">
+                    <div className="absolute -top-5 sm:-top-6 left-1 text-[10px] sm:text-xs font-bold uppercase tracking-widest text-foreground/70">
                       Filter by Access Role
                     </div>
                     <SearchableSelect
@@ -176,7 +176,7 @@ const SuperAdminUserList = () => {
                       ]}
                       placeholder="Show All Roles"
                       searchPlaceholder="Search role..."
-                      className="w-full h-11 rounded-xl bg-background/50 border-border/30 hover:border-primary/30 transition-all font-bold text-xs"
+                      className="w-full h-11 rounded-xl bg-background/50 border-border/30 hover:border-primary/30 transition-all font-semibold text-sm text-foreground"
                     />
                   </div>
                 </div>

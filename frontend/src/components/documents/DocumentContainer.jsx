@@ -20,10 +20,11 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
   ArrowLeft, Save, Loader2, Download, Check,
-  AlertCircle, ChevronDown, FileText, Table2,
+  AlertCircle, ChevronDown, FileText, Table2, ExternalLink,
 } from 'lucide-react';
 import api from '@/lib/api';
 import { formatDistanceToNow } from 'date-fns';
+import { getFileUrl, getPdfAttachment } from '@/lib/utils';
 
 const TiptapWordEditor = lazy(() => import('./editor/TiptapWordEditor'));
 const UniverSpreadsheetEditor = lazy(() => import('./editor/UniverSpreadsheetEditor'));
@@ -43,6 +44,8 @@ export default function DocumentContainer({ projectId, documentId, onBack, proje
   const saveTimeoutRef = useRef(null);
   const contentRef = useRef(content);
   const titleRef = useRef(title);
+  const initialContentRef = useRef('');
+  const initialTitleRef = useRef('');
   const isMountedRef = useRef(true);
 
   const [showExitDialog, setShowExitDialog] = useState(false);
@@ -72,18 +75,11 @@ export default function DocumentContainer({ projectId, documentId, onBack, proje
       setContent(res.data.content || '');
       contentRef.current = res.data.content || '';
       titleRef.current = res.data.title;
+      initialContentRef.current = res.data.content || '';
+      initialTitleRef.current = res.data.title;
       setLastSaved(new Date(res.data.updatedAt));
-      
-      const createdTime = new Date(res.data.createdAt).getTime();
-      const updatedTime = new Date(res.data.updatedAt).getTime();
-      
-      if (Math.abs(createdTime - updatedTime) < 1000) {
-        setHasUnsavedChanges(true);
-        setSaveStatus('unsaved');
-      } else {
-        setSaveStatus('saved');
-        setHasUnsavedChanges(false);
-      }
+      setSaveStatus('saved');
+      setHasUnsavedChanges(false);
     } catch (error) {
       console.error('Failed to fetch document:', error);
       toast({ title: 'Error', description: 'Failed to load document', variant: 'destructive' });
@@ -92,34 +88,76 @@ export default function DocumentContainer({ projectId, documentId, onBack, proje
     }
   };
 
-  const markUnsaved = useCallback(() => {
-    setHasUnsavedChanges(true);
-    setSaveStatus('unsaved');
-  }, []);
-
   const handleContentUpdate = useCallback((newContent) => {
     contentRef.current = newContent;
     setContent(newContent);
-    markUnsaved();
-  }, [markUnsaved]);
+    if (newContent !== initialContentRef.current) {
+      setHasUnsavedChanges(true);
+      setSaveStatus('unsaved');
+    } else if (titleRef.current === initialTitleRef.current) {
+      setHasUnsavedChanges(false);
+      setSaveStatus('saved');
+    }
+  }, []);
 
   const handleTitleChange = useCallback((e) => {
     const newTitle = e.target.value;
     titleRef.current = newTitle;
     setTitle(newTitle);
-    markUnsaved();
-  }, [markUnsaved]);
+    if (newTitle !== initialTitleRef.current) {
+      setHasUnsavedChanges(true);
+      setSaveStatus('unsaved');
+    } else if (contentRef.current === initialContentRef.current) {
+      setHasUnsavedChanges(false);
+      setSaveStatus('saved');
+    }
+  }, []);
 
-  // Manual save
+  const isDocumentBlank = () => {
+    const isPdf = !!getPdfAttachment(doc);
+    if (isPdf || doc?.type !== 'DOCUMENT') return false;
+    const currentContent = contentRef.current || '';
+    const stripped = currentContent.replace(/<[^>]*>?/gm, '').trim();
+    const hasMedia = /<img[^>]*>|<iframe[^>]*>|<table[^>]*>/i.test(currentContent);
+    return stripped.length === 0 && !hasMedia;
+  };
+
+  const deleteIfBlank = async () => {
+    const isInitiallyBlank = () => {
+      const currentContent = initialContentRef.current || '';
+      const stripped = currentContent.replace(/<[^>]*>?/gm, '').trim();
+      const hasMedia = /<img[^>]*>|<iframe[^>]*>|<table[^>]*>/i.test(currentContent);
+      return stripped.length === 0 && !hasMedia;
+    };
+
+    const isUntitled = initialTitleRef.current === 'Untitled Document' || initialTitleRef.current === 'Untitled Spreadsheet';
+
+    // If they hit back or discard, and the document in the database is still a blank untitled document, we delete it to avoid clutter
+    if (isInitiallyBlank() && isUntitled) {
+      try {
+        await api.delete(`/documents/${documentId}`);
+      } catch (error) {
+        console.error('Failed to delete blank document:', error);
+      }
+    }
+  };
+
   const handleManualSave = async () => {
     if (!documentId) return;
     
+    if (isDocumentBlank()) {
+      toast({ title: 'Validation Error', description: 'Cannot save a blank document. Please enter some content.', variant: 'destructive' });
+      return false;
+    }
+
     setSaveStatus('saving');
     try {
       await api.put(`/documents/${documentId}`, {
         title: titleRef.current,
         content: contentRef.current,
       });
+      initialTitleRef.current = titleRef.current;
+      initialContentRef.current = contentRef.current;
       setSaveStatus('saved');
       setHasUnsavedChanges(false);
       setLastSaved(new Date());
@@ -132,10 +170,11 @@ export default function DocumentContainer({ projectId, documentId, onBack, proje
     }
   };
 
-  const handleBackClick = () => {
+  const handleBackClick = async () => {
     if (hasUnsavedChanges) {
       setShowExitDialog(true);
     } else {
+      await deleteIfBlank();
       onBack();
     }
   };
@@ -149,17 +188,12 @@ export default function DocumentContainer({ projectId, documentId, onBack, proje
   };
 
   const handleDiscardExit = async () => {
-    // If it's a completely untouched new document, delete it so it doesn't clutter the list
-    if (doc && new Date(doc.createdAt).getTime() === new Date(doc.updatedAt).getTime()) {
-      try {
-        await api.delete(`/documents/${documentId}`);
-      } catch (e) {
-        console.error('Failed to cleanup new document', e);
-      }
-    }
     setShowExitDialog(false);
+    await deleteIfBlank();
     onBack();
   };
+
+
 
   // Export
   const handleExport = async (format) => {
@@ -223,7 +257,9 @@ export default function DocumentContainer({ projectId, documentId, onBack, proje
     );
   }
 
-  const isDocument = doc.type === 'DOCUMENT';
+  const pdfAttachment = getPdfAttachment(doc);
+  const isPdf = !!pdfAttachment;
+  const isDocument = doc.type === 'DOCUMENT' && !isPdf;
   const isSpreadsheet = doc.type === 'SPREADSHEET';
 
   return (
@@ -235,7 +271,9 @@ export default function DocumentContainer({ projectId, documentId, onBack, proje
         </Button>
 
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          {isDocument ? (
+          {isPdf ? (
+            <FileText className="w-4 h-4 text-red-600 shrink-0" />
+          ) : isDocument ? (
             <FileText className="w-4 h-4 text-blue-600 shrink-0" />
           ) : (
             <Table2 className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -257,30 +295,55 @@ export default function DocumentContainer({ projectId, documentId, onBack, proje
             </Button>
           )}
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8 rounded-lg gap-1" disabled={exporting}>
-                {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
-                <span className="hidden sm:inline text-xs">Export</span>
-                <ChevronDown className="w-3 h-3" />
+          {isPdf ? (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 rounded-lg text-xs gap-1.5"
+                onClick={() => window.open(getFileUrl(pdfAttachment.url), '_blank')}
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Open in Tab</span>
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {isDocument && (
-                <DropdownMenuItem onClick={() => handleExport('docx')}>
-                  Download as .docx
+              <Button
+                variant="default"
+                size="sm"
+                className="h-8 rounded-lg text-xs gap-1.5 bg-red-600 hover:bg-red-700 text-white font-medium"
+                asChild
+              >
+                <a href={getFileUrl(pdfAttachment.url)} download={pdfAttachment.name || `${title}.pdf`} target="_blank" rel="noopener noreferrer">
+                  <Download className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Download</span>
+                </a>
+              </Button>
+            </div>
+          ) : (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="h-8 rounded-lg gap-1" disabled={exporting}>
+                  {exporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+                  <span className="hidden sm:inline text-xs">Export</span>
+                  <ChevronDown className="w-3 h-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {isDocument && (
+                  <DropdownMenuItem onClick={() => handleExport('docx')}>
+                    Download as .docx
+                  </DropdownMenuItem>
+                )}
+                {isSpreadsheet && (
+                  <DropdownMenuItem onClick={() => handleExport('xlsx')}>
+                    Download as .xlsx
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={() => handleExport('json')}>
+                  Download as .json
                 </DropdownMenuItem>
-              )}
-              {isSpreadsheet && (
-                <DropdownMenuItem onClick={() => handleExport('xlsx')}>
-                  Download as .xlsx
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem onClick={() => handleExport('json')}>
-                Download as .json
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
 
           <Button variant="ghost" size="sm" onClick={handleManualSave} className="h-8 w-8 p-0 rounded-lg bg-primary/10 text-primary hover:bg-primary/20" title="Save">
             <Save className="w-4 h-4" />
@@ -288,27 +351,48 @@ export default function DocumentContainer({ projectId, documentId, onBack, proje
         </div>
       </div>
 
-      {/* Editor Area */}
-      <div className="flex-1 overflow-hidden">
-        <Suspense fallback={
-          <div className="flex items-center justify-center h-full">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      {/* Content Area */}
+      <div className="flex-1 overflow-hidden flex flex-col">
+        {isPdf ? (
+          <div className="flex-1 flex flex-col h-full bg-secondary/10 p-2 sm:p-4 overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-2 bg-card rounded-t-xl border border-border">
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-red-500" />
+                <span className="text-xs font-bold text-foreground truncate">{pdfAttachment.name || title}</span>
+              </div>
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-red-600 bg-red-500/10 px-2 py-0.5 rounded-full">
+                PDF Preview
+              </span>
+            </div>
+            <div className="flex-1 bg-card rounded-b-xl border border-t-0 border-border overflow-hidden shadow-sm relative min-h-[500px]">
+              <iframe
+                src={getFileUrl(pdfAttachment.url)}
+                className="w-full h-full min-h-[550px] border-none"
+                title={title}
+              />
+            </div>
           </div>
-        }>
-          {isDocument && (
-            <TiptapWordEditor
-              content={content}
-              onUpdate={handleContentUpdate}
-              editable={true}
-            />
-          )}
-          {isSpreadsheet && (
-            <UniverSpreadsheetEditor
-              content={content}
-              onUpdate={handleContentUpdate}
-            />
-          )}
-        </Suspense>
+        ) : (
+          <Suspense fallback={
+            <div className="flex items-center justify-center h-full">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          }>
+            {isDocument && (
+              <TiptapWordEditor
+                content={content}
+                onUpdate={handleContentUpdate}
+                editable={true}
+              />
+            )}
+            {isSpreadsheet && (
+              <UniverSpreadsheetEditor
+                content={content}
+                onUpdate={handleContentUpdate}
+              />
+            )}
+          </Suspense>
+        )}
       </div>
 
       <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>

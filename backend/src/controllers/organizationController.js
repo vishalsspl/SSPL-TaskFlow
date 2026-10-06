@@ -355,9 +355,22 @@ export const getOrgActivityLogs = async (req, res) => {
     const { organizationId } = req.user;
 
     try {
+        const isApprovedFilter = action && action.toUpperCase() === 'APPROVED';
+
         const where = {
             organizationId,
-            ...(action && { action: { contains: action, mode: 'insensitive' } }),
+            ...(isApprovedFilter ? {
+                OR: [
+                    { action: { contains: 'APPROVED', mode: 'insensitive' } },
+                    { 
+                        entity: 'task',
+                        details: {
+                            path: ['status'],
+                            equals: 'COMPLETED'
+                        }
+                    }
+                ]
+            } : (action ? { action: { contains: action, mode: 'insensitive' } } : {})),
             ...(entity && { entity: { contains: entity, mode: 'insensitive' } }),
             ...(search && {
                 OR: [

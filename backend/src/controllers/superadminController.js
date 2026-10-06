@@ -1,3 +1,5 @@
+import { sendPlanExpiryWarningEmail, sendPlanExpiredEmail } from '../services/emailService.js';
+import { createNotification } from '../utils/notifications.js';
 import prisma from '../lib/prisma.js';
 import bcrypt from 'bcryptjs';
 import { provisionTenantDatabase, dropTenantDatabase } from '../services/tenantProvisioner.js';
@@ -531,5 +533,62 @@ export const getGlobalAuditLogs = async (req, res) => {
     } catch (error) {
         console.error('Error fetching audit logs:', error);
         res.status(500).json({ error: 'Failed to fetch audit logs' });
+    }
+};
+
+
+export const remindExpiry = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const org = await req.db.organization.findUnique({
+            where: { id },
+            include: { users: { where: { role: 'ADMIN' } } }
+        });
+
+        if (!org) {
+            return res.status(404).json({ error: 'Organization not found' });
+        }
+
+        const endDate = org.currentPeriodEnd || org.trialEndsAt;
+        const diff = endDate ? new Date(endDate) - new Date() : null;
+        
+        let isExpired = false;
+        let daysLeft = 0;
+        
+        if (diff !== null) {
+            if (diff < 0) {
+                isExpired = true;
+            } else {
+                daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
+            }
+        } else {
+            return res.status(400).json({ error: 'Organization has no end date' });
+        }
+
+        const title = isExpired ? 'Plan Expired' : 'Plan Expiring Soon';
+        const message = isExpired 
+            ? 'Your plan has ended. Please renew it immediately, otherwise your account will be suspended.'
+            : `Your plan is expiring within ${daysLeft} days. Please renew it to prevent account suspension.`;
+
+        for (const admin of org.users) {
+            if (isExpired) {
+                await sendPlanExpiredEmail(admin.email, admin.name, org.name, 'Account limits restricted');
+            } else {
+                await sendPlanExpiryWarningEmail(admin.email, admin.name, org.name, daysLeft);
+            }
+            
+            await createNotification(req, {
+                userId: admin.id,
+                title,
+                message,
+                type: 'SYSTEM',
+                link: '/admin/billing'
+            });
+        }
+
+        res.json({ message: 'Reminder sent successfully' });
+    } catch (error) {
+        console.error('Error sending reminder:', error);
+        res.status(500).json({ error: 'Failed to send reminder' });
     }
 };

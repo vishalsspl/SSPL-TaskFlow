@@ -937,3 +937,87 @@ export const sendNewOrgSignupNotificationToSuperAdmin = async (superAdminEmail, 
     return null;
   }
 };
+
+export const sendVerificationOTPEmail = async (to, userName, otp) => {
+  try {
+    if (!to) return null;
+    const info = await transporter.sendMail({
+      from: DEFAULT_FROM, to,
+      subject: '[TaskFlow] Registration Code',
+      html: buildEmailTemplate({
+        actionSummary: `Your registration code for TaskFlow.`,
+        refLabel: 'TaskFlow / Account',
+        refTitle: 'Complete Your Registration',
+        bodyLines: [
+          `Hello ${userName},`,
+          `Thank you for starting your registration. Please enter the following 6-digit code to complete the setup process.`
+        ],
+        fields: [
+          { label: 'Security Code', value: `<span style="font-size:18px;font-weight:bold;color:#48A111;">${otp}</span>` }
+        ],
+        footerNote: 'This code is valid for 15 minutes.'
+      }),
+    });
+    console.log(`[EmailService] OTP Email sent to ${to}: ${info.messageId}`);
+    return info;
+  } catch (error) {
+    console.error(`[EmailService] Error sending OTP email to ${to}:`, error);
+    return null;
+  }
+};
+
+export const sendPlanExpiryWarningEmail = async (to, adminName, orgName, daysLeft) => {
+  try {
+    if (!to) return null;
+    const info = await transporter.sendMail({
+      from: DEFAULT_FROM, to,
+      subject: `[TaskFlow] Action Required: Plan expiring in ${daysLeft} days`,
+      html: buildEmailTemplate({
+        actionSummary: `Your TaskFlow plan is expiring soon.`,
+        refLabel: 'TaskFlow / Billing',
+        refTitle: orgName,
+        bodyLines: [
+          `Hello ${adminName},`,
+          `Your organization's paid plan will expire in <strong>${daysLeft} days</strong>.`,
+          `Please renew your subscription to avoid service interruption or automatic downgrade to the FREE plan.`
+        ],
+        ctaUrl: `http://localhost:5173/admin/billing`,
+        ctaLabel: 'Manage Billing'
+      }),
+    });
+    console.log(`[EmailService] Expiry Warning Email sent to ${to}: ${info.messageId}`);
+    return info;
+  } catch (error) {
+    console.error(`[EmailService] Error sending expiry warning email to ${to}:`, error);
+    return null;
+  }
+};
+
+export const sendPlanExpiredEmail = async (to, adminName, orgName, actionTaken) => {
+  try {
+    if (!to) return null;
+    const info = await transporter.sendMail({
+      from: DEFAULT_FROM, to,
+      subject: `[TaskFlow] Important: Your plan has expired`,
+      html: buildEmailTemplate({
+        actionSummary: `Your TaskFlow plan has expired.`,
+        refLabel: 'TaskFlow / Billing',
+        refTitle: orgName,
+        bodyLines: [
+          `Hello ${adminName},`,
+          `Your organization's paid plan has expired.`,
+          `Action taken by system: <strong>${actionTaken}</strong>.`,
+          `Please renew your subscription to restore your premium features.`
+        ],
+        ctaUrl: `http://localhost:5173/admin/billing`,
+        ctaLabel: 'Manage Billing'
+      }),
+    });
+    console.log(`[EmailService] Plan Expired Email sent to ${to}: ${info.messageId}`);
+    return info;
+  } catch (error) {
+    console.error(`[EmailService] Error sending plan expired email to ${to}:`, error);
+    return null;
+  }
+};
+

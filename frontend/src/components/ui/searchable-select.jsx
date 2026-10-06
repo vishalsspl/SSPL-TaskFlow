@@ -45,7 +45,7 @@ export function SearchableSelect({
                     variant="outline"
                     role="combobox"
                     aria-expanded={open}
-                    className={cn("w-full justify-between font-normal min-h-10 h-auto py-2", !value && "text-muted-foreground/50", className)}
+                    className={cn("w-full justify-between font-normal min-h-10 h-auto py-2 px-2.5 text-xs", !value && "text-muted-foreground/50", className)}
                     style={style}
                     disabled={disabled}
                     {...props}
@@ -75,7 +75,7 @@ export function SearchableSelect({
                                         onChange(option.value)
                                         setOpen(false)
                                     }}
-                                    className="flex items-center gap-2"
+                                    className="flex items-center gap-2 text-xs"
                                 >
                                     <Check
                                         className={cn(

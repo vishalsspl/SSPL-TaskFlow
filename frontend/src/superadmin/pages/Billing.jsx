@@ -210,16 +210,34 @@ const SuperAdminBilling = () => {
                       <p className="text-[10px] font-black mt-0.5">{format(new Date(invoice.createdAt), 'MMM dd, yyyy')}</p>
                     </div>
                     {invoice.status === 'PAID' && invoice.organization?.currentPeriodEnd && (
-                      <div>
-                        <p className="text-[9px] font-black uppercase tracking-widest text-emerald-500/80">Plan Expires</p>
-                        <p className="text-[10px] font-black text-emerald-500 mt-0.5">{format(new Date(invoice.organization.currentPeriodEnd), 'MMM dd, yyyy')}</p>
-                      </div>
+                      new Date(invoice.organization.currentPeriodEnd) < new Date()
+                      ? (
+                        <div>
+                          <p className="text-[9px] font-black uppercase tracking-widest text-rose-500">Expired</p>
+                          <p className="text-[10px] font-black text-rose-500 mt-0.5">{format(new Date(invoice.organization.currentPeriodEnd), 'MMM dd, yyyy')}</p>
+                        </div>
+                      )
+                      : (
+                        <div>
+                          <p className="text-[9px] font-black uppercase tracking-widest text-emerald-500/80">Plan Expires</p>
+                          <p className="text-[10px] font-black text-emerald-500 mt-0.5">{format(new Date(invoice.organization.currentPeriodEnd), 'MMM dd, yyyy')}</p>
+                        </div>
+                      )
                     )}
                     {invoice.status === 'PENDING' && invoice.dueDate && (
-                      <div>
-                        <p className="text-[9px] font-black uppercase tracking-widest text-rose-500/80">Due Date</p>
-                        <p className="text-[10px] font-black text-rose-500 mt-0.5">{format(new Date(invoice.dueDate), 'MMM dd')}</p>
-                      </div>
+                      new Date(invoice.dueDate) < new Date()
+                      ? (
+                        <div>
+                          <p className="text-[9px] font-black uppercase tracking-widest text-rose-500">Overdue Date</p>
+                          <p className="text-[10px] font-black text-rose-500 mt-0.5">{format(new Date(invoice.dueDate), 'MMM dd')}</p>
+                        </div>
+                      )
+                      : (
+                        <div>
+                          <p className="text-[9px] font-black uppercase tracking-widest text-rose-500/80">Due Date</p>
+                          <p className="text-[10px] font-black text-rose-500 mt-0.5">{format(new Date(invoice.dueDate), 'MMM dd')}</p>
+                        </div>
+                      )
                     )}
                   </div>
                   <div className="flex justify-end gap-2 pt-3 border-t border-border/10">
@@ -237,7 +255,7 @@ const SuperAdminBilling = () => {
             )}
           </div>
 
-          <div className="hidden sm:block overflow-x-auto">
+          <div className="hidden sm:block overflow-x-auto [&>div]:!border-x-0 [&>div]:!border-b-0 [&>div]:!rounded-none [&>div]:!border-border/40">
             <Table>
               <TableHeader>
                 <TableRow className="border-border/60 hover:bg-transparent bg-muted/30">
@@ -295,10 +313,14 @@ const SuperAdminBilling = () => {
                         <div className="flex flex-col items-center gap-0.5">
                           <span className="text-[10px] font-black text-foreground uppercase tracking-wider">{format(new Date(invoice.createdAt), 'MMM dd, yyyy')}</span>
                           {invoice.status === 'PAID' && invoice.organization?.currentPeriodEnd && (
-                            <span className="text-[9px] text-emerald-500/80 font-bold uppercase tracking-[0.1em] mt-0.5">Plan Expires: {format(new Date(invoice.organization.currentPeriodEnd), 'MMM dd, yyyy')}</span>
+                            new Date(invoice.organization.currentPeriodEnd) < new Date() 
+                            ? <span className="text-[9px] text-rose-500 font-bold uppercase tracking-[0.1em] mt-0.5">Expired: {format(new Date(invoice.organization.currentPeriodEnd), 'MMM dd, yyyy')}</span>
+                            : <span className="text-[9px] text-emerald-500/80 font-bold uppercase tracking-[0.1em] mt-0.5">Plan Expires: {format(new Date(invoice.organization.currentPeriodEnd), 'MMM dd, yyyy')}</span>
                           )}
                           {invoice.status === 'PENDING' && invoice.dueDate && (
-                            <span className="text-[9px] text-rose-500/80 font-bold uppercase tracking-[0.1em] mt-0.5">Due: {format(new Date(invoice.dueDate), 'MMM dd')}</span>
+                            new Date(invoice.dueDate) < new Date()
+                            ? <span className="text-[9px] text-rose-500 font-bold uppercase tracking-[0.1em] mt-0.5">Overdue: {format(new Date(invoice.dueDate), 'MMM dd')}</span>
+                            : <span className="text-[9px] text-rose-500/80 font-bold uppercase tracking-[0.1em] mt-0.5">Due: {format(new Date(invoice.dueDate), 'MMM dd')}</span>
                           )}
                         </div>
                       </TableCell>

@@ -139,7 +139,7 @@ const ActivityLog = () => {
     const actUpper = act.toUpperCase();
     if (actUpper.includes('DELETE') || actUpper.includes('SUSPEND') || actUpper.includes('REMOVED')) return 'CRITICAL';
     if (actUpper.includes('SECURITY') || actUpper.includes('RESET') || actUpper.includes('WARNING')) return 'WARNING';
-    if (actUpper.includes('BACKUP') || actUpper.includes('CREATED') || actUpper.includes('ADDED') || actUpper === 'SUCCESS' || actUpper.includes('LOGGED')) return 'SUCCESS';
+    if (actUpper.includes('BACKUP') || actUpper.includes('CREATED') || actUpper.includes('ADDED') || actUpper === 'SUCCESS' || actUpper.includes('LOGGED') || actUpper.includes('APPROVE')) return 'SUCCESS';
     return 'INFO';
   };
 

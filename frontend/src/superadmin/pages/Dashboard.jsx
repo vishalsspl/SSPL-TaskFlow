@@ -12,6 +12,13 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   ShieldAlert,
+  Plus,
+  UsersRound,
+  Settings,
+  Server,
+  Database,
+  Cpu,
+  RefreshCw
 } from 'lucide-react';
 import api from '@/lib/api';
 
@@ -35,7 +42,6 @@ const SuperAdminDashboard = () => {
       setStats(res.data.stats);
       setRecentOrgs(res.data.recentOrgs || []);
     } catch {
-      // fallback: build from org list
       try {
         const r = await api.get('/superadmin/orgs');
         const list = r.data.data || r.data || [];
@@ -54,186 +60,250 @@ const SuperAdminDashboard = () => {
     }
   };
 
-  const MetricCard = ({ title, value, subtext, icon: Icon, trend, colorClass }) => {
-    const textColor = colorClass.replace('bg-', 'text-');
-    const bgLight = colorClass + '/10';
-    return (
-      <Card className="overflow-hidden border-border/40 shadow-xl hover:shadow-primary/10 transition-all duration-500 bg-white/40 dark:bg-[#0A0A0A]/60 backdrop-blur-2xl rounded-2xl sm:rounded-[2rem] group">
-        <CardContent className="p-4 sm:p-6 flex flex-col justify-between h-full">
-          <div className="flex items-start justify-between mb-1 sm:mb-0">
-            <p className="text-[9px] sm:text-[10px] font-bold text-muted-foreground tracking-widest mt-1">{title}</p>
-            <div className={`w-8 h-8 sm:w-14 sm:h-14 rounded-lg sm:rounded-2xl ${bgLight} flex items-center justify-center group-hover:scale-110 transition-transform duration-500 shrink-0 ml-2`}>
-              <Icon className={`w-4 h-4 sm:w-7 sm:h-7 ${textColor}`} />
-            </div>
-          </div>
-          <div className="space-y-1 sm:space-y-2 mt-2 sm:mt-0">
-            <div className="flex items-baseline gap-2">
-              <h3 className="text-xl sm:text-3xl font-bold ">
-                {loading ? (
-                  <div className="h-6 sm:h-8 w-12 sm:w-16 bg-muted animate-pulse rounded-lg" />
-                ) : (value ?? '—')}
-              </h3>
-              {trend !== undefined && !loading && (
-                <div className={`flex items-center text-[8px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full ${trend > 0 ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
-                  {trend > 0 ? <ArrowUpRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5" /> : <ArrowDownRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-0.5" />}
-                  {Math.abs(trend)}%
-                </div>
-              )}
-            </div>
-            <p className="hidden sm:block text-[9px] text-muted-foreground font-bold opacity-60 line-clamp-1">{subtext}</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  };
-
   const getPlanColor = (plan) => {
-    switch (plan) {
-      case 'PRO': return 'bg-indigo-500/20 text-indigo-400 border-indigo-500/30';
-      case 'STARTER': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-      case 'ENTERPRISE': return 'bg-amber-500/20 text-amber-400 border-amber-500/30';
-      default: return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
+    switch (plan?.toUpperCase()) {
+      case 'ENTERPRISE': return 'bg-purple-100 text-purple-700 border-purple-300';
+      case 'PRO': return 'bg-blue-100 text-blue-700 border-blue-300';
+      case 'FREE':
+      default: return 'bg-gray-100 text-gray-700 border-gray-300';
     }
   };
 
+  const getStatusColor = (status) => {
+    switch (status?.toUpperCase()) {
+      case 'ACTIVE': return 'bg-[#48A111]/10 text-[#48A111] border-[#48A111]/30';
+      case 'TRIAL': return 'bg-amber-100 text-amber-700 border-amber-300';
+      case 'SUSPENDED': return 'bg-red-100 text-red-700 border-red-300';
+      default: return 'bg-slate-100 text-slate-700 border-slate-300';
+    }
+  };
+
+  const currentDate = new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  });
+
+  const isLoading = loading || !stats;
+
   return (
-    <div className="space-y-4 sm:space-y-8 pb-10">
-      {/* Metrics Row */}
-      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+    <div className="flex-1 space-y-8 p-4 md:p-8 pt-6 min-h-full animate-in fade-in duration-500">
+      
+      {/* Welcome Banner */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-card p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-border/40 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-[#48A111]/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
+        <div className="relative z-10">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-foreground">Good morning, Superadmin!</h1>
+          <p className="text-slate-500 dark:text-muted-foreground mt-1">{currentDate} • Your platform is running smoothly.</p>
+        </div>
+        <div className="flex items-center gap-3 relative z-10">
+          <Button onClick={() => navigate('/superadmin/orgs/new')} className="bg-[#48A111] hover:bg-[#3d8c0e] text-white shadow-md hover:shadow-lg transition-all">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Organization
+          </Button>
+          <Button variant="outline" size="icon" onClick={fetchData} className="border-slate-200 dark:border-border/40 text-slate-600 dark:text-muted-foreground hover:text-[#48A111] hover:border-[#48A111]/30 hover:bg-[#48A111]/5">
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          </Button>
+        </div>
+      </div>
+
+      {/* Quick Actions Row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="hover:shadow-md transition-all cursor-pointer border-slate-200 dark:border-border/40 hover:border-[#48A111]/50 group" onClick={() => navigate('/superadmin/orgs')}>
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="h-10 w-10 rounded-full bg-[#48A111]/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Building2 className="h-5 w-5 text-[#48A111]" />
+            </div>
+            <div>
+              <p className="font-semibold text-slate-800 dark:text-foreground">Manage Organizations</p>
+              <p className="text-xs text-slate-500 dark:text-muted-foreground">View and edit org details</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="hover:shadow-md transition-all cursor-pointer border-slate-200 dark:border-border/40 hover:border-blue-500/50 group" onClick={() => navigate('/superadmin/users')}>
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <UsersRound className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div>
+              <p className="font-semibold text-slate-800 dark:text-foreground">Global Users</p>
+              <p className="text-xs text-slate-500 dark:text-muted-foreground">Monitor user activity</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="hover:shadow-md transition-all cursor-pointer border-slate-200 dark:border-border/40 hover:border-purple-500/50 group" onClick={() => navigate('/superadmin/settings')}>
+          <CardContent className="p-4 flex items-center gap-4">
+            <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Settings className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+            </div>
+            <div>
+              <p className="font-semibold text-slate-800 dark:text-foreground">Platform Settings</p>
+              <p className="text-xs text-slate-500 dark:text-muted-foreground">Configure global limits</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Metric Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
           title="Organizations"
-          value={stats?.totalOrgs}
-          subtext={`${stats?.activeOrgs ?? 0} active, ${stats?.trialOrgs ?? 0} on trial`}
+          value={stats?.totalOrgs || 0}
+          subtitle={<span className="text-[#48A111] flex items-center text-xs mt-1"><ArrowUpRight className="h-3 w-3 mr-1"/> {stats?.activeOrgs || 0} Active</span>}
           icon={Building2}
-          trend={12}
-          colorClass="bg-primary"
+          loading={isLoading}
+          gradient="from-[#48A111]/20 to-transparent"
+          iconColor="text-[#48A111]"
+          iconBg="bg-[#48A111]/10"
         />
         <MetricCard
           title="Total Users"
-          value={stats?.totalUsers}
-          subtext="All users across every organization"
+          value={stats?.totalUsers || 0}
+          subtitle={<span className="text-slate-500 text-xs mt-1">Across all organizations</span>}
           icon={Users}
-          trend={8}
-          colorClass="bg-indigo-500"
+          loading={isLoading}
+          gradient="from-blue-500/20 to-transparent"
+          iconColor="text-blue-500"
+          iconBg="bg-blue-100"
         />
         <MetricCard
           title="Suspended"
-          value={stats?.suspendedOrgs}
-          subtext="Organizations currently blocked"
+          value={stats?.suspendedOrgs || 0}
+          subtitle={<span className="text-red-500 flex items-center text-xs mt-1"><ArrowDownRight className="h-3 w-3 mr-1"/> Needs attention</span>}
           icon={ShieldAlert}
-          colorClass="bg-red-500"
+          loading={isLoading}
+          gradient="from-red-500/20 to-transparent"
+          iconColor="text-red-500"
+          iconBg="bg-red-100"
         />
         <MetricCard
           title="Uptime"
           value="99.9%"
-          subtext="All systems operational"
-          icon={Globe}
-          colorClass="bg-emerald-500"
+          subtitle={<span className="text-[#48A111] flex items-center text-xs mt-1">All systems normal</span>}
+          icon={Activity}
+          loading={isLoading}
+          gradient="from-emerald-500/20 to-transparent"
+          iconColor="text-emerald-500"
+          iconBg="bg-emerald-100"
         />
       </div>
 
-      <div className="grid gap-4 sm:gap-6 grid-cols-1 lg:grid-cols-7">
-        {/* System Health */}
-        <Card className="lg:col-span-4 border-border/40 shadow-2xl bg-white/40 dark:bg-[#0A0A0A]/60 backdrop-blur-3xl rounded-3xl sm:rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="flex flex-row items-start sm:items-center justify-between border-b border-border/10 pb-4 sm:pb-6 px-5 sm:px-8 pt-5 sm:pt-8 gap-4">
-            <div className="space-y-0.5 sm:space-y-1">
-              <CardTitle className="text-xs sm:text-sm font-bold tracking-widest text-foreground">System Status</CardTitle>
-              <CardDescription className="text-[9px] sm:text-[10px] font-bold text-muted-foreground opacity-60">Current health of all services</CardDescription>
-            </div>
-            <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 bg-green-500/10 rounded-full border border-green-500/20">
-              <div className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-[8px] sm:text-[9px] font-bold text-green-500 uppercase tracking-wider">All Good</span>
+      {/* Two Column Layout for the rest */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        {/* Recent Organizations Section */}
+        <Card className="lg:col-span-8 shadow-sm border-slate-200 dark:border-border/40 overflow-hidden flex flex-col">
+          <CardHeader className="bg-white dark:bg-card border-b border-slate-100 dark:border-border/20 pb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg text-slate-800 dark:text-foreground">Recent Organizations</CardTitle>
+                <CardDescription>Latest organizations added to the platform</CardDescription>
+              </div>
+              <Button variant="ghost" className="text-[#48A111] hover:bg-[#48A111]/10 hover:text-[#48A111]" onClick={() => navigate('/superadmin/orgs')}>
+                View All
+              </Button>
             </div>
           </CardHeader>
-          <CardContent className="px-5 sm:px-8 py-5 sm:py-6">
-            <div className="space-y-5 sm:space-y-8">
-              {[
-                { name: 'Main Server', status: 'Running', latency: '42ms', load: 12 },
-                { name: 'Database', status: 'Running', latency: '5ms', load: 8 },
-                { name: 'Cache System', status: 'Running', latency: '1ms', load: 4 },
-                { name: 'File Storage', status: 'Running', latency: '110ms', load: 24 },
-              ].map((service) => (
-                <div key={service.name} className="flex items-center justify-between gap-2 sm:gap-4 group">
-                  <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-primary/5 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors">
-                      <Globe className="w-4 h-4 sm:w-5 sm:h-5 text-primary/60 group-hover:text-primary transition-colors" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-[10px] sm:text-xs font-bold text-foreground truncate">{service.name}</p>
-                      <p className="text-[8px] sm:text-[9px] text-primary font-bold tracking-widest opacity-80">{service.status}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 sm:gap-6 sm:text-right shrink-0">
-                    <div className="hidden sm:block">
-                      <p className="text-xs font-bold text-foreground font-mono">{service.latency}</p>
-                      <p className="text-[8px] text-muted-foreground font-bold ">Latency</p>
-                    </div>
-                    <div className="w-[60px] sm:w-[120px]">
-                      <div className="flex justify-end mb-1">
-                        <span className="text-[8px] sm:text-[9px] font-bold text-foreground font-mono">{service.load}%</span>
+          <CardContent className="p-0 flex-1">
+            {isLoading ? (
+              <div className="p-8 text-center text-slate-500 dark:text-muted-foreground">Loading organizations...</div>
+            ) : recentOrgs.length === 0 ? (
+              <div className="p-8 text-center text-slate-500 dark:text-muted-foreground">No organizations found.</div>
+            ) : (
+              <div className="divide-y divide-slate-100 dark:divide-border/20">
+                {recentOrgs.map((org, i) => (
+                  <div key={org.id || i} className="p-4 hover:bg-slate-50 dark:hover:bg-secondary/20 transition-colors flex items-center justify-between group relative overflow-hidden">
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#48A111] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="flex items-center gap-4">
+                      <div className="h-10 w-10 rounded-lg bg-slate-100 dark:bg-secondary/40 border border-slate-200 dark:border-border/40 flex items-center justify-center text-slate-400 dark:text-muted-foreground group-hover:bg-[#48A111]/5 group-hover:text-[#48A111] transition-colors">
+                        <Building2 className="h-5 w-5" />
                       </div>
-                      <div className="w-full h-1 sm:h-1.5 bg-border/10 rounded-full overflow-hidden">
-                        <div className="h-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.5)]" style={{ width: `${service.load}%` }} />
+                      <div>
+                        <p className="font-semibold text-slate-900 dark:text-foreground">{org.name}</p>
+                        <div className="flex items-center text-xs text-slate-500 dark:text-muted-foreground mt-0.5">
+                          <Globe className="h-3 w-3 mr-1" />
+                          {org.industry || 'General'} · {org.createdAt ? new Date(org.createdAt).toLocaleDateString() : '—'}
+                        </div>
                       </div>
                     </div>
+                    <div className="flex items-center gap-3">
+                      <Badge variant="outline" className={`font-medium shadow-sm ${getPlanColor(org.plan)}`}>
+                        {org.plan || 'FREE'}
+                      </Badge>
+                      <Badge variant="outline" className={`font-medium shadow-sm ${getStatusColor(org.status)}`}>
+                        {org.status || 'ACTIVE'}
+                      </Badge>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        {/* Recent Orgs */}
-        <Card className="lg:col-span-3 border-border/40 shadow-2xl bg-white/40 dark:bg-[#0A0A0A]/60 backdrop-blur-3xl rounded-3xl sm:rounded-[2.5rem] overflow-hidden">
-          <CardHeader className="border-b border-border/10 pb-4 sm:pb-6 px-5 sm:px-8 pt-5 sm:pt-8">
-            <CardTitle className="text-xs sm:text-sm font-bold tracking-widest text-foreground uppercase">Recent Organizations</CardTitle>
-            <CardDescription className="text-[9px] sm:text-[10px] font-bold text-muted-foreground opacity-60">Recently added organizations</CardDescription>
+        {/* System Status Section */}
+        <Card className="lg:col-span-4 shadow-sm border-slate-200 dark:border-border/40 overflow-hidden">
+          <CardHeader className="bg-white dark:bg-card border-b border-slate-100 dark:border-border/20 pb-4">
+            <CardTitle className="text-lg text-slate-800 dark:text-foreground">System Status</CardTitle>
+            <CardDescription>Platform services health</CardDescription>
           </CardHeader>
-          <CardContent className="px-5 sm:px-8 py-5 sm:py-6">
-            <div className="space-y-4 sm:space-y-6">
-              {loading ? (
-                <div className="space-y-4">
-                  {[1, 2, 3, 4].map(i => (
-                    <div key={i} className="flex items-center gap-4 animate-pulse">
-                      <div className="w-10 h-10 rounded-xl bg-muted" />
-                      <div className="flex-1 space-y-2">
-                        <div className="h-3 bg-muted rounded w-1/2" />
-                        <div className="h-2 bg-muted rounded w-1/3" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : recentOrgs.length === 0 ? (
-                <p className="text-[10px] font-bold text-muted-foreground text-center py-10 opacity-40">No organizations found</p>
-              ) : recentOrgs.map((org) => (
-                <div key={org.id} className="flex items-center gap-4 group">
-                  <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center shrink-0 group-hover:bg-primary/10 transition-colors border border-primary/5">
-                    <Building2 className="w-5 h-5 text-primary/60 group-hover:text-primary transition-colors" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold text-foreground truncate tracking-widest">{org.name}</p>
-                    <p className="text-[9px] text-muted-foreground font-bold opacity-60 truncate">
-                      {org.industry || 'General'} · {org.createdAt ? new Date(org.createdAt).toLocaleDateString() : '—'}
-                    </p>
-                  </div>
-                  <Badge variant="outline" className={`text-[8px] font-bold border ${getPlanColor(org.plan)} px-2 py-0.5 rounded-md shrink-0`}>
-                    {org.plan}
-                  </Badge>
-                </div>
-              ))}
-            </div>
-            <Button
-              variant="outline"
-              className="w-full mt-6 sm:mt-10 rounded-xl sm:rounded-2xl border-primary/20 bg-primary/5 text-[9px] sm:text-[10px] font-bold tracking-widest text-primary hover:bg-primary hover:text-white transition-all duration-500 h-12 sm:h-14 shadow-lg hover:shadow-primary/30"
-              onClick={() => navigate('/superadmin/orgs')}
-            >
-              View All Organizations <ArrowUpRight className="ml-2 w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            </Button>
+          <CardContent className="p-5 space-y-4">
+            <StatusRow name="API Gateway" status="Operational" icon={Server} ping="12ms" />
+            <StatusRow name="Database Cluster" status="Operational" icon={Database} ping="45ms" />
+            <StatusRow name="Storage Service" status="Operational" icon={Database} ping="18ms" />
+            <StatusRow name="Background Workers" status="High Load" icon={Cpu} ping="85ms" warning />
           </CardContent>
         </Card>
+
       </div>
     </div>
   );
 };
+
+const MetricCard = ({ title, value, subtitle, icon: Icon, loading, gradient, iconColor, iconBg }) => (
+  <Card className="relative overflow-hidden group hover:shadow-md transition-all duration-300 border-slate-200 dark:border-border/40 hover:border-slate-300 dark:hover:border-border/60">
+    <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${gradient} rounded-full blur-3xl -mr-16 -mt-16 opacity-50 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`}></div>
+    <CardContent className="p-6">
+      <div className="flex justify-between items-start">
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-slate-500 dark:text-muted-foreground">{title}</p>
+          <div className="flex items-baseline gap-2">
+            {loading ? (
+              <div className="h-8 w-16 bg-slate-200 dark:bg-muted animate-pulse rounded" />
+            ) : (
+              <h3 className="text-3xl font-bold tracking-tight text-slate-800 dark:text-foreground">{value}</h3>
+            )}
+          </div>
+          <div>{subtitle}</div>
+        </div>
+        <div className={`p-3 rounded-xl shadow-sm ${iconBg} dark:bg-opacity-20 group-hover:scale-110 transition-transform duration-300`}>
+          <Icon className={`h-6 w-6 ${iconColor}`} />
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+);
+
+const StatusRow = ({ name, status, icon: Icon, ping, warning }) => (
+  <div className="bg-white dark:bg-card p-3 rounded-xl border border-slate-200 dark:border-border/40 shadow-sm flex items-center justify-between">
+    <div className="flex items-center gap-3">
+      <div className={`p-2 rounded-lg ${warning ? 'bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-emerald-100 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'}`}>
+        <Icon className="h-4 w-4" />
+      </div>
+      <div>
+        <p className="text-sm font-medium text-slate-800 dark:text-foreground">{name}</p>
+        <p className={`text-xs ${warning ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>{status}</p>
+      </div>
+    </div>
+    <div className="flex items-center gap-2">
+      <span className="text-xs text-slate-400 dark:text-muted-foreground font-mono">{ping}</span>
+      <span className="relative flex h-2.5 w-2.5">
+        {!warning && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>}
+        <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${warning ? 'bg-amber-500' : 'bg-emerald-500'}`}></span>
+      </span>
+    </div>
+  </div>
+);
 
 export default SuperAdminDashboard;

@@ -8,7 +8,8 @@ import {
     getGlobalUsers,
     forceResetPassword,
     deleteGlobalUser,
-    getGlobalAuditLogs
+    getGlobalAuditLogs,
+    remindExpiry
 } from '../controllers/superadminController.js';
 import {
     getSuperAdminNotifications,
@@ -29,6 +30,7 @@ router.get('/orgs', getOrganizations);
 router.post('/orgs', createOrganization);
 router.put('/orgs/:id', updateOrganization);
 router.patch('/orgs/:id/status', updateOrganizationStatus);
+router.post('/organizations/:id/remind-expiry', remindExpiry);
 
 router.get('/users', getGlobalUsers);
 router.post('/users/:id/force-reset', forceResetPassword);

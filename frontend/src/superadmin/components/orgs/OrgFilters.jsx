@@ -7,7 +7,7 @@ import {
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { cn } from '@/lib/utils';
 
-const selectCls = 'h-11 rounded-xl border border-border/40 bg-background text-xs font-medium px-4 text-muted-foreground focus:ring-2 focus:ring-primary/20 transition-all outline-none appearance-none pr-10 cursor-pointer';
+const selectCls = 'h-11 rounded-xl border border-border/40 bg-background text-xs font-semibold px-4 text-foreground focus:ring-2 focus:ring-primary/20 transition-all outline-none appearance-none pr-10 cursor-pointer';
 
 const OrgFilters = ({
  statusFilter, setStatus,
@@ -31,7 +31,7 @@ const OrgFilters = ({
  ]}
  placeholder="Status: All"
  searchPlaceholder="Search status..."
- className="w-full sm:w-40 h-10 rounded-xl bg-background border-border/40 hover:bg-accent/20 transition-all font-semibold text-[11px]"
+ className="w-full sm:w-44 h-10 rounded-xl bg-background border border-border shadow-sm hover:border-border/80 transition-all font-semibold text-xs text-foreground"
  />
 
  {/* Plan Filter */}
@@ -47,7 +47,7 @@ const OrgFilters = ({
  ]}
  placeholder="Plan: All"
  searchPlaceholder="Search plan..."
- className="w-full sm:w-40 h-10 rounded-xl bg-background border-border/40 hover:bg-accent/20 transition-all font-semibold text-[11px]"
+ className="w-full sm:w-44 h-10 rounded-xl bg-background border border-border shadow-sm hover:border-border/80 transition-all font-semibold text-xs text-foreground"
  />
 
       <Button

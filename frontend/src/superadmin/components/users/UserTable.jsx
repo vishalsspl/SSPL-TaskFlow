@@ -46,7 +46,7 @@ const UserTable = ({ users, getRoleBadge, onForceReset, onDelete }) => {
                     </div>
                     <div className="flex flex-col min-w-0 text-left w-[150px]">
                       <p className="font-bold text-sm text-foreground/90 leading-tight truncate">{u.name}</p>
-                      <p className="text-[10px] text-muted-foreground font-bold opacity-60 flex items-center gap-1.5 mt-1 truncate">
+                      <p className="text-xs text-muted-foreground font-medium flex items-center gap-1.5 mt-1 truncate">
                         <Mail className="w-3 h-3" /> {u.email}
                       </p>
                     </div>
@@ -58,7 +58,7 @@ const UserTable = ({ users, getRoleBadge, onForceReset, onDelete }) => {
                       <Building2 className="w-3.5 h-3.5 text-primary/60" />
                       <span className="truncate max-w-[150px]">{u.organization?.name || 'No Organization'}</span>
                     </div>
-                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/40 mt-1">Organization</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">Organization</p>
                   </div>
                 </TableCell>
                 <TableCell className="text-center">{getRoleBadge(u.role)}</TableCell>

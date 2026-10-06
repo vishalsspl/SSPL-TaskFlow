@@ -13,9 +13,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { cn } from '@/lib/utils';
 
 // ── Step indicators ────────────────────────────────────────────────────────
-const steps = ['Your account', 'Your organisation'];
+const getSteps = (role) => role === 'ADMIN' ? ['Your account', 'Your organisation', 'Verify Email'] : ['Your account', 'Your organisation'];
 
-const StepDots = ({ current, isDarkMode }) => (
+const StepDots = ({ current, isDarkMode, role }) => {
+  const steps = getSteps(role);
+  return (
   <div className="flex items-center justify-center gap-3 mb-6">
     {steps.map((label, i) => (
       <div key={i} className="flex items-center gap-2">
@@ -37,7 +39,7 @@ const StepDots = ({ current, isDarkMode }) => (
       </div>
     ))}
   </div>
-);
+)};
 
 // ── Field component ────────────────────────────────────────────────────────
 const Field = ({ label, id, error, children, isDarkMode }) => (
@@ -96,6 +98,7 @@ const Signup = () => {
     website: '',
     country: '',
     role: 'ADMIN', // Default role
+    otp: '',
   });
 
   const roles = [
@@ -195,7 +198,31 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateStep1()) return;
+
+    if (step === 1 && form.role === 'ADMIN') {
+      if (!validateStep1()) return;
+      setLoading(true);
+      setError('');
+      try {
+        await api.post('/auth/send-signup-otp', { email: form.email.trim(), name: form.name.trim() });
+        setStep(2);
+        toast({ title: 'OTP Sent', description: 'Please check your email for the verification code.' });
+      } catch (err) {
+        triggerError(err.response?.data?.error || 'Failed to send OTP.');
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    if (step === 1 && form.role !== 'ADMIN') {
+      if (!validateStep1()) return;
+    } else if (step === 2 && form.role === 'ADMIN') {
+      if (!form.otp || form.otp.length < 6) {
+        triggerError('Please enter a valid 6-digit OTP.');
+        return;
+      }
+    }
 
     setLoading(true);
     setError('');
@@ -224,8 +251,8 @@ const Signup = () => {
         size: form.size || undefined,
         website: form.website || undefined,
         country: form.country || undefined,
+        otp: form.otp || undefined,
       });
-
       if (data.token && data.user) {
         console.log('[Signup] Success! Processing redirection...');
         
@@ -335,7 +362,7 @@ const Signup = () => {
         </CardHeader>
 
         <CardContent className="pt-2">
-          <StepDots current={step} isDarkMode={isDarkMode} />
+          <StepDots current={step} isDarkMode={isDarkMode} role={form.role} />
 
           {(error || orgCheckError) && (
             <div 
@@ -548,9 +575,28 @@ const Signup = () => {
 
               <Button type="submit" disabled={loading}
                 className="w-full bg-[#48A111] hover:bg-[#48A111]/90 text-white font-bold h-12 rounded-xl shadow-lg shadow-[#48A111]/10">
-                {loading ? 'Submitting registration…' : 'Submit Registration'}
+                {loading ? 'Processing...' : (form.role === 'ADMIN' ? 'Continue to Verification' : 'Submit Registration')}
               </Button>
 
+            </form>
+          )}
+
+          {/* ── Step 2: Verify Email (ADMIN only) ── */}
+          {step === 2 && form.role === 'ADMIN' && (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <Field label="Verification Code *" id="otp" error={fieldErrors.otp} isDarkMode={isDarkMode}>
+                <Input id="otp" placeholder="Enter 6-digit OTP" value={form.otp}
+                  onChange={set('otp')}
+                  maxLength={6}
+                  className={cn('text-center tracking-widest text-lg font-bold', inputClass('otp'))} />
+              </Field>
+              <p className={cn("text-xs transition-colors", isDarkMode ? "text-white/60" : "text-slate-600")}>
+                We sent a 6-digit code to <strong>{form.email}</strong>. Please enter it above to verify your email and complete registration.
+              </p>
+              <Button type="submit" disabled={loading}
+                className="w-full bg-[#48A111] hover:bg-[#48A111]/90 text-white font-bold h-12 rounded-xl shadow-lg shadow-[#48A111]/10">
+                {loading ? 'Submitting registration...' : 'Verify & Register'}
+              </Button>
             </form>
           )}
 

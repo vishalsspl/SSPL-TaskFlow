@@ -1,15 +1,24 @@
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Building2, Edit2, Trash2, ShieldAlert } from 'lucide-react';
+import { MoreHorizontal, Building2, Edit2, Trash2, ShieldAlert, Info, Bell } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-const OrgCards = ({ orgs, getStatusBadge, getPlanBadge, onEdit, onSuspend, onApprove, onDelete }) => {
+const OrgCards = ({ orgs, getStatusBadge, getPlanBadge, onEdit, onDetails, onSuspend, onApprove, onDelete, onRemindExpiry }) => {
   return (
     <div className="sm:hidden grid grid-cols-1 gap-4">
-      {orgs.map((org) => (
+      {orgs.map((org) => {
+        const endDate = org.currentPeriodEnd || org.trialEndsAt;
+        let endDateColor = 'text-emerald-500';
+        if (endDate) {
+          const diff = new Date(endDate) - new Date();
+          if (diff < 0) endDateColor = 'text-red-500';
+          else if (diff < 7 * 24 * 60 * 60 * 1000) endDateColor = 'text-amber-500';
+        }
+
+        return (
         <Card key={org.id} className="border-border/40 shadow-xl bg-white/50 dark:bg-[#0A0A0A]/40 backdrop-blur-md rounded-xl overflow-hidden p-4 sm:p-5 relative group border-l-4 sm:border-l-0 sm:border-t-4"
           style={{ borderTopColor: window.innerWidth >= 640 ? (org.themeColor || 'hsl(var(--primary))') : 'transparent', borderLeftColor: window.innerWidth < 640 ? (org.themeColor || 'hsl(var(--primary))') : 'transparent' }}>
           <div className="flex justify-between items-start mb-3">
@@ -39,6 +48,9 @@ const OrgCards = ({ orgs, getStatusBadge, getPlanBadge, onEdit, onSuspend, onApp
                 <DropdownMenuContent align="end" className="w-56 rounded-2xl shadow-2xl bg-background dark:bg-black/95 backdrop-blur-xl border-border/40 p-2 font-montserrat">
                   {org.status === 'PENDING' ? (
                     <>
+                      <DropdownMenuItem className="text-blue-500 rounded-xl py-3 font-bold text-[10px] tracking-widest uppercase cursor-pointer focus:bg-blue-500 focus:text-white transition-all" onClick={() => onDetails(org)}>
+                        <Info className="w-4 h-4 mr-3" /> Details
+                      </DropdownMenuItem>
                       <DropdownMenuItem className="text-green-500 rounded-xl py-3 font-bold text-[10px] tracking-widest uppercase cursor-pointer focus:bg-green-500 focus:text-white transition-all" onClick={() => onApprove(org)}>
                         <ShieldAlert className="w-4 h-4 mr-3" /> Approve
                       </DropdownMenuItem>
@@ -48,9 +60,20 @@ const OrgCards = ({ orgs, getStatusBadge, getPlanBadge, onEdit, onSuspend, onApp
                     </>
                   ) : (
                     <>
+                      <DropdownMenuItem className="text-blue-500 rounded-xl py-3 font-bold text-[10px] tracking-widest uppercase cursor-pointer focus:bg-blue-500 focus:text-white transition-all" onClick={() => onDetails(org)}>
+                        <Info className="w-4 h-4 mr-3" /> Details
+                      </DropdownMenuItem>
                       <DropdownMenuItem className="rounded-xl py-3 font-bold text-[10px] tracking-widest uppercase cursor-pointer text-foreground dark:text-white focus:bg-primary/10 transition-all font-black" onClick={() => onEdit(org)}>
                         <Edit2 className="w-4 h-4 mr-3 text-primary" /> Edit
                       </DropdownMenuItem>
+                      {endDate && (new Date(endDate) - new Date() < 7 * 24 * 60 * 60 * 1000) && (
+                        <DropdownMenuItem
+                          className="text-amber-500 hover:text-white hover:bg-amber-500 rounded-xl cursor-pointer font-bold text-[10px] tracking-widest uppercase py-3 mb-1 transition-all"
+                          onClick={() => onRemindExpiry(org)}
+                        >
+                          <Bell className="w-4 h-4 mr-3" /> Remind Expiry
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem 
                         className="text-orange-500 rounded-xl py-3 font-bold text-[10px] tracking-widest uppercase cursor-pointer focus:bg-orange-500 focus:text-white transition-all" 
                         onClick={() => onSuspend(org)}
@@ -85,9 +108,13 @@ const OrgCards = ({ orgs, getStatusBadge, getPlanBadge, onEdit, onSuspend, onApp
               <p className="text-[10px] sm:text-xs font-medium text-muted-foreground opacity-60">Joined</p>
               <p className="text-[11px] sm:text-xs font-mono font-bold">{org.createdAt ? new Date(org.createdAt).toLocaleDateString() : '—'}</p>
             </div>
+            <div className="space-y-0.5 sm:space-y-1">
+              <p className="text-[10px] sm:text-xs font-medium text-muted-foreground opacity-60">End Date</p>
+              <p className={`text-[11px] sm:text-xs font-mono font-bold ${endDateColor}`}>{endDate ? new Date(endDate).toLocaleDateString() : 'Lifetime'}</p>
+            </div>
           </div>
         </Card>
-      ))}
+      )})}
     </div>
   );
 };

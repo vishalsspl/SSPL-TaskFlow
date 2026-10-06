@@ -262,6 +262,22 @@ const TaskKanban = () => {
         }
     };
 
+    const handleLogLater = async () => {
+        if (!logTimeTask) return;
+        const taskId = logTimeTask.id;
+        setShowLogTimeDialog(false);
+        setLogTimeTask(null);
+        setLogTimeHours('');
+        setLogTimeDescription('');
+        setLogTimeBillable(false);
+
+        await proceedWithStatusChange(taskId, 'IN_REVIEW', false);
+        toast({
+            title: 'Task Moved to In Review',
+            description: 'You can log your hours later on the Timesheet page.'
+        });
+    };
+
     const handleApproveStatus = async (taskId) => {
         try {
             await api.post(`/tasks/${taskId}/approve-status`);
@@ -381,7 +397,7 @@ const TaskKanban = () => {
                             onChange={(val) => setManagerFilter(val || 'all')}
                             placeholder="Filter by Manager"
                             searchPlaceholder="Search manager..."
-                            className="flex-1 min-w-[140px] sm:w-[200px] sm:flex-none h-11 rounded-xl"
+                            className="flex-1 min-w-[140px] sm:min-w-[200px] sm:max-w-[400px] sm:flex-none h-11 rounded-xl"
                         />
                     </div>
                 </div>
@@ -471,15 +487,15 @@ const TaskKanban = () => {
                         </p>
                     </div>
 
-                    <div className="bg-secondary/30 border border-border/60 p-1 sm:p-1.5 rounded-lg sm:rounded-xl flex flex-wrap items-center gap-1.5 sm:gap-2">
-                        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                    <div className="bg-secondary/30 border border-border/60 p-1 sm:p-1.5 rounded-lg sm:rounded-xl flex flex-col md:flex-row justify-between items-center gap-2 sm:gap-3">
+                        <div className="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
                             <SearchableSelect
                                 options={projects.map(p => ({ value: p.id, label: p.name }))}
                                 value={selectedProjectId}
                                 onChange={(val) => setSelectedProjectId(val || '')}
                                 placeholder="Project"
                                 searchPlaceholder="Search projects..."
-                                className="flex-1 sm:flex-none sm:w-[200px] h-9 sm:h-11 rounded-lg sm:rounded-xl"
+                                className="w-full sm:w-[250px] sm:flex-none h-9 sm:h-11 rounded-lg sm:rounded-xl"
                             />
 
                             <SearchableSelect
@@ -488,7 +504,7 @@ const TaskKanban = () => {
                                 onChange={setPriorityFilter}
                                 placeholder="Priorities"
                                 searchPlaceholder="Search priority..."
-                                className="flex-1 sm:flex-none sm:w-[150px] h-9 sm:h-11 rounded-lg sm:rounded-xl"
+                                className="w-full sm:w-[200px] sm:flex-none h-9 sm:h-11 rounded-lg sm:rounded-xl"
                             />
 
                             <div className="flex items-center gap-2 px-2 bg-background border border-border/60 rounded-lg sm:rounded-xl h-9 sm:h-11">
@@ -643,17 +659,51 @@ const TaskKanban = () => {
                         </DialogDescription>
                     </DialogHeader>
                     <div className="py-4 space-y-4">
-                        <div className="space-y-2">
-                            <label className="text-xs font-bold uppercase text-muted-foreground">Hours Spent</label>
-                            <Input
-                                type="number"
-                                placeholder="e.g. 1.5 for 1 hour 30 mins"
-                                value={logTimeHours}
-                                onChange={(e) => setLogTimeHours(e.target.value)}
-                                min="0"
-                                step="0.25"
-                                className="bg-muted/30 border-border"
-                            />
+                        <div className="flex gap-3">
+                            <div className="flex-1 space-y-2">
+                                <label className="text-xs font-bold uppercase text-muted-foreground">Hours</label>
+                                <Input
+                                    type="number"
+                                    placeholder="0"
+                                    value={logTimeHours === '' ? '' : Math.floor(parseFloat(logTimeHours) || 0)}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        const h = val === '' ? 0 : parseInt(val);
+                                        const m = Math.round(((parseFloat(logTimeHours) || 0) % 1) * 60) || 0;
+                                        if (val === '' && m === 0) {
+                                            setLogTimeHours('');
+                                        } else {
+                                            setLogTimeHours((h + (m / 60)).toString());
+                                        }
+                                    }}
+                                    className="bg-muted/30 border-border"
+                                    min="0"
+                                    max="24"
+                                />
+                            </div>
+                            <div className="flex-1 space-y-2">
+                                <label className="text-xs font-bold uppercase text-muted-foreground">Minutes</label>
+                                <Input
+                                    type="number"
+                                    placeholder="0"
+                                    value={logTimeHours === '' ? '' : Math.round(((parseFloat(logTimeHours) || 0) % 1) * 60)}
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        let m = val === '' ? 0 : parseInt(val);
+                                        if (m > 59) m = 59;
+                                        if (m < 0) m = 0;
+                                        const h = Math.floor(parseFloat(logTimeHours) || 0);
+                                        if (val === '' && h === 0) {
+                                            setLogTimeHours('');
+                                        } else {
+                                            setLogTimeHours((h + (m / 60)).toString());
+                                        }
+                                    }}
+                                    className="bg-muted/30 border-border"
+                                    min="0"
+                                    max="59"
+                                />
+                            </div>
                         </div>
                         <div className="space-y-2">
                             <label className="text-xs font-bold uppercase text-muted-foreground">Description (Optional)</label>
@@ -670,7 +720,7 @@ const TaskKanban = () => {
                             <label htmlFor="log-time-billable" className="text-sm font-semibold text-foreground/80 cursor-pointer">Billable</label>
                         </div>
                     </div>
-                    <div className="flex justify-end gap-3">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full">
                         <button
                             onClick={() => {
                                 setShowLogTimeDialog(false);
@@ -679,17 +729,26 @@ const TaskKanban = () => {
                                 setLogTimeDescription('');
                                 setLogTimeBillable(false);
                             }}
-                            className="px-4 py-2 rounded-lg font-bold text-sm bg-muted text-foreground hover:bg-muted/80 transition-colors"
+                            className="w-full sm:w-auto px-4 py-2 rounded-lg font-bold text-sm bg-muted text-foreground hover:bg-muted/80 transition-colors"
                         >
                             Cancel
                         </button>
-                        <button
-                            onClick={handleLogTimeSubmit}
-                            disabled={!logTimeHours}
-                            className="px-4 py-2 rounded-lg font-bold text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            Submit & Move
-                        </button>
+                        <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+                            <button
+                                onClick={handleLogLater}
+                                className="w-full sm:w-auto px-4 py-2 rounded-lg font-bold text-sm bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 border border-amber-500/30 transition-colors"
+                                title="Move to In Review now and log hours later on Timesheets"
+                            >
+                                Log Later
+                            </button>
+                            <button
+                                onClick={handleLogTimeSubmit}
+                                disabled={!logTimeHours}
+                                className="w-full sm:w-auto px-4 py-2 rounded-lg font-bold text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Submit & Move
+                            </button>
+                        </div>
                     </div>
                 </DialogContent>
             </Dialog>

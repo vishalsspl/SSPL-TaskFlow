@@ -532,7 +532,7 @@ const TaskDetailsModal = ({ open, onOpenChange, task: initialTask, canEdit, onEd
                                     )}
 
                                     <ChevronRight className="w-3 h-3 text-muted-foreground/60" />
-                                    <span className="text-foreground font-black bg-background px-2 py-0.5 rounded-md border border-border/60 shadow-xs truncate max-w-[200px]">
+                                    <span className="text-foreground font-black bg-background px-2 py-0.5 rounded-md border border-border/60 shadow-xs">
                                         {currentTask?.shortId ? `[${currentTask.shortId}] ` : ''}
                                         {currentTask?.title}
                                     </span>

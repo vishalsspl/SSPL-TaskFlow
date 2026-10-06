@@ -38,8 +38,10 @@ api.interceptors.response.use(
 );
 export const getFileUrl = (url) => {
   if (!url) return '';
-  if (url.startsWith('http')) return url;
-  return `${API_URL}${url}`;
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const cleanUrl = url.startsWith('/') ? url : `/${url}`;
+  return `${baseUrl}${cleanUrl}`;
 };
 
 export default api;

@@ -13,6 +13,7 @@ import OrgTable from '@/superadmin/components/orgs/OrgTable';
 import OrgCards from '@/superadmin/components/orgs/OrgCards';
 import OrgEditDialog from '@/superadmin/components/orgs/OrgEditDialog';
 import OrgCreateDialog from '@/superadmin/components/orgs/OrgCreateDialog';
+import OrgDetailsDialog from '@/superadmin/components/orgs/OrgDetailsDialog';
 import DeleteConfirmDialog from '@/components/ui/delete-confirm-dialog';
 
 const OrgList = () => {
@@ -24,6 +25,7 @@ const OrgList = () => {
   const [statusFilter, setStatus] = useState('');
   const [planFilter, setPlan] = useState('');
   const [editOrg, setEditOrg] = useState(null);
+  const [detailsOrg, setDetailsOrg] = useState(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [page, setPage] = useState(1);
@@ -179,6 +181,15 @@ const OrgList = () => {
     }
   };
 
+  const handleRemindExpiry = async (org) => {
+    try {
+      await api.post(`/superadmin/organizations/${org.id}/remind-expiry`);
+      toast({ title: 'Reminder Sent', description: `Expiry reminder sent to ${org.name} administrators.` });
+    } catch (e) {
+      toast({ title: 'Failed to send reminder', variant: 'destructive', description: e.response?.data?.error || e.message });
+    }
+  };
+
   const approvePending = async (org) => {
     try {
       await api.patch(`/organizations/${org.id}`, { status: 'TRIAL' });
@@ -290,18 +301,22 @@ const OrgList = () => {
                   getStatusBadge={getStatusBadge}
                   getPlanBadge={getPlanBadge}
                   onEdit={handleEdit}
+                  onDetails={setDetailsOrg}
                   onSuspend={quickSuspend}
                   onApprove={approvePending}
                   onDelete={deleteOrg}
+                  onRemindExpiry={handleRemindExpiry}
                 />
                 <OrgCards
                   orgs={paginatedOrgs}
                   getStatusBadge={getStatusBadge}
                   getPlanBadge={getPlanBadge}
                   onEdit={handleEdit}
+                  onDetails={setDetailsOrg}
                   onSuspend={quickSuspend}
                   onApprove={approvePending}
                   onDelete={deleteOrg}
+                  onRemindExpiry={handleRemindExpiry}
                 />
 
                 {/* Pagination */}
@@ -337,6 +352,7 @@ const OrgList = () => {
       </Card>
 
       {/* Dialogs */}
+      <OrgDetailsDialog org={detailsOrg} setOrg={setDetailsOrg} getPlanBadge={getPlanBadge} getStatusBadge={getStatusBadge} />
       <OrgEditDialog 
         editOrg={editOrg} 
         setEditOrg={setEditOrg} 

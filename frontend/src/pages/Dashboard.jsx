@@ -31,6 +31,7 @@ import {
   Building2,
   Zap,
   Ticket,
+  X,
 } from 'lucide-react';
 import { formatCurrency, formatDate, stripHtml } from '@/lib/utils';
 import { LineChart, PieChart, BarChart, ModernAreaChart } from '@/components/ui/charts'; // Make sure this path is correct or update charts
@@ -59,6 +60,7 @@ const Dashboard = () => {
   });
   const [showProjectsPie, setShowProjectsPie] = useState(false);
   const [showTasksHover, setShowTasksHover] = useState(false);
+  const [dismissExpiryWarning, setDismissExpiryWarning] = useState(false);
   const { syncUser } = useAuthStore();
 
   useEffect(() => {
@@ -378,10 +380,61 @@ const Dashboard = () => {
     );
   }
 
+  const daysRemaining = user?.organization?.currentPeriodEnd 
+    ? Math.max(0, Math.ceil((new Date(user.organization.currentPeriodEnd) - new Date()) / (1000 * 60 * 60 * 24)))
+    : null;
+
   return (
     <div className="flex-1 h-full overflow-y-auto space-y-4 sm:space-y-6 p-0 sm:p-2 pt-2">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-6">
       </div>
+
+      {user?.organization?.status === 'TRIAL' && daysRemaining !== null && !user.organization.isExpired && user.role === 'ADMIN' && (
+        <div className="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/20 rounded-2xl p-4 flex items-center justify-between mb-4 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="p-2.5 bg-amber-500/20 rounded-xl border border-amber-500/20">
+              <Zap className="w-5 h-5 text-amber-600 dark:text-amber-400 fill-amber-500/20" />
+            </div>
+            <div>
+              <h4 className="text-sm font-black text-foreground uppercase tracking-wide">
+                {user.organization.plan !== 'FREE' ? user.organization.plan : 'PRO'} Trial Active
+              </h4>
+              <p className="text-xs text-muted-foreground font-medium mt-0.5">
+                Your trial ends in <strong className="text-amber-600 dark:text-amber-400 font-black">{daysRemaining} days</strong>
+              </p>
+            </div>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => navigate('/admin/billing')} className="hidden sm:flex text-[10px] font-black uppercase tracking-widest h-9 border-amber-500/30 hover:bg-amber-500/10 hover:text-amber-600 text-amber-600 transition-colors">
+            Upgrade Now
+          </Button>
+        </div>
+      )}
+
+      {user?.organization?.status === 'ACTIVE' && user.organization.plan !== 'FREE' && daysRemaining !== null && daysRemaining <= 7 && !user.organization.isExpired && user.role === 'ADMIN' && !dismissExpiryWarning && (
+        <div className="bg-gradient-to-r from-red-500/10 via-red-500/5 to-transparent border border-red-500/20 rounded-2xl p-4 flex items-start sm:items-center justify-between mb-4 shadow-sm relative">
+          <div className="flex items-center gap-4">
+            <div className="p-2.5 bg-red-500/20 rounded-xl border border-red-500/20 hidden sm:block">
+              <Calendar className="w-5 h-5 text-red-600 dark:text-red-400" />
+            </div>
+            <div>
+              <h4 className="text-sm font-black text-foreground uppercase tracking-wide text-red-600 dark:text-red-400">
+                Subscription Expiring Soon
+              </h4>
+              <p className="text-xs text-muted-foreground font-medium mt-0.5">
+                Your {user.organization.plan} plan will expire in <strong className="text-red-600 dark:text-red-400 font-black">{daysRemaining} days</strong>. Please renew to avoid interruption.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 mt-3 sm:mt-0">
+            <Button variant="outline" size="sm" onClick={() => navigate('/admin/billing')} className="text-[10px] font-black uppercase tracking-widest h-9 border-red-500/30 hover:bg-red-500/10 hover:text-red-600 text-red-600 transition-colors">
+              Renew Now
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => setDismissExpiryWarning(true)} className="h-9 w-9 text-muted-foreground hover:bg-red-500/10 hover:text-red-600 transition-colors">
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-6">
         {/* Total Projects */}

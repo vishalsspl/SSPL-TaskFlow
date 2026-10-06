@@ -143,7 +143,7 @@ const Tasks = () => {
   const [sortBy, setSortBy] = useState('title');
   const [sortOrder, setSortOrder] = useState('asc');
 
-  // Advanced Filters State
+  // Filters State
   const [selectedProjectIds, setSelectedProjectIds] = useState([]);
   const [selectedAssigneeIds, setSelectedAssigneeIds] = useState([]);
   const [selectedStatuses, setSelectedStatuses] = useState([]);
@@ -465,7 +465,7 @@ const Tasks = () => {
       {/* ─── Filter Toolbar ─── */}
       <div className="flex-none px-0 sm:px-0">
         <div className="bg-secondary/40 p-2 rounded-2xl mb-2 mt-4 shadow-inner backdrop-blur-sm" style={{ border: '1px solid var(--table-border)' }}>
-            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3">
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3 min-w-0">
               <div className="flex flex-row items-center gap-2 w-full xl:w-auto">
                 <Button
                   variant="outline"
@@ -486,14 +486,14 @@ const Tasks = () => {
                 )}
               </div>
 
-              <div className="flex flex-col md:flex-row items-center gap-3 w-full xl:w-auto flex-1 justify-end">
-                <div className={`flex-col md:flex-row flex-wrap items-center gap-2 w-full md:w-auto ${showFiltersMobile ? 'flex' : 'hidden md:flex'}`}>
+              <div className="flex flex-col md:flex-row items-center gap-3 w-full xl:w-auto flex-1 justify-end min-w-0">
+                <div className={`flex-col md:flex-row xl:flex-nowrap flex-wrap items-center gap-2 xl:gap-1 w-full md:w-auto min-w-0 ${showFiltersMobile ? 'flex' : 'hidden md:flex'}`}>
                   <SearchableSelect
                     options={projectOptions}
                     value={projectFilter}
                     onChange={handleProjectFilterChange}
                     placeholder="Project"
-                    className="w-full md:w-[140px] h-10 rounded-xl bg-background/50 border hover:bg-background transition-all"
+                    className="w-full md:w-32 xl:w-[130px] xl:flex-none px-2 h-10 rounded-xl bg-background/50 border hover:bg-background transition-all"
                     style={{ borderColor: 'var(--input-border)' }}
                   />
                   <SearchableSelect
@@ -501,7 +501,7 @@ const Tasks = () => {
                     value={managerFilter}
                     onChange={handleManagerFilterChange}
                     placeholder="Manager"
-                    className="w-full md:w-[140px] h-10 rounded-xl bg-background/50 border hover:bg-background transition-all"
+                    className="w-full md:w-32 xl:w-[130px] xl:flex-none px-2 h-10 rounded-xl bg-background/50 border hover:bg-background transition-all"
                     style={{ borderColor: 'var(--input-border)' }}
                   />
                   <SearchableSelect
@@ -509,7 +509,7 @@ const Tasks = () => {
                     value={priorityFilter}
                     onChange={setPriorityFilter}
                     placeholder="Priority"
-                    className="w-full md:w-[130px] h-10 rounded-xl bg-background/50 border hover:bg-background transition-all"
+                    className="w-full md:w-28 xl:w-[130px] xl:flex-none px-2 h-10 rounded-xl bg-background/50 border hover:bg-background transition-all"
                     style={{ borderColor: 'var(--input-border)' }}
                   />
                   <SearchableSelect
@@ -517,7 +517,7 @@ const Tasks = () => {
                     value={typeFilter}
                     onChange={setTypeFilter}
                     placeholder="Type"
-                    className="w-full md:w-[130px] h-10 rounded-xl bg-background/50 border hover:bg-background transition-all"
+                    className="w-full md:w-28 xl:w-[130px] xl:flex-none px-2 h-10 rounded-xl bg-background/50 border hover:bg-background transition-all"
                     style={{ borderColor: 'var(--input-border)' }}
                   />
                   <SearchableSelect
@@ -531,7 +531,7 @@ const Tasks = () => {
                       { label: 'Completed', value: 'COMPLETED' }
                     ]}
                     placeholder="Status"
-                    className="w-full md:w-[130px] h-10 rounded-xl bg-background/50 border hover:bg-background transition-all"
+                    className="w-full md:w-28 xl:w-[130px] xl:flex-none px-2 h-10 rounded-xl bg-background/50 border hover:bg-background transition-all"
                     style={{ borderColor: 'var(--input-border)' }}
                   />
                   <div className="flex items-center gap-2 mr-2">
@@ -539,12 +539,12 @@ const Tasks = () => {
                     <Label htmlFor="hide-completed" className="text-sm font-semibold text-foreground/80 cursor-pointer">Hide Completed</Label>
                   </div>
                   
-                  {/* Advanced Filters */}
+                  {/* Filters */}
                   <Sheet>
                     <SheetTrigger asChild>
                       <Button variant="outline" className="h-10 rounded-xl border hover:bg-accent/20 font-semibold text-foreground/80 whitespace-nowrap" style={{ borderColor: 'var(--input-border)' }}>
                         <Filter className="w-4 h-4 mr-2" />
-                        Advanced Filters
+                        Filters
                         {(selectedProjectIds.length > 0 || selectedAssigneeIds.length > 0 || selectedStatuses.length > 0 || selectedTypes.length > 0 || selectedPriorities.length > 0 || dueDateFrom || dueDateTo || pointsMin || pointsMax) && (
                           <Badge className="ml-2 bg-primary text-primary-foreground h-5 px-1.5 flex items-center justify-center rounded-full text-[10px]">
                             On
@@ -554,7 +554,7 @@ const Tasks = () => {
                     </SheetTrigger>
                     <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
                       <SheetHeader className="mb-6">
-                        <SheetTitle>Advanced Filters</SheetTitle>
+                        <SheetTitle>Filters</SheetTitle>
                         <SheetDescription>Apply multiple filters to narrow down the tasks list.</SheetDescription>
                       </SheetHeader>
                       <div className="space-y-6">
@@ -666,7 +666,7 @@ const Tasks = () => {
                              setPointsMax('');
                              setProgressFilter('');
                          }}>
-                           Clear Advanced Filters
+                           Clear Filters
                          </Button>
                       </div>
                     </SheetContent>
@@ -683,7 +683,7 @@ const Tasks = () => {
                       style={{ borderColor: 'var(--input-border)' }}
                     >
                       <FileSpreadsheet className="w-4 h-4" />
-                      <span className="hidden xl:inline">Import Excel</span>
+                      <span className="hidden 2xl:inline">Import Excel</span>
                     </Button>
                   )}
                   {canCreateTaskGlobal && (

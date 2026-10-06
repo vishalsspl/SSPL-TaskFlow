@@ -1764,18 +1764,51 @@ const Timesheets = () => {
 
                         {loggingMode === 'direct' && (
                             <div className="space-y-3">
-                                <div className="space-y-1">
-                                    <Label className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Hours to Log</Label>
-                                    <Input
-                                        type="number"
-                                        placeholder="e.g. 5"
-                                        value={newEntry.customHours}
-                                        onChange={(e) => setNewEntry({ ...newEntry, customHours: e.target.value })}
-                                        className="bg-muted/30 border-border rounded-xl font-bold h-11"
-                                        min="0"
-                                        step="0.25"
-                                        max="24"
-                                    />
+                                <div className="flex gap-3">
+                                    <div className="flex-1 space-y-1">
+                                        <Label className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Hours</Label>
+                                        <Input
+                                            type="number"
+                                            placeholder="0"
+                                            value={newEntry.customHours === '' ? '' : Math.floor(parseFloat(newEntry.customHours) || 0)}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                const h = val === '' ? 0 : parseInt(val);
+                                                const m = Math.round(((parseFloat(newEntry.customHours) || 0) % 1) * 60) || 0;
+                                                if (val === '' && m === 0) {
+                                                    setNewEntry({ ...newEntry, customHours: '' });
+                                                } else {
+                                                    setNewEntry({ ...newEntry, customHours: (h + (m / 60)).toString() });
+                                                }
+                                            }}
+                                            className="bg-muted/30 border-border rounded-xl font-bold h-11"
+                                            min="0"
+                                            max="24"
+                                        />
+                                    </div>
+                                    <div className="flex-1 space-y-1">
+                                        <Label className="text-[10px] font-black uppercase tracking-wider text-muted-foreground">Minutes</Label>
+                                        <Input
+                                            type="number"
+                                            placeholder="0"
+                                            value={newEntry.customHours === '' ? '' : Math.round(((parseFloat(newEntry.customHours) || 0) % 1) * 60)}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                let m = val === '' ? 0 : parseInt(val);
+                                                if (m > 59) m = 59;
+                                                if (m < 0) m = 0;
+                                                const h = Math.floor(parseFloat(newEntry.customHours) || 0);
+                                                if (val === '' && h === 0) {
+                                                    setNewEntry({ ...newEntry, customHours: '' });
+                                                } else {
+                                                    setNewEntry({ ...newEntry, customHours: (h + (m / 60)).toString() });
+                                                }
+                                            }}
+                                            className="bg-muted/30 border-border rounded-xl font-bold h-11"
+                                            min="0"
+                                            max="59"
+                                        />
+                                    </div>
                                 </div>
                                 {(() => {
                                     const totalShift = calculateCustomHours(orgShiftSettings.startTime, orgShiftSettings.endTime).total;
@@ -1882,16 +1915,28 @@ const Timesheets = () => {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Select Task</Label>
+                                    <div className="flex items-center justify-between">
+                                        <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Select Task</Label>
+                                        <span className="text-[10px] font-bold text-amber-500">Only showing tasks in "In Review"</span>
+                                    </div>
                                     <SearchableSelect
                                         value={newEntry.taskId}
                                         onChange={(val) => setNewEntry({ ...newEntry, taskId: val })}
                                         disabled={!newEntry.projectId || !!editingEntryId}
-                                        options={tasks.map(t => ({ 
-                                            label: t.status === 'COMPLETED' ? `${t.title} (Completed)` : t.title, 
-                                            value: t.id 
-                                        }))}
-                                        placeholder="Link to a specific task"
+                                        options={tasks
+                                            .filter(t => t.status === 'IN_REVIEW' || t.id === newEntry.taskId)
+                                            .map(t => ({ 
+                                                label: t.shortId ? `[${t.shortId}] ${t.title}` : t.title, 
+                                                value: t.id 
+                                            }))
+                                        }
+                                        placeholder={
+                                            !newEntry.projectId
+                                                ? "Select a project first"
+                                                : tasks.filter(t => t.status === 'IN_REVIEW' || t.id === newEntry.taskId).length === 0
+                                                ? "No tasks currently in 'In Review' status"
+                                                : "Link to a task in 'In Review'"
+                                        }
                                         className="bg-muted/30 border-border h-11 rounded-xl font-bold"
                                     />
                                 </div>

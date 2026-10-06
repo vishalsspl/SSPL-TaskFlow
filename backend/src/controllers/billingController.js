@@ -12,6 +12,10 @@ export const getGlobalInvoices = async (req, res) => {
         const where = {
             ...(status && { status }),
             ...(organizationId && { organizationId }),
+            NOT: {
+                status: 'PENDING',
+                stripeSessionId: { not: null }
+            }
         };
 
         const [invoices, totalCount] = await Promise.all([

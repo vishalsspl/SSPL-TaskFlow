@@ -91,3 +91,43 @@ export function stripHtml(html) {
     .replace(/\s+/g, ' ')
     .trim();
 }
+
+export function getFileUrl(url) {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const cleanUrl = url.startsWith('/') ? url : `/${url}`;
+  return `${baseUrl}${cleanUrl}`;
+}
+
+export function getPdfAttachment(doc) {
+  if (!doc) return null;
+  
+  let attachments = [];
+  try {
+    if (typeof doc.attachments === 'string') {
+      attachments = JSON.parse(doc.attachments || '[]');
+    } else if (Array.isArray(doc.attachments)) {
+      attachments = doc.attachments;
+    }
+  } catch (e) {
+    attachments = [];
+  }
+
+  const pdfAtt = attachments.find(att => 
+    att?.type === 'application/pdf' || 
+    att?.url?.toLowerCase().endsWith('.pdf') || 
+    att?.name?.toLowerCase().endsWith('.pdf')
+  );
+  if (pdfAtt) return pdfAtt;
+
+  if (typeof doc.content === 'string' && (doc.content.includes('.pdf') || doc.content.includes('<iframe'))) {
+    const match = doc.content.match(/src=["']([^"']+\.pdf.*?)["']/i);
+    if (match) {
+      return { url: match[1], name: doc.title || 'PDF Document' };
+    }
+  }
+
+  return null;
+}
+

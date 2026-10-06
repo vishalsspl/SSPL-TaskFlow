@@ -16,10 +16,18 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { formatDistanceToNow } from 'date-fns';
 import api from '@/lib/api';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { useAuthStore } from '@/store/authStore';
+import { getPdfAttachment } from '@/lib/utils';
 
 export default function DocumentList({ projectId, onNewDocument, onEditDocument, onViewDocument, projectManagers, presentationMode = false }) {
   const { toast } = useToast();
@@ -32,6 +40,9 @@ export default function DocumentList({ projectId, onNewDocument, onEditDocument,
   const [sortBy, setSortBy] = useState('updatedAt');
   const [sortOrder, setSortOrder] = useState('desc');
   const [duplicating, setDuplicating] = useState(null);
+  const [renameDoc, setRenameDoc] = useState(null);
+  const [newTitle, setNewTitle] = useState('');
+  const [renaming, setRenaming] = useState(false);
 
   useEffect(() => {
     fetchDocuments();
@@ -97,16 +108,30 @@ export default function DocumentList({ projectId, onNewDocument, onEditDocument,
     }
   };
 
-  const handleRename = async (doc) => {
-    const newTitle = prompt('Enter new name:', doc.title);
-    if (newTitle && newTitle !== doc.title) {
-      try {
-        await api.put(`/documents/${doc.id}`, { title: newTitle });
-        toast({ title: 'Success', description: 'Document renamed' });
-        fetchDocuments();
-      } catch (error) {
-        toast({ title: 'Error', description: 'Failed to rename', variant: 'destructive' });
-      }
+  const handleRenameClick = (doc) => {
+    setRenameDoc(doc);
+    setNewTitle(doc.title);
+  };
+
+  const submitRename = async (e) => {
+    e?.preventDefault();
+    if (!newTitle.trim() || !renameDoc) return;
+    
+    if (newTitle.trim() === renameDoc.title) {
+      setRenameDoc(null);
+      return;
+    }
+    
+    setRenaming(true);
+    try {
+      await api.put(`/documents/${renameDoc.id}`, { title: newTitle.trim() });
+      toast({ title: 'Success', description: 'Document renamed' });
+      setRenameDoc(null);
+      fetchDocuments();
+    } catch (error) {
+      toast({ title: 'Error', description: 'Failed to rename', variant: 'destructive' });
+    } finally {
+      setRenaming(false);
     }
   };
 
@@ -119,7 +144,12 @@ export default function DocumentList({ projectId, onNewDocument, onEditDocument,
   // Filter and search
   const filteredDocs = documents.filter(doc => {
     const matchSearch = doc.title.toLowerCase().includes(search.toLowerCase());
-    const matchType = typeFilter === 'ALL' || doc.type === typeFilter;
+    const isPdf = !!getPdfAttachment(doc);
+    let matchType = true;
+    if (typeFilter === 'DOCUMENT') matchType = doc.type === 'DOCUMENT' && !isPdf;
+    else if (typeFilter === 'SPREADSHEET') matchType = doc.type === 'SPREADSHEET';
+    else if (typeFilter === 'PDF') matchType = isPdf;
+
     return matchSearch && matchType;
   });
 
@@ -153,7 +183,7 @@ export default function DocumentList({ projectId, onNewDocument, onEditDocument,
               <Button variant="outline" size="sm" className="rounded-xl h-9 gap-1.5">
                 <Filter className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline text-xs">
-                  {typeFilter === 'ALL' ? 'All' : typeFilter === 'DOCUMENT' ? 'Docs' : 'Sheets'}
+                  {typeFilter === 'ALL' ? 'All' : typeFilter === 'DOCUMENT' ? 'Docs' : typeFilter === 'SPREADSHEET' ? 'Sheets' : 'PDFs'}
                 </span>
               </Button>
             </DropdownMenuTrigger>
@@ -161,6 +191,7 @@ export default function DocumentList({ projectId, onNewDocument, onEditDocument,
               <DropdownMenuItem onClick={() => setTypeFilter('ALL')}>All Types</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setTypeFilter('DOCUMENT')}>Documents</DropdownMenuItem>
               <DropdownMenuItem onClick={() => setTypeFilter('SPREADSHEET')}>Spreadsheets</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTypeFilter('PDF')}>PDF Files</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -215,6 +246,9 @@ export default function DocumentList({ projectId, onNewDocument, onEditDocument,
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredDocs.map((doc) => {
             const isSpreadsheet = doc.type === 'SPREADSHEET';
+            const pdfAttachment = getPdfAttachment(doc);
+            const isPdf = !!pdfAttachment;
+
             return (
               <Card
                 key={doc.id}
@@ -223,8 +257,10 @@ export default function DocumentList({ projectId, onNewDocument, onEditDocument,
               >
                 <CardHeader className="pb-3 flex flex-row items-start justify-between space-y-0">
                   <div className="flex items-center gap-3 w-full min-w-0 pr-4">
-                    <div className={`p-2 rounded-lg shrink-0 ${isSpreadsheet ? 'bg-emerald-500/10' : 'bg-primary/10'}`}>
-                      {isSpreadsheet ? (
+                    <div className={`p-2 rounded-lg shrink-0 ${isPdf ? 'bg-red-500/10' : isSpreadsheet ? 'bg-emerald-500/10' : 'bg-primary/10'}`}>
+                      {isPdf ? (
+                        <FileText className="w-5 h-5 text-red-600" />
+                      ) : isSpreadsheet ? (
                         <Table2 className="w-5 h-5 text-emerald-600" />
                       ) : (
                         <FileText className="w-5 h-5 text-primary" />
@@ -235,9 +271,9 @@ export default function DocumentList({ projectId, onNewDocument, onEditDocument,
                       <div className="flex items-center gap-2 mt-1">
                         <Badge
                           variant="secondary"
-                          className={`text-[10px] px-1.5 py-0 h-4 ${isSpreadsheet ? 'bg-emerald-500/10 text-emerald-700' : 'bg-blue-500/10 text-blue-700'}`}
+                          className={`text-[10px] px-1.5 py-0 h-4 ${isPdf ? 'bg-red-500/10 text-red-700' : isSpreadsheet ? 'bg-emerald-500/10 text-emerald-700' : 'bg-blue-500/10 text-blue-700'}`}
                         >
-                          {isSpreadsheet ? 'Spreadsheet' : 'Document'}
+                          {isPdf ? 'PDF File' : isSpreadsheet ? 'Spreadsheet' : 'Document'}
                         </Badge>
                         <CardDescription className="text-xs truncate flex items-center gap-1">
                           <User className="w-3 h-3" /> {doc.author?.name}
@@ -261,7 +297,7 @@ export default function DocumentList({ projectId, onNewDocument, onEditDocument,
                           <DropdownMenuItem onClick={() => onEditDocument(doc.id)} className="cursor-pointer">
                             <Edit2 className="mr-2 h-4 w-4" /> Edit
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleRename(doc)} className="cursor-pointer">
+                          <DropdownMenuItem onClick={() => handleRenameClick(doc)} className="cursor-pointer">
                             <Edit2 className="mr-2 h-4 w-4" /> Rename
                           </DropdownMenuItem>
                           <DropdownMenuItem
@@ -314,6 +350,38 @@ export default function DocumentList({ projectId, onNewDocument, onEditDocument,
         confirmText="Delete"
         variant="destructive"
       />
+
+      <Dialog open={!!renameDoc} onOpenChange={(open) => !open && setRenameDoc(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Rename Document</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={submitRename} className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Input
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                placeholder="Enter document name"
+                autoFocus
+              />
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setRenameDoc(null)}
+                disabled={renaming}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={!newTitle.trim() || renaming}>
+                {renaming && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

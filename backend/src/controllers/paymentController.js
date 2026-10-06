@@ -134,11 +134,14 @@ export const createOrder = async (req, res) => {
               description: `${billingCycle} billing for ${billedUsers} users`,
             },
             unit_amount: amountInPaise,
+            recurring: {
+              interval: billingCycle === 'annually' ? 'year' : 'month',
+            },
           },
           quantity: 1,
         },
       ],
-      mode: 'payment',
+      mode: 'subscription',
       success_url: `${frontendUrl}/dashboard?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${frontendUrl}/dashboard?canceled=true`,
       client_reference_id: invoice.id,
@@ -442,7 +445,13 @@ export const getBillingHistory = async (req, res) => {
     }
 
     const invoices = await prisma.invoice.findMany({
-      where: { organizationId: user.organizationId },
+      where: { 
+        organizationId: user.organizationId,
+        NOT: {
+          status: 'PENDING',
+          stripeSessionId: { not: null }
+        }
+      },
       orderBy: { createdAt: 'desc' },
       include: {
         organization: {
