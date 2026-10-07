@@ -67,12 +67,12 @@ export const createOrder = async (req, res) => {
     // Check if already on this plan or higher, UNLESS they are on a trial
     const planOrder = { FREE: 0, STARTER: 1, PRO: 2, ENTERPRISE: 3 };
     
-    // Allow if they are upgrading to a higher plan, OR if they are paying for their current plan while on TRIAL
+    // Allow if they are upgrading to a higher plan, OR if they are paying for their current plan (renewal)
     const isUpgrading = planOrder[plan] > planOrder[org.plan];
-    const isPayingForCurrentTrial = plan === org.plan && org.status === 'TRIAL';
+    const isRenewing = plan === org.plan;
 
-    if (!isUpgrading && !isPayingForCurrentTrial) {
-      return res.status(400).json({ error: `Organization is already on an active ${org.plan} plan or higher` });
+    if (!isUpgrading && !isRenewing) {
+      return res.status(400).json({ error: `Organization is already on a higher plan (${org.plan})` });
     }
 
     // Calculate amount (Minimum 25 users billed)
@@ -116,7 +116,7 @@ export const createOrder = async (req, res) => {
         currency: 'INR',
         status: 'PENDING',
         plan,
-        description: `${plan} Plan - ${billingCycle} billing (${billedUsers} users minimum)`,
+        description: `${isRenewing ? 'Renewal: ' : ''}${plan} Plan - ${billingCycle} billing (${billedUsers} users minimum)`,
         invoiceNumber: generateInvoiceNumber(),
         dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
       },

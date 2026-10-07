@@ -33,6 +33,7 @@ import {
   Ticket,
   X,
 } from 'lucide-react';
+import UpgradePlanModal from '@/components/ui/UpgradePlanModal';
 import { formatCurrency, formatDate, stripHtml } from '@/lib/utils';
 import { LineChart, PieChart, BarChart, ModernAreaChart } from '@/components/ui/charts'; // Make sure this path is correct or update charts
 import ProjectOverview from '@/components/ProjectOverview';
@@ -61,6 +62,7 @@ const Dashboard = () => {
   const [showProjectsPie, setShowProjectsPie] = useState(false);
   const [showTasksHover, setShowTasksHover] = useState(false);
   const [dismissExpiryWarning, setDismissExpiryWarning] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { syncUser } = useAuthStore();
 
   useEffect(() => {
@@ -404,7 +406,7 @@ const Dashboard = () => {
               </p>
             </div>
           </div>
-          <Button variant="outline" size="sm" onClick={() => navigate('/admin/billing')} className="hidden sm:flex text-[10px] font-black uppercase tracking-widest h-9 border-amber-500/30 hover:bg-amber-500/10 hover:text-amber-600 text-amber-600 transition-colors">
+          <Button variant="outline" size="sm" onClick={() => setShowUpgradeModal(true)} className="hidden sm:flex text-[10px] font-black uppercase tracking-widest h-9 border-amber-500/30 hover:bg-amber-500/10 hover:text-amber-600 text-amber-600 transition-colors">
             Upgrade Now
           </Button>
         </div>
@@ -426,7 +428,7 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="flex items-center gap-2 mt-3 sm:mt-0">
-            <Button variant="outline" size="sm" onClick={() => navigate('/admin/billing')} className="text-[10px] font-black uppercase tracking-widest h-9 border-red-500/30 hover:bg-red-500/10 hover:text-red-600 text-red-600 transition-colors">
+            <Button variant="outline" size="sm" onClick={() => setShowUpgradeModal(true)} className="text-[10px] font-black uppercase tracking-widest h-9 border-red-500/30 hover:bg-red-500/10 hover:text-red-600 text-red-600 transition-colors">
               Renew Now
             </Button>
             <Button variant="ghost" size="icon" onClick={() => setDismissExpiryWarning(true)} className="h-9 w-9 text-muted-foreground hover:bg-red-500/10 hover:text-red-600 transition-colors">
@@ -861,6 +863,11 @@ const Dashboard = () => {
           )}
         </div>
       </div>
+      <UpgradePlanModal 
+        isOpen={showUpgradeModal} 
+        onClose={() => setShowUpgradeModal(false)} 
+        limitType="plan" 
+      />
     </div>
   );
 };

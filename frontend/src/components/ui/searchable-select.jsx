@@ -29,6 +29,8 @@ export function SearchableSelect({
     style,
     disabled = false,
     renderOption, // Optional custom render function: (option) => ReactNode
+    onAddClick,
+    addLabel = "Add New",
     ...props
 }) {
     const [open, setOpen] = React.useState(false)
@@ -89,6 +91,19 @@ export function SearchableSelect({
                                 </CommandItem>
                             ))}
                         </CommandGroup>
+                        {onAddClick && (
+                            <CommandGroup>
+                                <CommandItem
+                                    onSelect={() => {
+                                        setOpen(false)
+                                        onAddClick()
+                                    }}
+                                    className="flex items-center justify-center gap-2 text-xs font-medium text-primary hover:bg-primary/10 cursor-pointer border-t"
+                                >
+                                    {addLabel}
+                                </CommandItem>
+                            </CommandGroup>
+                        )}
                     </CommandList>
                 </Command>
             </PopoverContent>

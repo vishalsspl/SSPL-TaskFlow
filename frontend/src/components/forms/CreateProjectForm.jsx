@@ -20,8 +20,15 @@ import { SearchableSelect } from '@/components/ui/searchable-select';
 import { MultiSearchableSelect } from '@/components/ui/multi-searchable-select';
 import RichTextEditor from '@/components/ui/RichTextEditor';
 import UpgradePlanModal from '@/components/ui/UpgradePlanModal';
+import UserForm from '@/components/forms/UserForm';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
-
 
 const CreateProjectForm = ({ onSuccess, onCancel }) => {
     const [users, setUsers] = useState([]);
@@ -46,6 +53,55 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
     const [loading, setLoading] = useState(false);
     const [existingProjectNames, setExistingProjectNames] = useState([]);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+
+    // New user modal state
+    const [showUserModal, setShowUserModal] = useState(false);
+    const [newUserRole, setNewUserRole] = useState('MANAGER');
+    const [newUserFormData, setNewUserFormData] = useState({
+        name: '',
+        email: '',
+        role: 'MANAGER',
+        password: '',
+        customRoleIds: []
+    });
+
+    const handleAddUserClick = (role) => {
+        setNewUserRole(role);
+        setNewUserFormData({
+            name: '',
+            email: '',
+            role: role,
+            password: '',
+            customRoleIds: []
+        });
+        setShowUserModal(true);
+    };
+
+    const handleCreateUser = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await api.post('/users', newUserFormData);
+            const newUser = response.data;
+            setUsers(prev => [...prev, newUser]);
+            
+            if (newUser.role === 'CLIENT') {
+                setClients(prev => [...prev, newUser]);
+                setFormData(prev => ({ ...prev, clientId: newUser.id }));
+            } else if (newUser.role === 'MANAGER') {
+                setManagers(prev => [...prev, newUser]);
+                setFormData(prev => ({ ...prev, managerIds: [...prev.managerIds, newUser.id] }));
+            }
+            
+            setShowUserModal(false);
+            toast({ title: 'User created successfully' });
+        } catch (error) {
+            toast({ 
+                variant: 'destructive', 
+                title: 'Error creating user', 
+                description: error.response?.data?.error || 'Something went wrong'
+            });
+        }
+    };
 
     useEffect(() => {
         fetchUsers();
@@ -258,6 +314,8 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
                             }}
                             placeholder="Select Managers (Opt)"
                             className="!pl-10 relative"
+                            onAddClick={() => handleAddUserClick('MANAGER')}
+                            addLabel="Add New Manager"
                         />
                     </div>
                 </div>
@@ -276,6 +334,8 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
                             onChange={(value) => setFormData({ ...formData, clientId: value })}
                             placeholder="Select Client"
                             className="!pl-10 relative"
+                            onAddClick={() => handleAddUserClick('CLIENT')}
+                            addLabel="Add New Client"
                         />
                     </div>
                 </div>
@@ -411,6 +471,24 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
                 onClose={() => setShowUpgradeModal(false)}
                 limitType="projects"
             />
+
+            <Dialog open={showUserModal} onOpenChange={setShowUserModal}>
+                <DialogContent className="sm:max-w-[480px]">
+                    <DialogHeader>
+                        <DialogTitle>Add New {newUserRole === 'CLIENT' ? 'Client' : 'Manager'}</DialogTitle>
+                        <DialogDescription>
+                            Enter the details to create a new {newUserRole.toLowerCase()}.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <UserForm
+                        formData={newUserFormData}
+                        setFormData={setNewUserFormData}
+                        editingUser={null}
+                        onSubmit={handleCreateUser}
+                        onCancel={() => setShowUserModal(false)}
+                    />
+                </DialogContent>
+            </Dialog>
         </form>
     );
 };

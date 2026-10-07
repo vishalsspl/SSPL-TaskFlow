@@ -15,14 +15,14 @@ export const PLAN_LIMITS = {
     name: 'Starter',
     users: 30,
     projects: 5,
-    price: '₹10',
+    price: '₹250',
     features: ["30 Users", "5 Projects", "Tasks & Tickets", "Team & Chat", "Email Support"],
   },
   PRO: {
     name: 'Pro',
     users: 100,
     projects: 50,
-    price: '₹10',
+    price: '₹375',
     features: ["100 Users", "50 Projects", "Performance Analytics", "Timesheets", "GitHub Integration"],
   },
   ENTERPRISE: {

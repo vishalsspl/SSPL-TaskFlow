@@ -32,6 +32,8 @@ export function MultiSearchableSelect({
     emptyMessage = "No results found.",
     className,
     disabled = false,
+    onAddClick,
+    addLabel = "Add New",
 }) {
     const [open, setOpen] = React.useState(false);
 
@@ -121,6 +123,19 @@ export function MultiSearchableSelect({
                                 </CommandItem>
                             ))}
                         </CommandGroup>
+                        {onAddClick && (
+                            <CommandGroup>
+                                <CommandItem
+                                    onSelect={() => {
+                                        setOpen(false)
+                                        onAddClick()
+                                    }}
+                                    className="flex items-center justify-center gap-2 text-xs font-medium text-primary hover:bg-primary/10 cursor-pointer border-t"
+                                >
+                                    {addLabel}
+                                </CommandItem>
+                            </CommandGroup>
+                        )}
                     </CommandList>
                 </Command>
             </PopoverContent>

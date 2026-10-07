@@ -540,7 +540,7 @@ export const getGlobalAuditLogs = async (req, res) => {
 export const remindExpiry = async (req, res) => {
     try {
         const { id } = req.params;
-        const org = await req.db.organization.findUnique({
+        const org = await prisma.organization.findUnique({
             where: { id },
             include: { users: { where: { role: 'ADMIN' } } }
         });
@@ -570,6 +570,15 @@ export const remindExpiry = async (req, res) => {
             ? 'Your plan has ended. Please renew it immediately, otherwise your account will be suspended.'
             : `Your plan is expiring within ${daysLeft} days. Please renew it to prevent account suspension.`;
 
+        let tenantClient = null;
+        if (org.dbUrl && org.dbStrategy === 'DEDICATED') {
+            try {
+                tenantClient = await tenantDbManager.getClient(org.dbUrl);
+            } catch (err) {
+                console.warn('Could not get tenant client for notification:', err.message);
+            }
+        }
+
         for (const admin of org.users) {
             if (isExpired) {
                 await sendPlanExpiredEmail(admin.email, admin.name, org.name, 'Account limits restricted');
@@ -577,13 +586,23 @@ export const remindExpiry = async (req, res) => {
                 await sendPlanExpiryWarningEmail(admin.email, admin.name, org.name, daysLeft);
             }
             
-            await createNotification(req, {
-                userId: admin.id,
-                title,
-                message,
-                type: 'SYSTEM',
-                link: '/admin/billing'
-            });
+            if (tenantClient) {
+                const fakeReq = {
+                    db: tenantClient,
+                    user: { id: req.user.id, organizationId: org.id },
+                    io: req.io
+                };
+                await createNotification(fakeReq, {
+                    userId: admin.id,
+                    title,
+                    message,
+                    type: 'SYSTEM',
+                    link: '/admin/billing'
+                });
+            } else {
+                // If no tenant client, just send the email and skip in-app notification
+                console.warn(`Skipped in-app notification for ${admin.email} because tenant DB is unavailable`);
+            }
         }
 
         res.json({ message: 'Reminder sent successfully' });

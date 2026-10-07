@@ -9,10 +9,11 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Check, Sparkles, Zap, ShieldCheck, Rocket } from "lucide-react";
+import { Check, Sparkles, Zap, ShieldCheck, Rocket, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PLAN_LIMITS } from "@/lib/plans";
 import { useAuthStore } from "@/store/authStore";
+import api from "@/lib/api";
 
 const UpgradePlanModal = ({ isOpen, onClose, limitType = 'resources' }) => {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ const UpgradePlanModal = ({ isOpen, onClose, limitType = 'resources' }) => {
   const plans = [
     {
       ...PLAN_LIMITS.STARTER,
+      id: "STARTER",
       description: "Essential tools for small teams",
       color: "from-primary/20 to-primary/10",
       accent: "text-primary",
@@ -31,6 +33,7 @@ const UpgradePlanModal = ({ isOpen, onClose, limitType = 'resources' }) => {
     },
     {
       ...PLAN_LIMITS.PRO,
+      id: "PRO",
       description: "Scale your business with ease",
       color: "from-primary/30 to-primary/20",
       accent: "text-primary",
@@ -41,6 +44,7 @@ const UpgradePlanModal = ({ isOpen, onClose, limitType = 'resources' }) => {
     },
     {
       ...PLAN_LIMITS.ENTERPRISE,
+      id: "ENTERPRISE",
       description: "Maximum power and security",
       color: "from-primary/20 to-primary/10",
       accent: "text-primary",
@@ -50,10 +54,34 @@ const UpgradePlanModal = ({ isOpen, onClose, limitType = 'resources' }) => {
     },
   ];
 
-  const handlePlanAction = () => {
-    onClose();
-    if (isAdmin) {
+  const [loadingPlan, setLoadingPlan] = React.useState(null);
+
+  const handlePlanAction = async (planId) => {
+    if (!isAdmin) return;
+    
+    if (planId === 'ENTERPRISE') {
+      window.location.href = 'mailto:sales@sspl.com?subject=Enterprise Plan Inquiry';
+      return;
+    }
+
+    try {
+      setLoadingPlan(planId);
+      const { data } = await api.post('/billing/create-order', {
+        plan: planId,
+        billingCycle: 'monthly',
+      });
+
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      } else {
+        throw new Error('No checkout URL returned');
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
       navigate('/billing');
+      onClose();
+    } finally {
+      setLoadingPlan(null);
     }
   };
 
@@ -107,9 +135,16 @@ const UpgradePlanModal = ({ isOpen, onClose, limitType = 'resources' }) => {
                   <h3 className="text-lg font-black text-foreground mb-2 uppercase tracking-wider">{plan.name}</h3>
                   <p className="text-[11px] text-muted-foreground mb-6 leading-relaxed font-medium min-h-[32px]">{plan.description}</p>
 
-                  <div className="flex items-baseline gap-1 mb-8">
-                    <span className="text-3xl font-black text-foreground tracking-tighter">{plan.price}</span>
-                    {plan.price !== "Custom" && <span className="text-xs text-muted-foreground/60 font-bold">/mo</span>}
+                  <div className="flex flex-col mb-8">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-3xl font-black text-foreground tracking-tighter">{plan.price}</span>
+                      {plan.price !== "Custom" && <span className="text-xs text-muted-foreground/60 font-bold">/mo</span>}
+                    </div>
+                    {plan.price !== "Custom" && (
+                      <p className="text-[9px] text-muted-foreground font-bold mt-1 opacity-70">
+                        (Pricing for 25 users)
+                      </p>
+                    )}
                   </div>
 
                   <ul className="space-y-3 mb-10 flex-1">
@@ -126,14 +161,24 @@ const UpgradePlanModal = ({ isOpen, onClose, limitType = 'resources' }) => {
                   <Button
                     className={cn(
                       "w-full rounded-xl py-6 font-black text-[10px] tracking-widest uppercase transition-all duration-300",
-                      plan.popular 
+                      user?.organization?.plan === plan.id
+                        ? "bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/20"
+                        : plan.popular 
                         ? "bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20" 
                         : "bg-secondary hover:bg-secondary/80 text-foreground border border-border/20"
                     )}
-                    onClick={handlePlanAction}
-                    disabled={!isAdmin}
+                    onClick={() => handlePlanAction(plan.id)}
+                    disabled={!isAdmin || loadingPlan !== null}
                   >
-                    {isAdmin ? plan.buttonText : 'Contact Admin'}
+                    {loadingPlan === plan.id ? (
+                      <><Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" /> Processing...</>
+                    ) : !isAdmin ? (
+                      'Contact Admin'
+                    ) : user?.organization?.plan === plan.id ? (
+                      'Renew Current Plan' 
+                    ) : (
+                      plan.buttonText
+                    )}
                   </Button>
                 </div>
               ))}
