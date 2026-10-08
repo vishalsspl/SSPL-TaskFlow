@@ -66,9 +66,10 @@ export const initCronJobs = () => {
     processPlanExpirations();
   });
 
+  cron.schedule('0 * * * *', () => { processDueDateNotifications(); });
   console.log('[Cron] Scheduled jobs initialized.');
 };
-import { sendPlanExpiryWarningEmail, sendPlanExpiredEmail } from '../services/emailService.js';
+import { sendPlanExpiryWarningEmail, sendPlanExpiredEmail, sendTaskDueEmail, sendTaskOverdueEmail } from '../services/emailService.js';
 
 export const processPlanExpirations = async () => {
   console.log('[Cron] Running daily plan expiration check...');
@@ -136,5 +137,146 @@ export const processPlanExpirations = async () => {
     console.log('[Cron] Expiration check completed.');
   } catch (err) {
     console.error('[Cron] Error processing expirations:', err);
+  }
+};
+
+export const processDueDateNotifications = async () => {
+  console.log('[Cron] Running hourly due date notifications check...');
+  try {
+    const organizations = await prisma.organization.findMany({
+      where: { dbStrategy: 'DEDICATED', dbUrl: { not: null } },
+      select: { id: true, dbUrl: true, name: true }
+    });
+
+    for (const org of organizations) {
+      try {
+        const tenantDb = await tenantDbManager.getClient(org.dbUrl);
+        
+        // Find tasks that are not completed and have a due date
+        const activeTasks = await tenantDb.task.findMany({
+          where: { 
+            status: { not: 'COMPLETED' },
+            dueDate: { not: null }
+          },
+          include: {
+            assignees: {
+              include: { user: true }
+            },
+            project: {
+              include: { manager: true }
+            }
+          }
+        });
+
+        const now = new Date();
+
+        for (const task of activeTasks) {
+          const dueDate = new Date(task.dueDate);
+          const timeDiff = dueDate.getTime() - now.getTime();
+          const hoursLeft = timeDiff / (1000 * 60 * 60);
+
+          let notificationType = null;
+          let timeFrame = null;
+          let isOverdue = false;
+
+          if (hoursLeft > 24 && hoursLeft <= 48) {
+            notificationType = 'TASK_DUE_48H';
+            timeFrame = 'in 2 days';
+          } else if (hoursLeft > 0 && hoursLeft <= 24) {
+            notificationType = 'TASK_DUE_24H';
+            timeFrame = 'tomorrow';
+          } else if (hoursLeft <= 0 && hoursLeft > -24) {
+            // Task is overdue (by up to 24 hours) - we escalate
+            notificationType = 'TASK_OVERDUE';
+            isOverdue = true;
+          }
+
+          if (notificationType) {
+            for (const assignee of task.assignees) {
+              const userId = assignee.user.id;
+              
+              // Check if notification already exists
+              const existingNotif = await tenantDb.notification.findFirst({
+                where: {
+                  userId,
+                  type: notificationType,
+                  link: `/tasks/${task.id}`
+                }
+              });
+
+              if (!existingNotif) {
+                // 1. Create In-App Notification
+                await tenantDb.notification.create({
+                  data: {
+                    userId,
+                    organizationId: org.id,
+                    title: isOverdue ? 'Task Overdue' : 'Task Due Soon',
+                    message: isOverdue 
+                      ? `Task "${task.title}" is overdue!` 
+                      : `Task "${task.title}" is due ${timeFrame}.`,
+                    type: notificationType,
+                    link: `/tasks/${task.id}`
+                  }
+                });
+
+                // 2. Send Email Notification
+                if (assignee.user.email) {
+                  if (isOverdue) {
+                    await sendTaskOverdueEmail(
+                      assignee.user.email, assignee.user.name, task.title, 
+                      task.project?.name, false, process.env.FRONTEND_URL
+                    );
+                  } else {
+                    await sendTaskDueEmail(
+                      assignee.user.email, assignee.user.name, task.title, 
+                      task.project?.name, timeFrame, process.env.FRONTEND_URL
+                    );
+                  }
+                }
+              }
+            }
+
+            // If Overdue, also notify Project Manager
+            if (isOverdue && task.project?.manager) {
+              const manager = task.project.manager;
+              const managerNotif = await tenantDb.notification.findFirst({
+                where: {
+                  userId: manager.id,
+                  type: notificationType,
+                  link: `/tasks/${task.id}`
+                }
+              });
+
+              if (!managerNotif) {
+                // In-App for Manager
+                await tenantDb.notification.create({
+                  data: {
+                    userId: manager.id,
+                    organizationId: org.id,
+                    title: 'Escalation: Task Overdue',
+                    message: `Task "${task.title}" assigned in your project "${task.project.name}" is overdue.`,
+                    type: notificationType,
+                    link: `/tasks/${task.id}`
+                  }
+                });
+                
+                // Email for Manager
+                if (manager.email) {
+                  await sendTaskOverdueEmail(
+                    manager.email, manager.name, task.title, 
+                    task.project.name, true, process.env.FRONTEND_URL
+                  );
+                }
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error(`[Cron] Error checking due dates for Org: ${org.id}`, err.message);
+      }
+    }
+    console.log('[Cron] Due date notifications check completed.');
+  } catch (error) {
+    console.error('[Cron] Error running due date notifications:', error);
   }
 };

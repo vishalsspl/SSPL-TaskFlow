@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Check, ChevronsUpDown, X } from "lucide-react";
+import { Check, ChevronsUpDown, X, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -98,7 +98,24 @@ export function MultiSearchableSelect({
             </PopoverTrigger>
             <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
                 <Command>
-                    <CommandInput placeholder={searchPlaceholder} />
+                    <div className="relative flex items-center">
+                        <CommandInput placeholder={searchPlaceholder} className="pr-10" />
+                        {onAddClick && (
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setOpen(false);
+                                    onAddClick();
+                                }}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded bg-primary/10 hover:bg-primary/20 text-primary flex items-center justify-center transition-colors z-10"
+                                title={addLabel}
+                            >
+                                <Plus className="w-4 h-4" />
+                            </button>
+                        )}
+                    </div>
                     <CommandList>
                         <CommandEmpty>{emptyMessage}</CommandEmpty>
                         <CommandGroup>
@@ -123,19 +140,6 @@ export function MultiSearchableSelect({
                                 </CommandItem>
                             ))}
                         </CommandGroup>
-                        {onAddClick && (
-                            <CommandGroup>
-                                <CommandItem
-                                    onSelect={() => {
-                                        setOpen(false)
-                                        onAddClick()
-                                    }}
-                                    className="flex items-center justify-center gap-2 text-xs font-medium text-primary hover:bg-primary/10 cursor-pointer border-t"
-                                >
-                                    {addLabel}
-                                </CommandItem>
-                            </CommandGroup>
-                        )}
                     </CommandList>
                 </Command>
             </PopoverContent>

@@ -1,6 +1,6 @@
 
 import * as React from "react"
-import { Check, ChevronsUpDown } from "lucide-react"
+import { Check, ChevronsUpDown, Plus } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -64,7 +64,24 @@ export function SearchableSelect({
                     if (value.toLowerCase().includes(search.toLowerCase())) return 1
                     return 0
                 }}>
-                    <CommandInput placeholder={searchPlaceholder} />
+                    <div className="relative flex items-center">
+                        <CommandInput placeholder={searchPlaceholder} className="pr-10" />
+                        {onAddClick && (
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setOpen(false);
+                                    onAddClick();
+                                }}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded bg-primary/10 hover:bg-primary/20 text-primary flex items-center justify-center transition-colors z-10"
+                                title={addLabel}
+                            >
+                                <Plus className="w-4 h-4" />
+                            </button>
+                        )}
+                    </div>
                     <CommandList className="max-h-[200px]">
                         <CommandEmpty>{emptyMessage}</CommandEmpty>
                         <CommandGroup>
@@ -91,19 +108,6 @@ export function SearchableSelect({
                                 </CommandItem>
                             ))}
                         </CommandGroup>
-                        {onAddClick && (
-                            <CommandGroup>
-                                <CommandItem
-                                    onSelect={() => {
-                                        setOpen(false)
-                                        onAddClick()
-                                    }}
-                                    className="flex items-center justify-center gap-2 text-xs font-medium text-primary hover:bg-primary/10 cursor-pointer border-t"
-                                >
-                                    {addLabel}
-                                </CommandItem>
-                            </CommandGroup>
-                        )}
                     </CommandList>
                 </Command>
             </PopoverContent>

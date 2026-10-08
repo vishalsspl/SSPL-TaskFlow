@@ -19,12 +19,15 @@ import {
     Mail,
     X,
     File as FileIcon,
+    Plus,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 // Removed MultiSearchableSelect import as it is no longer used
 import RichTextEditor from '@/components/ui/RichTextEditor';
 import { DatePicker } from '@/components/ui/date-picker';
 import api, { getFileUrl } from '@/lib/api';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import UserForm from '@/components/forms/UserForm';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthStore } from '@/store/authStore';
 
@@ -43,9 +46,14 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
     const { user } = useAuthStore();
     const isEdit = !!task;
     
-    // Attempt to get the fully populated user object from the users array 
+    const [localUsers, setLocalUsers] = useState(users || []);
+    useEffect(() => {
+        setLocalUsers(users || []);
+    }, [users]);
+
+    // Attempt to get the fully populated user object from the localUsers array 
     // to access custom role permissions which might not be in the auth store.
-    const fullUser = users?.find(u => u.id === user?.id) || user;
+    const fullUser = localUsers?.find(u => u.id === user?.id) || user;
     const effectiveCustomRoles = (fullUser?.customRoles && fullUser.customRoles.length > 0)
         ? fullUser.customRoles
         : (user?.customRoles || []);
@@ -90,6 +98,55 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
     const [projectTasks, setProjectTasks] = useState([]);
     const [projectMemberIds, setProjectMemberIds] = useState([]);
     const [loading, setLoading] = useState(false);
+
+    // New user modal state
+    const [showUserModal, setShowUserModal] = useState(false);
+    const [newUserFormData, setNewUserFormData] = useState({
+        name: '', email: '', password: '', role: 'MEMBER', sendEmail: true
+    });
+
+    const generatePassword = () => {
+        const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+        let password = "";
+        for (let i = 0; i < 10; i++) {
+            password += charset.charAt(Math.floor(Math.random() * charset.length));
+        }
+        return password;
+    };
+
+    const handleAddUserClick = () => {
+        setNewUserFormData({
+            name: '',
+            email: '',
+            password: generatePassword(),
+            role: 'MEMBER',
+            sendEmail: true
+        });
+        setShowUserModal(true);
+    };
+
+    const handleCreateUser = async (e) => {
+        if (e && e.stopPropagation) {
+            e.stopPropagation();
+            e.preventDefault();
+        }
+        try {
+            const response = await api.post('/auth/invite', newUserFormData);
+            const createdUser = response.data.user || response.data;
+            setLocalUsers(prev => [...prev, createdUser]);
+            setFormData(prev => ({ ...prev, assigneeId: createdUser.id }));
+            
+            toast({ title: "Success", description: "Member created successfully." });
+            setShowUserModal(false);
+        } catch (error) {
+            console.error('Failed to create member:', error);
+            toast({
+                title: "Error creating member",
+                description: error.response?.data?.error || "Something went wrong",
+                variant: "destructive"
+            });
+        }
+    };
 
     useEffect(() => {
         if (formData.projectId) {
@@ -409,7 +466,7 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                         <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70 z-10" />
                         <SearchableSelect
                             options={Array.from(new Map(
-                                users
+                                localUsers
                                     .filter(u => {
                                         // If member cannot assign to others, restrict to themselves
                                         if (!canAssignOthers) return u.id === user.id;
@@ -447,6 +504,8 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                             placeholder="Select assignee..."
                             searchPlaceholder="Search team members..."
                             className="!pl-10 mobile-reduce-input"
+                            onAddClick={canAssignOthers ? handleAddUserClick : undefined}
+                            addLabel="Add New Member"
                             renderOption={(option) => (
                                 <div className="flex items-center gap-3 py-1">
                                     <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
@@ -639,6 +698,25 @@ const CreateTaskForm = ({ projects = [], users = [], onSuccess, onCancel, initia
                     {loading ? (isEdit ? 'Updating...' : 'Creating...') : (isEdit ? 'Update Task' : 'Create Task')}
                 </Button>
             </div>
+
+            <Dialog open={showUserModal} onOpenChange={setShowUserModal}>
+                <DialogContent className="sm:max-w-[480px]">
+                    <DialogHeader>
+                        <DialogTitle>Add New Member</DialogTitle>
+                        <DialogDescription>
+                            Enter the details to create a new team member.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <UserForm
+                        formData={newUserFormData}
+                        setFormData={setNewUserFormData}
+                        editingUser={null}
+                        onSubmit={handleCreateUser}
+                        onCancel={() => setShowUserModal(false)}
+                        fixedRole={true}
+                    />
+                </DialogContent>
+            </Dialog>
         </form>
     );
 };

@@ -1021,3 +1021,69 @@ export const sendPlanExpiredEmail = async (to, adminName, orgName, actionTaken) 
   }
 };
 
+
+export const sendTaskDueEmail = async (to, userName, taskTitle, projectName, timeFrame, baseUrl) => {
+  try {
+    if (!to) return null;
+    const info = await transporter.sendMail({
+      from: DEFAULT_FROM, to,
+      subject: `[TaskFlow] Reminder: Task is due ${timeFrame}`,
+      html: buildEmailTemplate({
+        actionSummary: `<strong>Reminder:</strong> A task assigned to you is due ${timeFrame}.`,
+        refLabel: `TaskFlow / ${projectName || 'General'}`,
+        refTitle: taskTitle,
+        bodyLines: [
+          `Hello ${userName},`,
+          `This is a friendly reminder that the task <strong>${taskTitle}</strong> is due ${timeFrame}.`,
+          `Please log in to update the task status.`
+        ],
+        ctaUrl: baseUrl ? `${baseUrl}/tasks` : `http://localhost:5173/tasks`,
+        ctaLabel: 'View Task'
+      }),
+    });
+    console.log(`[EmailService] Task Due Email sent to ${to}: ${info.messageId}`);
+    return info;
+  } catch (error) {
+    console.error(`[EmailService] Error sending task due email to ${to}:`, error);
+    return null;
+  }
+};
+
+export const sendTaskOverdueEmail = async (to, userName, taskTitle, projectName, isManager, baseUrl) => {
+  try {
+    if (!to) return null;
+    const subject = isManager 
+      ? `[TaskFlow] Escalation: Task is Overdue`
+      : `[TaskFlow] Urgent: Your Task is Overdue`;
+    
+    const bodyLines = isManager
+      ? [
+          `Hello ${userName},`,
+          `A task in your project <strong>${projectName || 'General'}</strong> is overdue.`,
+          `Please follow up with the assignee to ensure completion.`
+        ]
+      : [
+          `Hello ${userName},`,
+          `The task <strong>${taskTitle}</strong> is now overdue.`,
+          `Please prioritize this task or communicate with your manager.`
+        ];
+
+    const info = await transporter.sendMail({
+      from: DEFAULT_FROM, to,
+      subject,
+      html: buildEmailTemplate({
+        actionSummary: `<strong>Urgent:</strong> A task is currently overdue.`,
+        refLabel: `TaskFlow / ${projectName || 'General'}`,
+        refTitle: taskTitle,
+        bodyLines,
+        ctaUrl: baseUrl ? `${baseUrl}/tasks` : `http://localhost:5173/tasks`,
+        ctaLabel: 'View Task'
+      }),
+    });
+    console.log(`[EmailService] Task Overdue Email sent to ${to}: ${info.messageId}`);
+    return info;
+  } catch (error) {
+    console.error(`[EmailService] Error sending task overdue email to ${to}:`, error);
+    return null;
+  }
+};

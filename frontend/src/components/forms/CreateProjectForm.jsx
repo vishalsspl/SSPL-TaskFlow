@@ -13,6 +13,7 @@ import {
     Briefcase,
     Target,
     Mail,
+    Plus,
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { DatePicker } from '@/components/ui/date-picker';
@@ -43,6 +44,7 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
         managerIds: user?.role === 'MANAGER' ? [user.id] : [],
         startDate: null,
         endDate: null,
+        days: '',
         isOngoing: false,
         totalBudget: '',
         status: 'PLANNING',
@@ -54,6 +56,15 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
     const [existingProjectNames, setExistingProjectNames] = useState([]);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
+    const generatePassword = () => {
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
+        let password = "";
+        for (let i = 0; i < 10; i++) {
+            password += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return password;
+    };
+
     // New user modal state
     const [showUserModal, setShowUserModal] = useState(false);
     const [newUserRole, setNewUserRole] = useState('MANAGER');
@@ -62,7 +73,8 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
         email: '',
         role: 'MANAGER',
         password: '',
-        customRoleIds: []
+        customRoleIds: [],
+        sendEmail: true
     });
 
     const handleAddUserClick = (role) => {
@@ -71,17 +83,20 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
             name: '',
             email: '',
             role: role,
-            password: '',
-            customRoleIds: []
+            password: generatePassword(),
+            customRoleIds: [],
+            sendEmail: true
         });
         setShowUserModal(true);
     };
 
     const handleCreateUser = async (e) => {
         e.preventDefault();
+        e.stopPropagation(); // Stop event from bubbling to parent form
         try {
-            const response = await api.post('/users', newUserFormData);
-            const newUser = response.data;
+            const response = await api.post('/auth/invite', newUserFormData);
+            // The /auth/invite endpoint returns { user: {...}, message: ... }
+            const newUser = response.data.user || response.data;
             setUsers(prev => [...prev, newUser]);
             
             if (newUser.role === 'CLIENT') {
@@ -340,43 +355,78 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
                     </div>
                 </div>
 
-                {/* Row 3: Dates & Budget */}
+                {/* Days */}
+                <div className="space-y-2">
+                    <Label htmlFor="days" className="text-foreground/90 font-semibold">Days</Label>
+                    <div className="relative">
+                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-foreground/70" />
+                        <Input
+                            id="days"
+                            type="number"
+                            min="1"
+                            value={formData.days}
+                            onChange={(e) => {
+                                const daysStr = e.target.value;
+                                const days = parseInt(daysStr, 10);
+                                const newFormData = { ...formData, days: daysStr };
+                                
+                                if (!isNaN(days) && days > 0) {
+                                    const start = formData.startDate ? new Date(formData.startDate) : new Date();
+                                    const end = new Date(start);
+                                    end.setDate(start.getDate() + days);
+                                    newFormData.startDate = start;
+                                    newFormData.endDate = end;
+                                    newFormData.isOngoing = false;
+                                }
+                                setFormData(newFormData);
+                            }}
+                            placeholder="e.g. 15"
+                            className="!pl-10 transition-all focus:ring-2 focus:ring-primary/20"
+                        />
+                    </div>
+                </div>
+
+                {/* Start Date */}
                 <div className="space-y-2">
                     <Label htmlFor="startDate" className="text-foreground/90 font-semibold">Start Date <span className="text-red-500">*</span></Label>
                     <div className="relative">
                         <DatePicker
                             date={formData.startDate}
-                            setDate={(date) => setFormData({ ...formData, startDate: date })}
+                            setDate={(date) => setFormData({ ...formData, startDate: date, days: '' })}
                             placeholder="Select start date"
                             className=""
                         />
                     </div>
                 </div>
 
+                {/* Ongoing Toggle */}
+                <div className="space-y-2">
+                    <Label htmlFor="isOngoing" className="text-foreground/90 font-semibold">Ongoing Project</Label>
+                    <div className="flex items-center h-8 sm:h-9 w-full rounded-md border border-input bg-secondary/5 px-2 sm:px-3 gap-2">
+                        <Switch
+                            id="isOngoing"
+                            className="scale-90"
+                            checked={formData.isOngoing}
+                            onCheckedChange={(val) => setFormData({ ...formData, isOngoing: val, endDate: val ? null : formData.endDate, days: val ? '' : formData.days })}
+                        />
+                        <Label htmlFor="isOngoing" className="text-xs font-bold text-muted-foreground uppercase cursor-pointer whitespace-nowrap">Yes</Label>
+                    </div>
+                </div>
+
                 {/* End Date */}
                 <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                        <Label htmlFor="endDate" className="text-foreground/90 font-semibold">End Date</Label>
-                        <div className="flex items-center gap-1.5">
-                            <Label htmlFor="isOngoing" className="text-[10px] font-bold text-muted-foreground uppercase cursor-pointer">Ongoing</Label>
-                            <Switch
-                                id="isOngoing"
-                                className="scale-75"
-                                checked={formData.isOngoing}
-                                onCheckedChange={(val) => setFormData({ ...formData, isOngoing: val, endDate: val ? null : formData.endDate })}
-                            />
-                        </div>
-                    </div>
+                    <Label htmlFor="endDate" className="text-foreground/90 font-semibold whitespace-nowrap">End Date</Label>
                     <div className="relative">
                         <DatePicker
                             date={formData.endDate}
-                            setDate={(date) => setFormData({ ...formData, endDate: date })}
+                            setDate={(date) => setFormData({ ...formData, endDate: date, days: '' })}
                             disabled={formData.isOngoing}
                             placeholder="Select end date"
                         />
                     </div>
                 </div>
 
+                {/* Row 4: Budget */}
                 <div className="space-y-2">
                     <Label htmlFor="totalBudget" className="text-foreground/90 font-semibold">Total Budget (₹)</Label>
                     <div className="relative">
@@ -486,6 +536,7 @@ const CreateProjectForm = ({ onSuccess, onCancel }) => {
                         editingUser={null}
                         onSubmit={handleCreateUser}
                         onCancel={() => setShowUserModal(false)}
+                        fixedRole={true}
                     />
                 </DialogContent>
             </Dialog>

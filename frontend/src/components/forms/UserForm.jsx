@@ -7,7 +7,7 @@ import { User, Mail, Shield, Lock, Eye, EyeOff } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { useAuthStore } from '@/store/authStore';
 
-const UserForm = ({ formData, setFormData, editingUser, onSubmit, onCancel, onSendResetLink, customRoles = [] }) => {
+const UserForm = ({ formData, setFormData, editingUser, onSubmit, onCancel, onSendResetLink, customRoles = [], fixedRole = false }) => {
   const { user: currentUser } = useAuthStore();
   const [showPassword, setShowPassword] = useState(!editingUser);
 
@@ -50,6 +50,7 @@ const UserForm = ({ formData, setFormData, editingUser, onSubmit, onCancel, onSe
         </div>
 
         {/* Role */}
+        {!fixedRole && (
         <div className="space-y-2">
           <Label htmlFor="role" className="text-foreground/90 font-semibold mobile-reduce-label">Role <span className="text-red-500">*</span></Label>
           <div className="relative">
@@ -67,6 +68,7 @@ const UserForm = ({ formData, setFormData, editingUser, onSubmit, onCancel, onSe
             />
           </div>
         </div>
+        )}
 
         {/* Profile */}
         <div className="space-y-2">
