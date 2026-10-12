@@ -1,15 +1,19 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useSearchParams, Link, useNavigate } from 'react-router-dom';
+import { useAuthStore } from '@/store/authStore';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, CheckCircle, Eye, EyeOff, ShieldCheck, Lock } from 'lucide-react';
+import { AlertCircle, CheckCircle, Eye, EyeOff, ShieldCheck, Lock, ArrowLeft } from 'lucide-react';
 
 const ResetPassword = () => {
-  const { token } = useParams();
+  const { token: paramToken } = useParams();
+  const [searchParams] = useSearchParams();
+  const token = paramToken || searchParams.get('token');
   const navigate = useNavigate();
+  const { logout } = useAuthStore();
   const [formData, setFormData] = useState({ password: '', confirmPassword: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -17,6 +21,19 @@ const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [orgInfo, setOrgInfo] = useState(null);
+
+  useEffect(() => {
+    // If a session already exists in this browser, log out so it does not conflict
+    if (useAuthStore.getState().token) {
+      logout();
+    }
+  }, [logout]);
+
+  useEffect(() => {
+    if (!token) {
+      setError('Invalid or missing password reset token. Please request a new link.');
+    }
+  }, [token]);
 
   useEffect(() => {
     const fetchOrgInfo = async () => {
@@ -32,6 +49,10 @@ const ResetPassword = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!token) {
+      setError('Missing reset token. Please request a new link.');
+      return;
+    }
     if (formData.password.length < 6) {
       setError('Password must be at least 6 characters');
       return;
@@ -48,6 +69,7 @@ const ResetPassword = () => {
     try {
       await api.post('/auth/reset-password', { token, password: formData.password });
       setSuccess(true);
+      logout();
       setTimeout(() => { navigate('/login?passwordUpdate=success'); }, 3000);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to reset password. The link might be expired.');
@@ -139,6 +161,12 @@ const ResetPassword = () => {
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? 'Resetting...' : 'Reset Password'}
               </Button>
+
+              <div className="pt-2 text-center text-sm">
+                <Link to="/login" className="text-primary hover:underline font-medium inline-flex items-center gap-1.5">
+                  <ArrowLeft className="w-3.5 h-3.5" /> Back to login
+                </Link>
+              </div>
             </form>
           )}
         </CardContent>

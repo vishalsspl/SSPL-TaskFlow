@@ -34,14 +34,20 @@ export function SearchableSelect({
     ...props
 }) {
     const [open, setOpen] = React.useState(false)
+    const [search, setSearch] = React.useState("")
 
     // Find current option
     const selectedOption = React.useMemo(() => {
         return options.find((option) => option.value === value)
     }, [options, value])
 
+    const handleOpenChange = (isOpen) => {
+        setOpen(isOpen)
+        if (!isOpen) setSearch("")
+    }
+
     return (
-        <Popover open={open} onOpenChange={setOpen}>
+        <Popover open={open} onOpenChange={handleOpenChange}>
             <PopoverTrigger asChild>
                 <Button
                     variant="outline"
@@ -65,25 +71,54 @@ export function SearchableSelect({
                     return 0
                 }}>
                     <div className="relative flex items-center">
-                        <CommandInput placeholder={searchPlaceholder} className="pr-10" />
+                        <CommandInput
+                            placeholder={searchPlaceholder}
+                            className="pr-10"
+                            value={search}
+                            onValueChange={setSearch}
+                        />
                         {onAddClick && (
                             <button
                                 type="button"
                                 onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
+                                    const currentSearch = search;
                                     setOpen(false);
-                                    onAddClick();
+                                    onAddClick(currentSearch);
                                 }}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded bg-primary/10 hover:bg-primary/20 text-primary flex items-center justify-center transition-colors z-10"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary flex items-center justify-center transition-colors z-10 cursor-pointer"
                                 title={addLabel}
+                                aria-label={addLabel}
                             >
                                 <Plus className="w-4 h-4" />
                             </button>
                         )}
                     </div>
                     <CommandList className="max-h-[200px]">
-                        <CommandEmpty>{emptyMessage}</CommandEmpty>
+                        <CommandEmpty>
+                            {onAddClick ? (
+                                <div className="py-2.5 px-3 text-center space-y-2">
+                                    <p className="text-muted-foreground text-xs">{emptyMessage}</p>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            const currentSearch = search;
+                                            setOpen(false);
+                                            onAddClick(currentSearch);
+                                        }}
+                                        className="w-full text-xs py-1.5 px-2 rounded-md bg-primary/10 hover:bg-primary/20 text-primary font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                                    >
+                                        <Plus className="w-3.5 h-3.5" />
+                                        <span>Create &ldquo;{search || addLabel}&rdquo;</span>
+                                    </button>
+                                </div>
+                            ) : (
+                                emptyMessage
+                            )}
+                        </CommandEmpty>
                         <CommandGroup>
                             {options.map((option) => (
                                 <CommandItem

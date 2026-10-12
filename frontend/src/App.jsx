@@ -228,7 +228,11 @@ function App() {
             />
             <Route
               path="/reset-password/:token"
-              element={!token ? <ResetPassword /> : <RoleBasedRedirect />}
+              element={<ResetPassword />}
+            />
+            <Route
+              path="/reset-password"
+              element={<ResetPassword />}
             />
             <Route path="/pending-approval" element={<PendingApproval />} />
             <Route path="/pricing" element={<Pricing />} />

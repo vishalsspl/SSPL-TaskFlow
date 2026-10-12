@@ -166,7 +166,7 @@ const Layout = () => {
       permKey: 'tickets.view'
     },
     {
-      name: 'Team',
+      name: 'Members',
       href: '/team',
       icon: Users,
       allowedRoles: ['ADMIN', 'MANAGER'],

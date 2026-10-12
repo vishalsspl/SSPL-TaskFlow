@@ -808,6 +808,7 @@ export const getManagedUsers = async (req, res) => {
         email: true,
         role: true,
         avatar: true,
+        customRoles: { select: { id: true, name: true, permissions: true } },
         taskAssignments: {
           where: {
             task: { projectId: { in: projectIds } }

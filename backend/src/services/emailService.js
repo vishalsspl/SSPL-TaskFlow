@@ -1087,3 +1087,57 @@ export const sendTaskOverdueEmail = async (to, userName, taskTitle, projectName,
     return null;
   }
 };
+
+export const sendProjectDueEmail = async (to, userName, projectName, timeFrame, baseUrl) => {
+  try {
+    if (!to) return null;
+    const info = await transporter.sendMail({
+      from: DEFAULT_FROM, to,
+      subject: `[TaskFlow] Reminder: Project is due ${timeFrame}`,
+      html: buildEmailTemplate({
+        actionSummary: `<strong>Reminder:</strong> A project you manage is due ${timeFrame}.`,
+        refLabel: `TaskFlow / Project`,
+        refTitle: projectName,
+        bodyLines: [
+          `Hello ${userName},`,
+          `This is a friendly reminder that the project <strong>${projectName}</strong> is due ${timeFrame}.`,
+          `Please review the project progress to ensure a timely completion.`
+        ],
+        ctaUrl: baseUrl ? `${baseUrl}/projects` : `http://localhost:5173/projects`,
+        ctaLabel: 'View Project'
+      }),
+    });
+    console.log(`[EmailService] Project Due Email sent to ${to}: ${info.messageId}`);
+    return info;
+  } catch (error) {
+    console.error(`[EmailService] Error sending project due email to ${to}:`, error);
+    return null;
+  }
+};
+
+export const sendProjectOverdueEmail = async (to, userName, projectName, baseUrl) => {
+  try {
+    if (!to) return null;
+    const info = await transporter.sendMail({
+      from: DEFAULT_FROM, to,
+      subject: `[TaskFlow] Urgent: Project is Overdue`,
+      html: buildEmailTemplate({
+        actionSummary: `<strong>Urgent:</strong> A project is currently overdue.`,
+        refLabel: `TaskFlow / Project`,
+        refTitle: projectName,
+        bodyLines: [
+          `Hello ${userName},`,
+          `The project <strong>${projectName}</strong> is now overdue.`,
+          `Please review the project and adjust the schedule or tasks accordingly.`
+        ],
+        ctaUrl: baseUrl ? `${baseUrl}/projects` : `http://localhost:5173/projects`,
+        ctaLabel: 'View Project'
+      }),
+    });
+    console.log(`[EmailService] Project Overdue Email sent to ${to}: ${info.messageId}`);
+    return info;
+  } catch (error) {
+    console.error(`[EmailService] Error sending project overdue email to ${to}:`, error);
+    return null;
+  }
+};

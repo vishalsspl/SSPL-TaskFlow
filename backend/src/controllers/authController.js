@@ -109,7 +109,7 @@ export const login = async (req, res) => {
     return res.status(503).json({ error: 'Database is temporarily unavailable. Please try again in a few seconds.' });
   }
 
-  if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+  if (!user) return res.status(401).json({ error: 'No account exists with this email address' });
 
   // 2. Verify password against MAIN DB passwordHash
   const validPassword = await bcrypt.compare(password, user.passwordHash);
@@ -1140,6 +1140,7 @@ export const resetPassword = async (req, res) => {
     where: { id: user.id },
     data: {
       passwordHash,
+      mustChangePassword: false,
       resetToken: null,
       resetTokenExpiry: null
     }
@@ -1156,7 +1157,7 @@ export const resetPassword = async (req, res) => {
         const tenantClient = await tenantDbManager.getClient(org.dbUrl);
         await tenantClient.user.update({
           where: { id: user.id },
-          data: { passwordHash }
+          data: { passwordHash, mustChangePassword: false }
         });
       }
     } catch (tenantErr) {

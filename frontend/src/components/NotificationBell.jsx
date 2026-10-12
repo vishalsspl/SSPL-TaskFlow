@@ -60,7 +60,15 @@ const NotificationBell = () => {
 
   // Derive a navigation link from the notification type or stored link
   const getNotificationLink = (notification) => {
-    if (notification.link) return notification.link;
+    if (notification.link) {
+      if (notification.link.startsWith('/tasks/')) {
+        const taskId = notification.link.split('/')[2];
+        if (taskId) {
+          return `/task-board?highlight=${taskId}&action=view`;
+        }
+      }
+      return notification.link;
+    }
     switch (notification.type) {
       case 'WORKLOG_SUBMITTED':
       case 'TIMESHEET_APPROVED':
@@ -73,10 +81,17 @@ const NotificationBell = () => {
       case 'TASK_STATUS_UPDATED':
       case 'TASK_APPROVED':
       case 'TASK_REJECTED':
+      case 'TASK_OVERDUE':
+      case 'TASK_DUE_24H':
+      case 'TASK_DUE_48H':
         return '/task-board';
       case 'TASK_APPROVAL_REQUEST':
         return '/task-board';
       case 'PROJECT_ASSIGNED':
+      case 'PROJECT_DUE_7D':
+      case 'PROJECT_DUE_48H':
+      case 'PROJECT_DUE_24H':
+      case 'PROJECT_OVERDUE':
         return '/projects';
       case 'CHAT_MESSAGE':
         return '/chat';
@@ -106,6 +121,12 @@ const NotificationBell = () => {
     switch (type) {
       case 'PROJECT_ASSIGNED':
         return <div className="p-1.5 bg-primary/10 rounded-full"><FolderKanban className="w-3.5 h-3.5 text-primary" /></div>;
+      case 'PROJECT_DUE_7D':
+      case 'PROJECT_DUE_48H':
+      case 'PROJECT_DUE_24H':
+        return <div className="p-1.5 bg-orange-500/10 rounded-full"><FolderKanban className="w-3.5 h-3.5 text-orange-500" /></div>;
+      case 'PROJECT_OVERDUE':
+        return <div className="p-1.5 bg-red-500/10 rounded-full"><FolderKanban className="w-3.5 h-3.5 text-red-500" /></div>;
       case 'TASK_ASSIGNED':
         return <div className="p-1.5 bg-primary/10 rounded-full"><ListTodo className="w-3.5 h-3.5 text-primary" /></div>;
       case 'TASK_STATUS_UPDATED':
@@ -124,6 +145,11 @@ const NotificationBell = () => {
       case 'WORKLOG_SUBMITTED':
       case 'LEAVE_SUBMITTED':
         return <div className="p-1.5 bg-amber-500/10 rounded-full"><Clock className="w-3.5 h-3.5 text-amber-500" /></div>;
+      case 'TASK_OVERDUE':
+        return <div className="p-1.5 bg-red-500/10 rounded-full"><Clock className="w-3.5 h-3.5 text-red-500" /></div>;
+      case 'TASK_DUE_24H':
+      case 'TASK_DUE_48H':
+        return <div className="p-1.5 bg-orange-500/10 rounded-full"><Clock className="w-3.5 h-3.5 text-orange-500" /></div>;
       case 'NEW_ORG_SIGNUP':
         return <div className="p-1.5 bg-[#48A111]/20 rounded-full shadow-[0_0_10px_rgba(72,161,17,0.2)]"><Building2 className="w-3.5 h-3.5 text-[#48A111]" /></div>;
       case 'TICKET_CREATED':

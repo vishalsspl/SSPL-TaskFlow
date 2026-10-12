@@ -208,8 +208,10 @@ export const createTimeEntry = async (req, res) => {
 
     const entryDate = new Date(date);
     const now = new Date();
+    // Add a 24-hour buffer to account for timezone differences (e.g. user in Asia, server in UTC)
+    const futureBuffer = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 
-    if (entryDate > now) {
+    if (entryDate > futureBuffer) {
         if (!isLeaveEntry) {
             return res.status(400).json({ error: 'Cannot log work hours for future dates. Only leave entries are allowed for future dates.' });
         }
