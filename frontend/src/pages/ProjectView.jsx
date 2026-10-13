@@ -418,18 +418,24 @@ const ProjectView = () => {
     );
   }
 
-  const { project, overview, budget, phases, overdueTasks, workloads: originalWorkloads, upcomingDeadlines } = dashboard;
+  const { project, overview, budget, phases, overdueTasks, workloads: originalWorkloads = [], upcomingDeadlines } = dashboard;
   
   const workloads = project.name?.toLowerCase() === 'general' && users.length > 0
     ? users
         .filter(u => u.role !== 'ADMIN' && u.role !== 'CLIENT')
         .map(u => {
-          const existing = originalWorkloads.find(w => w.user.id === u.id);
+          const existing = (originalWorkloads || []).find(w => w.user?.id === u.id);
           return existing || { user: u, workloadPercentage: 0 };
         })
-    : originalWorkloads;
+    : (originalWorkloads || []);
 
-  const workloadChartData = workloads.map((w) => ({ name: w.user.name, workload: w.workloadPercentage }));
+  const activeWorkloadData = (workloads || [])
+    .filter((w) => Number(w.workloadPercentage) > 0)
+    .map((w) => ({ name: w.user?.name || 'Unknown', workload: Number(w.workloadPercentage) || 0 }));
+
+  const workloadChartData = activeWorkloadData.length > 0
+    ? activeWorkloadData
+    : (workloads || []).map((w) => ({ name: w.user?.name || 'Unknown', workload: Number(w.workloadPercentage) || 0 }));
 
   const overviewContent = (
     <TabsContent value="overview" className="space-y-6 mt-0">

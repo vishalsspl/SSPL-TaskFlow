@@ -93,16 +93,25 @@ const ProjectOverview = ({ projectId }) => {
         return null; // Don't render anything if no data
     }
 
-    const { project, overview, phases, overdueTasks, workloads, upcomingDeadlines, tasks } = dashboard;
+    const { project, overview, phases, overdueTasks, workloads = [], upcomingDeadlines, tasks } = dashboard;
 
     const totalOverduePages = Math.ceil((overdueTasks?.length || 0) / itemsPerPage);
     const currentOverduePage = Math.min(overduePage, Math.max(1, totalOverduePages));
     const paginatedOverdueTasks = overdueTasks?.slice((currentOverduePage - 1) * itemsPerPage, currentOverduePage * itemsPerPage) || [];
 
-    const workloadChartData = workloads.map((w) => ({
-        name: w.user.name,
-        workload: w.workloadPercentage,
-    }));
+    const activeWorkloadData = (workloads || [])
+        .filter((w) => Number(w.workloadPercentage) > 0)
+        .map((w) => ({
+            name: w.user?.name || 'Unknown',
+            workload: Number(w.workloadPercentage) || 0,
+        }));
+
+    const workloadChartData = activeWorkloadData.length > 0
+        ? activeWorkloadData
+        : (workloads || []).map((w) => ({
+            name: w.user?.name || 'Unknown',
+            workload: Number(w.workloadPercentage) || 0,
+        }));
 
     return (
         <div className="space-y-6 mb-8">
@@ -232,9 +241,9 @@ const ProjectOverview = ({ projectId }) => {
                                 <BarChart data={workloadChartData}>
                                     <CartesianGrid strokeDasharray="3 3" />
                                     <XAxis dataKey="name" style={{ fontSize: '10px' }} />
-                                    <YAxis style={{ fontSize: '10px' }} />
-                                    <Tooltip />
-                                    <Bar dataKey="workload" fill="#3B82F6" />
+                                    <YAxis style={{ fontSize: '10px' }} domain={[0, 100]} unit="%" />
+                                    <Tooltip formatter={(value) => [`${value}%`, 'Workload']} />
+                                    <Bar dataKey="workload" fill="#3B82F6" radius={[4, 4, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
                         ) : (

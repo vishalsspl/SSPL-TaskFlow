@@ -500,6 +500,19 @@ export const createTask = async (req, res) => {
     },
   });
 
+  // Auto-link assignees to project workload table
+  if (assigneeIds && assigneeIds.length > 0 && projectId) {
+    try {
+      Promise.all(assigneeIds.map(uid =>
+        req.db.workload.upsert({
+          where: { userId_projectId: { userId: uid, projectId } },
+          update: {},
+          create: { userId: uid, projectId, workloadPercentage: 0 }
+        }).catch(() => {})
+      )).catch(() => {});
+    } catch (e) {}
+  }
+
   // Log activity
   try {
     const assigneeNames = task.assignees?.map(a => a.user?.name).filter(Boolean).join(', ') || 'Unassigned';
@@ -1057,6 +1070,20 @@ export const updateTask = async (req, res) => {
       parent: { select: { id: true, title: true, type: true, shortId: true } },
     },
   });
+
+  // Auto-link assignees to project workload table
+  if (assigneeIds !== undefined && newAssigneeIds && newAssigneeIds.length > 0 && (task.projectId || existingTask.projectId)) {
+    const targetProjId = task.projectId || existingTask.projectId;
+    try {
+      Promise.all(newAssigneeIds.map(uid =>
+        req.db.workload.upsert({
+          where: { userId_projectId: { userId: uid, projectId: targetProjId } },
+          update: {},
+          create: { userId: uid, projectId: targetProjId, workloadPercentage: 0 }
+        }).catch(() => {})
+      )).catch(() => {});
+    } catch (e) {}
+  }
 
   // Log activity
   try {

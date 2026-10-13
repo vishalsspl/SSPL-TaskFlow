@@ -130,24 +130,87 @@ export const getDashboard = async (req, res) => {
     },
   });
 
-  let totalEffort = 0;
-  const userEfforts = {};
+  // Collect all unique members involved in this project:
+  // 1. From dbWorkloads
+  // 2. From task assignees
+  // 3. From project.managers
+  const userMap = new Map();
 
-  tasks.filter(t => t.status !== 'COMPLETED').forEach(t => {
-    const effort = t.storyPoints || 1;
-    t.assignees.forEach(a => {
-      const uid = a.user.id;
-      userEfforts[uid] = (userEfforts[uid] || 0) + effort;
-      totalEffort += effort;
+  dbWorkloads.forEach(w => {
+    if (w.user?.id) {
+      userMap.set(w.user.id, {
+        userId: w.user.id,
+        projectId,
+        user: w.user,
+        calculatedAt: w.calculatedAt || new Date(),
+      });
+    }
+  });
+
+  tasks.forEach(t => {
+    t.assignees?.forEach(a => {
+      if (a.user?.id && !userMap.has(a.user.id)) {
+        userMap.set(a.user.id, {
+          userId: a.user.id,
+          projectId,
+          user: a.user,
+          calculatedAt: new Date(),
+        });
+      }
     });
   });
 
-  const workloads = dbWorkloads.map(w => {
+  if (project.managers && Array.isArray(project.managers)) {
+    project.managers.forEach(m => {
+      if (m?.id && !userMap.has(m.id)) {
+        userMap.set(m.id, {
+          userId: m.id,
+          projectId,
+          user: m,
+          calculatedAt: new Date(),
+        });
+      }
+    });
+  }
+
+  // Calculate effort: use active tasks if available, otherwise fall back to all tasks
+  const activeTasks = tasks.filter(t => t.status !== 'COMPLETED');
+  const tasksForEffort = activeTasks.length > 0 ? activeTasks : tasks;
+
+  let totalEffort = 0;
+  const userEfforts = {};
+
+  tasksForEffort.forEach(t => {
+    const effort = Number(t.storyPoints) > 0 ? Number(t.storyPoints) : 1;
+    t.assignees?.forEach(a => {
+      if (a.user?.id) {
+        const uid = a.user.id;
+        userEfforts[uid] = (userEfforts[uid] || 0) + effort;
+        totalEffort += effort;
+      }
+    });
+  });
+
+  const workloads = Array.from(userMap.values()).map(w => {
     const uid = w.user.id;
     const uEffort = userEfforts[uid] || 0;
     const percentage = totalEffort > 0 ? Math.round((uEffort / totalEffort) * 100) : 0;
     return { ...w, workloadPercentage: Math.min(100, percentage) };
   });
+
+  // Auto-sync missing members to req.db.workload in the background
+  try {
+    const missingUserIds = Array.from(userMap.keys()).filter(uid => !dbWorkloads.some(w => w.userId === uid));
+    if (missingUserIds.length > 0) {
+      Promise.all(missingUserIds.map(uid =>
+        req.db.workload.upsert({
+          where: { userId_projectId: { userId: uid, projectId } },
+          update: {},
+          create: { userId: uid, projectId, workloadPercentage: 0 }
+        }).catch(() => {})
+      )).catch(() => {});
+    }
+  } catch (e) {}
 
   // Get upcoming deadlines
   const upcomingDeadlines = tasks

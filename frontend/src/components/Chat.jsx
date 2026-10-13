@@ -562,7 +562,7 @@ const Chat = ({ projectId = null, title = "General Chat", onBack = null, isDM = 
     const canDeleteMessages = user.role === 'ADMIN' || user?.permissions?.['chat.deleteMessages'];
 
     return (
-        <div className="flex flex-col h-full bg-card rounded-xl border border-border overflow-hidden shadow-2xl">
+        <div className="flex flex-col h-full bg-card rounded-xl border border-border overflow-hidden">
             <div className="p-4 border-b border-border bg-secondary/20 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-3 min-w-0">
                     {onBack && (

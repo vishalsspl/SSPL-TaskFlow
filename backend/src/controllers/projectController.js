@@ -519,26 +519,70 @@ export const getProject = async (req, res) => {
   }
 
   // Calculate workload balance for team members
-  let totalEffort = 0;
-  const userEfforts = {};
+  // Collect all unique members involved in this project:
+  // 1. From project.workloads
+  // 2. From task assignees
+  // 3. From project.managers
+  const userMap = new Map();
 
-  project.tasks.filter(t => t.status !== 'COMPLETED').forEach(t => {
-    const effort = t.storyPoints || 1;
-    t.assignees.forEach(a => {
-      const uid = a.user.id;
-      userEfforts[uid] = (userEfforts[uid] || 0) + effort;
-      totalEffort += effort;
+  (project.workloads || []).forEach(w => {
+    if (w.user?.id) {
+      userMap.set(w.user.id, {
+        userId: w.user.id,
+        projectId: project.id,
+        user: w.user,
+        calculatedAt: w.calculatedAt || new Date(),
+      });
+    }
+  });
+
+  (project.tasks || []).forEach(t => {
+    t.assignees?.forEach(a => {
+      if (a.user?.id && !userMap.has(a.user.id)) {
+        userMap.set(a.user.id, {
+          userId: a.user.id,
+          projectId: project.id,
+          user: a.user,
+          calculatedAt: new Date(),
+        });
+      }
     });
   });
 
-  if (project.workloads) {
-    project.workloads = project.workloads.map(w => {
-      const uid = w.user.id;
-      const uEffort = userEfforts[uid] || 0;
-      const percentage = totalEffort > 0 ? Math.round((uEffort / totalEffort) * 100) : 0;
-      return { ...w, workloadPercentage: Math.min(100, percentage) };
+  (project.managers || []).forEach(m => {
+    if (m?.id && !userMap.has(m.id)) {
+      userMap.set(m.id, {
+        userId: m.id,
+        projectId: project.id,
+        user: m,
+        calculatedAt: new Date(),
+      });
+    }
+  });
+
+  const activeTasks = (project.tasks || []).filter(t => t.status !== 'COMPLETED');
+  const tasksForEffort = activeTasks.length > 0 ? activeTasks : (project.tasks || []);
+
+  let totalEffort = 0;
+  const userEfforts = {};
+
+  tasksForEffort.forEach(t => {
+    const effort = Number(t.storyPoints) > 0 ? Number(t.storyPoints) : 1;
+    t.assignees?.forEach(a => {
+      if (a.user?.id) {
+        const uid = a.user.id;
+        userEfforts[uid] = (userEfforts[uid] || 0) + effort;
+        totalEffort += effort;
+      }
     });
-  }
+  });
+
+  project.workloads = Array.from(userMap.values()).map(w => {
+    const uid = w.user.id;
+    const uEffort = userEfforts[uid] || 0;
+    const percentage = totalEffort > 0 ? Math.round((uEffort / totalEffort) * 100) : 0;
+    return { ...w, workloadPercentage: Math.min(100, percentage) };
+  });
 
   res.json({ ...project, progress });
 };
