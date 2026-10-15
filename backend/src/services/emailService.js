@@ -966,21 +966,35 @@ export const sendVerificationOTPEmail = async (to, userName, otp) => {
   }
 };
 
-export const sendPlanExpiryWarningEmail = async (to, adminName, orgName, daysLeft) => {
+export const sendPlanExpiryWarningEmail = async (to, adminName, orgName, daysLeft, isAutoRenew = false) => {
   try {
     if (!to) return null;
-    const info = await transporter.sendMail({
-      from: DEFAULT_FROM, to,
-      subject: `[TaskFlow] Action Required: Plan expiring in ${daysLeft} days`,
-      html: buildEmailTemplate({
-        actionSummary: `Your TaskFlow plan is expiring soon.`,
-        refLabel: 'TaskFlow / Billing',
-        refTitle: orgName,
-        bodyLines: [
+    const subject = isAutoRenew
+      ? `[TaskFlow] Notice: Plan renewing in ${daysLeft} days (Auto-Debit Active)`
+      : `[TaskFlow] Action Required: Plan expiring in ${daysLeft} days`;
+    const actionSummary = isAutoRenew
+      ? `Your TaskFlow plan will renew automatically.`
+      : `Your TaskFlow plan is expiring soon.`;
+    const bodyLines = isAutoRenew
+      ? [
+          `Hello ${adminName},`,
+          `Your organization's subscription is scheduled to automatically renew in <strong>${daysLeft} days</strong>.`,
+          `Your registered payment method will be charged automatically on the renewal date. If you wish to modify your plan or disable auto-debit, please visit billing settings.`
+        ]
+      : [
           `Hello ${adminName},`,
           `Your organization's paid plan will expire in <strong>${daysLeft} days</strong>.`,
-          `Please renew your subscription to avoid service interruption or automatic downgrade to the FREE plan.`
-        ],
+          `Automatic renewal is OFF. Please renew your subscription manually before expiration to avoid service interruption or automatic downgrade to the FREE plan.`
+        ];
+
+    const info = await transporter.sendMail({
+      from: DEFAULT_FROM, to,
+      subject,
+      html: buildEmailTemplate({
+        actionSummary,
+        refLabel: 'TaskFlow / Billing',
+        refTitle: orgName,
+        bodyLines,
         ctaUrl: `http://localhost:5173/admin/billing`,
         ctaLabel: 'Manage Billing'
       }),
@@ -1017,6 +1031,94 @@ export const sendPlanExpiredEmail = async (to, adminName, orgName, actionTaken) 
     return info;
   } catch (error) {
     console.error(`[EmailService] Error sending plan expired email to ${to}:`, error);
+    return null;
+  }
+};
+
+export const sendPlanRenewedEmailToOrg = async (to, adminName, orgName, details, baseUrl) => {
+  try {
+    if (!to) return null;
+    const isAuto = details.isAutoRenewal || details.isAutoRenew;
+    const subject = `[TaskFlow] Payment Receipt: ${details.plan} Plan Subscription Renewed`;
+    const actionSummary = `Your subscription for <strong>${orgName}</strong> has been successfully renewed.`;
+    const bodyLines = [
+      `Hello ${adminName},`,
+      `We have successfully processed your payment for the <strong>${details.plan}</strong> plan. Your organization's workspace access has been extended.`,
+      isAuto
+        ? `Automatic renewal is <strong>ON</strong>. Your next automatic billing date is <strong>${details.nextBillingDate}</strong>.`
+        : `Automatic renewal is <strong>OFF</strong>. Your plan will remain active until <strong>${details.nextBillingDate}</strong>.`
+    ];
+
+    const fields = [
+      { label: 'Organization', value: orgName },
+      { label: 'Plan Tier', value: details.plan },
+      { label: 'Amount Paid', value: `₹${Number(details.amount).toLocaleString('en-IN')}` },
+      { label: 'Invoice Number', value: details.invoiceNumber },
+      { label: 'Billing Period', value: `${details.periodStart} - ${details.periodEnd}` },
+      { label: 'Renewal Type', value: isAuto ? 'Automatic Recurring (Auto-Debit)' : 'Manual Renewal' }
+    ];
+
+    const info = await transporter.sendMail({
+      from: DEFAULT_FROM,
+      to,
+      subject,
+      html: buildEmailTemplate({
+        actionSummary,
+        refLabel: 'TaskFlow / Billing Receipt',
+        refTitle: `Invoice ${details.invoiceNumber}`,
+        bodyLines,
+        fields,
+        ctaUrl: baseUrl ? `${baseUrl}/billing` : 'http://localhost:5173/billing',
+        ctaLabel: 'View Invoice & Billing'
+      }),
+    });
+    console.log(`[EmailService] Plan Renewed Email sent to Org Admin ${to}: ${info.messageId}`);
+    return info;
+  } catch (error) {
+    console.error(`[EmailService] Error sending plan renewed email to ${to}:`, error);
+    return null;
+  }
+};
+
+export const sendPlanRenewedNotificationToSuperAdmin = async (to, superAdminName, details, baseUrl) => {
+  try {
+    if (!to) return null;
+    const isAuto = details.isAutoRenewal || details.isAutoRenew;
+    const subject = `[TaskFlow SuperAdmin] Plan Renewed: ${details.orgName} (${details.plan} Plan)`;
+    const actionSummary = `<strong>${details.orgName}</strong> has renewed their subscription.`;
+    const bodyLines = [
+      `Hello ${superAdminName},`,
+      `An organization on TaskFlow has successfully completed a subscription payment and renewed their plan.`
+    ];
+
+    const fields = [
+      { label: 'Organization Name', value: details.orgName },
+      { label: 'Admin Email', value: details.adminEmail || 'N/A' },
+      { label: 'Plan Renewed', value: details.plan },
+      { label: 'Amount Paid', value: `₹${Number(details.amount).toLocaleString('en-IN')}` },
+      { label: 'Invoice Number', value: details.invoiceNumber },
+      { label: 'Active Period', value: `${details.periodStart} - ${details.periodEnd}` },
+      { label: 'Renewal Method', value: isAuto ? 'Automatic Recurring (Stripe)' : 'Manual Renewal' }
+    ];
+
+    const info = await transporter.sendMail({
+      from: DEFAULT_FROM,
+      to,
+      subject,
+      html: buildEmailTemplate({
+        actionSummary,
+        refLabel: 'TaskFlow / SuperAdmin Billing',
+        refTitle: `Renewal: ${details.orgName}`,
+        bodyLines,
+        fields,
+        ctaUrl: baseUrl ? `${baseUrl}/superadmin/billing` : 'http://localhost:5173/superadmin/billing',
+        ctaLabel: 'View Global Billing'
+      }),
+    });
+    console.log(`[EmailService] Plan Renewed Notification sent to SuperAdmin ${to}: ${info.messageId}`);
+    return info;
+  } catch (error) {
+    console.error(`[EmailService] Error sending plan renewed email to SuperAdmin ${to}:`, error);
     return null;
   }
 };

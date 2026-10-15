@@ -33,11 +33,14 @@ import {
   Check,
   Rocket,
   ArrowRight,
+  ArrowDownRight,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import api from '@/lib/api';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { Switch } from '@/components/ui/switch';
+import html2pdf from 'html2pdf.js';
 
 const BillingPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -50,6 +53,8 @@ const BillingPage = () => {
   const [paymentLoading, setPaymentLoading] = useState(null); // 'STARTER' | 'PRO' | null
   const [billingCycle, setBillingCycle] = useState('monthly');
   const [confirmPlan, setConfirmPlan] = useState(null);
+  const [updatingAutoRenew, setUpdatingAutoRenew] = useState(false);
+  const [downloadingInvoiceId, setDownloadingInvoiceId] = useState(null);
 
   useEffect(() => {
     setHeader('Billing & Plans', 'Manage your subscription and payment history');
@@ -105,10 +110,10 @@ const BillingPage = () => {
       setLoading(true);
       const [planRes, historyRes] = await Promise.all([
         api.get('/billing/current-plan'),
-        api.get('/billing/history').catch(() => ({ data: { data: [] } })),
+        api.get('/billing/history'),
       ]);
       setPlanData(planRes.data);
-      setInvoices(historyRes.data.data || []);
+      setInvoices(historyRes.data?.data || []);
     } catch (error) {
       console.error('Failed to fetch billing data:', error);
       toast({
@@ -118,6 +123,269 @@ const BillingPage = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleToggleAutoRenew = async (checked) => {
+    try {
+      setUpdatingAutoRenew(true);
+      const res = await api.patch('/billing/auto-renew', { autoRenew: checked });
+      setPlanData((prev) => ({ ...prev, autoRenew: res.data.autoRenew }));
+      await syncUser(api);
+      toast({
+        title: res.data.autoRenew ? 'Auto-Renewal Enabled' : 'Auto-Renewal Disabled',
+        description: res.data.message,
+      });
+    } catch (error) {
+      console.error('Failed to toggle auto-renew:', error);
+      toast({
+        title: 'Error',
+        description: error.response?.data?.error || 'Could not update auto-renewal setting',
+        variant: 'destructive',
+      });
+    } finally {
+      setUpdatingAutoRenew(false);
+    }
+  };
+
+  const handleDownloadInvoice = async (invoice) => {
+    try {
+      setDownloadingInvoiceId(invoice.id);
+      const invNum = invoice.invoiceNumber || `INV-${invoice.id.slice(0, 8).toUpperCase()}`;
+      const orgName = invoice.organization?.name || user?.organization?.name || 'Customer Organization';
+      const orgEmail = invoice.organization?.billingEmail || user?.email || 'N/A';
+      const issueDate = format(new Date(invoice.createdAt || invoice.paidAt || Date.now()), 'dd MMMM yyyy');
+      const paidDate = invoice.paidAt ? format(new Date(invoice.paidAt), 'dd MMMM yyyy, hh:mm a') : 'Pending';
+      const isPaid = invoice.status === 'PAID';
+      const amountFormatted = `₹${Number(invoice.amount).toLocaleString('en-IN')}`;
+      const planName = invoice.plan || 'TaskFlow Subscription';
+
+      let statusBadgeHtml = '';
+      if (invoice.status === 'PAID') {
+        statusBadgeHtml = `
+          <div style="display: inline-block; background-color: #ecfdf5; border: 2px solid #059669; border-radius: 7px; padding: 5px 14px; text-align: left;">
+            <table style="border-collapse: collapse; border: none; margin: 0; padding: 0;">
+              <tr>
+                <td style="vertical-align: middle; border: none; padding: 0 7px 0 0; line-height: 0;">
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block;">
+                    <circle cx="8" cy="8" r="8" fill="#059669"/>
+                    <path d="M4.8 8.2L7 10.4L11.5 5.6" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </td>
+                <td style="vertical-align: middle; border: none; padding: 0; line-height: 1;">
+                  <span style="font-size: 13px; font-weight: 800; color: #065f46; letter-spacing: 1.5px; font-family: 'Inter', sans-serif;">PAID</span>
+                </td>
+              </tr>
+            </table>
+          </div>
+        `;
+      } else if (invoice.status === 'PENDING') {
+        statusBadgeHtml = `
+          <div style="display: inline-block; background-color: #fffbeb; border: 2px solid #d97706; border-radius: 7px; padding: 5px 12px; text-align: left;">
+            <table style="border-collapse: collapse; border: none; margin: 0; padding: 0;">
+              <tr>
+                <td style="vertical-align: middle; border: none; padding: 0 6px 0 0; line-height: 0;">
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block;">
+                    <circle cx="8" cy="8" r="8" fill="#d97706"/>
+                    <path d="M8 4.5V8.5L10.5 10" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </td>
+                <td style="vertical-align: middle; border: none; padding: 0; line-height: 1;">
+                  <span style="font-size: 11px; font-weight: 800; color: #92400e; letter-spacing: 0.8px; font-family: 'Inter', sans-serif;">PENDING PAYMENT</span>
+                </td>
+              </tr>
+            </table>
+          </div>
+        `;
+      } else {
+        statusBadgeHtml = `
+          <div style="display: inline-block; background-color: #fef2f2; border: 2px solid #dc2626; border-radius: 7px; padding: 5px 12px; text-align: left;">
+            <table style="border-collapse: collapse; border: none; margin: 0; padding: 0;">
+              <tr>
+                <td style="vertical-align: middle; border: none; padding: 0 6px 0 0; line-height: 0;">
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block;">
+                    <circle cx="8" cy="8" r="8" fill="#dc2626"/>
+                    <path d="M5.5 5.5L10.5 10.5M10.5 5.5L5.5 10.5" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </td>
+                <td style="vertical-align: middle; border: none; padding: 0; line-height: 1;">
+                  <span style="font-size: 11px; font-weight: 800; color: #991b1b; letter-spacing: 0.8px; font-family: 'Inter', sans-serif;">${invoice.status || 'UNPAID'}</span>
+                </td>
+              </tr>
+            </table>
+          </div>
+        `;
+      }
+
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8" />
+          <title>Invoice ${invNum}</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+            * { box-sizing: border-box; }
+            body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1e293b; background: #ffffff; margin: 0; padding: 28px; }
+            .invoice-box { max-width: 800px; margin: auto; }
+            
+            .meta-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 18px; }
+            .meta-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 5px; }
+            .meta-value-main { font-size: 15px; font-weight: 700; color: #0f172a; }
+            .meta-sub { font-size: 12px; color: #64748b; margin-top: 2px; }
+            
+            .items-table { width: 100%; border-collapse: collapse; margin: 24px 0 16px 0; }
+            .items-table thead th { background: #0f172a; color: #ffffff; text-align: left; padding: 11px 16px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+            .items-table thead th:last-child { text-align: right; }
+            .items-table tbody td { padding: 14px 16px; border-bottom: 1px solid #e2e8f0; font-size: 13px; color: #334155; }
+            .items-table tbody td:last-child { text-align: right; font-weight: 700; color: #0f172a; }
+            
+            .notice-box { margin-top: 28px; padding: 14px 18px; border-radius: 8px; font-size: 11.5px; line-height: 1.5; background: #f8fafc; border-left: 4px solid #4f46e5; color: #334155; border-top: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
+            .footer { margin-top: 36px; padding-top: 18px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 11px; color: #94a3b8; }
+          </style>
+        </head>
+        <body>
+          <div class="invoice-box">
+            <!-- HEADER (Robust table layout avoids html2canvas flexbox baseline bugs) -->
+            <table style="width: 100%; border-collapse: collapse; border: none; margin: 0 0 24px 0; padding-bottom: 20px; border-bottom: 2px solid #e2e8f0;">
+              <tr>
+                <td style="vertical-align: top; text-align: left; padding: 0 0 16px 0; border: none;">
+                  <table style="border-collapse: collapse; border: none; margin: 0; padding: 0;">
+                    <tr>
+                      <td style="vertical-align: middle; padding: 0 12px 0 0; border: none; width: 44px;">
+                        <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block;">
+                          <defs>
+                            <linearGradient id="tfGrad" x1="0" y1="0" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+                              <stop stop-color="#4F46E5"/>
+                              <stop offset="1" stop-color="#7C3AED"/>
+                            </linearGradient>
+                          </defs>
+                          <rect width="44" height="44" rx="10" fill="url(#tfGrad)"/>
+                          <path d="M13 22.5L19 28.5L31 15.5" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </td>
+                      <td style="vertical-align: middle; padding: 0; border: none;">
+                        <div style="font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: -0.5px; line-height: 1.1; font-family: 'Inter', sans-serif;">TaskFlow</div>
+                        <div style="font-size: 10.5px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px; margin-top: 3px; font-family: 'Inter', sans-serif;">SaaS Enterprise Platform</div>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+                <td style="vertical-align: top; text-align: right; padding: 0 0 16px 0; border: none;">
+                  <div style="font-size: 24px; font-weight: 800; color: #0f172a; text-transform: uppercase; letter-spacing: 1.5px; line-height: 1.1; font-family: 'Inter', sans-serif;">TAX INVOICE</div>
+                  <div style="font-size: 13px; font-family: monospace; font-weight: 700; color: #4f46e5; margin-top: 4px;">${invNum}</div>
+                  <div style="margin-top: 8px;">
+                    ${statusBadgeHtml}
+                  </div>
+                </td>
+              </tr>
+            </table>
+
+            <!-- METADATA (Two-column table prevents flex/grid overlap) -->
+            <table style="width: 100%; border-collapse: collapse; border: none; margin: 0 0 20px 0;">
+              <tr>
+                <td style="width: 48.5%; vertical-align: top; padding: 0; border: none;">
+                  <div class="meta-card">
+                    <div class="meta-label">Billed To</div>
+                    <div class="meta-value-main">${orgName}</div>
+                    <div class="meta-sub">${orgEmail}</div>
+                    <div class="meta-sub" style="font-size: 11px; margin-top: 4px; color: #059669; font-weight: 600;">● Account Active</div>
+                  </div>
+                </td>
+                <td style="width: 3%; border: none;"></td>
+                <td style="width: 48.5%; vertical-align: top; padding: 0; border: none;">
+                  <div class="meta-card">
+                    <div class="meta-label">Invoice Details</div>
+                    <div class="meta-sub"><strong style="color: #334155;">Date of Issue:</strong> ${issueDate}</div>
+                    <div class="meta-sub"><strong style="color: #334155;">Payment Status:</strong> ${invoice.status}</div>
+                    <div class="meta-sub"><strong style="color: #334155;">Payment Date:</strong> ${paidDate}</div>
+                    ${invoice.stripePaymentIntentId ? `<div class="meta-sub" style="font-family: monospace; font-size: 10px; margin-top: 2px;">Ref: ${invoice.stripePaymentIntentId}</div>` : ''}
+                  </div>
+                </td>
+              </tr>
+            </table>
+
+            <!-- LINE ITEMS -->
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th>Description</th>
+                  <th style="text-align: center;">Plan Tier</th>
+                  <th style="text-align: center;">Billing Cycle</th>
+                  <th>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div style="font-weight: 700; color: #0f172a; margin-bottom: 2px;">${invoice.description || `${planName} Subscription`}</div>
+                    <div style="font-size: 11px; color: #64748b;">Enterprise Workspace & Team Access</div>
+                  </td>
+                  <td style="text-align: center; font-weight: 600;">${planName}</td>
+                  <td style="text-align: center; color: #64748b;">Monthly / Recurring</td>
+                  <td>${amountFormatted}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- SUMMARY TABLE -->
+            <table style="width: 280px; margin-left: auto; margin-top: 14px; border-collapse: collapse; border: none;">
+              <tr>
+                <td style="padding: 6px 0; font-size: 13px; color: #64748b; border: none;">Subtotal</td>
+                <td style="padding: 6px 0; font-size: 13px; color: #0f172a; font-weight: 600; text-align: right; border: none;">${amountFormatted}</td>
+              </tr>
+              <tr>
+                <td style="padding: 6px 0; font-size: 13px; color: #64748b; border: none;">Taxes & GST (0%)</td>
+                <td style="padding: 6px 0; font-size: 13px; color: #0f172a; font-weight: 600; text-align: right; border: none;">₹0.00</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px 0 6px 0; font-size: 15px; font-weight: 800; color: #0f172a; border-top: 2px solid #0f172a; border-bottom: none; border-left: none; border-right: none;">Total Amount</td>
+                <td style="padding: 10px 0 6px 0; font-size: 17px; font-weight: 800; color: #4f46e5; text-align: right; border-top: 2px solid #0f172a; border-bottom: none; border-left: none; border-right: none;">${amountFormatted}</td>
+              </tr>
+            </table>
+
+            <div class="notice-box">
+              <strong>Billing Policy & Renewal Disclosure:</strong><br />
+              ${planData?.autoRenew !== false
+                ? `Automatic recurring billing is <strong>ACTIVE</strong> for ${orgName}. Your payment method on file will be automatically billed on your next renewal date.`
+                : `Automatic recurring billing is <strong>DISABLED</strong> for ${orgName}. Please ensure you make payment manually before your plan expires to avoid workspace interruption.`
+              }
+            </div>
+
+            <div class="footer">
+              This is a computer-generated tax invoice issued by TaskFlow Systems. No signature is required.<br />
+              Questions? Contact our billing support at support@taskflow.com
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+      const opt = {
+        margin: 10,
+        filename: `Invoice-${invNum}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      const element = document.createElement('div');
+      element.innerHTML = html;
+      await html2pdf().set(opt).from(element).save();
+
+      toast({
+        title: "Invoice Downloaded",
+        description: `Saved ${opt.filename} to your computer.`,
+      });
+    } catch (err) {
+      console.error('Invoice download error:', err);
+      toast({
+        title: "Download Failed",
+        description: "Could not generate invoice PDF. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setDownloadingInvoiceId(null);
     }
   };
 
@@ -152,13 +420,16 @@ const BillingPage = () => {
 
   const getStatusBadge = (status) => {
     const styles = {
-      PAID: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
-      PENDING: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
-      OVERDUE: 'bg-rose-500/10 text-rose-500 border-rose-500/20',
-      CANCELLED: 'bg-gray-500/10 text-gray-500 border-gray-500/20',
+      PAID: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+      PENDING: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+      OVERDUE: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20',
+      CANCELLED: 'bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/20',
     };
     return (
-      <Badge className={`${styles[status] || styles.PENDING} px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase`}>
+      <Badge
+        variant="outline"
+        className={`${styles[status] || styles.PENDING} px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase cursor-default select-none shadow-none pointer-events-none`}
+      >
         {status}
       </Badge>
     );
@@ -275,11 +546,15 @@ const BillingPage = () => {
 
   const currentPlan = planData?.plan || 'FREE';
   const planOrder = { FREE: 0, STARTER: 1, PRO: 2, ENTERPRISE: 3 };
+  const daysRemaining = planData?.currentPeriodEnd
+    ? Math.max(0, Math.ceil((new Date(planData.currentPeriodEnd) - new Date()) / (1000 * 60 * 60 * 24)))
+    : null;
+  const isPlanEndingSoonOrEnded = user?.organization?.isExpired || daysRemaining === null || daysRemaining <= 7;
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       
-      {/* ── EXPIRATION BANNER ── */}
+      {/* ── EXPIRATION BANNER (FREE TRIAL EXPIRED) ── */}
       {user?.organization?.isExpired && (
         <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-4 flex items-start gap-4 shadow-lg shadow-red-500/5">
           <div className="p-2 bg-red-500/20 rounded-lg shrink-0">
@@ -293,6 +568,64 @@ const BillingPage = () => {
           </div>
         </div>
       )}
+
+      {/* ── EXPIRING SOON BANNER (ACTIVE PLAN) ── */}
+      {currentPlan !== 'FREE' && planData?.currentPeriodEnd && (() => {
+        const daysRemaining = Math.max(0, Math.ceil((new Date(planData.currentPeriodEnd) - new Date()) / (1000 * 60 * 60 * 24)));
+        if (daysRemaining > 7) return null;
+        const isAutoRenew = planData.autoRenew !== false;
+        return (
+          <div className={cn(
+            "rounded-2xl p-4 flex items-start sm:items-center justify-between shadow-lg relative border",
+            isAutoRenew
+              ? "bg-gradient-to-r from-blue-500/15 via-blue-500/5 to-transparent border-blue-500/30"
+              : "bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-transparent border-amber-500/30"
+          )}>
+            <div className="flex items-center gap-3.5">
+              <div className={cn(
+                "p-2.5 rounded-xl border shrink-0 hidden sm:block",
+                isAutoRenew
+                  ? "bg-blue-500/20 border-blue-500/30 text-blue-500"
+                  : "bg-amber-500/20 border-amber-500/30 text-amber-500"
+              )}>
+                <CreditCard className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className={cn(
+                  "text-sm font-bold tracking-tight uppercase",
+                  isAutoRenew ? "text-blue-500" : "text-amber-500"
+                )}>
+                  {isAutoRenew ? "Subscription Renews Soon (Auto-Debit Active)" : "Subscription Expiring Soon (Manual Renewal Required)"}
+                </h4>
+                <p className="text-xs text-foreground/80 font-medium mt-0.5">
+                  {isAutoRenew ? (
+                    <>
+                      Your <strong>{currentPlan}</strong> plan will renew in <strong className="text-blue-500 font-bold">{daysRemaining} days</strong> ({format(new Date(planData.currentPeriodEnd), 'MMM dd, yyyy')}). <span className="font-semibold text-foreground">Auto-payment will be cut automatically from your card.</span>
+                    </>
+                  ) : (
+                    <>
+                      Your <strong>{currentPlan}</strong> plan expires in <strong className="text-amber-500 font-bold">{daysRemaining} days</strong> ({format(new Date(planData.currentPeriodEnd), 'MMM dd, yyyy')}). <span className="text-amber-500 font-semibold">Auto-renewal is OFF. Please renew manually to prevent workspace disruption.</span>
+                    </>
+                  )}
+                </p>
+              </div>
+            </div>
+            {!isAutoRenew && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const targetPlan = plans.find(p => p.name === currentPlan);
+                  if (targetPlan) setConfirmPlan(targetPlan);
+                }}
+                className="text-xs font-bold uppercase tracking-wider h-9 border-amber-500/40 text-amber-500 hover:bg-amber-500/10 shrink-0 ml-3"
+              >
+                Renew Now
+              </Button>
+            )}
+          </div>
+        );
+      })()}
 
       {/* ── HEADER ── */}
       {/* ── Current Plan Overview ──────────────────────────────────────── */}
@@ -315,14 +648,17 @@ const BillingPage = () => {
                   </CardDescription>
                 </div>
               </div>
-              <Badge className={cn(
-                "px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase",
-                planData?.status === 'ACTIVE'
-                  ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                  : planData?.status === 'TRIAL'
-                    ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                    : "bg-rose-500/10 text-rose-500 border-rose-500/20"
-              )}>
+              <Badge
+                variant="outline"
+                className={cn(
+                  "px-3.5 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase cursor-default select-none shadow-none pointer-events-none transition-colors",
+                  planData?.status === 'ACTIVE'
+                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25"
+                    : planData?.status === 'TRIAL'
+                      ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25"
+                      : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/25"
+                )}
+              >
                 {planData?.status || 'TRIAL'}
               </Badge>
             </div>
@@ -352,6 +688,47 @@ const BillingPage = () => {
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Auto-Renewal Toggle & Notice */}
+            <div className="mt-4 pt-4 border-t border-border/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-background/60 border border-border/30">
+              <div className="flex items-center gap-3">
+                <Switch
+                  id="auto-renew-switch"
+                  checked={planData?.autoRenew !== false}
+                  onCheckedChange={handleToggleAutoRenew}
+                  disabled={updatingAutoRenew || currentPlan === 'FREE'}
+                />
+                <div>
+                  <div className="flex items-center gap-2">
+                    <label htmlFor="auto-renew-switch" className="text-xs font-bold text-foreground cursor-pointer">
+                      Automatic Recurring Renewal
+                    </label>
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "px-2 py-0.5 rounded-full text-[8px] font-bold tracking-wider uppercase cursor-default select-none shadow-none pointer-events-none",
+                        planData?.autoRenew !== false
+                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25"
+                          : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25"
+                      )}
+                    >
+                      {planData?.autoRenew !== false ? "Auto-Debit ON" : "Manual Renewal"}
+                    </Badge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {planData?.autoRenew !== false
+                      ? `On ${planData?.currentPeriodEnd ? format(new Date(planData.currentPeriodEnd), 'MMM dd, yyyy') : 'renewal date'}, renewal payment will be deducted automatically from your stored payment card.`
+                      : "Automatic renewal is disabled. You will need to renew manually each cycle to maintain workspace access."}
+                  </p>
+                </div>
+              </div>
+              {updatingAutoRenew && (
+                <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                  <span>Updating...</span>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -437,7 +814,10 @@ const BillingPage = () => {
                   )}
                 >
                   Annually
-                  <Badge className="ml-1 sm:ml-1.5 bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-[7px] sm:text-[8px] px-1 sm:px-1.5 py-0">
+                  <Badge
+                    variant="outline"
+                    className="ml-1 sm:ml-1.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25 text-[7px] sm:text-[8px] px-1 sm:px-1.5 py-0 shadow-none pointer-events-none"
+                  >
                     Save {planData?.pricing?.annualDiscount || 17}%
                   </Badge>
                 </button>
@@ -452,6 +832,7 @@ const BillingPage = () => {
                 const isSamePlan = currentPlan === plan.name;
                 const isCurrentActivePlan = isSamePlan && planData?.status !== 'TRIAL' && !user?.organization?.isExpired;
                 const isDowngrade = planOrder[plan.name] < planOrder[currentPlan];
+                const canDowngrade = isDowngrade && isPlanEndingSoonOrEnded;
                 const features = getFeatures(plan.name);
 
                 return (
@@ -517,12 +898,15 @@ const BillingPage = () => {
                         className={cn(
                           "w-full rounded-lg py-2.5 font-bold text-[9px] tracking-widest uppercase gap-1.5",
                           isCurrentActivePlan
-                            ? "bg-secondary text-muted-foreground cursor-default"
-                            : isDowngrade
-                              ? "bg-secondary text-muted-foreground/50 cursor-not-allowed"
-                              : plan.btnClass
+                            ? "bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 border border-amber-500/30"
+                            : isDowngrade && canDowngrade
+                              ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 border border-blue-500/30"
+                              : isDowngrade && !canDowngrade
+                                ? "bg-secondary text-muted-foreground/50 cursor-not-allowed"
+                                : plan.btnClass
                         )}
-                        disabled={isCurrentActivePlan || isDowngrade || paymentLoading !== null}
+                        disabled={(isDowngrade && !canDowngrade) || paymentLoading !== null}
+                        title={isDowngrade && !canDowngrade ? `Downgrading is only available when your current plan has ended or is ending soon (within 7 days). (${daysRemaining} days remaining)` : undefined}
                         onClick={() => {
                           if (plan.name === 'ENTERPRISE') {
                             window.location.href = 'mailto:sales@sspl.com?subject=Enterprise Plan Inquiry';
@@ -534,10 +918,12 @@ const BillingPage = () => {
                         {paymentLoading === plan.name ? (
                           <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Processing...</>
                         ) : isCurrentActivePlan ? (
-                          'Current Plan'
+                          <>Renew Plan <ArrowUpRight className="w-3 h-3" /></>
                         ) : isSamePlan && (planData?.status === 'TRIAL' || user?.organization?.isExpired) ? (
                           <>Subscribe Now <ArrowUpRight className="w-3 h-3" /></>
-                        ) : isDowngrade ? (
+                        ) : isDowngrade && canDowngrade ? (
+                          <>Downgrade Plan <ArrowDownRight className="w-3 h-3" /></>
+                        ) : isDowngrade && !canDowngrade ? (
                           'Downgrade N/A'
                         ) : plan.name === 'ENTERPRISE' ? (
                           <>Contact Sales <ArrowRight className="w-3 h-3" /></>
@@ -545,6 +931,11 @@ const BillingPage = () => {
                           <>Upgrade Now <ArrowUpRight className="w-3 h-3" /></>
                         )}
                       </Button>
+                      {isDowngrade && !canDowngrade && daysRemaining !== null && (
+                        <p className="text-[9px] text-muted-foreground/60 text-center mt-1.5 font-medium">
+                          Available when plan ends soon ({daysRemaining} days remaining)
+                        </p>
+                      )}
                     </div>
                   </div>
                 );
@@ -557,6 +948,7 @@ const BillingPage = () => {
                 const isSamePlan = currentPlan === plan.name;
                 const isCurrentActivePlan = isSamePlan && planData?.status !== 'TRIAL' && !user?.organization?.isExpired;
                 const isDowngrade = planOrder[plan.name] < planOrder[currentPlan];
+                const canDowngrade = isDowngrade && isPlanEndingSoonOrEnded;
 
                 return (
                   <div
@@ -618,12 +1010,15 @@ const BillingPage = () => {
                       className={cn(
                         "w-full rounded-xl py-5 font-bold text-[10px] tracking-widest uppercase transition-all duration-300 gap-2",
                         isCurrentActivePlan
-                          ? "bg-secondary text-muted-foreground cursor-default"
-                          : isDowngrade
-                            ? "bg-secondary text-muted-foreground/50 cursor-not-allowed"
-                            : plan.btnClass
+                          ? "bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 border border-amber-500/30"
+                          : isDowngrade && canDowngrade
+                            ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 border border-blue-500/30"
+                            : isDowngrade && !canDowngrade
+                              ? "bg-secondary text-muted-foreground/50 cursor-not-allowed"
+                              : plan.btnClass
                       )}
-                      disabled={isCurrentActivePlan || isDowngrade || paymentLoading !== null}
+                      disabled={(isDowngrade && !canDowngrade) || paymentLoading !== null}
+                      title={isDowngrade && !canDowngrade ? `Downgrading is only available when your current plan has ended or is ending soon (within 7 days). (${daysRemaining} days remaining)` : undefined}
                       onClick={() => {
                         if (plan.name === 'ENTERPRISE') {
                           window.location.href = 'mailto:sales@sspl.com?subject=Enterprise Plan Inquiry';
@@ -635,10 +1030,12 @@ const BillingPage = () => {
                       {paymentLoading === plan.name ? (
                         <><Loader2 className="w-4 h-4 animate-spin" /> Processing...</>
                       ) : isCurrentActivePlan ? (
-                        'Current Plan'
+                        <>Renew Plan <ArrowUpRight className="w-3.5 h-3.5" /></>
                       ) : isSamePlan && (planData?.status === 'TRIAL' || user?.organization?.isExpired) ? (
                         <>Subscribe Now <ArrowUpRight className="w-3.5 h-3.5" /></>
-                      ) : isDowngrade ? (
+                      ) : isDowngrade && canDowngrade ? (
+                        <>Downgrade Plan <ArrowDownRight className="w-3.5 h-3.5" /></>
+                      ) : isDowngrade && !canDowngrade ? (
                         'Downgrade N/A'
                       ) : plan.name === 'ENTERPRISE' ? (
                         <>Contact Sales <ArrowRight className="w-3.5 h-3.5" /></>
@@ -646,6 +1043,11 @@ const BillingPage = () => {
                         <>Upgrade Now <ArrowUpRight className="w-3.5 h-3.5" /></>
                       )}
                     </Button>
+                    {isDowngrade && !canDowngrade && daysRemaining !== null && (
+                      <p className="text-[10px] text-muted-foreground/60 text-center mt-2 font-medium">
+                        Available when plan ends soon ({daysRemaining} days left)
+                      </p>
+                    )}
                   </div>
                 );
               })}
@@ -683,16 +1085,21 @@ const BillingPage = () => {
                   <TableHead className="h-14 text-[10px] font-semibold tracking-widest uppercase text-foreground/70 text-center">Amount</TableHead>
                   <TableHead className="hidden sm:table-cell h-14 text-[10px] font-semibold tracking-widest uppercase text-foreground/70 text-center">Date</TableHead>
                   <TableHead className="h-14 text-[10px] font-semibold tracking-widest uppercase text-foreground/70 text-center">Status</TableHead>
+                  <TableHead className="h-14 text-[10px] font-semibold tracking-widest uppercase text-foreground/70 text-right pr-8">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {invoices.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-40 text-center">
+                    <TableCell colSpan={6} className="h-40 text-center">
                       <div className="flex flex-col items-center gap-3">
                         <CreditCard className="w-8 h-8 text-muted-foreground/20" />
                         <p className="text-sm font-bold opacity-40 italic">No payment history yet</p>
-                        <p className="text-[10px] text-muted-foreground/40">Payments will appear here after your first upgrade</p>
+                        <p className="text-[10px] text-muted-foreground/40">
+                          {currentPlan !== 'FREE'
+                            ? 'Invoices and transactions for your active subscription will appear here'
+                            : 'Payments will appear here after your first upgrade'}
+                        </p>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -729,6 +1136,22 @@ const BillingPage = () => {
                           {getStatusBadge(invoice.status)}
                         </div>
                       </TableCell>
+                      <TableCell className="py-5 text-right pr-8">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDownloadInvoice(invoice)}
+                          disabled={downloadingInvoiceId === invoice.id}
+                          className="h-8 px-3 text-[11px] font-semibold gap-1.5 hover:bg-primary/10 hover:text-primary border-border/50 text-foreground"
+                        >
+                          {downloadingInvoiceId === invoice.id ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Download className="w-3.5 h-3.5" />
+                          )}
+                          <span>Download PDF</span>
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
@@ -742,10 +1165,10 @@ const BillingPage = () => {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
-              <Zap className="w-5 h-5 text-primary" /> Confirm Upgrade to {confirmPlan?.title}
+              <Zap className="w-5 h-5 text-primary" /> {confirmPlan && planOrder[confirmPlan.name] < planOrder[currentPlan] ? `Confirm Downgrade to ${confirmPlan.title}` : `Confirm Upgrade to ${confirmPlan?.title}`}
             </DialogTitle>
             <DialogDescription className="text-sm">
-              You are about to upgrade your workspace to the <strong className="text-foreground uppercase tracking-wide">{confirmPlan?.title}</strong> plan on a <strong>{billingCycle}</strong> billing cycle.
+              You are about to {confirmPlan && planOrder[confirmPlan.name] < planOrder[currentPlan] ? 'downgrade' : 'upgrade'} your workspace to the <strong className="text-foreground uppercase tracking-wide">{confirmPlan?.title}</strong> plan on a <strong>{billingCycle}</strong> billing cycle.
             </DialogDescription>
           </DialogHeader>
           

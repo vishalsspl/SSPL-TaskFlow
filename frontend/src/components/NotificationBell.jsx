@@ -10,7 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Bell, Check, Trash2, Info, FolderKanban, ListTodo, Activity, MessageSquare, CheckCircle2, XCircle, Clock, Building2 } from 'lucide-react';
+import { Bell, Check, Trash2, Info, FolderKanban, ListTodo, Activity, MessageSquare, CheckCircle2, XCircle, Clock, Building2, CreditCard } from 'lucide-react';
 import { cn, formatRelativeTime } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import VibrantLoader from '@/components/ui/VibrantLoader';
@@ -97,6 +97,12 @@ const NotificationBell = () => {
         return '/chat';
       case 'NEW_ORG_SIGNUP':
         return '/superadmin/orgs';
+      case 'PLAN_RENEWED':
+      case 'PAYMENT_FAILED':
+        return '/billing';
+      case 'ORG_PLAN_RENEWED':
+      case 'ORG_PAYMENT_FAILED':
+        return '/superadmin/billing';
       case 'TICKET_CREATED':
       case 'TICKET_STATUS_UPDATED':
       case 'TICKET_COMMENT':
@@ -152,6 +158,12 @@ const NotificationBell = () => {
         return <div className="p-1.5 bg-orange-500/10 rounded-full"><Clock className="w-3.5 h-3.5 text-orange-500" /></div>;
       case 'NEW_ORG_SIGNUP':
         return <div className="p-1.5 bg-[#48A111]/20 rounded-full shadow-[0_0_10px_rgba(72,161,17,0.2)]"><Building2 className="w-3.5 h-3.5 text-[#48A111]" /></div>;
+      case 'PLAN_RENEWED':
+      case 'ORG_PLAN_RENEWED':
+        return <div className="p-1.5 bg-emerald-500/20 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.2)]"><CreditCard className="w-3.5 h-3.5 text-emerald-500" /></div>;
+      case 'PAYMENT_FAILED':
+      case 'ORG_PAYMENT_FAILED':
+        return <div className="p-1.5 bg-red-500/20 rounded-full"><XCircle className="w-3.5 h-3.5 text-red-500" /></div>;
       case 'TICKET_CREATED':
         return <div className="p-1.5 bg-blue-500/10 rounded-full"><MessageSquare className="w-3.5 h-3.5 text-blue-500" /></div>;
       case 'TICKET_STATUS_UPDATED':

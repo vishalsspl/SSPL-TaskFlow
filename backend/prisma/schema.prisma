@@ -40,15 +40,18 @@ model Organization {
   address             String?
 
   // Stripe
-  stripeCustomerId  String?
-  currentPeriodStart  DateTime?
-  currentPeriodEnd    DateTime?
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  autoRenew            Boolean   @default(true)
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
 
   // Org Settings
   requireApproval      Boolean @default(false)
   allowClientSignup    Boolean @default(false)
   sessionTimeoutMinutes Int?
   rolePermissions      Json?
+  maxManagersPerProject Int?    @default(1)
 
   customFeatures Json?
 

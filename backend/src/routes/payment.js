@@ -5,6 +5,7 @@ import {
   handleWebhook,
   getBillingHistory,
   getCurrentPlan,
+  toggleAutoRenew,
 } from '../controllers/paymentController.js';
 import { authenticate, authorize } from '../middleware/auth.js';
 
@@ -24,5 +25,6 @@ router.get('/current-plan', getCurrentPlan);
 router.post('/create-order', authorize('ADMIN'), createOrder);
 router.post('/verify-payment', authorize('ADMIN'), verifyPayment);
 router.get('/history', authorize('ADMIN'), getBillingHistory);
+router.patch('/auto-renew', authorize('ADMIN'), toggleAutoRenew);
 
 export default router;

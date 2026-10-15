@@ -260,9 +260,9 @@ const Signup = () => {
         const quantity = searchParams.get('quantity') || 10;
 
         if (requestedPlan === 'STARTER' || requestedPlan === 'PROFESSIONAL' || requestedPlan === 'PRO') {
-          // Manually save to local storage so they are logged in when they return,
+          // Manually save to session storage so they are logged in when they return,
           // but DO NOT call storeLogin() here to prevent the Dashboard from flashing before we redirect to Stripe!
-          localStorage.setItem('auth-storage', JSON.stringify({ state: { token: data.token, user: data.user } }));
+          sessionStorage.setItem('auth-storage', JSON.stringify({ state: { token: data.token, user: data.user } }));
 
           try {
             const planToCharge = (requestedPlan === 'PROFESSIONAL' || requestedPlan === 'PRO') ? 'PRO' : 'STARTER';

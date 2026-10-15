@@ -12,7 +12,7 @@ const api = axios.create({
 
 // Add token to requests
 api.interceptors.request.use((config) => {
-  const token = JSON.parse(localStorage.getItem('auth-storage') || '{}')?.state?.token;
+  const token = JSON.parse(sessionStorage.getItem('auth-storage') || '{}')?.state?.token;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -24,6 +24,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      sessionStorage.removeItem('auth-storage');
       localStorage.removeItem('auth-storage');
       // Only redirect if NOT on login, signup or forgot password pages to avoid loops
       const publicPaths = ['/login', '/signup', '/forgot-password', '/reset-password'];

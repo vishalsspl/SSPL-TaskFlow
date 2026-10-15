@@ -34,7 +34,7 @@ import {
   X,
 } from 'lucide-react';
 import UpgradePlanModal from '@/components/ui/UpgradePlanModal';
-import { formatCurrency, formatDate, stripHtml } from '@/lib/utils';
+import { formatCurrency, formatDate, stripHtml, cn } from '@/lib/utils';
 import { LineChart, PieChart, BarChart, ModernAreaChart } from '@/components/ui/charts'; // Make sure this path is correct or update charts
 import ProjectOverview from '@/components/ProjectOverview';
 import { PieChart as RechartsPie, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
@@ -413,25 +413,67 @@ const Dashboard = () => {
       )}
 
       {user?.organization?.status === 'ACTIVE' && user.organization.plan !== 'FREE' && daysRemaining !== null && daysRemaining <= 7 && !user.organization.isExpired && user.role === 'ADMIN' && !dismissExpiryWarning && (
-        <div className="bg-gradient-to-r from-red-500/10 via-red-500/5 to-transparent border border-red-500/20 rounded-2xl p-4 flex items-start sm:items-center justify-between mb-4 shadow-sm relative">
+        <div className={cn(
+          "border rounded-2xl p-4 flex items-start sm:items-center justify-between mb-4 shadow-sm relative transition-all",
+          user.organization.autoRenew !== false
+            ? "bg-gradient-to-r from-blue-500/10 via-blue-500/5 to-transparent border-blue-500/30"
+            : "bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border-amber-500/30"
+        )}>
           <div className="flex items-center gap-4">
-            <div className="p-2.5 bg-red-500/20 rounded-xl border border-red-500/20 hidden sm:block">
-              <Calendar className="w-5 h-5 text-red-600 dark:text-red-400" />
+            <div className={cn(
+              "p-2.5 rounded-xl border hidden sm:block",
+              user.organization.autoRenew !== false
+                ? "bg-blue-500/20 border-blue-500/20 text-blue-600 dark:text-blue-400"
+                : "bg-amber-500/20 border-amber-500/20 text-amber-600 dark:text-amber-400"
+            )}>
+              <Calendar className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-sm font-black text-foreground uppercase tracking-wide text-red-600 dark:text-red-400">
-                Subscription Expiring Soon
+              <h4 className={cn(
+                "text-sm font-black uppercase tracking-wide",
+                user.organization.autoRenew !== false ? "text-blue-600 dark:text-blue-400" : "text-amber-600 dark:text-amber-400"
+              )}>
+                {user.organization.autoRenew !== false ? "Subscription Renews Soon" : "Subscription Expiring Soon"}
               </h4>
               <p className="text-xs text-muted-foreground font-medium mt-0.5">
-                Your {user.organization.plan} plan will expire in <strong className="text-red-600 dark:text-red-400 font-black">{daysRemaining} days</strong>. Please renew to avoid interruption.
+                {user.organization.autoRenew !== false ? (
+                  <>
+                    Your <strong className="text-foreground">{user.organization.plan}</strong> plan will renew in <strong className="text-blue-600 dark:text-blue-400 font-black">{daysRemaining} days</strong> ({formatDate(user.organization.currentPeriodEnd)}). <span className="font-semibold text-foreground/90">Auto-payment will be cut automatically from your card.</span>
+                  </>
+                ) : (
+                  <>
+                    Your <strong className="text-foreground">{user.organization.plan}</strong> plan expires in <strong className="text-amber-600 dark:text-amber-400 font-black">{daysRemaining} days</strong> ({formatDate(user.organization.currentPeriodEnd)}). <span className="text-amber-600 dark:text-amber-400 font-semibold">Auto-renewal is OFF. Please renew manually to prevent interruption.</span>
+                  </>
+                )}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2 mt-3 sm:mt-0">
-            <Button variant="outline" size="sm" onClick={() => setShowUpgradeModal(true)} className="text-[10px] font-black uppercase tracking-widest h-9 border-red-500/30 hover:bg-red-500/10 hover:text-red-600 text-red-600 transition-colors">
-              Renew Now
-            </Button>
-            <Button variant="ghost" size="icon" onClick={() => setDismissExpiryWarning(true)} className="h-9 w-9 text-muted-foreground hover:bg-red-500/10 hover:text-red-600 transition-colors">
+            {user.organization.autoRenew !== false ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/billing')}
+                className="text-[10px] font-black uppercase tracking-widest h-9 border-blue-500/30 hover:bg-blue-500/10 hover:text-blue-600 text-blue-600 transition-colors"
+              >
+                Manage Billing
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowUpgradeModal(true)}
+                className="text-[10px] font-black uppercase tracking-widest h-9 border-amber-500/30 hover:bg-amber-500/10 hover:text-amber-600 text-amber-600 transition-colors"
+              >
+                Renew Now
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setDismissExpiryWarning(true)}
+              className="h-9 w-9 text-muted-foreground hover:bg-muted transition-colors"
+            >
               <X className="h-4 w-4" />
             </Button>
           </div>

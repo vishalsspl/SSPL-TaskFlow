@@ -95,7 +95,13 @@ export const processPlanExpirations = async () => {
 
     for (const org of warningOrgs) {
       if (org.billingEmail || org.adminEmail) {
-         await sendPlanExpiryWarningEmail(org.billingEmail || 'admin@'+org.name+'.com', org.primaryContactName || 'Admin', org.name, 7);
+         await sendPlanExpiryWarningEmail(
+           org.billingEmail || 'admin@'+org.name+'.com',
+           org.primaryContactName || 'Admin',
+           org.name,
+           7,
+           org.autoRenew !== false
+         );
       }
     }
 

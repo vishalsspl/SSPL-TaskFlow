@@ -1,4 +1,5 @@
 import prisma from '../lib/prisma.js';
+import { notifyPlanRenewalOrUpgrade } from './paymentController.js';
 
 /**
  * GET /api/superadmin/billing/invoices
@@ -9,6 +10,17 @@ export const getGlobalInvoices = async (req, res) => {
     const skip = (Number(page) - 1) * Number(limit);
 
     try {
+        // Automatically sync PENDING invoices that are past their due date to OVERDUE
+        await prisma.invoice.updateMany({
+            where: {
+                status: 'PENDING',
+                dueDate: { lt: new Date() }
+            },
+            data: {
+                status: 'OVERDUE'
+            }
+        });
+
         const where = {
             ...(status && { status }),
             ...(organizationId && { organizationId }),
@@ -107,6 +119,16 @@ export const updateInvoiceStatus = async (req, res) => {
                     currentPeriodEnd: periodEnd,
                 },
             });
+
+            notifyPlanRenewalOrUpgrade({
+                orgId: updated.organizationId,
+                plan: updated.plan,
+                amount: updated.amount,
+                invoiceNumber: updated.invoiceNumber,
+                paymentId: 'SuperAdmin Manual Approval',
+                isAutoRenewal: false,
+                io: req.io,
+            }).catch(e => console.error('[Billing] Notification failed:', e));
         }
 
         res.json(updated);
@@ -121,9 +143,14 @@ export const updateInvoiceStatus = async (req, res) => {
  * Manually create an invoice
  */
 export const createInvoice = async (req, res) => {
-    const { organizationId, amount, description, dueDate, plan } = req.body;
+    const { organizationId, amount, description, dueDate, plan, status = 'PENDING' } = req.body;
 
     try {
+        const isPaid = status === 'PAID';
+        const now = new Date();
+        const date = new Date();
+        const invNum = `INV-${date.getFullYear().toString().slice(-2)}${String(date.getMonth() + 1).padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
+
         const invoice = await prisma.invoice.create({
             data: {
                 organizationId,
@@ -131,7 +158,9 @@ export const createInvoice = async (req, res) => {
                 description,
                 dueDate: dueDate ? new Date(dueDate) : null,
                 plan,
-                status: 'PENDING'
+                status: isPaid ? 'PAID' : 'PENDING',
+                invoiceNumber: invNum,
+                paidAt: isPaid ? now : null,
             },
             include: {
                 organization: {
@@ -139,6 +168,42 @@ export const createInvoice = async (req, res) => {
                 }
             }
         });
+
+        // If marked as PAID upon creation, activate plan and set period dates
+        if (isPaid && plan) {
+            const periodEnd = new Date(now);
+            periodEnd.setMonth(periodEnd.getMonth() + 1);
+
+            const planLimits = {
+                STARTER: { maxUsers: 30, maxProjects: 15 },
+                PRO: { maxUsers: 100, maxProjects: 100 },
+                ENTERPRISE: { maxUsers: 9999, maxProjects: 9999 }
+            };
+
+            const limits = planLimits[plan] || planLimits.STARTER;
+
+            await prisma.organization.update({
+                where: { id: organizationId },
+                data: {
+                    plan,
+                    status: 'ACTIVE',
+                    maxUsers: limits.maxUsers,
+                    maxProjects: limits.maxProjects,
+                    currentPeriodStart: now,
+                    currentPeriodEnd: periodEnd,
+                },
+            });
+
+            notifyPlanRenewalOrUpgrade({
+                orgId: organizationId,
+                plan: plan,
+                amount: invoice.amount,
+                invoiceNumber: invoice.invoiceNumber,
+                paymentId: 'SuperAdmin Provisioned',
+                isAutoRenewal: false,
+                io: req.io,
+            }).catch(e => console.error('[Billing] Notification failed:', e));
+        }
 
         res.status(201).json(invoice);
     } catch (error) {

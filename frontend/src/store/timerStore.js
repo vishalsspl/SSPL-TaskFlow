@@ -136,7 +136,7 @@ export const useTimerStore = create(
         const hours = (totalSeconds / 3600).toFixed(2);
         const logDescription = `${description || 'Timer log'} (Auto-submitted: ${reason})`;
         
-        const authData = JSON.parse(localStorage.getItem('auth-storage') || '{}');
+        const authData = JSON.parse(sessionStorage.getItem('auth-storage') || '{}');
         const token = authData?.state?.token;
         
         if (!token) return;

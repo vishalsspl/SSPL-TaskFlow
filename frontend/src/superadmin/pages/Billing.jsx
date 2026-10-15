@@ -15,7 +15,8 @@ import {
   Clock,
   AlertCircle,
   MoreVertical,
-  Plus
+  Plus,
+  Loader2
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -23,6 +24,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import api from '@/lib/api';
 import { format } from 'date-fns';
@@ -37,6 +46,17 @@ const SuperAdminBilling = () => {
   const [page, setPage] = useState(1);
 
   const [settings, setSettings] = useState(null);
+  const [orgs, setOrgs] = useState([]);
+  const [isGenerateOpen, setIsGenerateOpen] = useState(false);
+  const [submittingInvoice, setSubmittingInvoice] = useState(false);
+  const [invoiceForm, setInvoiceForm] = useState({
+    organizationId: '',
+    plan: 'PRO',
+    amount: '',
+    status: 'PENDING',
+    description: '',
+    dueDate: '',
+  });
 
   useEffect(() => {
     setHeader('Billing', 'Manage payments and invoices for all organizations', {
@@ -53,11 +73,14 @@ const SuperAdminBilling = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [invRes, setRes] = await Promise.all([
+      const [invRes, setRes, orgsRes] = await Promise.all([
         api.get('/superadmin/billing/invoices'),
-        api.get('/superadmin/settings').catch(() => ({ data: {} }))
+        api.get('/superadmin/settings').catch(() => ({ data: {} })),
+        api.get('/superadmin/orgs').catch(() => ({ data: [] })),
       ]);
       setSettings(setRes.data || {});
+      setInvoices(invRes.data.data);
+      setOrgs(Array.isArray(orgsRes.data) ? orgsRes.data : (orgsRes.data?.data || []));
       setInvoices(invRes.data.data);
     } catch (error) {
       console.error('Failed to fetch data:', error);
@@ -84,23 +107,80 @@ const SuperAdminBilling = () => {
     }
   };
 
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case 'PAID':
-        return <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase">PAID</Badge>;
-      case 'PENDING':
-        return <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20 px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase">PENDING</Badge>;
-      case 'OVERDUE':
-        return <Badge className="bg-rose-500/10 text-rose-500 border-rose-500/20 px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase">OVERDUE</Badge>;
-      default:
-        return <Badge variant="outline" className="text-[10px] font-black tracking-widest uppercase">{status}</Badge>;
+  const handleCreateInvoice = async (e) => {
+    e.preventDefault();
+    if (!invoiceForm.organizationId) {
+      toast({ title: 'Please select an organization', variant: 'destructive' });
+      return;
     }
+    try {
+      setSubmittingInvoice(true);
+      await api.post('/superadmin/billing/invoices', invoiceForm);
+      toast({ title: 'Invoice created successfully' });
+      setIsGenerateOpen(false);
+      setInvoiceForm({
+        organizationId: '',
+        plan: 'PRO',
+        amount: '',
+        status: 'PENDING',
+        description: '',
+        dueDate: '',
+      });
+      fetchData();
+    } catch (error) {
+      toast({
+        title: 'Failed to create invoice',
+        description: error.response?.data?.error || 'Server error',
+        variant: 'destructive',
+      });
+    } finally {
+      setSubmittingInvoice(false);
+    }
+  };
+
+  const isInvoiceOverdue = (invoice) => {
+    if (invoice.status === 'OVERDUE') return true;
+    if (invoice.status === 'PENDING' && invoice.dueDate && new Date(invoice.dueDate) < new Date()) return true;
+    if (invoice.organization?.currentPeriodEnd && new Date(invoice.organization.currentPeriodEnd) < new Date()) return true;
+    return false;
+  };
+
+  const getStatusBadge = (status, invoice) => {
+    const isOverdue = invoice && isInvoiceOverdue(invoice);
+    const isExpired = invoice?.organization?.currentPeriodEnd && new Date(invoice.organization.currentPeriodEnd) < new Date();
+
+    if (isExpired) {
+      return <Badge variant="outline" className="bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/25 px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase pointer-events-none">EXPIRED</Badge>;
+    }
+    if (status === 'OVERDUE' || isOverdue) {
+      return <Badge variant="outline" className="bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/25 px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase pointer-events-none">OVERDUE</Badge>;
+    }
+    if (status === 'PAID') {
+      return <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25 px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase pointer-events-none">PAID</Badge>;
+    }
+    if (status === 'PENDING') {
+      return <Badge variant="outline" className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25 px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase pointer-events-none">PENDING</Badge>;
+    }
+    return <Badge variant="outline" className="text-[10px] font-black tracking-widest uppercase pointer-events-none">{status}</Badge>;
   };
 
   const filteredInvoices = invoices.filter(inv => {
     const matchesSearch = inv.organization.name.toLowerCase().includes(globalSearch.toLowerCase()) ||
       inv.description?.toLowerCase().includes(globalSearch.toLowerCase());
-    const matchesStatus = statusFilter === 'ALL' || inv.status === statusFilter;
+    
+    let matchesStatus = true;
+    if (statusFilter === 'ALL') {
+      matchesStatus = true;
+    } else if (statusFilter === 'OVERDUE') {
+      matchesStatus = isInvoiceOverdue(inv);
+    } else if (statusFilter === 'PAID') {
+      matchesStatus = inv.status === 'PAID' && !isInvoiceOverdue(inv);
+    } else if (statusFilter === 'PENDING') {
+      matchesStatus = inv.status === 'PENDING' && !isInvoiceOverdue(inv);
+    } else {
+      matchesStatus = inv.status === statusFilter;
+    }
+
     return matchesSearch && matchesStatus;
   });
 
@@ -130,8 +210,8 @@ const SuperAdminBilling = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6">
         {[
           { label: 'Total Revenue', value: `₹${invoices.filter(i => i.status === 'PAID').reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0).toLocaleString('en-IN')}`, icon: CreditCard, color: 'text-primary' },
-          { label: 'Pending Payments', value: `₹${invoices.filter(i => i.status === 'PENDING').reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0).toLocaleString('en-IN')}`, icon: Clock, color: 'text-amber-500' },
-          { label: 'Overdue Amount', value: `₹${invoices.filter(i => i.status === 'OVERDUE').reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0).toLocaleString('en-IN')}`, icon: AlertCircle, color: 'text-rose-500' },
+          { label: 'Pending Payments', value: `₹${invoices.filter(i => i.status === 'PENDING' && !isInvoiceOverdue(i)).reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0).toLocaleString('en-IN')}`, icon: Clock, color: 'text-amber-500' },
+          { label: 'Overdue Amount', value: `₹${invoices.filter(isInvoiceOverdue).reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0).toLocaleString('en-IN')}`, icon: AlertCircle, color: 'text-rose-500' },
           { label: 'Active Invoices', value: invoices.length, icon: CheckCircle2, color: 'text-emerald-500' }
         ].map((stat, i) => (
           <Card key={i} className="rounded-2xl sm:rounded-[2rem] border-border/40 bg-white/50 dark:bg-black/40 backdrop-blur-xl shadow-xl overflow-hidden group transition-all hover:scale-[1.02]">
@@ -157,7 +237,10 @@ const SuperAdminBilling = () => {
               <CardDescription className="text-[9px] sm:text-[10px] font-bold tracking-widest uppercase opacity-60">Payment records for all organizations</CardDescription>
             </div>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <Button className="h-10 sm:h-11 px-6 rounded-xl bg-primary text-white font-bold text-[9px] sm:text-[10px] tracking-widest uppercase shadow-lg shadow-primary/20 gap-2 w-full sm:w-auto">
+              <Button
+                onClick={() => setIsGenerateOpen(true)}
+                className="h-10 sm:h-11 px-6 rounded-xl bg-primary text-white font-bold text-[9px] sm:text-[10px] tracking-widest uppercase shadow-lg shadow-primary/20 gap-2 w-full sm:w-auto"
+              >
                 <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Generate Invoice
               </Button>
             </div>
@@ -194,7 +277,7 @@ const SuperAdminBilling = () => {
                       <span className="text-sm font-black text-foreground truncate block">{invoice.organization.name}</span>
                       <p className="text-[10px] text-muted-foreground/60 font-bold truncate">{invoice.organization.billingEmail || invoice.organization.users?.[0]?.email || 'No Email'}</p>
                     </div>
-                    <div className="shrink-0">{getStatusBadge(invoice.status)}</div>
+                    <div className="shrink-0">{getStatusBadge(invoice.status, invoice)}</div>
                   </div>
                   <div className="grid grid-cols-2 gap-3 mb-4 mt-2">
                     <div>
@@ -326,7 +409,7 @@ const SuperAdminBilling = () => {
                       </TableCell>
                       <TableCell className="py-6">
                         <div className="flex items-center justify-center">
-                          {getStatusBadge(invoice.status)}
+                          {getStatusBadge(invoice.status, invoice)}
                         </div>
                       </TableCell>
                       <TableCell className="px-8 text-center">
@@ -397,6 +480,162 @@ const SuperAdminBilling = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* ── Generate Invoice Modal ─────────────────────────────────── */}
+      <Dialog open={isGenerateOpen} onOpenChange={setIsGenerateOpen}>
+        <DialogContent className="sm:max-w-md bg-background border-border/40 font-montserrat">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Plus className="w-5 h-5 text-primary" /> Generate Invoice
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Create an invoice for an organization and optionally update their subscription plan.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleCreateInvoice} className="space-y-4 py-2">
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1">
+                Organization *
+              </label>
+              <select
+                required
+                value={invoiceForm.organizationId}
+                onChange={(e) => {
+                  const orgId = e.target.value;
+                  const selectedOrg = orgs.find(o => o.id === orgId);
+                  const p = selectedOrg?.plan || 'PRO';
+                  const uCount = selectedOrg?._count?.users || 25;
+                  const billedUsers = Math.max(uCount, 25);
+                  const unitPrice = p === 'PRO' ? (Number(settings?.pro_per_user_price) || 15) : (Number(settings?.starter_per_user_price) || 10);
+                  const amt = unitPrice * billedUsers;
+                  setInvoiceForm(prev => ({
+                    ...prev,
+                    organizationId: orgId,
+                    plan: p !== 'FREE' ? p : 'PRO',
+                    amount: String(amt),
+                    description: `${p !== 'FREE' ? p : 'PRO'} Plan - monthly billing (${billedUsers} users)`,
+                  }));
+                }}
+                className="w-full bg-secondary/30 border border-border/40 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary"
+              >
+                <option value="">Select organization...</option>
+                {orgs.map(o => (
+                  <option key={o.id} value={o.id}>
+                    {o.name} ({o.plan || 'FREE'})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1">
+                  Plan Tier
+                </label>
+                <select
+                  value={invoiceForm.plan}
+                  onChange={(e) => {
+                    const newPlan = e.target.value;
+                    const selectedOrg = orgs.find(o => o.id === invoiceForm.organizationId);
+                    const uCount = selectedOrg?._count?.users || 25;
+                    const billedUsers = Math.max(uCount, 25);
+                    const unitPrice = newPlan === 'PRO' ? (Number(settings?.pro_per_user_price) || 15) : (Number(settings?.starter_per_user_price) || 10);
+                    const amt = newPlan === 'ENTERPRISE' ? 0 : unitPrice * billedUsers;
+                    setInvoiceForm(prev => ({
+                      ...prev,
+                      plan: newPlan,
+                      amount: String(amt),
+                      description: `${newPlan} Plan - monthly billing (${billedUsers} users)`,
+                    }));
+                  }}
+                  className="w-full bg-secondary/30 border border-border/40 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  <option value="STARTER">STARTER</option>
+                  <option value="PRO">PRO</option>
+                  <option value="ENTERPRISE">ENTERPRISE</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1">
+                  Status
+                </label>
+                <select
+                  value={invoiceForm.status}
+                  onChange={(e) => setInvoiceForm(prev => ({ ...prev, status: e.target.value }))}
+                  className="w-full bg-secondary/30 border border-border/40 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  <option value="PAID">PAID</option>
+                  <option value="PENDING">PENDING</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1">
+                  Amount (₹) *
+                </label>
+                <Input
+                  type="number"
+                  required
+                  placeholder="e.g. 375"
+                  value={invoiceForm.amount}
+                  onChange={(e) => setInvoiceForm(prev => ({ ...prev, amount: e.target.value }))}
+                  className="bg-secondary/30 border-border/40 text-xs h-9"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1">
+                  Due Date
+                </label>
+                <Input
+                  type="date"
+                  value={invoiceForm.dueDate}
+                  onChange={(e) => setInvoiceForm(prev => ({ ...prev, dueDate: e.target.value }))}
+                  className="bg-secondary/30 border-border/40 text-xs h-9"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground block mb-1">
+                Description
+              </label>
+              <Input
+                placeholder="Description or notes"
+                value={invoiceForm.description}
+                onChange={(e) => setInvoiceForm(prev => ({ ...prev, description: e.target.value }))}
+                className="bg-secondary/30 border-border/40 text-xs h-9"
+              />
+            </div>
+
+            <DialogFooter className="pt-2 flex-row gap-2 justify-end">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsGenerateOpen(false)}
+                className="text-xs"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={submittingInvoice}
+                className="bg-primary text-white text-xs gap-1.5"
+              >
+                {submittingInvoice ? (
+                  <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Creating...</>
+                ) : (
+                  'Create Invoice'
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -6,7 +6,7 @@ export const useAuthStore = create((set) => ({
   user: null,
   login: (token, user) => {
     set({ token, user });
-    localStorage.setItem('auth-storage', JSON.stringify({ state: { token, user } }));
+    sessionStorage.setItem('auth-storage', JSON.stringify({ state: { token, user } }));
   },
   logout: async (apiInstance) => {
     try {
@@ -17,13 +17,14 @@ export const useAuthStore = create((set) => ({
       console.error('Failed to log out on server:', error);
     } finally {
       set({ token: null, user: null });
+      sessionStorage.removeItem('auth-storage');
       localStorage.removeItem('auth-storage');
     }
   },
   updateUser: (user) => {
     set((state) => {
       const newState = { ...state, user };
-      localStorage.setItem('auth-storage', JSON.stringify({ state: { token: state.token, user: user } }));
+      sessionStorage.setItem('auth-storage', JSON.stringify({ state: { token: state.token, user: user } }));
       return newState;
     });
   },
@@ -36,7 +37,7 @@ export const useAuthStore = create((set) => ({
       console.log('🔐 [TaskFlow Permissions] Current Active Features:', user.activeFeatures);
       
       set((state) => {
-        localStorage.setItem('auth-storage', JSON.stringify({ state: { token: state.token, user } }));
+        sessionStorage.setItem('auth-storage', JSON.stringify({ state: { token: state.token, user } }));
         return { user };
       });
     } catch (error) {
@@ -44,8 +45,10 @@ export const useAuthStore = create((set) => ({
     }
   },
   initialize: () => {
+    // Clear legacy persistent storage so previously saved credentials don't keep auto-logging in
+    localStorage.removeItem('auth-storage');
     try {
-      const stored = localStorage.getItem('auth-storage');
+      const stored = sessionStorage.getItem('auth-storage');
       if (stored) {
         const { state } = JSON.parse(stored);
         if (state?.token && state?.user) {
@@ -56,7 +59,7 @@ export const useAuthStore = create((set) => ({
     } catch (error) {
       console.error('Failed to load auth state:', error);
     }
-    set({ isInitialized: true });
+    set({ isInitialized: true, token: null, user: null });
     return null;
   },
 }));

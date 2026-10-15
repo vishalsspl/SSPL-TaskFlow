@@ -4,6 +4,7 @@ import prisma from '../lib/prisma.js';
 import bcrypt from 'bcryptjs';
 import { provisionTenantDatabase, dropTenantDatabase } from '../services/tenantProvisioner.js';
 import tenantDbManager from '../lib/tenantDbManager.js';
+import { notifyPlanRenewalOrUpgrade } from './paymentController.js';
 
 // GET /api/superadmin/stats
 export const getStats = async (req, res) => {
@@ -111,7 +112,11 @@ export const createOrganization = async (req, res) => {
                 maxUsers,
                 maxProjects,
                 customFeatures,
-                dbStrategy: 'DEDICATED'
+                dbStrategy: 'DEDICATED',
+                ...(plan && plan !== 'FREE' ? {
+                    currentPeriodStart: new Date(),
+                    currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                } : {})
             }
         });
 
@@ -126,6 +131,30 @@ export const createOrganization = async (req, res) => {
                 isApproved: true,
             }
         });
+
+        // Create initial invoice record if created with a paid plan
+        if (plan && plan !== 'FREE') {
+            try {
+                const date = new Date();
+                const invNum = `INV-${date.getFullYear().toString().slice(-2)}${String(date.getMonth() + 1).padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
+                const defaultAmount = plan === 'PRO' ? 375 : (plan === 'STARTER' ? 250 : 0);
+                await prisma.invoice.create({
+                    data: {
+                        organizationId: org.id,
+                        amount: defaultAmount,
+                        currency: 'INR',
+                        status: 'PAID',
+                        plan,
+                        description: `${plan} Plan - Initial SuperAdmin Provisioning`,
+                        invoiceNumber: invNum,
+                        paidAt: new Date(),
+                        dueDate: new Date(),
+                    }
+                });
+            } catch (invErr) {
+                console.error('[SuperAdmin] Failed to create initial invoice:', invErr.message);
+            }
+        }
 
         // 4. Provision Tenant Database (Dynamically)
         let tenantDbUrl = null;
@@ -210,6 +239,13 @@ export const updateOrganization = async (req, res) => {
     const { name, plan, status, maxUsers, maxProjects, suspendedReason, customFeatures } = req.body;
 
     try {
+        const existingOrg = await prisma.organization.findUnique({ where: { id } });
+        if (!existingOrg) {
+            return res.status(404).json({ success: false, message: 'Organization not found' });
+        }
+
+        const isPlanChanged = Boolean(plan && plan !== existingOrg.plan);
+
         const updated = await prisma.organization.update({
             where: { id },
             data: {
@@ -221,8 +257,53 @@ export const updateOrganization = async (req, res) => {
                 ...(suspendedReason !== undefined && { suspendedReason }),
                 ...(customFeatures !== undefined && { customFeatures }),
                 ...(status === 'SUSPENDED' ? { suspendedAt: new Date() } : (status === 'ACTIVE' ? { suspendedAt: null } : {})),
+                ...(isPlanChanged && plan !== 'FREE' ? {
+                    currentPeriodStart: new Date(),
+                    currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                } : (isPlanChanged && plan === 'FREE' ? {
+                    currentPeriodStart: null,
+                    currentPeriodEnd: null
+                } : {}))
             }
         });
+
+        // If plan is updated to a paid plan, ensure an invoice record exists
+        if (isPlanChanged && plan !== 'FREE') {
+            try {
+                const userCount = await prisma.user.count({ where: { organizationId: id } });
+                const billedUsers = Math.max(userCount, 25);
+                const price = plan === 'PRO' ? 15 : (plan === 'STARTER' ? 10 : 0);
+                const amount = price * billedUsers;
+                const date = new Date();
+                const invNum = `INV-${date.getFullYear().toString().slice(-2)}${String(date.getMonth() + 1).padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+                const createdInvoice = await prisma.invoice.create({
+                    data: {
+                        organizationId: id,
+                        amount,
+                        currency: 'INR',
+                        status: 'PAID',
+                        plan,
+                        description: `${plan} Plan - SuperAdmin Provisioned (${billedUsers} users minimum)`,
+                        invoiceNumber: invNum,
+                        paidAt: new Date(),
+                        dueDate: new Date(),
+                    }
+                });
+
+                notifyPlanRenewalOrUpgrade({
+                    orgId: id,
+                    plan,
+                    amount: createdInvoice.amount,
+                    invoiceNumber: createdInvoice.invoiceNumber,
+                    paymentId: 'SuperAdmin Manual Update',
+                    isAutoRenewal: false,
+                    io: req.io,
+                }).catch(e => console.error('[SuperAdmin] Renewal notification error:', e.message));
+            } catch (invErr) {
+                console.error('[SuperAdmin] Failed to generate invoice on plan update:', invErr.message);
+            }
+        }
 
         // ── 🔄 SYNC: Propagate to Tenant DB ─────────────────────────
         if (updated.dbUrl && updated.dbStrategy === 'DEDICATED') {
