@@ -194,6 +194,7 @@ export default function WeeklyTimesheetGrid({
             // Clear local values and errors on week switch
             setLocalValues({});
             setCellErrors({});
+            setSavingStates({});
         } catch (err) {
             console.error('Failed to fetch timesheet entries:', err);
             toast({
@@ -339,9 +340,16 @@ export default function WeeklyTimesheetGrid({
             return { valid: false, error: 'Hours cannot exceed 24 in a single entry' };
         }
 
-        // Project Date Boundaries Check
+        // Project Status & Date Boundaries Check
         const project = projects.find(p => p.id === row.projectId);
         const cellDate = parseISO(dateStr);
+
+        if (project?.status === 'COMPLETED' || project?.status === 'ARCHIVED') {
+            return {
+                valid: false,
+                error: `Cannot log hours on a ${project.status.toLowerCase()} project`
+            };
+        }
 
         if (project?.startDate) {
             const pStart = startOfDay(parseISO(project.startDate));
@@ -352,7 +360,8 @@ export default function WeeklyTimesheetGrid({
                 };
             }
         }
-        if (project?.endDate) {
+        // Only enforce project endDate if the project is marked non-active/closed
+        if (project?.endDate && project?.status && project.status !== 'ACTIVE') {
             const pEnd = endOfDay(parseISO(project.endDate));
             if (isAfter(cellDate, pEnd)) {
                 return {
@@ -403,11 +412,31 @@ export default function WeeklyTimesheetGrid({
         const trimmed = (rawVal ?? '').toString().trim();
         const num = parseFloat(trimmed);
 
-        // If unchanged, do nothing
+        // If unchanged, clear any lingering error and do nothing
         if (existingEntry && !isNaN(num) && Math.abs(parseFloat(existingEntry.hours) - num) < 0.001) {
+            setCellErrors(prev => {
+                const next = { ...prev };
+                delete next[cellKey];
+                return next;
+            });
+            setSavingStates(prev => {
+                const next = { ...prev };
+                if (next[cellKey] === 'error') delete next[cellKey];
+                return next;
+            });
             return;
         }
         if (!existingEntry && (trimmed === '' || num === 0)) {
+            setCellErrors(prev => {
+                const next = { ...prev };
+                delete next[cellKey];
+                return next;
+            });
+            setSavingStates(prev => {
+                const next = { ...prev };
+                if (next[cellKey] === 'error') delete next[cellKey];
+                return next;
+            });
             return;
         }
 
@@ -525,6 +554,11 @@ export default function WeeklyTimesheetGrid({
             delete next[cellKey];
             return next;
         });
+        setSavingStates(prev => {
+            const next = { ...prev };
+            if (next[cellKey] === 'error') delete next[cellKey];
+            return next;
+        });
 
         if (debounceTimersRef.current[cellKey]) {
             clearTimeout(debounceTimersRef.current[cellKey]);
@@ -605,7 +639,24 @@ export default function WeeklyTimesheetGrid({
 
     // ── Global Status State ─────────────────────────────────────────────
     const hasSaving = Object.values(savingStates).some(s => s === 'saving');
-    const hasError = Object.values(savingStates).some(s => s === 'error') || Object.keys(cellErrors).length > 0;
+    const hasError = Object.keys(cellErrors).length > 0 || Object.values(savingStates).some(s => s === 'error');
+
+    const activeErrorMessage = useMemo(() => {
+        const errors = Object.values(cellErrors).filter(Boolean);
+        if (errors.length > 0) return errors[0];
+        return 'Validation error occurred';
+    }, [cellErrors]);
+
+    const clearAllErrors = useCallback(() => {
+        setCellErrors({});
+        setSavingStates(prev => {
+            const next = { ...prev };
+            Object.keys(next).forEach(k => {
+                if (next[k] === 'error') delete next[k];
+            });
+            return next;
+        });
+    }, []);
 
     // ── Week Navigation Handlers ────────────────────────────────────────
     const handlePrevWeek = () => {
@@ -794,10 +845,18 @@ export default function WeeklyTimesheetGrid({
                                     Saving changes...
                                 </span>
                             ) : hasError ? (
-                                <span className="flex items-center text-xs font-bold text-red-500" title="Check highlighted cells with errors">
-                                    <AlertCircle className="h-3.5 w-3.5 mr-1.5" />
-                                    Errors occurred
-                                </span>
+                                <div className="flex items-center gap-1.5 text-xs font-bold text-red-500 bg-red-500/10 px-2.5 py-1 rounded-lg border border-red-500/20 max-w-[340px]">
+                                    <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                                    <span className="truncate" title={activeErrorMessage}>{activeErrorMessage}</span>
+                                    <button
+                                        type="button"
+                                        onClick={clearAllErrors}
+                                        className="ml-1 hover:text-red-700 font-black text-xs shrink-0 cursor-pointer"
+                                        title="Dismiss error"
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
                             ) : (
                                 <span className="flex items-center text-xs font-bold text-emerald-600 dark:text-emerald-400">
                                     <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
