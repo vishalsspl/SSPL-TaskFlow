@@ -16,7 +16,8 @@ import {
     X,
     User as UserIcon,
     Settings,
-    RotateCcw
+    RotateCcw,
+    FileSpreadsheet
 } from 'lucide-react';
 import api from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
@@ -52,6 +53,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import DeleteConfirmDialog from '@/components/ui/delete-confirm-dialog';
 import { Switch } from '@/components/ui/switch';
+import TimesheetExportModal from '@/components/TimesheetExportModal';
 
 const TIME_OPTIONS = [
     "12:00 AM", "12:30 AM", "01:00 AM", "01:30 AM", "02:00 AM", "02:30 AM", 
@@ -197,6 +199,7 @@ const Timesheets = () => {
         holidays: []
     });
     const [isShiftDialogOpen, setIsShiftDialogOpen] = useState(false);
+    const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
     const [shiftForm, setShiftForm] = useState({
         startTime: '10:00 AM',
         endTime: '07:30 PM',
@@ -892,6 +895,13 @@ const Timesheets = () => {
                             </Select>
                         </>
                     )}
+                    <Button 
+                        variant="outline" 
+                        onClick={() => setIsExportDialogOpen(true)}
+                        className="rounded-xl h-10 px-4 font-bold border-emerald-500/30 hover:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 w-full sm:w-auto shrink-0 shadow-sm transition-all active:scale-95"
+                    >
+                        <FileSpreadsheet className="mr-2 h-4 w-4" /> Export Report
+                    </Button>
                 </div>
                 <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
                     <div className="flex items-center gap-2 w-full justify-center sm:w-auto">
@@ -2051,6 +2061,18 @@ const Timesheets = () => {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <TimesheetExportModal
+                open={isExportDialogOpen}
+                onOpenChange={setIsExportDialogOpen}
+                entries={entries}
+                dateRange={dateRange}
+                orgName={user?.organization?.name || 'TaskFlow'}
+                users={users}
+                projects={projects}
+                generatedBy={user?.name || 'User'}
+                isAdmin={isOrgAdmin}
+            />
         </div>
     );
 };
