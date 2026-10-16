@@ -85,6 +85,7 @@ const NOTIFICATION_GROUPS = [
     color: '#10B981',
     bg: 'rgba(16,185,129,0.1)',
     items: [
+      { key: 'TIMESHEET_SUBMITTED', label: 'Timesheet Submitted', description: 'When a team member submits a timesheet for review' },
       { key: 'WORKLOG_SUBMITTED', label: 'Worklog Submitted', description: 'When a team member submits a worklog' },
       { key: 'TIMESHEET_APPROVED', label: 'Timesheet Approved', description: 'When your timesheet is approved' },
       { key: 'TIMESHEET_REJECTED', label: 'Timesheet Rejected', description: 'When your timesheet is rejected' },

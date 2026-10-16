@@ -67,13 +67,22 @@ const NotificationBell = () => {
           return `/task-board?highlight=${taskId}&action=view`;
         }
       }
+      if (notification.link === '/timesheets' && notification.type === 'TIMESHEET_SUBMITTED') {
+        return '/timesheets?tab=team-logs';
+      }
+      if (notification.link === '/timesheets' && notification.type === 'LEAVE_SUBMITTED') {
+        return '/timesheets?tab=leave-logs';
+      }
       return notification.link;
     }
     switch (notification.type) {
+      case 'TIMESHEET_SUBMITTED':
+        return '/timesheets?tab=team-logs';
+      case 'LEAVE_SUBMITTED':
+        return '/timesheets?tab=leave-logs';
       case 'WORKLOG_SUBMITTED':
       case 'TIMESHEET_APPROVED':
       case 'TIMESHEET_REJECTED':
-      case 'LEAVE_SUBMITTED':
       case 'LEAVE_APPROVED':
       case 'LEAVE_REJECTED':
         return '/timesheets';
@@ -148,6 +157,7 @@ const NotificationBell = () => {
         return <div className="p-1.5 bg-destructive/10 rounded-full"><XCircle className="w-3.5 h-3.5 text-destructive" /></div>;
       case 'CHAT_MESSAGE':
         return <div className="p-1.5 bg-sky-500/10 rounded-full"><MessageSquare className="w-3.5 h-3.5 text-sky-500" /></div>;
+      case 'TIMESHEET_SUBMITTED':
       case 'WORKLOG_SUBMITTED':
       case 'LEAVE_SUBMITTED':
         return <div className="p-1.5 bg-amber-500/10 rounded-full"><Clock className="w-3.5 h-3.5 text-amber-500" /></div>;

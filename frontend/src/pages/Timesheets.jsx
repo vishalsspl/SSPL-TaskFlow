@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { format, startOfWeek, addDays, isSameDay, parseISO, differenceInDays } from 'date-fns';
 import {
     Clock,
@@ -173,8 +174,15 @@ const Timesheets = () => {
     const isTimerRunning = useTimerStore(state => state.isRunning);
     const prevIsTimerRunning = useRef(isTimerRunning);
 
+    const [searchParams] = useSearchParams();
     const [dateRange, setDateRange] = useState({ from: addDays(new Date(), -6), to: new Date() });
-    const [activeTab, setActiveTab] = useState('my-entries');
+    const [activeTab, setActiveTab] = useState(() => {
+        const tab = searchParams.get('tab');
+        if (tab && ['my-entries', 'team-logs', 'leave-logs'].includes(tab)) {
+            return tab;
+        }
+        return 'my-entries';
+    });
     const [entries, setEntries] = useState([]);
     const [historicalLoggedDates, setHistoricalLoggedDates] = useState([]);
     const [pendingLeaves, setPendingLeaves] = useState([]);
@@ -193,6 +201,16 @@ const Timesheets = () => {
     const [selectedMemberFilter, setSelectedMemberFilter] = useState('all');
     const [selectedProjectFilter, setSelectedProjectFilter] = useState('all');
     const [viewMode, setViewMode] = useState('list'); // 'list' | 'grid'
+
+    useEffect(() => {
+        const tab = searchParams.get('tab');
+        if (tab && ['my-entries', 'team-logs', 'leave-logs'].includes(tab)) {
+            setActiveTab(tab);
+            if (tab === 'team-logs' || tab === 'leave-logs') {
+                setViewMode('list');
+            }
+        }
+    }, [searchParams]);
 
     const isOrgAdmin = user?.role === 'ADMIN' || user?.role === 'SUPERADMIN';
 

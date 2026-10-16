@@ -398,7 +398,8 @@ export const submitTimesheets = async (req, res) => {
                         userId: manager.id,
                         title: 'Leave Requires Approval',
                         message: `${req.user.name} submitted a leave request.`,
-                        type: 'LEAVE_SUBMITTED' 
+                        type: 'LEAVE_SUBMITTED',
+                        link: '/timesheets?tab=leave-logs'
                     });
 
                     if (await shouldSendEmail(req.db, manager.id, 'LEAVE_SUBMITTED')) {
@@ -411,7 +412,8 @@ export const submitTimesheets = async (req, res) => {
                         userId: manager.id,
                         title: 'Timesheet Requires Approval',
                         message: `${req.user.name} submitted a timesheet for review.`,
-                        type: 'TIMESHEET_SUBMITTED' 
+                        type: 'TIMESHEET_SUBMITTED',
+                        link: '/timesheets?tab=team-logs'
                     });
 
                     if (await shouldSendEmail(req.db, manager.id, 'TIMESHEET_SUBMITTED')) {
@@ -559,7 +561,8 @@ export const updateTimeEntryStatus = async (req, res) => {
             message: isLeaveEntry 
                 ? `Your leave request has been ${status.toLowerCase()}` 
                 : `Your time log for ${existingEntry.project?.name || 'Leave'} has been ${status.toLowerCase()}`,
-            type: isLeaveEntry ? `LEAVE_${status}` : `TIMESHEET_${status}`
+            type: isLeaveEntry ? `LEAVE_${status}` : `TIMESHEET_${status}`,
+            link: '/timesheets'
         });
 
         const origin = req.headers.origin || req.headers.referer?.split('/').slice(0, 3).join('/') || process.env.CLIENT_URL;
