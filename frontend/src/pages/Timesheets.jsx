@@ -17,7 +17,9 @@ import {
     User as UserIcon,
     Settings,
     RotateCcw,
-    FileSpreadsheet
+    FileSpreadsheet,
+    LayoutGrid,
+    List
 } from 'lucide-react';
 import api from '@/lib/api';
 import { useAuthStore } from '@/store/authStore';
@@ -54,6 +56,7 @@ import { SearchableSelect } from '@/components/ui/searchable-select';
 import DeleteConfirmDialog from '@/components/ui/delete-confirm-dialog';
 import { Switch } from '@/components/ui/switch';
 import TimesheetExportModal from '@/components/TimesheetExportModal';
+import WeeklyTimesheetGrid from '@/components/WeeklyTimesheetGrid';
 
 const TIME_OPTIONS = [
     "12:00 AM", "12:30 AM", "01:00 AM", "01:30 AM", "02:00 AM", "02:30 AM", 
@@ -189,6 +192,7 @@ const Timesheets = () => {
     const [loggingMode, setLoggingMode] = useState('direct');
     const [selectedMemberFilter, setSelectedMemberFilter] = useState('all');
     const [selectedProjectFilter, setSelectedProjectFilter] = useState('all');
+    const [viewMode, setViewMode] = useState('list'); // 'list' | 'grid'
 
     const isOrgAdmin = user?.role === 'ADMIN' || user?.role === 'SUPERADMIN';
 
@@ -376,6 +380,13 @@ const Timesheets = () => {
         }
         if (!selectedDateFilter || !isSameDay(selectedDateFilter, now)) {
             setSelectedDateFilter(now);
+        }
+    };
+
+    const handleViewModeChange = (mode) => {
+        setViewMode(mode);
+        if (mode === 'list') {
+            fetchEntries();
         }
     };
 
@@ -835,7 +846,7 @@ const Timesheets = () => {
         <div className="flex-1 space-y-4 p-0 sm:p-2 overflow-y-auto overflow-x-hidden no-scrollbar h-full w-full max-w-full">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-card p-4 rounded-xl border border-border shadow-sm">
                 <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                    {!isOrgAdmin && (
+                    {!isOrgAdmin && viewMode === 'list' && (
                         <Button 
                             onClick={() => {
                                 setEditingEntryId(null);
@@ -860,7 +871,7 @@ const Timesheets = () => {
                             <Plus className="mr-2 h-4 w-4" /> Log Hours
                         </Button>
                     )}
-                    {!isOrgAdmin && entries.some(e => e.userId === user?.id && e.status === 'PENDING') && (
+                    {!isOrgAdmin && viewMode === 'list' && entries.some(e => e.userId === user?.id && e.status === 'PENDING') && (
                         <div title={new Date().getDay() !== 5 ? "This button is enabled on Friday only" : ""}>
                             <Button 
                                 onClick={handleSubmitTimesheets} 
@@ -902,70 +913,111 @@ const Timesheets = () => {
                     >
                         <FileSpreadsheet className="mr-2 h-4 w-4" /> Export Report
                     </Button>
-                </div>
-                <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-                    <div className="flex items-center gap-2 w-full justify-center sm:w-auto">
-                        <Button variant="outline" size="icon" onClick={handlePrevRange} className="rounded-lg h-9 w-9 shrink-0">
-                            <ChevronLeft className="h-4 w-4" />
+
+                    {/* View Mode Toggle: List vs Weekly Grid */}
+                    <div className="flex items-center bg-muted/40 p-1 rounded-xl border border-border shrink-0">
+                        <Button
+                            type="button"
+                            variant={viewMode === 'list' ? 'default' : 'ghost'}
+                            size="sm"
+                            onClick={() => handleViewModeChange('list')}
+                            className={`h-8 px-3 rounded-lg text-xs font-bold transition-all ${
+                                viewMode === 'list' ? 'bg-primary text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                        >
+                            <List className="h-3.5 w-3.5 mr-1.5" />
+                            List
                         </Button>
-                        <Button variant="outline" onClick={handleToday} className="rounded-lg h-9 font-bold px-4 flex-1 sm:flex-none">
-                            Today
-                        </Button>
-                        <Button variant="outline" size="icon" onClick={handleNextRange} className="rounded-lg h-9 w-9 shrink-0">
-                            <ChevronRight className="h-4 w-4" />
+                        <Button
+                            type="button"
+                            variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                            size="sm"
+                            onClick={() => handleViewModeChange('grid')}
+                            className={`h-8 px-3 rounded-lg text-xs font-bold transition-all ${
+                                viewMode === 'grid' ? 'bg-primary text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                        >
+                            <LayoutGrid className="h-3.5 w-3.5 mr-1.5" />
+                            Weekly Grid
                         </Button>
                     </div>
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <Button variant="outline" className="relative h-auto py-1.5 px-4 rounded-xl border border-primary/20 bg-background hover:bg-primary/5 shadow-sm transition-all duration-300 min-w-[240px] flex items-center justify-start overflow-hidden group">
-                                <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary group-hover:w-1.5 transition-all duration-300" />
-                                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary mr-3 group-hover:scale-110 transition-transform duration-300">
-                                    <Clock className="w-4 h-4" />
-                                </div>
-                                <div className="flex flex-col items-start flex-1 text-left justify-center">
-                                    <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5 leading-none">Timeline</span>
-                                    <span className="text-xs sm:text-sm font-black text-foreground font-['Montserrat'] tracking-tight leading-none">
-                                        {dateRange?.from ? (
-                                            dateRange.to ? (
-                                                <>{format(dateRange.from, "MMM d")} - {format(dateRange.to, "MMM d, yyyy")}</>
-                                            ) : (
-                                                format(dateRange.from, "MMM d, yyyy")
-                                            )
-                                        ) : (
-                                            <span>Pick a date range</span>
-                                        )}
-                                    </span>
-                                </div>
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 border-border shadow-2xl rounded-2xl overflow-hidden flex flex-col" align="end">
-                            <div className="bg-muted/30 border-b border-border/50 px-3 py-2.5 text-center flex items-center justify-center gap-2">
-                                <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-                                <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Select 7 to 31 days</span>
-                            </div>
-                            <Calendar
-                                className="border-0 shadow-none"
-                                initialFocus
-                                mode="range"
-                                defaultMonth={dateRange?.from}
-                                selected={dateRange}
-                                onSelect={setDateRange}
-                                modifiers={{ hasLog: datesWithLogs }}
-                                modifiersClassNames={{ hasLog: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:bg-primary after:rounded-full after:z-10" }}
-                                disabled={(date) => {
-                                    if (dateRange?.from && !dateRange?.to) {
-                                        const diff = Math.abs(differenceInDays(date, dateRange.from));
-                                        return diff > 30 || diff < 6;
-                                    }
-                                    return false;
-                                }}
-                            />
-                        </PopoverContent>
-                    </Popover>
                 </div>
+
+                {viewMode === 'list' && (
+                    <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                        <div className="flex items-center gap-2 w-full justify-center sm:w-auto">
+                            <Button variant="outline" size="icon" onClick={handlePrevRange} className="rounded-lg h-9 w-9 shrink-0">
+                                <ChevronLeft className="h-4 w-4" />
+                            </Button>
+                            <Button variant="outline" onClick={handleToday} className="rounded-lg h-9 font-bold px-4 flex-1 sm:flex-none">
+                                Today
+                            </Button>
+                            <Button variant="outline" size="icon" onClick={handleNextRange} className="rounded-lg h-9 w-9 shrink-0">
+                                <ChevronRight className="h-4 w-4" />
+                            </Button>
+                        </div>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline" className="relative h-auto py-1.5 px-4 rounded-xl border border-primary/20 bg-background hover:bg-primary/5 shadow-sm transition-all duration-300 min-w-[240px] flex items-center justify-start overflow-hidden group">
+                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary group-hover:w-1.5 transition-all duration-300" />
+                                    <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 text-primary mr-3 group-hover:scale-110 transition-transform duration-300">
+                                        <Clock className="w-4 h-4" />
+                                    </div>
+                                    <div className="flex flex-col items-start flex-1 text-left justify-center">
+                                        <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5 leading-none">Timeline</span>
+                                        <span className="text-xs sm:text-sm font-black text-foreground font-['Montserrat'] tracking-tight leading-none">
+                                            {dateRange?.from ? (
+                                                dateRange.to ? (
+                                                    <>{format(dateRange.from, "MMM d")} - {format(dateRange.to, "MMM d, yyyy")}</>
+                                                ) : (
+                                                    format(dateRange.from, "MMM d, yyyy")
+                                                )
+                                            ) : (
+                                                <span>Pick a date range</span>
+                                            )}
+                                        </span>
+                                    </div>
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0 border-border shadow-2xl rounded-2xl overflow-hidden flex flex-col" align="end">
+                                <div className="bg-muted/30 border-b border-border/50 px-3 py-2.5 text-center flex items-center justify-center gap-2">
+                                    <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Select 7 to 31 days</span>
+                                </div>
+                                <Calendar
+                                    className="border-0 shadow-none"
+                                    initialFocus
+                                    mode="range"
+                                    defaultMonth={dateRange?.from}
+                                    selected={dateRange}
+                                    onSelect={setDateRange}
+                                    modifiers={{ hasLog: datesWithLogs }}
+                                    modifiersClassNames={{ hasLog: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:bg-primary after:rounded-full after:z-10" }}
+                                    disabled={(date) => {
+                                        if (dateRange?.from && !dateRange?.to) {
+                                            const diff = Math.abs(differenceInDays(date, dateRange.from));
+                                            return diff > 30 || diff < 6;
+                                        }
+                                        return false;
+                                    }}
+                                />
+                            </PopoverContent>
+                        </Popover>
+                    </div>
+                )}
             </div>
 
-            {activeTab !== 'leave-logs' && weekDays && weekDays.length > 0 && (() => {
+            {viewMode === 'grid' ? (
+                <WeeklyTimesheetGrid
+                    user={user}
+                    orgShiftSettings={orgShiftSettings}
+                    selectedMemberFilter={selectedMemberFilter}
+                    users={users}
+                    onSync={fetchEntries}
+                />
+            ) : (
+                <>
+                    {activeTab !== 'leave-logs' && weekDays && weekDays.length > 0 && (() => {
                 // Pre-calculate all 7 days for weekly summary
                 const weekData = weekDays.map((day) => {
                     // Calculate target entries based on mode and filters
@@ -1648,6 +1700,8 @@ const Timesheets = () => {
                     </Card>
                 </TabsContent>
                 </Tabs>
+            )}
+                </>
             )}
 
             <Dialog open={isLogDialogOpen} onOpenChange={setIsLogDialogOpen}>
